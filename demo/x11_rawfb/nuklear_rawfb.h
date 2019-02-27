@@ -35,7 +35,7 @@ struct rawfb_context;
 
 typedef enum rawfb_pixel_layout {
     PIXEL_LAYOUT_XRGB_8888,
-    PIXEL_LAYOUT_RGBX_8888,
+    PIXEL_LAYOUT_RGBX_8888
 }
 rawfb_pl;
 
