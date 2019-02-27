@@ -471,15 +471,25 @@ nk_gdip_fill_rect(short x, short y, unsigned short w,
     }
 }
 
+static BOOL
+SetPoint(POINT *p, LONG x, LONG y)
+{
+    if (!p)
+        return FALSE;
+    p->x = x;
+    p->y = y;
+    return TRUE;
+}
+
 static void
 nk_gdip_fill_triangle(short x0, short y0, short x1,
     short y1, short x2, short y2, struct nk_color col)
 {
-    POINT points[] = {
-        { x0, y0 },
-        { x1, y1 },
-        { x2, y2 },
-    };
+    POINT points[3];
+
+    SetPoint(&points[0], x0, y0);
+    SetPoint(&points[1], x1, y1);
+    SetPoint(&points[2], x2, y2);
 
     GdipSetSolidFillColor(gdip.brush, convert_color(col));
     GdipFillPolygonI(gdip.memory, gdip.brush, points, 3, FillModeAlternate);
@@ -489,12 +499,13 @@ static void
 nk_gdip_stroke_triangle(short x0, short y0, short x1,
     short y1, short x2, short y2, unsigned short line_thickness, struct nk_color col)
 {
-    POINT points[] = {
-        { x0, y0 },
-        { x1, y1 },
-        { x2, y2 },
-        { x0, y0 },
-    };
+    POINT points[4];
+
+    SetPoint(&points[0], x0, y0);
+    SetPoint(&points[1], x1, y1);
+    SetPoint(&points[2], x2, y2);
+    SetPoint(&points[3], x0, y0);
+
     GdipSetPenWidth(gdip.pen, (REAL)line_thickness);
     GdipSetPenColor(gdip.pen, convert_color(col));
     GdipDrawPolygonI(gdip.memory, gdip.pen, points, 4);
@@ -575,7 +586,12 @@ nk_gdip_draw_text(short x, short y, unsigned short w, unsigned short h,
 {
     int wsize;
     WCHAR* wstr;
-    RectF layout = { (FLOAT)x, (FLOAT)y, (FLOAT)w, (FLOAT)h };
+    RectF layout;
+
+    layout.X = x;
+    layout.Y = y;
+    layout.Width = w;
+    layout.Height = h;
 
     if(!text || !font || !len) return;
 

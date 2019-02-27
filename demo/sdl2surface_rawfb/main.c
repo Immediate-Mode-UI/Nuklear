@@ -36,7 +36,7 @@ static int sdl_button_to_nk(int button)
     switch(button)
     {
         default:
-        //ft
+        /* ft */
         case SDL_BUTTON_LEFT:
             return NK_BUTTON_LEFT;
             break;
@@ -177,7 +177,7 @@ int main(int argc, char **argv)
         }
         nk_end(&(context->ctx));
 
-//        grid_demo(&(context->ctx));
+        /* grid_demo(&(context->ctx)); */
 
         nk_sdlsurface_render(context, clear, 1);
 

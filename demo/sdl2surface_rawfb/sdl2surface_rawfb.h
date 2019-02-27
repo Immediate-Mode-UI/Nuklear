@@ -845,7 +845,8 @@ nk_sdlsurface_init(SDL_Surface *fb, float fontSize)
     {
         SDL_assert(sdlsurface->font_tex->pitch == sdlsurface->font_tex->w * 4);
         uint32_t *fontPixels = (uint32_t *)sdlsurface->font_tex->pixels;
-        for (int i = 0; i < sdlsurface->font_tex->w * sdlsurface->font_tex->h; i++)
+        int i;
+        for (i = 0; i < sdlsurface->font_tex->w * sdlsurface->font_tex->h; i++)
         {
             uint32_t col = fontPixels[i];
             fontPixels[i] &= 0xFFFF00;
@@ -961,8 +962,8 @@ nk_sdlsurface_draw_text(const struct sdlsurface_context *sdlsurface,
 
         dst_rect.x = x + g.offset.x + rect.x;
         dst_rect.y = g.offset.y + rect.y;
-        dst_rect.w = ceilf(g.width);
-        dst_rect.h = ceilf(g.height);
+        dst_rect.w = ceil(g.width);
+        dst_rect.h = ceil(g.height);
 
         /* Use software rescaling to blit glyph from font_text to framebuffer */
         nk_sdlsurface_stretch_image(sdlsurface->fb, sdlsurface->font_tex, &dst_rect, &src_rect, &sdlsurface->scissors, &fg);

@@ -62,6 +62,13 @@ nk_create_image(struct nk_image * image, const char * frame_buffer, const int wi
 {
     if (image && frame_buffer && (width > 0) && (height > 0))
     {
+        const unsigned char * src = (const unsigned char *)frame_buffer;
+        INT row = ((width * 3 + 3) & ~3);
+        LPBYTE lpBuf, pb = NULL;
+        BITMAPINFO bi = { 0 };
+        HBITMAP hbm;
+        int v, i;
+
         image->w = width;
         image->h = height;
         image->region[0] = 0;
@@ -69,8 +76,6 @@ nk_create_image(struct nk_image * image, const char * frame_buffer, const int wi
         image->region[2] = width;
         image->region[3] = height;
         
-        INT row = ((width * 3 + 3) & ~3);
-        BITMAPINFO bi = { 0 };
         bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
         bi.bmiHeader.biWidth = width;
         bi.bmiHeader.biHeight = height;
@@ -79,15 +84,13 @@ nk_create_image(struct nk_image * image, const char * frame_buffer, const int wi
         bi.bmiHeader.biCompression = BI_RGB;
         bi.bmiHeader.biSizeImage = row * height;
         
-        LPBYTE lpBuf, pb = NULL;
-        HBITMAP hbm = CreateDIBSection(NULL, &bi, DIB_RGB_COLORS, (void**)&lpBuf, NULL, 0);
+        hbm = CreateDIBSection(NULL, &bi, DIB_RGB_COLORS, (void**)&lpBuf, NULL, 0);
         
         pb = lpBuf + row * height;
-        unsigned char * src = (unsigned char *)frame_buffer;
-        for (int v = 0; v<height; v++)
+        for (v = 0; v < height; v++)
         {
             pb -= row;
-            for (int i = 0; i < row; i += 3)
+            for (i = 0; i < row; i += 3)
             {
                 pb[i + 0] = src[0];
                 pb[i + 1] = src[1];
@@ -170,8 +173,9 @@ nk_gdi_stroke_rect(HDC dc, short x, short y, unsigned short w,
     unsigned short h, unsigned short r, unsigned short line_thickness, struct nk_color col)
 {
     COLORREF color = convert_color(col);
-
+    HGDIOBJ br;
     HPEN pen = NULL;
+
     if (line_thickness == 1) {
         SetDCPenColor(dc, color);
     } else {
@@ -179,7 +183,7 @@ nk_gdi_stroke_rect(HDC dc, short x, short y, unsigned short w,
         SelectObject(dc, pen);
     }
 
-    HGDIOBJ br = SelectObject(dc, GetStockObject(NULL_BRUSH));
+    br = SelectObject(dc, GetStockObject(NULL_BRUSH));
     if (r == 0) {
         Rectangle(dc, x, y, x + w, y + h);
     } else {
@@ -200,7 +204,8 @@ nk_gdi_fill_rect(HDC dc, short x, short y, unsigned short w,
     COLORREF color = convert_color(col);
 
     if (r == 0) {
-        RECT rect = { x, y, x + w, y + h };
+        RECT rect;
+        SetRect(&rect, x, y, x + w, y + h);
         SetBkColor(dc, color);
         ExtTextOutW(dc, 0, 0, ETO_OPAQUE, &rect, NULL, 0, NULL);
     } else {
@@ -262,16 +267,26 @@ nk_gdi_rect_multi_color(HDC dc, short x, short y, unsigned short w,
 
 }
 
+static BOOL
+SetPoint(POINT *p, LONG x, LONG y)
+{
+    if (!p)
+        return FALSE;
+    p->x = x;
+    p->y = y;
+    return TRUE;
+}
+
 static void
 nk_gdi_fill_triangle(HDC dc, short x0, short y0, short x1,
     short y1, short x2, short y2, struct nk_color col)
 {
     COLORREF color = convert_color(col);
-    POINT points[] = {
-        { x0, y0 },
-        { x1, y1 },
-        { x2, y2 },
-    };
+    POINT points[3];
+
+    SetPoint(&points[0], x0, y0);
+    SetPoint(&points[1], x1, y1);
+    SetPoint(&points[2], x2, y2);
 
     SetDCPenColor(dc, color);
     SetDCBrushColor(dc, color);
@@ -283,14 +298,14 @@ nk_gdi_stroke_triangle(HDC dc, short x0, short y0, short x1,
     short y1, short x2, short y2, unsigned short line_thickness, struct nk_color col)
 {
     COLORREF color = convert_color(col);
-    POINT points[] = {
-        { x0, y0 },
-        { x1, y1 },
-        { x2, y2 },
-        { x0, y0 },
-    };
-
+    POINT points[4];
     HPEN pen = NULL;
+
+    SetPoint(&points[0], x0, y0);
+    SetPoint(&points[1], x1, y1);
+    SetPoint(&points[2], x2, y2);
+    SetPoint(&points[3], x0, y0);
+
     if (line_thickness == 1) {
         SetDCPenColor(dc, color);
     } else {
@@ -414,14 +429,14 @@ nk_gdi_stroke_curve(HDC dc, struct nk_vec2i p1,
     unsigned short line_thickness, struct nk_color col)
 {
     COLORREF color = convert_color(col);
-    POINT p[] = {
-        { p1.x, p1.y },
-        { p2.x, p2.y },
-        { p3.x, p3.y },
-        { p4.x, p4.y },
-    };
-
+    POINT p[4];
     HPEN pen = NULL;
+
+    SetPoint(&p[0], p1.x, p1.y);
+    SetPoint(&p[1], p2.x, p2.y);
+    SetPoint(&p[2], p3.x, p3.y);
+    SetPoint(&p[3], p4.x, p4.y);
+
     if (line_thickness == 1) {
         SetDCPenColor(dc, color);
     } else {
@@ -462,7 +477,8 @@ static void
 nk_gdi_clear(HDC dc, struct nk_color col)
 {
     COLORREF color = convert_color(col);
-    RECT rect = { 0, 0, gdi.width, gdi.height };
+    RECT rect;
+    SetRect(&rect, 0, 0, gdi.width, gdi.height);
     SetBkColor(dc, color);
 
     ExtTextOutW(dc, 0, 0, ETO_OPAQUE, &rect, NULL, 0, NULL);
