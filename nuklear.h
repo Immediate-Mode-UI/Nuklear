@@ -26535,7 +26535,10 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
     if (!prev_state && edit->active) {
         const enum nk_text_edit_type type = (flags & NK_EDIT_MULTILINE) ?
             NK_TEXT_EDIT_MULTI_LINE: NK_TEXT_EDIT_SINGLE_LINE;
+        /* keep scroll position when re-activating edit widget */
+        struct nk_vec2 oldscrollbar = edit->scrollbar;
         nk_textedit_clear_state(edit, type, filter);
+        edit->scrollbar = oldscrollbar;
         if (flags & NK_EDIT_AUTO_SELECT)
             select_all = nk_true;
         if (flags & NK_EDIT_GOTO_END_ON_ACTIVATE) {
@@ -29094,6 +29097,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/05/27 (4.02.5) - Fix nk_do_edit: Keep scroll position when re-activating edit widget.
 /// - 2020/05/09 (4.02.4) - Fix nk_menubar height calculation bug
 /// - 2020/05/08 (4.02.3) - Fix missing stdarg.h with NK_INCLUDE_STANDARD_VARARGS
 /// - 2020/04/30 (4.02.2) - Fix nk_edit border drawing bug
