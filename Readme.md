@@ -1,6 +1,6 @@
 # Nuklear
 
-[![Build Status](https://travis-ci.org/vurtun/nuklear.svg)](https://travis-ci.org/vurtun/nuklear)
+[![Build Status](https://travis-ci.org/Immediate-Mode-UI/nuklear.svg)](https://travis-ci.org/Immediate-Mode-UI/nuklear)
 
 This is a minimal state immediate mode graphical user interface toolkit
 written in ANSI C and licensed under public domain. It was designed as a simple
@@ -25,7 +25,7 @@ render backends it only focuses on the actual UI.
 - No global or hidden state
 - Customizable library modules (you can compile and use only what you need)
 - Optional font baker and vertex buffer output
-- [Documentation](https://cdn.statically.io/gh/vurtun/nuklear/master/doc/nuklear.html)
+- [Documentation](https://cdn.statically.io/gh/Immediate-Mode-UI/nuklear/master/doc/nuklear.html)
 
 ## Building
 
