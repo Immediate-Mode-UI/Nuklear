@@ -56,8 +56,8 @@ This is very important not doing it either leads to compiler errors or even wors
 
 ```c
 /* init gui state */
-struct nk_context ctx;
-nk_init_fixed(&ctx, calloc(1, MAX_MEMORY), MAX_MEMORY, &font);
+struct nk_context *ctx = (nk_context*) malloc(sizeof(nk_context));
+nk_init_fixed(ctx, calloc(1, MAX_MEMORY), MAX_MEMORY, &font);
 
 enum { EASY, NORMAL, HARD };
 static int op = EASY, active[3]{ 1, 0, 1 }, selected{};
