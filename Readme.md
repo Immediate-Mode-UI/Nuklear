@@ -1,7 +1,5 @@
 # Nuklear
 
-[![Build Status](https://travis-ci.org/Immediate-Mode-UI/nuklear.svg)](https://travis-ci.org/Immediate-Mode-UI/nuklear)
-
 This is a minimal state immediate mode graphical user interface toolkit
 written in ANSI C and licensed under public domain. It was designed as a simple
 embeddable user interface for application and does not have any dependencies,
