@@ -5680,7 +5680,7 @@ template<typename T> struct nk_alignof{struct Big {T x; char c;}; enum {
 #endif
 
 #endif /* NK_NUKLEAR_H_ */
-
+
 #ifdef NK_IMPLEMENTATION
 
 #ifndef NK_INTERNAL_H
@@ -5715,9 +5715,11 @@ template<typename T> struct nk_alignof{struct Big {T x; char c;}; enum {
 
 #ifndef NK_MEMSET
 #define NK_MEMSET nk_memset
+#define NK_DEFAULT_MEMSET
 #endif
 #ifndef NK_MEMCPY
 #define NK_MEMCPY nk_memcopy
+#define NK_DEFAULT_MEMCPY
 #endif
 #ifndef NK_SQRT
 #define NK_SQRT nk_sqrt
@@ -6333,6 +6335,8 @@ NK_LIB int nk_is_upper(int c){return (c >= 'A' && c <= 'Z') || (c >= 0xC0 && c <
 NK_LIB int nk_to_upper(int c) {return (c >= 'a' && c <= 'z') ? (c - ('a' - 'A')) : c;}
 NK_LIB int nk_to_lower(int c) {return (c >= 'A' && c <= 'Z') ? (c - ('a' + 'A')) : c;}
 
+#ifdef NK_DEFAULT_MEMCPY
+
 NK_LIB void*
 nk_memcopy(void *dst0, const void *src0, nk_size length)
 {
@@ -6389,6 +6393,11 @@ nk_memcopy(void *dst0, const void *src0, nk_size length)
 done:
     return (dst0);
 }
+
+#endif
+
+#ifdef NK_DEFAULT_MEMSET
+
 NK_LIB void
 nk_memset(void *ptr, int c0, nk_size size)
 {
@@ -6440,6 +6449,9 @@ nk_memset(void *ptr, int c0, nk_size size)
     #undef nk_wsize
     #undef nk_wmask
 }
+
+#endif
+
 NK_LIB void
 nk_zero(void *ptr, nk_size size)
 {
@@ -9436,6 +9448,8 @@ nk_draw_list_alloc_vertices(struct nk_draw_list *list, nk_size count)
     if (!vtx) return 0;
     list->vertex_count += (unsigned int)count;
 
+	#ifndef NK_UINT_DRAW_INDEX
+
     /* This assert triggers because your are drawing a lot of stuff and nuklear
      * defined `nk_draw_index` as `nk_ushort` to safe space be default.
      *
@@ -9445,8 +9459,11 @@ nk_draw_list_alloc_vertices(struct nk_draw_list *list, nk_size count)
      * backend (OpenGL, DirectX, ...). For example in OpenGL for `glDrawElements`
      * instead of specifing `GL_UNSIGNED_SHORT` you have to define `GL_UNSIGNED_INT`.
      * Sorry for the inconvenience. */
-    if(sizeof(nk_draw_index)==2) NK_ASSERT((list->vertex_count < NK_USHORT_MAX &&
+    NK_ASSERT((list->vertex_count < NK_USHORT_MAX &&
         "To many verticies for 16-bit vertex indicies. Please read comment above on how to solve this problem"));
+
+	#endif
+
     return vtx;
 }
 NK_INTERN nk_draw_index*
@@ -25420,7 +25437,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 
 
 #endif /* NK_IMPLEMENTATION */
-
+
 /*
 /// ## License
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~none
@@ -25777,5 +25794,5 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 /// Barret for his amazing single header libraries which restored my faith
 /// in libraries and brought me to create some of my own. Finally Apoorva Joshi
 /// for his single header file packer.
-*/
+*/
 

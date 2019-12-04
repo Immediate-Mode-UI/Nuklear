@@ -30,9 +30,11 @@
 
 #ifndef NK_MEMSET
 #define NK_MEMSET nk_memset
+#define NK_DEFAULT_MEMSET
 #endif
 #ifndef NK_MEMCPY
 #define NK_MEMCPY nk_memcopy
+#define NK_DEFAULT_MEMCPY
 #endif
 #ifndef NK_SQRT
 #define NK_SQRT nk_sqrt
