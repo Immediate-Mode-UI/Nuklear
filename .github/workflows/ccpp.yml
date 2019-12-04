@@ -1,0 +1,19 @@
+name: C/C++ CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: make install
+      run: make install --directory example
+    - name: make
+      run: make  --directory example
+    - name: check
+      run: make check  --directory example
+    - name: distcheck
+      run: make distcheck  --directory example
