@@ -9,6 +9,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+    - name: setup pkgconfig
+      run: export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/
     - name: make install
       run: make install --directory example
     - name: make
