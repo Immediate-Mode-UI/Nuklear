@@ -9,15 +9,13 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-    - name: get glfw
-      run: git clone https://github.com/glfw/glfw --recurse
-    - name: setup pkgconfig
-      run: export PKG_CONFIG_PATH=/home/runner/work/Nuklear/Nuklear/glfw/src
-    - name: make install
-      run: make install --directory example
-    - name: make
-      run: make  --directory example
-    - name: check
-      run: make check  --directory example
-    - name: distcheck
-      run: make distcheck  --directory example
+    - name: apt-update
+      run: sudo apt-get update -qq
+    - name: apt get glfw
+      run: sudo apt-get install -y --no-install-recommends libglfw3 libglfw3-dev libglew-dev
+    - name: build opengl2
+      run: make -C demo/glfw_opengl2
+    - name: build opengl3
+      run: make -C demo/glfw_opengl3
+    - name: build example
+      run: make -C example
