@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: setup pkgconfig
-      run: export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/
+      run: pkg-config --cflags glfw3
     - name: make install
       run: make install --directory example
     - name: make
