@@ -1,5 +1,7 @@
 # Nuklear
 
+https://github.com/Immediate-Mode-UI/Nuklear/workflows/C%2FC++%20CI/badge.svg
+
 This is a minimal state immediate mode graphical user interface toolkit
 written in ANSI C and licensed under public domain. It was designed as a simple
 embeddable user interface for application and does not have any dependencies,
