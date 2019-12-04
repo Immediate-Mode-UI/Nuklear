@@ -61,7 +61,7 @@ nk_draw_symbol(struct nk_command_buffer *out, enum nk_symbol_type type,
 }
 NK_LIB int
 nk_button_behavior(nk_flags *state, struct nk_rect r,
-    const struct nk_input *i, enum nk_button_behavior behavior)
+    struct nk_input *i, enum nk_button_behavior behavior)
 {
     int ret = 0;
     nk_widget_state_reset(state);
@@ -78,6 +78,8 @@ nk_button_behavior(nk_flags *state, struct nk_rect r,
 #else
                 nk_input_is_mouse_pressed(i, NK_BUTTON_LEFT);
 #endif
+			if (ret)
+				i->mouse.clicked = 1;
         }
     }
     if (*state & NK_WIDGET_STATE_HOVER && !nk_input_is_mouse_prev_hovering_rect(i, r))
@@ -108,7 +110,7 @@ nk_draw_button(struct nk_command_buffer *out,
 }
 NK_LIB int
 nk_do_button(nk_flags *state, struct nk_command_buffer *out, struct nk_rect r,
-    const struct nk_style_button *style, const struct nk_input *in,
+    const struct nk_style_button *style, struct nk_input *in,
     enum nk_button_behavior behavior, struct nk_rect *content)
 {
     struct nk_rect bounds;
@@ -158,7 +160,7 @@ NK_LIB int
 nk_do_button_text(nk_flags *state,
     struct nk_command_buffer *out, struct nk_rect bounds,
     const char *string, int len, nk_flags align, enum nk_button_behavior behavior,
-    const struct nk_style_button *style, const struct nk_input *in,
+    const struct nk_style_button *style, struct nk_input *in,
     const struct nk_user_font *font)
 {
     struct nk_rect content;
@@ -204,7 +206,7 @@ NK_LIB int
 nk_do_button_symbol(nk_flags *state,
     struct nk_command_buffer *out, struct nk_rect bounds,
     enum nk_symbol_type symbol, enum nk_button_behavior behavior,
-    const struct nk_style_button *style, const struct nk_input *in,
+    const struct nk_style_button *style, struct nk_input *in,
     const struct nk_user_font *font)
 {
     int ret;
@@ -235,7 +237,7 @@ NK_LIB int
 nk_do_button_image(nk_flags *state,
     struct nk_command_buffer *out, struct nk_rect bounds,
     struct nk_image img, enum nk_button_behavior b,
-    const struct nk_style_button *style, const struct nk_input *in)
+    const struct nk_style_button *style, struct nk_input *in)
 {
     int ret;
     struct nk_rect content;
@@ -295,7 +297,7 @@ nk_do_button_text_symbol(nk_flags *state,
     struct nk_command_buffer *out, struct nk_rect bounds,
     enum nk_symbol_type symbol, const char *str, int len, nk_flags align,
     enum nk_button_behavior behavior, const struct nk_style_button *style,
-    const struct nk_user_font *font, const struct nk_input *in)
+    const struct nk_user_font *font, struct nk_input *in)
 {
     int ret;
     struct nk_rect tri = {0,0,0,0};
@@ -352,7 +354,7 @@ nk_do_button_text_image(nk_flags *state,
     struct nk_command_buffer *out, struct nk_rect bounds,
     struct nk_image img, const char* str, int len, nk_flags align,
     enum nk_button_behavior behavior, const struct nk_style_button *style,
-    const struct nk_user_font *font, const struct nk_input *in)
+    const struct nk_user_font *font, struct nk_input *in)
 {
     int ret;
     struct nk_rect icon;
@@ -434,7 +436,7 @@ nk_button_text_styled(struct nk_context *ctx,
 {
     struct nk_window *win;
     struct nk_panel *layout;
-    const struct nk_input *in;
+    struct nk_input *in;
 
     struct nk_rect bounds;
     enum nk_widget_layout_states state;
@@ -476,7 +478,7 @@ nk_button_color(struct nk_context *ctx, struct nk_color color)
 {
     struct nk_window *win;
     struct nk_panel *layout;
-    const struct nk_input *in;
+    struct nk_input *in;
     struct nk_style_button button;
 
     int ret = 0;
@@ -512,7 +514,7 @@ nk_button_symbol_styled(struct nk_context *ctx,
 {
     struct nk_window *win;
     struct nk_panel *layout;
-    const struct nk_input *in;
+    struct nk_input *in;
 
     struct nk_rect bounds;
     enum nk_widget_layout_states state;
@@ -544,7 +546,7 @@ nk_button_image_styled(struct nk_context *ctx, const struct nk_style_button *sty
 {
     struct nk_window *win;
     struct nk_panel *layout;
-    const struct nk_input *in;
+    struct nk_input *in;
 
     struct nk_rect bounds;
     enum nk_widget_layout_states state;
@@ -578,7 +580,7 @@ nk_button_symbol_text_styled(struct nk_context *ctx,
 {
     struct nk_window *win;
     struct nk_panel *layout;
-    const struct nk_input *in;
+    struct nk_input *in;
 
     struct nk_rect bounds;
     enum nk_widget_layout_states state;
@@ -625,7 +627,7 @@ nk_button_image_text_styled(struct nk_context *ctx,
 {
     struct nk_window *win;
     struct nk_panel *layout;
-    const struct nk_input *in;
+    struct nk_input *in;
 
     struct nk_rect bounds;
     enum nk_widget_layout_states state;
