@@ -9,8 +9,10 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+    - name: get glfw
+      run: git clone https://github.com/glfw/glfw --recurse
     - name: setup pkgconfig
-      run: pkg-config --cflags glfw3
+      run: export PKG_CONFIG_PATH=/home/runner/work/Nuklear/Nuklear/glfw/src
     - name: make install
       run: make install --directory example
     - name: make
