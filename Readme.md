@@ -56,8 +56,8 @@ This is very important not doing it either leads to compiler errors or even wors
 
 ```c
 /* init gui state */
-struct nk_context *ctx = (nk_context*) malloc(sizeof(nk_context));
-nk_init_fixed(ctx, calloc(1, MAX_MEMORY), MAX_MEMORY, &font);
+struct nk_context ctx;
+nk_init_fixed(&ctx, calloc(1, MAX_MEMORY), MAX_MEMORY, &font);
 
 enum { EASY, NORMAL, HARD };
 static int op = EASY, active[3]{ 1, 0, 1 }, selected{};
@@ -72,40 +72,40 @@ static char const * biomes[] = {
 
 static int biomeCount = int(sizeof(biomes) / sizeof(biomes[0]));
 
-if (nk_begin(ctx, "Show", nk_rect(50, 50, 300, 350),
+if (nk_begin(&ctx, "Show", nk_rect(50, 50, 300, 350),
              NK_WINDOW_BORDER|NK_WINDOW_SCALABLE|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE)) {
 
 	// fixed widget pixel width
-	nk_layout_row_static(ctx, 30, 150, 1);
-	if (nk_button_label(ctx, "Play"))
+	nk_layout_row_static(&ctx, 30, 150, 1);
+	if (nk_button_label(&ctx, "Play"))
 		myPlayFunction();
 
 	// fixed widget window ratio width
-	nk_layout_row_dynamic(ctx, 30, 2);
-	if (nk_option_label(ctx, "Easy", op == EASY)) op = EASY;
-	if (nk_option_label(ctx, "Normal", op == NORMAL)) op = NORMAL;
-	if (nk_option_label(ctx, "Hard", op == HARD)) op = HARD;
+	nk_layout_row_dynamic(&ctx, 30, 2);
+	if (nk_option_label(&ctx, "Easy", op == EASY)) op = EASY;
+	if (nk_option_label(&ctx, "Normal", op == NORMAL)) op = NORMAL;
+	if (nk_option_label(&ctx, "Hard", op == HARD)) op = HARD;
 
 	nk_layout_row_dynamic(ctx, 30, 2);
-	nk_checkbox_label(ctx, "Silver", active);
-	nk_checkbox_label(ctx, "Bronze", active + 1);
-	nk_checkbox_label(ctx, "Gold", active + 2);
+	nk_checkbox_label(&ctx, "Silver", active);
+	nk_checkbox_label(&ctx, "Bronze", active + 1);
+	nk_checkbox_label(&ctx, "Gold", active + 2);
 
-	nk_layout_row_dynamic(ctx, 30, 2);
-	nk_combobox(ctx, names, biome_count, &selected, 30, nk_vec2(150, 200));
+	nk_layout_row_dynamic(&ctx, 30, 2);
+	nk_combobox(&ctx, names, biome_count, &selected, 30, nk_vec2(150, 200));
 
 	// custom widget pixel width
-	nk_layout_row_begin(ctx, NK_STATIC, 30, 2);
+	nk_layout_row_begin(&ctx, NK_STATIC, 30, 2);
 	{
-		nk_layout_row_push(ctx, 50);
-		nk_label(ctx, "Volume:", NK_TEXT_LEFT);
-		nk_layout_row_push(ctx, 110);
-		nk_slider_float(ctx, 0, &value, 1.0f, 0.1f);
-		nk_progress(ctx, &test, 100, 1);
+		nk_layout_row_push(&ctx, 50);
+		nk_label(&ctx, "Volume:", NK_TEXT_LEFT);
+		nk_layout_row_push(&ctx, 110);
+		nk_slider_float(&ctx, 0, &value, 1.0f, 0.1f);
+		nk_progress(&ctx, &test, 100, 1);
 	}
-	nk_layout_row_end(ctx);
+	nk_layout_row_end(&ctx);
 }
-nk_end(ctx);
+nk_end(&ctx);
 ```
 ![example](img/test%20window.png)
 
