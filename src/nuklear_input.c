@@ -23,6 +23,11 @@ nk_input_begin(struct nk_context *ctx)
     in->mouse.prev.y = in->mouse.pos.y;
     in->mouse.delta.x = 0;
     in->mouse.delta.y = 0;
+
+	#if defined(NK_KEYSTATE_BASED_INPUT) || defined(NK_BUTTON_TRIGGER_ON_RELEASE)
+		in->mouse.clicked = 0;
+	#endif
+
     for (i = 0; i < NK_KEY_MAX; i++)
         in->keyboard.keys[i].clicked = 0;
 }
@@ -79,6 +84,14 @@ nk_input_button(struct nk_context *ctx, enum nk_buttons id, int x, int y, int do
     if (in->mouse.buttons[id].down == down) return;
 
     btn = &in->mouse.buttons[id];
+
+	#ifndef NK_BUTTON_TRIGGER_ON_RELEASE
+
+	if(id == NK_BUTTON_LEFT && !down)
+		in->mouse.clicked = 0;
+
+	#endif
+
     btn->clicked_pos.x = (float)x;
     btn->clicked_pos.y = (float)y;
     btn->down = down;
@@ -141,7 +154,7 @@ nk_input_has_mouse_click_in_rect(const struct nk_input *i, enum nk_buttons id,
     struct nk_rect b)
 {
     const struct nk_mouse_button *btn;
-    if (!i) return nk_false;
+    if (!i || i->mouse.clicked) return nk_false;
     btn = &i->mouse.buttons[id];
     if (!NK_INBOX(btn->clicked_pos.x,btn->clicked_pos.y,b.x,b.y,b.w,b.h))
         return nk_false;
@@ -215,7 +228,7 @@ nk_input_is_mouse_pressed(const struct nk_input *i, enum nk_buttons id)
     const struct nk_mouse_button *b;
     if (!i) return nk_false;
     b = &i->mouse.buttons[id];
-    if (b->down && b->clicked)
+    if (b->down && b->clicked && !i->mouse.clicked)
         return nk_true;
     return nk_false;
 }
@@ -223,7 +236,7 @@ NK_API int
 nk_input_is_mouse_released(const struct nk_input *i, enum nk_buttons id)
 {
     if (!i) return nk_false;
-    return (!i->mouse.buttons[id].down && i->mouse.buttons[id].clicked);
+    return (!i->mouse.buttons[id].down && !(i->mouse.buttons[id].clicked && !i->mouse.clicked));
 }
 NK_API int
 nk_input_is_key_pressed(const struct nk_input *i, enum nk_keys key)
