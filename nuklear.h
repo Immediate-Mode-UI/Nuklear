@@ -5680,7 +5680,8 @@ template<typename T> struct nk_alignof{struct Big {T x; char c;}; enum {
 #endif
 
 #endif /* NK_NUKLEAR_H_ */
-
+
+
 #ifdef NK_IMPLEMENTATION
 
 #ifndef NK_INTERNAL_H
@@ -5715,11 +5716,11 @@ template<typename T> struct nk_alignof{struct Big {T x; char c;}; enum {
 
 #ifndef NK_MEMSET
 #define NK_MEMSET nk_memset
-#define NK_DEFAULT_MEMSET
+#define NK_MEMSET_BUILTIN
 #endif
 #ifndef NK_MEMCPY
 #define NK_MEMCPY nk_memcopy
-#define NK_DEFAULT_MEMCPY
+#define NK_MEMCPY_BUILTIN
 #endif
 #ifndef NK_SQRT
 #define NK_SQRT nk_sqrt
@@ -6335,7 +6336,7 @@ NK_LIB int nk_is_upper(int c){return (c >= 'A' && c <= 'Z') || (c >= 0xC0 && c <
 NK_LIB int nk_to_upper(int c) {return (c >= 'a' && c <= 'z') ? (c - ('a' - 'A')) : c;}
 NK_LIB int nk_to_lower(int c) {return (c >= 'A' && c <= 'Z') ? (c - ('a' + 'A')) : c;}
 
-#ifdef NK_DEFAULT_MEMCPY
+#ifdef NK_MEMCPY_BUILTIN
 
 NK_LIB void*
 nk_memcopy(void *dst0, const void *src0, nk_size length)
@@ -6396,7 +6397,7 @@ done:
 
 #endif
 
-#ifdef NK_DEFAULT_MEMSET
+#ifdef NK_MEMSET_BUILTIN
 
 NK_LIB void
 nk_memset(void *ptr, int c0, nk_size size)
@@ -25437,7 +25438,8 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 
 
 #endif /* NK_IMPLEMENTATION */
-
+
+
 /*
 /// ## License
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~none
@@ -25794,5 +25796,6 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 /// Barret for his amazing single header libraries which restored my faith
 /// in libraries and brought me to create some of my own. Finally Apoorva Joshi
 /// for his single header file packer.
-*/
+*/
+
 
