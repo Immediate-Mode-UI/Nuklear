@@ -78,8 +78,8 @@ nk_button_behavior(nk_flags *state, struct nk_rect r,
 #else
                 nk_input_is_mouse_pressed(i, NK_BUTTON_LEFT);
 #endif
-			if (ret)
-				i->mouse.clicked = 1;
+            if (ret)
+                i->mouse.clicked = 1;
         }
     }
     if (*state & NK_WIDGET_STATE_HOVER && !nk_input_is_mouse_prev_hovering_rect(i, r))
