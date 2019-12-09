@@ -25507,6 +25507,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2019/12/05 (4.01.7) - Fixed radio buttons' style.
 /// - 2019/12/05 (4.01.6) - Fixed click cascading through multiple buttons; it should only click the upper button.
 /// - 2019/12/05 (4.01.5) - Strict c++17 now compiles: only declaring memset, memcpy if they are used.
 ///                        Only asserting index range if ushorts are used for indices.
