@@ -5680,8 +5680,7 @@ template<typename T> struct nk_alignof{struct Big {T x; char c;}; enum {
 #endif
 
 #endif /* NK_NUKLEAR_H_ */
-
-
+
 #ifdef NK_IMPLEMENTATION
 
 #ifndef NK_INTERNAL_H
@@ -25438,8 +25437,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 
 
 #endif /* NK_IMPLEMENTATION */
-
-
+
 /*
 /// ## License
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~none
@@ -25494,6 +25492,9 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2019/12/05 (4.01.5) - Strict c++17 now compiles: only declaring memset, memcpy if they are used.
+///                        Only asserting index range if ushorts are used for indices.
+///                        Made paq.sh identical to paq.bat (outputs to nuklear.h).
 /// - 2019/10/09 (4.01.4) - Fix bug for autoscrolling in nk_do_edit
 /// - 2019/09/20 (4.01.3) - Fixed a bug wherein combobox cannot be closed by clicking the header
 ///                        when NK_BUTTON_TRIGGER_ON_RELEASE is defined.
@@ -25796,6 +25797,5 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 /// Barret for his amazing single header libraries which restored my faith
 /// in libraries and brought me to create some of my own. Finally Apoorva Joshi
 /// for his single header file packer.
-*/
-
+*/
 
