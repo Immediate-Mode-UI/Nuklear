@@ -24,9 +24,9 @@ nk_input_begin(struct nk_context *ctx)
     in->mouse.delta.x = 0;
     in->mouse.delta.y = 0;
 
-	#if defined(NK_KEYSTATE_BASED_INPUT) || defined(NK_BUTTON_TRIGGER_ON_RELEASE)
-		in->mouse.clicked = 0;
-	#endif
+    #if defined(NK_KEYSTATE_BASED_INPUT) || defined(NK_BUTTON_TRIGGER_ON_RELEASE)
+        in->mouse.clicked = 0;
+    #endif
 
     for (i = 0; i < NK_KEY_MAX; i++)
         in->keyboard.keys[i].clicked = 0;
@@ -85,12 +85,12 @@ nk_input_button(struct nk_context *ctx, enum nk_buttons id, int x, int y, int do
 
     btn = &in->mouse.buttons[id];
 
-	#ifndef NK_BUTTON_TRIGGER_ON_RELEASE
+    #ifndef NK_BUTTON_TRIGGER_ON_RELEASE
 
-	if(id == NK_BUTTON_LEFT && !down)
-		in->mouse.clicked = 0;
+    if(id == NK_BUTTON_LEFT && !down)
+        in->mouse.clicked = 0;
 
-	#endif
+    #endif
 
     btn->clicked_pos.x = (float)x;
     btn->clicked_pos.y = (float)y;
