@@ -5819,8 +5819,15 @@ NK_LIB int nk_is_lower(int c);
 NK_LIB int nk_is_upper(int c);
 NK_LIB int nk_to_upper(int c);
 NK_LIB int nk_to_lower(int c);
+
+#ifdef NK_MEMCPY_BUILTIN
 NK_LIB void* nk_memcopy(void *dst, const void *src, nk_size n);
+#endif
+
+#ifdef NK_MEMSET_BUILTIN
 NK_LIB void nk_memset(void *ptr, int c0, nk_size size);
+#endif
+
 NK_LIB void nk_zero(void *ptr, nk_size size);
 NK_LIB char *nk_itoa(char *s, long n);
 NK_LIB int nk_string_float_limit(char *string, int prec);
