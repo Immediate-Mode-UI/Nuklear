@@ -5623,7 +5623,8 @@ struct nk_context {
 #define NK_INBOX(px, py, x, y, w, h)\
     (NK_BETWEEN(px,x,x+w) && NK_BETWEEN(py,y,y+h))
 #define NK_INTERSECT(x0, y0, w0, h0, x1, y1, w1, h1) \
-    (!(((x1 > (x0 + w0)) || ((x1 + w1) < x0) || (y1 > (y0 + h0)) || (y1 + h1) < y0)))
+    ((x1 < (x0 + w0)) && (x0 < (x1 + w1)) && \
+    (y1 < (y0 + h0)) && (y0 < (y1 + h1)))
 #define NK_CONTAINS(x, y, w, h, bx, by, bw, bh)\
     (NK_INBOX(x,y, bx, by, bw, bh) && NK_INBOX(x+w,y+h, bx, by, bw, bh))
 
@@ -5681,7 +5682,7 @@ template<typename T> struct nk_alignof{struct Big {T x; char c;}; enum {
 #endif
 
 #endif /* NK_NUKLEAR_H_ */
-
+
 #ifdef NK_IMPLEMENTATION
 
 #ifndef NK_INTERNAL_H
@@ -5819,8 +5820,15 @@ NK_LIB int nk_is_lower(int c);
 NK_LIB int nk_is_upper(int c);
 NK_LIB int nk_to_upper(int c);
 NK_LIB int nk_to_lower(int c);
+
+#ifdef NK_MEMCPY_BUILTIN
 NK_LIB void* nk_memcopy(void *dst, const void *src, nk_size n);
+#endif
+
+#ifdef NK_MEMSET_BUILTIN
 NK_LIB void nk_memset(void *ptr, int c0, nk_size size);
+#endif
+
 NK_LIB void nk_zero(void *ptr, nk_size size);
 NK_LIB char *nk_itoa(char *s, long n);
 NK_LIB int nk_string_float_limit(char *string, int prec);
@@ -25452,7 +25460,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 
 
 #endif /* NK_IMPLEMENTATION */
-
+
 /*
 /// ## License
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~none
@@ -25507,10 +25515,11 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
-/// - 2019/12/05 (4.01.6) - Fixed click cascading through multiple buttons; it should only click the upper button.
-/// - 2019/12/05 (4.01.5) - Strict c++17 now compiles: only declaring memset, memcpy if they are used.
+/// - 2019/12/05 (4.01.7) - Fixed click cascading through multiple buttons; it should only click the upper button.
+/// - 2019/12/11 (4.01.6) - Strict c++17 now compiles: only declaring memset, memcpy if they are used.
 ///                        Only asserting index range if ushorts are used for indices.
 ///                        Made paq.sh identical to paq.bat (outputs to nuklear.h).
+/// - 2019/12/10 (4.01.5) - Fix off-by-one error in NK_INTERSECT
 /// - 2019/10/09 (4.01.4) - Fix bug for autoscrolling in nk_do_edit
 /// - 2019/09/20 (4.01.3) - Fixed a bug wherein combobox cannot be closed by clicking the header
 ///                        when NK_BUTTON_TRIGGER_ON_RELEASE is defined.
@@ -25813,5 +25822,5 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 /// Barret for his amazing single header libraries which restored my faith
 /// in libraries and brought me to create some of my own. Finally Apoorva Joshi
 /// for his single header file packer.
-*/
+*/
 
