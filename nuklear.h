@@ -5681,7 +5681,7 @@ template<typename T> struct nk_alignof{struct Big {T x; char c;}; enum {
 #endif
 
 #endif /* NK_NUKLEAR_H_ */
-
+
 #ifdef NK_IMPLEMENTATION
 
 #ifndef NK_INTERNAL_H
@@ -25445,7 +25445,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 
 
 #endif /* NK_IMPLEMENTATION */
-
+
 /*
 /// ## License
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~none
@@ -25806,5 +25806,5 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 /// Barret for his amazing single header libraries which restored my faith
 /// in libraries and brought me to create some of my own. Finally Apoorva Joshi
 /// for his single header file packer.
-*/
+*/
 
