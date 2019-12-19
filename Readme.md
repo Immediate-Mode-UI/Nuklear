@@ -1,6 +1,6 @@
 # Nuklear
 
-![](https://github.com/Immediate-Mode-UI/Nuklear/workflows/C%2FC++%20CI/badge.svg )
+![![](https://github.com/Immediate-Mode-UI/Nuklear/workflows/C%2FC++%20CI/badge.svg )](https://github.com/Immediate-Mode-UI/Nuklear/actions)
 
 This is a minimal-state, immediate-mode graphical user interface toolkit
 written in ANSI C and licensed under public domain. It was designed as a simple
