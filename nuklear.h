@@ -1475,8 +1475,8 @@ enum nk_panel_flags {
 /// __bounds__  | Initial position and window size. However if you do not define `NK_WINDOW_SCALABLE` or `NK_WINDOW_MOVABLE` you can set window position and size every frame
 /// __flags__   | Window flags defined in the nk_panel_flags section with a number of different window behaviors
 ///
-/// Returns `true(1)` if the window can be filled up with widgets from this point
-/// until `nk_end` or `false(0)` otherwise for example if minimized
+/// Returns a non-zero window pointer if the window can be filled up with widgets from this point
+/// until `nk_end` or `nullptr(0)` otherwise for example if minimized
 */
 NK_API struct nk_window* nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
 /*/// #### nk_begin_titled
@@ -1495,10 +1495,75 @@ NK_API struct nk_window* nk_begin(struct nk_context *ctx, const char *title, str
 /// __bounds__  | Initial position and window size. However if you do not define `NK_WINDOW_SCALABLE` or `NK_WINDOW_MOVABLE` you can set window position and size every frame
 /// __flags__   | Window flags defined in the nk_panel_flags section with a number of different window behaviors
 ///
-/// Returns `true(1)` if the window can be filled up with widgets from this point
-/// until `nk_end` or `false(0)` otherwise for example if minimized
+/// Returns a non-zero window pointer if the window can be filled up with widgets from this point
+/// until `nk_end` or `nullptr(0)` otherwise for example if minimized
 */
 NK_API struct nk_window* nk_begin_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags);
+/*/// #### nk_add_window
+/// Adds a new window; needs to be called every frame for every
+/// window (unless hidden) or otherwise the window gets removed
+/// it always returns a window pointer, even if the window is hidden or removed
+/// this function allows the application to query state and perform the necessary updates
+/// to get the same functionality as nk_begin, you should query the following states:
+///	- NK_WINDOW_CLOSED
+/// - NK_WINDOW_HIDDEN
+/// - NK_WINDOW_MINIMIZED
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// int nk_add_window(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct
+/// __title__   | Window title and identifier. Needs to be persistent over frames to identify the window
+/// __bounds__  | Initial position and window size. However if you do not define `NK_WINDOW_SCALABLE` or `NK_WINDOW_MOVABLE` you can set window position and size every frame
+/// __flags__   | Window flags defined in the nk_panel_flags section with a number of different window behaviors
+///
+/// Returns a non-zero window pointer if the window can be created
+/// call nk_window_has_contents(ctx, window) to see if window can be filled up with widgets from this point
+*/
+NK_API struct nk_window* nk_add_window(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
+/*/// #### nk_add_window_titled
+/// Extended window start with separated title and identifier to allow multiple
+/// windows with same title but not name
+/// it always returns a window pointer, even if the window is hidden or removed
+/// this function allows the application to query state and perform the necessary updates
+/// to get the same functionality as nk_begin, you should query the following states:
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// int nk_add_window_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct
+/// __name__    | Window identifier. Needs to be persistent over frames to identify the window
+/// __title__   | Window title displayed inside header if flag `NK_WINDOW_TITLE` or either `NK_WINDOW_CLOSABLE` or `NK_WINDOW_MINIMIZED` was set
+/// __bounds__  | Initial position and window size. However if you do not define `NK_WINDOW_SCALABLE` or `NK_WINDOW_MOVABLE` you can set window position and size every frame
+/// __flags__   | Window flags defined in the nk_panel_flags section with a number of different window behaviors
+///
+/// Returns a non-zero window pointer if the window can be created
+/// call nk_window_has_contents(window) to see if window can be filled up with widgets from this point
+*/
+NK_API struct nk_window* nk_add_window_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags);
+/*/// #### nk_window_has_contents
+/// Checks if the window is ready to be filled up
+/// generally used after nk_add_window(_titled)
+/// to check if window can be filled up with widgets from this point
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// int nk_window_has_contents(struct nk_window *window);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter      | Description
+/// ---------------|-----------------------------------------------------------
+/// __nk_window__  | The window to check
+///
+/// Returns true(1) if the window's contents are visible
+/// false(0) otherwise
+*/
+NK_API int nk_window_has_contents(struct nk_window *window);
 /*/// #### nk_end
 /// Needs to be called at the end of the window building process to process scaling, scrollbars and general cleanup.
 /// All widget calls after this functions will result in asserts or no state changes
@@ -16455,6 +16520,185 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
 
 	if (!nk_panel_begin(ctx, title, NK_PANEL_WINDOW))
 		return 0;
+
+    win->layout->offset_x = &win->scrollbar.x;
+    win->layout->offset_y = &win->scrollbar.y;
+    return win;
+}
+NK_API struct nk_window*
+nk_add_window(struct nk_context *ctx, const char *title,
+    struct nk_rect bounds, nk_flags flags)
+{
+    return nk_add_window_titled(ctx, title, title, bounds, flags);
+}
+NK_API int
+nk_window_has_contents(struct nk_window *window)
+{
+	NK_ASSERT(window);
+    if (!window)
+        return 0;
+    
+    return !((window->flags & NK_WINDOW_MINIMIZED) || (window->flags & NK_WINDOW_CLOSED) || (window->flags & NK_WINDOW_HIDDEN));
+}
+NK_API struct nk_window*
+nk_add_window_titled(struct nk_context *ctx, const char *name, const char *title,
+    struct nk_rect bounds, nk_flags flags)
+{
+    struct nk_window *win;
+    struct nk_style *style;
+    nk_hash name_hash;
+    int name_len;
+
+    NK_ASSERT(ctx);
+    NK_ASSERT(name);
+    NK_ASSERT(title);
+    NK_ASSERT(ctx->style.font && ctx->style.font->width && "if this triggers you forgot to add a font");
+    NK_ASSERT(!ctx->current && "if this triggers you missed a `nk_end` call");
+    if (!ctx || ctx->current || !title || !name)
+        return 0;
+
+    /* find or create window */
+    style = &ctx->style;
+    name_len = (int)nk_strlen(name);
+    name_hash = nk_murmur_hash(name, (int)name_len, NK_WINDOW_TITLE);
+    win = nk_find_window(ctx, name_hash, name);
+    if (!win) {
+        /* create new window */
+        nk_size name_length = (nk_size)name_len;
+        win = (struct nk_window*)nk_create_window(ctx);
+        NK_ASSERT(win);
+        if (!win) return 0;
+
+        if (flags & NK_WINDOW_BACKGROUND)
+            nk_insert_window(ctx, win, NK_INSERT_FRONT);
+        else nk_insert_window(ctx, win, NK_INSERT_BACK);
+        nk_command_buffer_init(&win->buffer, &ctx->memory, NK_CLIPPING_ON);
+
+        win->flags = flags;
+        win->bounds = bounds;
+        win->name = name_hash;
+        name_length = NK_MIN(name_length, NK_WINDOW_MAX_NAME-1);
+        NK_MEMCPY(win->name_string, name, name_length);
+        win->name_string[name_length] = 0;
+        win->popup.win = 0;
+        if (!ctx->active)
+            ctx->active = win;
+    } else {
+        /* update window */
+        win->flags &= ~(nk_flags)(NK_WINDOW_PRIVATE-1);
+        win->flags |= flags;
+        if (!(win->flags & (NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE)))
+            win->bounds = bounds;
+        /* If this assert triggers you either:
+         *
+         * I.) Have more than one window with the same name or
+         * II.) You forgot to actually draw the window.
+         *      More specific you did not call `nk_clear` (nk_clear will be
+         *      automatically called for you if you are using one of the
+         *      provided demo backends). */
+        NK_ASSERT(win->seq != ctx->seq);
+        win->seq = ctx->seq;
+        if (!ctx->active && !(win->flags & NK_WINDOW_HIDDEN)) {
+            ctx->active = win;
+            ctx->end = win;
+        }
+    }
+    if (win->flags & NK_WINDOW_HIDDEN) {
+        ctx->current = win;
+        win->layout = 0;
+        return win;
+    } else nk_start(ctx, win);
+
+    /* window overlapping */
+    if (!(win->flags & NK_WINDOW_HIDDEN) && !(win->flags & NK_WINDOW_NO_INPUT))
+    {
+        int inpanel, ishovered;
+        struct nk_window *iter = win;
+        float h = ctx->style.font->height + 2.0f * style->window.header.padding.y +
+            (2.0f * style->window.header.label_padding.y);
+        struct nk_rect win_bounds = (!(win->flags & NK_WINDOW_MINIMIZED))?
+            win->bounds: nk_rect(win->bounds.x, win->bounds.y, win->bounds.w, h);
+
+        /* activate window if hovered and no other window is overlapping this window */
+        inpanel = nk_input_has_mouse_click_down_in_rect(&ctx->input, NK_BUTTON_LEFT, win_bounds, nk_true);
+        inpanel = inpanel && ctx->input.mouse.buttons[NK_BUTTON_LEFT].clicked;
+        ishovered = nk_input_is_mouse_hovering_rect(&ctx->input, win_bounds);
+        if ((win != ctx->active) && ishovered && !ctx->input.mouse.buttons[NK_BUTTON_LEFT].down) {
+            iter = win->next;
+            while (iter) {
+                struct nk_rect iter_bounds = (!(iter->flags & NK_WINDOW_MINIMIZED))?
+                    iter->bounds: nk_rect(iter->bounds.x, iter->bounds.y, iter->bounds.w, h);
+                if (NK_INTERSECT(win_bounds.x, win_bounds.y, win_bounds.w, win_bounds.h,
+                    iter_bounds.x, iter_bounds.y, iter_bounds.w, iter_bounds.h) &&
+                    (!(iter->flags & NK_WINDOW_HIDDEN)))
+                    break;
+
+                if (iter->popup.win && iter->popup.active && !(iter->flags & NK_WINDOW_HIDDEN) &&
+                    NK_INTERSECT(win->bounds.x, win_bounds.y, win_bounds.w, win_bounds.h,
+                    iter->popup.win->bounds.x, iter->popup.win->bounds.y,
+                    iter->popup.win->bounds.w, iter->popup.win->bounds.h))
+                    break;
+                iter = iter->next;
+            }
+        }
+
+        /* activate window if clicked */
+        if (iter && inpanel && (win != ctx->end)) {
+            iter = win->next;
+            while (iter) {
+                /* try to find a panel with higher priority in the same position */
+                struct nk_rect iter_bounds = (!(iter->flags & NK_WINDOW_MINIMIZED))?
+                iter->bounds: nk_rect(iter->bounds.x, iter->bounds.y, iter->bounds.w, h);
+                if (NK_INBOX(ctx->input.mouse.pos.x, ctx->input.mouse.pos.y,
+                    iter_bounds.x, iter_bounds.y, iter_bounds.w, iter_bounds.h) &&
+                    !(iter->flags & NK_WINDOW_HIDDEN))
+                    break;
+                if (iter->popup.win && iter->popup.active && !(iter->flags & NK_WINDOW_HIDDEN) &&
+                    NK_INTERSECT(win_bounds.x, win_bounds.y, win_bounds.w, win_bounds.h,
+                    iter->popup.win->bounds.x, iter->popup.win->bounds.y,
+                    iter->popup.win->bounds.w, iter->popup.win->bounds.h))
+                    break;
+                iter = iter->next;
+            }
+        }
+        if (iter && !(win->flags & NK_WINDOW_ROM) && (win->flags & NK_WINDOW_BACKGROUND)) {
+            win->flags |= (nk_flags)NK_WINDOW_ROM;
+            iter->flags &= ~(nk_flags)NK_WINDOW_ROM;
+            ctx->active = iter;
+            if (!(iter->flags & NK_WINDOW_BACKGROUND)) {
+                /* current window is active in that position so transfer to top
+                 * at the highest priority in stack */
+                nk_remove_window(ctx, iter);
+                nk_insert_window(ctx, iter, NK_INSERT_BACK);
+            }
+        } else {
+            if (!iter && ctx->end != win) {
+                if (!(win->flags & NK_WINDOW_BACKGROUND)) {
+                    /* current window is active in that position so transfer to top
+                     * at the highest priority in stack */
+                    nk_remove_window(ctx, win);
+                    nk_insert_window(ctx, win, NK_INSERT_BACK);
+                }
+                win->flags &= ~(nk_flags)NK_WINDOW_ROM;
+                ctx->active = win;
+            }
+            if (ctx->end != win && !(win->flags & NK_WINDOW_BACKGROUND))
+                win->flags |= NK_WINDOW_ROM;
+        }
+    }
+    win->layout = (struct nk_panel*)nk_create_panel(ctx);
+    ctx->current = win;
+	
+    if (!nk_panel_begin(ctx, title, NK_PANEL_WINDOW)) {
+
+        if(win->layout->flags & NK_WINDOW_HIDDEN)
+            win->flags |= NK_WINDOW_CLOSED;
+			
+        if(win->layout->flags & NK_WINDOW_MINIMIZED)
+            win->flags |= NK_WINDOW_MINIMIZED;
+
+        return win;
+    }
 
     win->layout->offset_x = &win->scrollbar.x;
     win->layout->offset_y = &win->scrollbar.y;

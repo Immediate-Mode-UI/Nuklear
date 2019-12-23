@@ -1256,8 +1256,8 @@ enum nk_panel_flags {
 /// __bounds__  | Initial position and window size. However if you do not define `NK_WINDOW_SCALABLE` or `NK_WINDOW_MOVABLE` you can set window position and size every frame
 /// __flags__   | Window flags defined in the nk_panel_flags section with a number of different window behaviors
 ///
-/// Returns `true(1)` if the window can be filled up with widgets from this point
-/// until `nk_end` or `false(0)` otherwise for example if minimized
+/// Returns a non-zero window pointer if the window can be filled up with widgets from this point
+/// until `nk_end` or `nullptr(0)` otherwise for example if minimized
 */
 NK_API struct nk_window* nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
 /*/// #### nk_begin_titled
@@ -1276,10 +1276,75 @@ NK_API struct nk_window* nk_begin(struct nk_context *ctx, const char *title, str
 /// __bounds__  | Initial position and window size. However if you do not define `NK_WINDOW_SCALABLE` or `NK_WINDOW_MOVABLE` you can set window position and size every frame
 /// __flags__   | Window flags defined in the nk_panel_flags section with a number of different window behaviors
 ///
-/// Returns `true(1)` if the window can be filled up with widgets from this point
-/// until `nk_end` or `false(0)` otherwise for example if minimized
+/// Returns a non-zero window pointer if the window can be filled up with widgets from this point
+/// until `nk_end` or `nullptr(0)` otherwise for example if minimized
 */
 NK_API struct nk_window* nk_begin_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags);
+/*/// #### nk_add_window
+/// Adds a new window; needs to be called every frame for every
+/// window (unless hidden) or otherwise the window gets removed
+/// it always returns a window pointer, even if the window is hidden or removed
+/// this function allows the application to query state and perform the necessary updates
+/// to get the same functionality as nk_begin, you should query the following states:
+///	- NK_WINDOW_CLOSED
+/// - NK_WINDOW_HIDDEN
+/// - NK_WINDOW_MINIMIZED
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// int nk_add_window(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct
+/// __title__   | Window title and identifier. Needs to be persistent over frames to identify the window
+/// __bounds__  | Initial position and window size. However if you do not define `NK_WINDOW_SCALABLE` or `NK_WINDOW_MOVABLE` you can set window position and size every frame
+/// __flags__   | Window flags defined in the nk_panel_flags section with a number of different window behaviors
+///
+/// Returns a non-zero window pointer if the window can be created
+/// call nk_window_has_contents(ctx, window) to see if window can be filled up with widgets from this point
+*/
+NK_API struct nk_window* nk_add_window(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
+/*/// #### nk_add_window_titled
+/// Extended window start with separated title and identifier to allow multiple
+/// windows with same title but not name
+/// it always returns a window pointer, even if the window is hidden or removed
+/// this function allows the application to query state and perform the necessary updates
+/// to get the same functionality as nk_begin, you should query the following states:
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// int nk_add_window_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct
+/// __name__    | Window identifier. Needs to be persistent over frames to identify the window
+/// __title__   | Window title displayed inside header if flag `NK_WINDOW_TITLE` or either `NK_WINDOW_CLOSABLE` or `NK_WINDOW_MINIMIZED` was set
+/// __bounds__  | Initial position and window size. However if you do not define `NK_WINDOW_SCALABLE` or `NK_WINDOW_MOVABLE` you can set window position and size every frame
+/// __flags__   | Window flags defined in the nk_panel_flags section with a number of different window behaviors
+///
+/// Returns a non-zero window pointer if the window can be created
+/// call nk_window_has_contents(window) to see if window can be filled up with widgets from this point
+*/
+NK_API struct nk_window* nk_add_window_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags);
+/*/// #### nk_window_has_contents
+/// Checks if the window is ready to be filled up
+/// generally used after nk_add_window(_titled)
+/// to check if window can be filled up with widgets from this point
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// int nk_window_has_contents(struct nk_window *window);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter      | Description
+/// ---------------|-----------------------------------------------------------
+/// __nk_window__  | The window to check
+///
+/// Returns true(1) if the window's contents are visible
+/// false(0) otherwise
+*/
+NK_API int nk_window_has_contents(struct nk_window *window);
 /*/// #### nk_end
 /// Needs to be called at the end of the window building process to process scaling, scrollbars and general cleanup.
 /// All widget calls after this functions will result in asserts or no state changes
