@@ -1259,7 +1259,7 @@ enum nk_panel_flags {
 /// Returns `true(1)` if the window can be filled up with widgets from this point
 /// until `nk_end` or `false(0)` otherwise for example if minimized
 */
-NK_API int nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
+NK_API struct nk_window* nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
 /*/// #### nk_begin_titled
 /// Extended window start with separated title and identifier to allow multiple
 /// windows with same title but not name
@@ -1279,7 +1279,7 @@ NK_API int nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bo
 /// Returns `true(1)` if the window can be filled up with widgets from this point
 /// until `nk_end` or `false(0)` otherwise for example if minimized
 */
-NK_API int nk_begin_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags);
+NK_API struct nk_window* nk_begin_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags);
 /*/// #### nk_end
 /// Needs to be called at the end of the window building process to process scaling, scrollbars and general cleanup.
 /// All widget calls after this functions will result in asserts or no state changes

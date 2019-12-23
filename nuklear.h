@@ -1478,7 +1478,7 @@ enum nk_panel_flags {
 /// Returns `true(1)` if the window can be filled up with widgets from this point
 /// until `nk_end` or `false(0)` otherwise for example if minimized
 */
-NK_API int nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
+NK_API struct nk_window* nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
 /*/// #### nk_begin_titled
 /// Extended window start with separated title and identifier to allow multiple
 /// windows with same title but not name
@@ -1498,7 +1498,7 @@ NK_API int nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bo
 /// Returns `true(1)` if the window can be filled up with widgets from this point
 /// until `nk_end` or `false(0)` otherwise for example if minimized
 */
-NK_API int nk_begin_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags);
+NK_API struct nk_window* nk_begin_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags);
 /*/// #### nk_end
 /// Needs to be called at the end of the window building process to process scaling, scrollbars and general cleanup.
 /// All widget calls after this functions will result in asserts or no state changes
@@ -16298,13 +16298,13 @@ nk_remove_window(struct nk_context *ctx, struct nk_window *win)
     win->prev = 0;
     ctx->count--;
 }
-NK_API int
+NK_API struct nk_window*
 nk_begin(struct nk_context *ctx, const char *title,
     struct nk_rect bounds, nk_flags flags)
 {
     return nk_begin_titled(ctx, title, title, bounds, flags);
 }
-NK_API int
+NK_API struct nk_window*
 nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
     struct nk_rect bounds, nk_flags flags)
 {
@@ -16312,7 +16312,6 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
     struct nk_style *style;
     nk_hash name_hash;
     int name_len;
-    int ret = 0;
 
     NK_ASSERT(ctx);
     NK_ASSERT(name);
@@ -16453,10 +16452,13 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
     }
     win->layout = (struct nk_panel*)nk_create_panel(ctx);
     ctx->current = win;
-    ret = nk_panel_begin(ctx, title, NK_PANEL_WINDOW);
+
+	if (!nk_panel_begin(ctx, title, NK_PANEL_WINDOW))
+		return 0;
+
     win->layout->offset_x = &win->scrollbar.x;
     win->layout->offset_y = &win->scrollbar.y;
-    return ret;
+    return win;
 }
 NK_API void
 nk_end(struct nk_context *ctx)
@@ -25516,6 +25518,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2019/12/23 (4.01.9) - Changed nk_begin to return a nk_window so you can get the position and other useful info.
 /// - 2019/12/05 (4.01.8) - Fixed radio buttons' style.
 /// - 2019/12/05 (4.01.7) - Fixed click cascading through multiple buttons; it should only click the upper button.
 /// - 2019/12/11 (4.01.6) - Strict c++17 now compiles: only declaring memset, memcpy if they are used.

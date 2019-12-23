@@ -132,13 +132,13 @@ nk_remove_window(struct nk_context *ctx, struct nk_window *win)
     win->prev = 0;
     ctx->count--;
 }
-NK_API int
+NK_API struct nk_window*
 nk_begin(struct nk_context *ctx, const char *title,
     struct nk_rect bounds, nk_flags flags)
 {
     return nk_begin_titled(ctx, title, title, bounds, flags);
 }
-NK_API int
+NK_API struct nk_window*
 nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
     struct nk_rect bounds, nk_flags flags)
 {
@@ -146,7 +146,6 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
     struct nk_style *style;
     nk_hash name_hash;
     int name_len;
-    int ret = 0;
 
     NK_ASSERT(ctx);
     NK_ASSERT(name);
@@ -287,10 +286,13 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
     }
     win->layout = (struct nk_panel*)nk_create_panel(ctx);
     ctx->current = win;
-    ret = nk_panel_begin(ctx, title, NK_PANEL_WINDOW);
+
+	if (!nk_panel_begin(ctx, title, NK_PANEL_WINDOW))
+		return 0;
+
     win->layout->offset_x = &win->scrollbar.x;
     win->layout->offset_y = &win->scrollbar.y;
-    return ret;
+    return win;
 }
 NK_API void
 nk_end(struct nk_context *ctx)

@@ -8,6 +8,7 @@
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2019/12/23 (4.01.9) - Changed nk_begin to return a nk_window so you can get the position and other useful info.
 /// - 2019/12/05 (4.01.8) - Fixed radio buttons' style.
 /// - 2019/12/05 (4.01.7) - Fixed click cascading through multiple buttons; it should only click the upper button.
 /// - 2019/12/11 (4.01.6) - Strict c++17 now compiles: only declaring memset, memcpy if they are used.
