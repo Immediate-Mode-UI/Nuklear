@@ -1291,20 +1291,21 @@ NK_API struct nk_window* nk_begin_titled(struct nk_context *ctx, const char *nam
 /// - NK_WINDOW_MINIMIZED
 ///
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// int nk_add_window(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
+/// int nk_add_window(struct nk_context *ctx, nk_hash id, const char *title, struct nk_rect bounds, nk_flags flags);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
 /// ------------|-----------------------------------------------------------
 /// __ctx__     | Must point to an previously initialized `nk_context` struct
-/// __title__   | Window title and identifier. Needs to be persistent over frames to identify the window
+/// __id__      | The id of the window; unique and needs to be persistent over frames to identify the window
+/// __title__   | Window title. 
 /// __bounds__  | Initial position and window size. However if you do not define `NK_WINDOW_SCALABLE` or `NK_WINDOW_MOVABLE` you can set window position and size every frame
 /// __flags__   | Window flags defined in the nk_panel_flags section with a number of different window behaviors
 ///
 /// Returns a non-zero window pointer if the window can be created
 /// call nk_window_has_contents(ctx, window) to see if window can be filled up with widgets from this point
 */
-NK_API struct nk_window* nk_add_window(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
+NK_API struct nk_window* nk_add_window(struct nk_context *ctx, nk_hash id, const char *title, struct nk_rect bounds, nk_flags flags);
 /*/// #### nk_add_window_titled
 /// Extended window start with separated title and identifier to allow multiple
 /// windows with same title but not name

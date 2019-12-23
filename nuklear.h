@@ -1510,20 +1510,21 @@ NK_API struct nk_window* nk_begin_titled(struct nk_context *ctx, const char *nam
 /// - NK_WINDOW_MINIMIZED
 ///
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// int nk_add_window(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
+/// int nk_add_window(struct nk_context *ctx, nk_hash id, const char *title, struct nk_rect bounds, nk_flags flags);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
 /// ------------|-----------------------------------------------------------
 /// __ctx__     | Must point to an previously initialized `nk_context` struct
-/// __title__   | Window title and identifier. Needs to be persistent over frames to identify the window
+/// __id__      | The id of the window; unique and needs to be persistent over frames to identify the window
+/// __title__   | Window title. 
 /// __bounds__  | Initial position and window size. However if you do not define `NK_WINDOW_SCALABLE` or `NK_WINDOW_MOVABLE` you can set window position and size every frame
 /// __flags__   | Window flags defined in the nk_panel_flags section with a number of different window behaviors
 ///
 /// Returns a non-zero window pointer if the window can be created
 /// call nk_window_has_contents(ctx, window) to see if window can be filled up with widgets from this point
 */
-NK_API struct nk_window* nk_add_window(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
+NK_API struct nk_window* nk_add_window(struct nk_context *ctx, nk_hash id, const char *title, struct nk_rect bounds, nk_flags flags);
 /*/// #### nk_add_window_titled
 /// Extended window start with separated title and identifier to allow multiple
 /// windows with same title but not name
@@ -16281,6 +16282,7 @@ nk_find_window(struct nk_context *ctx, nk_hash hash, const char *name)
     while (iter) {
         NK_ASSERT(iter != iter->next);
         if (iter->name == hash) {
+			if (!name) return iter;
             int max_len = nk_strlen(iter->name_string);
             if (!nk_stricmpn(iter->name_string, name, max_len))
                 return iter;
@@ -16525,12 +16527,6 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
     win->layout->offset_y = &win->scrollbar.y;
     return win;
 }
-NK_API struct nk_window*
-nk_add_window(struct nk_context *ctx, const char *title,
-    struct nk_rect bounds, nk_flags flags)
-{
-    return nk_add_window_titled(ctx, title, title, bounds, flags);
-}
 NK_API int
 nk_window_has_contents(struct nk_window *window)
 {
@@ -16541,30 +16537,24 @@ nk_window_has_contents(struct nk_window *window)
     return !((window->flags & NK_WINDOW_MINIMIZED) || (window->flags & NK_WINDOW_CLOSED) || (window->flags & NK_WINDOW_HIDDEN));
 }
 NK_API struct nk_window*
-nk_add_window_titled(struct nk_context *ctx, const char *name, const char *title,
+nk_add_window(struct nk_context *ctx, nk_hash id, const char *title,
     struct nk_rect bounds, nk_flags flags)
 {
     struct nk_window *win;
     struct nk_style *style;
-    nk_hash name_hash;
-    int name_len;
 
     NK_ASSERT(ctx);
-    NK_ASSERT(name);
     NK_ASSERT(title);
     NK_ASSERT(ctx->style.font && ctx->style.font->width && "if this triggers you forgot to add a font");
     NK_ASSERT(!ctx->current && "if this triggers you missed a `nk_end` call");
-    if (!ctx || ctx->current || !title || !name)
+    if (!ctx || ctx->current || !title)
         return 0;
 
     /* find or create window */
     style = &ctx->style;
-    name_len = (int)nk_strlen(name);
-    name_hash = nk_murmur_hash(name, (int)name_len, NK_WINDOW_TITLE);
-    win = nk_find_window(ctx, name_hash, name);
+    win = nk_find_window(ctx, id, 0);
     if (!win) {
         /* create new window */
-        nk_size name_length = (nk_size)name_len;
         win = (struct nk_window*)nk_create_window(ctx);
         NK_ASSERT(win);
         if (!win) return 0;
@@ -16576,10 +16566,8 @@ nk_add_window_titled(struct nk_context *ctx, const char *name, const char *title
 
         win->flags = flags;
         win->bounds = bounds;
-        win->name = name_hash;
-        name_length = NK_MIN(name_length, NK_WINDOW_MAX_NAME-1);
-        NK_MEMCPY(win->name_string, name, name_length);
-        win->name_string[name_length] = 0;
+        win->name = id;				//0 means use "hash" only
+        win->name_string[0] = 0;
         win->popup.win = 0;
         if (!ctx->active)
             ctx->active = win;
