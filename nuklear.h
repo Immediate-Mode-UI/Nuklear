@@ -26181,6 +26181,8 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/01/19 (4.01.10) - Added subpixel API from itsuhane. Allowing you to turn on 
+//                          NK_ENABLE_SUBPIXEL_API to position window and elements in subpixels
 /// - 2019/12/23 (4.01.9) - Changed nk_begin to return a nk_window so you can get the position and other useful info.
 /// - 2019/12/05 (4.01.8) - Fixed radio buttons' style.
 /// - 2019/12/05 (4.01.7) - Fixed click cascading through multiple buttons; it should only click the upper button.
