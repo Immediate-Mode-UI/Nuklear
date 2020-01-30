@@ -15767,6 +15767,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
                 &style->window.header.close_button, in, style->font) && !(win->flags & NK_WINDOW_ROM))
             {
                 layout->flags |= NK_WINDOW_HIDDEN;
+                layout->flags |= NK_WINDOW_CLOSED;
                 layout->flags &= (nk_flags)~NK_WINDOW_MINIMIZED;
             }
         }
