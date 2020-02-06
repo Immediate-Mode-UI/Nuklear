@@ -116,10 +116,10 @@ if macro == "":
 
 # Print concatenated output
 # -------------------------
-print("/*")
+#print("/*")
 for f in intro_files:
     sys.stdout.write(open(f, 'r').read())
-print("*/")
+#print("*/")
 
 # print(os.linesep + "#ifndef " + macro + "_SINGLE_HEADER");
 # print("#define " + macro + "_SINGLE_HEADER");
