@@ -5461,4 +5461,12 @@ template<typename T> struct nk_alignof{struct Big {T x; char c;}; enum {
 #define NK_ALIGNOF(t) ((char*)(&((struct {char c; t _h;}*)0)->_h) - (char*)0)
 #endif
 
+#ifdef NK_IMPLEMENTATION
+#define STB_RECT_PACK_IMPLEMENTATION
+#define STB_TRUETYPE_IMPLEMENTATION
+#endif
+
+#define STBTT_malloc(x,u) nk_malloc({0},0,x)
+#define STBTT_free(x,u) nk_mfree({0},x)
+
 #endif /* NK_NUKLEAR_H_ */

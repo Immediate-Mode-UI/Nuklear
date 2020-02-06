@@ -304,11 +304,8 @@ nk_font_bake(struct nk_font_baker *baker, void *image_memory, int width, int hei
         do {const struct nk_font_config *cfg = it;
             struct nk_font_bake_data *tmp = &baker->build[input_i++];
             stbtt_PackSetOversampling(&baker->spc, cfg->oversample_h, cfg->oversample_v);
-			// TODO:
-            // was: stbtt_PackFontRangesRenderIntoRects(&baker->spc, &tmp->info, tmp->ranges, (int)tmp->range_count, tmp->rects, &baker->alloc);
             stbtt_PackFontRangesRenderIntoRects(&baker->spc, &tmp->info, tmp->ranges, (int)tmp->range_count, tmp->rects);
         } while ((it = it->n) != config_iter);
-		// TODO: was stbtt_PackEnd(&baker->spc, &baker->alloc);
     } stbtt_PackEnd(&baker->spc);
 
     /* third pass: setup font and glyphs */
