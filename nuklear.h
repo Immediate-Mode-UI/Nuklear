@@ -16341,7 +16341,7 @@ nk_font_baker_memory(nk_size *temp, int *glyph_count,
         } while ((i = i->n) != iter);
     }
     *temp = (nk_size)*glyph_count * sizeof(struct stbrp_rect);
-    *temp += (nk_size)total_range_count * sizeof(stbtt_pack_range);
+    *temp += (nk_size)*glyph_count * sizeof(stbtt_pack_range);
     *temp += (nk_size)*glyph_count * sizeof(stbtt_packedchar);
     *temp += (nk_size)count * sizeof(struct nk_font_bake_data);
     *temp += sizeof(struct nk_font_baker);
