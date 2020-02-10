@@ -23521,7 +23521,12 @@ nk_draw_button_symbol(struct nk_command_buffer *out,
     else if (state & NK_WIDGET_STATE_ACTIVED)
         sym = style->text_active;
     else sym = style->text_normal;
-    nk_draw_symbol(out, type, *content, bg, sym, 1, font);
+
+	/* don't let symbol escape button bounds */
+	struct nk_rect symbol_content = *content;
+	float f = NK_MIN(symbol_content.h, symbol_content.w);
+	symbol_content.h = symbol_content.w = f;
+    nk_draw_symbol(out, type, symbol_content, bg, sym, 1, font);
 }
 NK_LIB int
 nk_do_button_symbol(nk_flags *state,
