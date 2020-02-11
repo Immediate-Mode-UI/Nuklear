@@ -144,6 +144,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         if (left_mouse_down && left_mouse_click_in_cursor && !left_mouse_clicked) {
             win->bounds.x = win->bounds.x + in->mouse.delta.x;
             win->bounds.y = win->bounds.y + in->mouse.delta.y;
+			win->moved=1;
             in->mouse.buttons[NK_BUTTON_LEFT].clicked_pos.x += in->mouse.delta.x;
             in->mouse.buttons[NK_BUTTON_LEFT].clicked_pos.y += in->mouse.delta.y;
             ctx->style.cursor_active = ctx->style.cursors[NK_CURSOR_MOVE];
@@ -532,11 +533,13 @@ nk_panel_end(struct nk_context *ctx)
                 if (layout->flags & NK_WINDOW_SCALE_LEFT) {
                     delta_x = -delta_x;
                     window->bounds.x += in->mouse.delta.x;
+					window->moved = 1;
                 }
                 /* dragging in x-direction  */
                 if (window->bounds.w + delta_x >= window_size.x) {
                     if ((delta_x < 0) || (delta_x > 0 && in->mouse.pos.x >= scaler.x)) {
                         window->bounds.w = window->bounds.w + delta_x;
+						window->resized = 1;
                         scaler.x += in->mouse.delta.x;
                     }
                 }
@@ -545,6 +548,7 @@ nk_panel_end(struct nk_context *ctx)
                     if (window_size.y < window->bounds.h + in->mouse.delta.y) {
                         if ((in->mouse.delta.y < 0) || (in->mouse.delta.y > 0 && in->mouse.pos.y >= scaler.y)) {
                             window->bounds.h = window->bounds.h + in->mouse.delta.y;
+							window->resized = 1;
                             scaler.y += in->mouse.delta.y;
                         }
                     }

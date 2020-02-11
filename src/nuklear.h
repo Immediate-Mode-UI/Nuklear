@@ -1204,6 +1204,9 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
 /// nk_window_collapse_if               | Collapses the window with given window name if the given condition was met
 /// nk_window_show                      | Hides a visible or reshows a hidden window
 /// nk_window_show_if                   | Hides/shows a window depending on condition
+///
+/// nk_window_moved                     | Returns whether the window was moved since the last check
+/// nk_window_resized                   | Returns whether the window was resized since the last check
 */
 /*
 /// #### nk_panel_flags
@@ -1765,6 +1768,28 @@ NK_API void nk_window_show(struct nk_context*, const char *name, enum nk_show_st
 /// __cond__    | condition that has to be met to actually commit the visbility state change
 */
 NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show_states, int cond);
+/*/// #### nk_window_moved
+/// Returns 1 if the current window had been moved since the last time this function was called
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// int nk_window_moved(struct nk_context*);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct
+*/
+NK_API int nk_window_moved(struct nk_context*);
+/*/// #### nk_window_resized
+/// Returns 1 if the current window had been resized since the last time this function was called
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// int nk_window_resized(struct nk_context*);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct
+*/
+NK_API int nk_window_resized(struct nk_context*);
 /* =============================================================================
  *
  *                                  LAYOUT
@@ -5211,6 +5236,10 @@ struct nk_window {
     struct nk_window *next;
     struct nk_window *prev;
     struct nk_window *parent;
+
+	/* testing flags */
+	int moved;
+	int resized;
 };
 
 /*==============================================================

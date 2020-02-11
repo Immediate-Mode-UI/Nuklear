@@ -290,6 +290,8 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
     ret = nk_panel_begin(ctx, title, NK_PANEL_WINDOW);
     win->layout->offset_x = &win->scrollbar.x;
     win->layout->offset_y = &win->scrollbar.y;
+	win->moved= 0;
+	win->resized= 0;
     return ret;
 }
 NK_API void
@@ -563,6 +565,8 @@ nk_window_set_bounds(struct nk_context *ctx,
     if (!win) return;
     NK_ASSERT(ctx->current != win && "You cannot update a currently in procecss window");
     win->bounds = bounds;
+	win->moved=1;
+	win->resized=1;
 }
 NK_API void
 nk_window_set_position(struct nk_context *ctx,
@@ -572,6 +576,7 @@ nk_window_set_position(struct nk_context *ctx,
     if (!win) return;
     win->bounds.x = pos.x;
     win->bounds.y = pos.y;
+	win->moved = 1;
 }
 NK_API void
 nk_window_set_size(struct nk_context *ctx,
@@ -581,6 +586,7 @@ nk_window_set_size(struct nk_context *ctx,
     if (!win) return;
     win->bounds.w = size.x;
     win->bounds.h = size.y;
+	win->resized = 1;
 }
 NK_API void
 nk_window_set_scroll(struct nk_context *ctx, nk_uint offset_x, nk_uint offset_y)
@@ -663,4 +669,24 @@ nk_window_set_focus(struct nk_context *ctx, const char *name)
         nk_insert_window(ctx, win, NK_INSERT_BACK);
     }
     ctx->active = win;
+}
+
+NK_API int 
+nk_window_moved(struct nk_context* ctx)
+{
+    NK_ASSERT(ctx);
+    NK_ASSERT(ctx->current);
+	int rc = ctx->current->moved;
+	ctx->current->moved = 0;
+	return rc;
+}
+
+NK_API int 
+nk_window_resized(struct nk_context* ctx)
+{
+    NK_ASSERT(ctx);
+    NK_ASSERT(ctx->current);
+	int rc = ctx->current->resized;
+	ctx->current->resized = 0;
+	return rc;
 }

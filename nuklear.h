@@ -1423,6 +1423,9 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
 /// nk_window_collapse_if               | Collapses the window with given window name if the given condition was met
 /// nk_window_show                      | Hides a visible or reshows a hidden window
 /// nk_window_show_if                   | Hides/shows a window depending on condition
+///
+/// nk_window_moved                     | Returns whether the window was moved since the last check
+/// nk_window_resized                   | Returns whether the window was resized since the last check
 */
 /*
 /// #### nk_panel_flags
@@ -1984,6 +1987,28 @@ NK_API void nk_window_show(struct nk_context*, const char *name, enum nk_show_st
 /// __cond__    | condition that has to be met to actually commit the visbility state change
 */
 NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show_states, int cond);
+/*/// #### nk_window_moved
+/// Returns 1 if the current window had been moved since the last time this function was called
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// int nk_window_moved(struct nk_context*);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct
+*/
+NK_API int nk_window_moved(struct nk_context*);
+/*/// #### nk_window_resized
+/// Returns 1 if the current window had been resized since the last time this function was called
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// int nk_window_resized(struct nk_context*);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct
+*/
+NK_API int nk_window_resized(struct nk_context*);
 /* =============================================================================
  *
  *                                  LAYOUT
@@ -5430,6 +5455,10 @@ struct nk_window {
     struct nk_window *next;
     struct nk_window *prev;
     struct nk_window *parent;
+
+	/* testing flags */
+	int moved;
+	int resized;
 };
 
 /*==============================================================
@@ -19304,6 +19333,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         if (left_mouse_down && left_mouse_click_in_cursor && !left_mouse_clicked) {
             win->bounds.x = win->bounds.x + in->mouse.delta.x;
             win->bounds.y = win->bounds.y + in->mouse.delta.y;
+			win->moved=1;
             in->mouse.buttons[NK_BUTTON_LEFT].clicked_pos.x += in->mouse.delta.x;
             in->mouse.buttons[NK_BUTTON_LEFT].clicked_pos.y += in->mouse.delta.y;
             ctx->style.cursor_active = ctx->style.cursors[NK_CURSOR_MOVE];
@@ -19692,11 +19722,13 @@ nk_panel_end(struct nk_context *ctx)
                 if (layout->flags & NK_WINDOW_SCALE_LEFT) {
                     delta_x = -delta_x;
                     window->bounds.x += in->mouse.delta.x;
+					window->moved = 1;
                 }
                 /* dragging in x-direction  */
                 if (window->bounds.w + delta_x >= window_size.x) {
                     if ((delta_x < 0) || (delta_x > 0 && in->mouse.pos.x >= scaler.x)) {
                         window->bounds.w = window->bounds.w + delta_x;
+						window->resized = 1;
                         scaler.x += in->mouse.delta.x;
                     }
                 }
@@ -19705,6 +19737,7 @@ nk_panel_end(struct nk_context *ctx)
                     if (window_size.y < window->bounds.h + in->mouse.delta.y) {
                         if ((in->mouse.delta.y < 0) || (in->mouse.delta.y > 0 && in->mouse.pos.y >= scaler.y)) {
                             window->bounds.h = window->bounds.h + in->mouse.delta.y;
+							window->resized = 1;
                             scaler.y += in->mouse.delta.y;
                         }
                     }
@@ -20055,6 +20088,8 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
     ret = nk_panel_begin(ctx, title, NK_PANEL_WINDOW);
     win->layout->offset_x = &win->scrollbar.x;
     win->layout->offset_y = &win->scrollbar.y;
+	win->moved= 0;
+	win->resized= 0;
     return ret;
 }
 NK_API void
@@ -20328,6 +20363,8 @@ nk_window_set_bounds(struct nk_context *ctx,
     if (!win) return;
     NK_ASSERT(ctx->current != win && "You cannot update a currently in procecss window");
     win->bounds = bounds;
+	win->moved=1;
+	win->resized=1;
 }
 NK_API void
 nk_window_set_position(struct nk_context *ctx,
@@ -20337,6 +20374,7 @@ nk_window_set_position(struct nk_context *ctx,
     if (!win) return;
     win->bounds.x = pos.x;
     win->bounds.y = pos.y;
+	win->moved = 1;
 }
 NK_API void
 nk_window_set_size(struct nk_context *ctx,
@@ -20346,6 +20384,7 @@ nk_window_set_size(struct nk_context *ctx,
     if (!win) return;
     win->bounds.w = size.x;
     win->bounds.h = size.y;
+	win->resized = 1;
 }
 NK_API void
 nk_window_set_scroll(struct nk_context *ctx, nk_uint offset_x, nk_uint offset_y)
@@ -20428,6 +20467,26 @@ nk_window_set_focus(struct nk_context *ctx, const char *name)
         nk_insert_window(ctx, win, NK_INSERT_BACK);
     }
     ctx->active = win;
+}
+
+NK_API int 
+nk_window_moved(struct nk_context* ctx)
+{
+    NK_ASSERT(ctx);
+    NK_ASSERT(ctx->current);
+	int rc = ctx->current->moved;
+	ctx->current->moved = 0;
+	return rc;
+}
+
+NK_API int 
+nk_window_resized(struct nk_context* ctx)
+{
+    NK_ASSERT(ctx);
+    NK_ASSERT(ctx->current);
+	int rc = ctx->current->resized;
+	ctx->current->resized = 0;
+	return rc;
 }
 
 
