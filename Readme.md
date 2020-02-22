@@ -109,6 +109,7 @@ languages. Furthermore there are no guarantee that all bindings will always be k
   - [pyNuklear](https://github.com/billsix/pyNuklear) by William Emerison Six (ctypes-based wrapper)
   - [pynk](https://github.com/nathanrw/nuklear-cffi) by nathanrw@github.com (cffi binding)
 - [CSharp/.NET](https://github.com/cartman300/NuklearDotNet) by cartman300@github.com
+- [V](https://github.com/nsauzede/vnk) by Nicolas Sauzede
 
 ## Credits
 Developed by Micha Mettke and every direct or indirect contributor to the GitHub.
