@@ -442,7 +442,8 @@ nk_sfml_handle_event(sf::Event* evt)
         } else nk_input_motion(ctx, evt->touch.x, evt->touch.y);
         return 1;
     } else if(evt->type == sf::Event::TextEntered) {
-		if (evt->text.unicode != 8) {  //this line will check user whether input BACKSPACE. 8 is the Unicode of BACKSPACE.  If true, the function will ignore BACKSPACE input.
+		/* 8 ~ backspace */
+		if (evt->text.unicode != 8) {  
 			nk_input_unicode(ctx, evt->text.unicode);
 		}
         return 1;
