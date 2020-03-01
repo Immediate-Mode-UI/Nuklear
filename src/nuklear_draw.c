@@ -415,6 +415,80 @@ nk_draw_image(struct nk_command_buffer *b, struct nk_rect r,
     cmd->col = col;
 }
 NK_API void
+nk_draw_9slice(struct nk_command_buffer *b, struct nk_rect r,
+    const struct nk_9slice *slc, struct nk_color col)
+{
+    const struct nk_image *slcimg = (const struct nk_image*)slc;
+    nk_ushort rgnX, rgnY, rgnW, rgnH;
+    rgnX = slcimg->region[0];
+    rgnY = slcimg->region[1];
+    rgnW = slcimg->region[2];
+    rgnH = slcimg->region[3];
+
+    /* top-left */
+    struct nk_image img = {slcimg->handle, slcimg->w, slcimg->h,
+        {rgnX, rgnY, slc->l, slc->t}};
+    nk_draw_image(b,
+        nk_rect(r.x, r.y, (float)slc->l, (float)slc->t),
+        &img, col);
+
+    /* top-center */
+    img = (struct nk_image){slcimg->handle, slcimg->w, slcimg->h,
+        {(nk_ushort)(rgnX + slc->l), rgnY, (nk_ushort)(rgnW - slc->l - slc->r), slc->t}};
+    nk_draw_image(b,
+        nk_rect(r.x + (float)slc->l, r.y, (float)(r.w - slc->l - slc->r), (float)slc->t),
+        &img, col);
+
+    /* top-right */
+    img = (struct nk_image){slcimg->handle, slcimg->w, slcimg->h,
+        {(nk_ushort)(rgnX + rgnW - slc->r), rgnY, slc->r, slc->t}};
+    nk_draw_image(b,
+        nk_rect(r.x + r.w - (float)slc->r, r.y, (float)slc->r, (float)slc->t),
+        &img, col);
+
+    /* center-left */
+    img = (struct nk_image){slcimg->handle, slcimg->w, slcimg->h,
+        {rgnX, (nk_ushort)(rgnY + slc->t), slc->l, (nk_ushort)(rgnH - slc->t - slc->b)}};
+    nk_draw_image(b,
+        nk_rect(r.x, r.y + (float)slc->t, (float)slc->l, (float)(r.h - slc->t - slc->b)),
+        &img, col);
+
+    /* center */
+    img = (struct nk_image){slcimg->handle, slcimg->w, slcimg->h,
+        {(nk_ushort)(rgnX + slc->l), (nk_ushort)(rgnY + slc->t), (nk_ushort)(rgnW - slc->l - slc->r), (nk_ushort)(rgnH - slc->t - slc->b)}};
+    nk_draw_image(b,
+        nk_rect(r.x + (float)slc->l, r.y + (float)slc->t, (float)(r.w - slc->l - slc->r), (float)(r.h - slc->t - slc->b)),
+        &img, col);
+
+    /* center-right */
+    img = (struct nk_image){slcimg->handle, slcimg->w, slcimg->h,
+        {(nk_ushort)(rgnX + rgnW - slc->r), (nk_ushort)(rgnY + slc->t), slc->r, (nk_ushort)(rgnH - slc->t - slc->b)}};
+    nk_draw_image(b,
+        nk_rect(r.x + r.w - (float)slc->r, r.y + (float)slc->t, (float)slc->r, (float)(r.h - slc->t - slc->b)),
+        &img, col);
+
+    /* bottom-left */
+    img = (struct nk_image){slcimg->handle, slcimg->w, slcimg->h,
+        {rgnX, (nk_ushort)(rgnY + rgnH - slc->b), slc->l, slc->b}};
+    nk_draw_image(b,
+        nk_rect(r.x, r.y + r.h - (float)slc->b, (float)slc->l, (float)slc->b),
+        &img, col);
+
+    /* bottom-center */
+    img = (struct nk_image){slcimg->handle, slcimg->w, slcimg->h,
+        {(nk_ushort)(rgnX + slc->l), (nk_ushort)(rgnY + rgnH - slc->b), (nk_ushort)(rgnW - slc->l - slc->r), slc->b}};
+    nk_draw_image(b,
+        nk_rect(r.x + (float)slc->l, r.y + r.h - (float)slc->b, (float)(r.w - slc->l - slc->r), (float)slc->b),
+        &img, col);
+
+    /* bottom-right */
+    img = (struct nk_image){slcimg->handle, slcimg->w, slcimg->h,
+        {(nk_ushort)(rgnX + rgnW - slc->r), (nk_ushort)(rgnY + rgnH - slc->b), slc->r, slc->b}};
+    nk_draw_image(b,
+        nk_rect(r.x + r.w - (float)slc->r, r.y + r.h - (float)slc->b, (float)slc->r, (float)slc->b),
+        &img, col);
+}
+NK_API void
 nk_push_custom(struct nk_command_buffer *b, struct nk_rect r,
     nk_command_custom_callback cb, nk_handle usr)
 {

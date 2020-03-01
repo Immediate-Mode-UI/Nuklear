@@ -103,18 +103,24 @@ nk_draw_scrollbar(struct nk_command_buffer *out, nk_flags state,
     }
 
     /* draw background */
-    if (background->type == NK_STYLE_ITEM_COLOR) {
+    if (background->type == NK_STYLE_ITEM_IMAGE)
+        nk_draw_image(out, *bounds, &background->data.image, nk_white);
+    else if (background->type == NK_STYLE_ITEM_9SLICE)
+        nk_draw_9slice(out, *bounds, &background->data.slice, nk_white);
+    else {
         nk_fill_rect(out, *bounds, style->rounding, background->data.color);
         nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
-    } else {
-        nk_draw_image(out, *bounds, &background->data.image, nk_white);
     }
 
     /* draw cursor */
-    if (cursor->type == NK_STYLE_ITEM_COLOR) {
+    if (cursor->type == NK_STYLE_ITEM_IMAGE)
+        nk_draw_image(out, *scroll, &cursor->data.image, nk_white);
+    else if (cursor->type == NK_STYLE_ITEM_9SLICE)
+        nk_draw_9slice(out, *scroll, &cursor->data.slice, nk_white);
+    else {
         nk_fill_rect(out, *scroll, style->rounding_cursor, cursor->data.color);
         nk_stroke_rect(out, *scroll, style->rounding_cursor, style->border_cursor, style->cursor_border_color);
-    } else nk_draw_image(out, *scroll, &cursor->data.image, nk_white);
+    }
 }
 NK_LIB float
 nk_do_scrollbarv(nk_flags *state,

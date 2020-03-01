@@ -50,8 +50,11 @@ nk_tree_state_base(struct nk_context *ctx, enum nk_tree_type type,
     if (type == NK_TREE_TAB) {
         const struct nk_style_item *background = &style->tab.background;
         if (background->type == NK_STYLE_ITEM_IMAGE) {
+            text.background = nk_rgba(0, 0, 0, 0);
             nk_draw_image(out, header, &background->data.image, nk_white);
-            text.background = nk_rgba(0,0,0,0);
+        } else if (background->type == NK_STYLE_ITEM_9SLICE) {
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_9slice(out, header, &background->data.slice, nk_white);
         } else {
             text.background = background->data.color;
             nk_fill_rect(out, header, 0, style->tab.border_color);
@@ -236,8 +239,11 @@ nk_tree_element_image_push_hashed_base(struct nk_context *ctx, enum nk_tree_type
     if (type == NK_TREE_TAB) {
         const struct nk_style_item *background = &style->tab.background;
         if (background->type == NK_STYLE_ITEM_IMAGE) {
+            text.background = nk_rgba(0, 0, 0, 0);
             nk_draw_image(out, header, &background->data.image, nk_white);
-            text.background = nk_rgba(0,0,0,0);
+        } else if (background->type == NK_STYLE_ITEM_9SLICE) {
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_9slice(out, header, &background->data.slice, nk_white);
         } else {
             text.background = background->data.color;
             nk_fill_rect(out, header, 0, style->tab.border_color);
