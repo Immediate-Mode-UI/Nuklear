@@ -3141,6 +3141,9 @@ NK_API void nk_property_double(struct nk_context*, const char *name, double min,
 ///
 /// Returns the new modified integer value
 */
+NK_API void
+nk_property_ull(struct nk_context *ctx, const char *name, unsigned long long min, unsigned long long *val, unsigned long long max, unsigned long long step, float inc_per_pixel);
+
 NK_API int nk_propertyi(struct nk_context*, const char *name, int min, int val, int max, int step, float inc_per_pixel);
 /*/// #### nk_propertyf
 /// Float property modifing a passed in value and returning the new value
@@ -3510,6 +3513,7 @@ NK_API int nk_strlen(const char *str);
 NK_API int nk_stricmp(const char *s1, const char *s2);
 NK_API int nk_stricmpn(const char *s1, const char *s2, int n);
 NK_API int nk_strtoi(const char *str, const char **endptr);
+NK_API unsigned long long nk_strtoull(const char *str, const char **endptr);
 NK_API float nk_strtof(const char *str, const char **endptr);
 NK_API double nk_strtod(const char *str, const char **endptr);
 NK_API int nk_strfilter(const char *text, const char *regexp);

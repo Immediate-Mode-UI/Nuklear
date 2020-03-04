@@ -1,6 +1,8 @@
 #ifndef NK_INTERNAL_H
 #define NK_INTERNAL_H
 
+#include <nuklear.h>
+
 #ifndef NK_POOL_DEFAULT_CAPACITY
 #define NK_POOL_DEFAULT_CAPACITY 16
 #endif
@@ -135,6 +137,7 @@ NK_LIB void* nk_memcopy(void *dst, const void *src, nk_size n);
 NK_LIB void nk_memset(void *ptr, int c0, nk_size size);
 NK_LIB void nk_zero(void *ptr, nk_size size);
 NK_LIB char *nk_itoa(char *s, long n);
+NK_LIB char*nk_ulltoa(char *s, unsigned long long n);
 NK_LIB int nk_string_float_limit(char *string, int prec);
 NK_LIB char *nk_dtoa(char *s, double n);
 NK_LIB int nk_text_clamp(const struct nk_user_font *font, const char *text, int text_len, float space, int *glyphs, float *text_width, nk_rune *sep_list, int sep_count);
@@ -307,12 +310,14 @@ enum nk_property_filter {
 enum nk_property_kind {
     NK_PROPERTY_INT,
     NK_PROPERTY_FLOAT,
-    NK_PROPERTY_DOUBLE
+	NK_PROPERTY_DOUBLE,
+	NK_PROPERTY_ULL
 };
 union nk_property {
     int i;
     float f;
     double d;
+	unsigned long long ull;
 };
 struct nk_property_variant {
     enum nk_property_kind kind;
@@ -324,6 +329,7 @@ struct nk_property_variant {
 NK_LIB struct nk_property_variant nk_property_variant_int(int value, int min_value, int max_value, int step);
 NK_LIB struct nk_property_variant nk_property_variant_float(float value, float min_value, float max_value, float step);
 NK_LIB struct nk_property_variant nk_property_variant_double(double value, double min_value, double max_value, double step);
+NK_LIB struct nk_property_variant nk_property_variant_ull(unsigned long long value, unsigned long long min_value, unsigned long long max_value, unsigned long long step);
 
 NK_LIB void nk_drag_behavior(nk_flags *state, const struct nk_input *in, struct nk_rect drag, struct nk_property_variant *variant, float inc_per_pixel);
 NK_LIB void nk_property_behavior(nk_flags *ws, const struct nk_input *in, struct nk_rect property,  struct nk_rect label, struct nk_rect edit, struct nk_rect empty, int *state, struct nk_property_variant *variant, float inc_per_pixel);
