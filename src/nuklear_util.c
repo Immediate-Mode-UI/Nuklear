@@ -158,6 +158,30 @@ nk_strtoi(const char *str, const char **endptr)
         *endptr = p;
     return neg*value;
 }
+NK_API unsigned long long
+nk_strtoull(const char *str, const char **endptr)
+{
+	unsigned long long neg = 1;
+	const char *p = str;
+	unsigned long long value = 0;
+
+	NK_ASSERT(str);
+	if (!str) return 0;
+
+	/* skip whitespace */
+	while (*p == ' ') p++;
+	if (*p == '-') {
+		neg = -1;
+		p++;
+	}
+	while (*p && *p >= '0' && *p <= '9') {
+		value = value * 10 + (unsigned long long) (*p - '0');
+		p++;
+	}
+	if (endptr)
+		*endptr = p;
+	return neg*value;
+}
 NK_API double
 nk_strtod(const char *str, const char **endptr)
 {
@@ -492,6 +516,30 @@ nk_itoa(char *s, long n)
 
     nk_strrev_ascii(s);
     return s;
+}
+NK_LIB char*
+nk_ulltoa(char *s, unsigned long long n)
+{
+	long i = 0;
+	if (n == 0) {
+		s[i++] = '0';
+		s[i] = 0;
+		return s;
+	}
+	if (n < 0) {
+		s[i++] = '-';
+		n = -n;
+	}
+	while (n > 0) {
+		s[i++] = (char)('0' + (n % 10));
+		n /= 10;
+	}
+	s[i] = 0;
+	if (s[0] == '-')
+		++s;
+
+	nk_strrev_ascii(s);
+	return s;
 }
 NK_LIB char*
 nk_dtoa(char *s, double n)

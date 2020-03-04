@@ -25,6 +25,10 @@ nk_drag_behavior(nk_flags *state, const struct nk_input *in,
         delta = pixels * inc_per_pixel;
         switch (variant->kind) {
         default: break;
+		case NK_PROPERTY_ULL:
+			variant->value.ull = variant->value.ull + (int)delta;
+			variant->value.ull = NK_CLAMP(variant->min_value.ull, variant->value.ull, variant->max_value.ull);
+			break;
         case NK_PROPERTY_INT:
             variant->value.i = variant->value.i + (int)delta;
             variant->value.i = NK_CLAMP(variant->min_value.i, variant->value.i, variant->max_value.i);
@@ -156,6 +160,10 @@ nk_do_property(nk_flags *ws,
     } else {
         switch (variant->kind) {
         default: break;
+		case NK_PROPERTY_ULL:
+			nk_ulltoa(string, variant->value.ull);
+			num_len = nk_strlen(string);
+			break;
         case NK_PROPERTY_INT:
             nk_itoa(string, variant->value.i);
             num_len = nk_strlen(string);
@@ -199,6 +207,8 @@ nk_do_property(nk_flags *ws,
     if (nk_do_button_symbol(ws, out, left, style->sym_left, behavior, &style->dec_button, in, font)) {
         switch (variant->kind) {
         default: break;
+		case NK_PROPERTY_ULL:
+			variant->value.ull = NK_CLAMP(variant->min_value.ull, variant->value.ull - variant->step.ull, variant->max_value.ull); break;
         case NK_PROPERTY_INT:
             variant->value.i = NK_CLAMP(variant->min_value.i, variant->value.i - variant->step.i, variant->max_value.i); break;
         case NK_PROPERTY_FLOAT:
@@ -211,6 +221,8 @@ nk_do_property(nk_flags *ws,
     if (nk_do_button_symbol(ws, out, right, style->sym_right, behavior, &style->inc_button, in, font)) {
         switch (variant->kind) {
         default: break;
+		case NK_PROPERTY_ULL:
+			variant->value.ull = NK_CLAMP(variant->min_value.ull, variant->value.ull + variant->step.ull, variant->max_value.ull); break;
         case NK_PROPERTY_INT:
             variant->value.i = NK_CLAMP(variant->min_value.i, variant->value.i + variant->step.i, variant->max_value.i); break;
         case NK_PROPERTY_FLOAT:
@@ -257,6 +269,10 @@ nk_do_property(nk_flags *ws,
         buffer[*len] = '\0';
         switch (variant->kind) {
         default: break;
+		case NK_PROPERTY_ULL:
+			variant->value.ull = nk_strtoull(buffer, 0);
+			variant->value.ull = NK_CLAMP(variant->min_value.ull, variant->value.ull, variant->max_value.ull);
+			break;
         case NK_PROPERTY_INT:
             variant->value.i = nk_strtoi(buffer, 0);
             variant->value.i = NK_CLAMP(variant->min_value.i, variant->value.i, variant->max_value.i);
@@ -307,6 +323,17 @@ nk_property_variant_double(double value, double min_value, double max_value,
     result.max_value.d = max_value;
     result.step.d = step;
     return result;
+}
+NK_LIB struct nk_property_variant
+nk_property_variant_ull(unsigned long long value, unsigned long long min_value, unsigned long long max_value,unsigned long long step)
+{
+	struct nk_property_variant result;
+	result.kind = NK_PROPERTY_ULL;
+	result.value.ull = value;
+	result.min_value.ull = min_value;
+	result.max_value.ull = max_value;
+	result.step.ull = step;
+	return result;
 }
 NK_LIB void
 nk_property(struct nk_context *ctx, const char *name, struct nk_property_variant *variant,
@@ -407,6 +434,19 @@ nk_property(struct nk_context *ctx, const char *name, struct nk_property_variant
         win->property.select_end = 0;
         win->property.active = 0;
     }
+}
+NK_API void
+nk_property_ull(struct nk_context *ctx, const char *name, unsigned long long min, unsigned long long *val, unsigned long long max, unsigned long long step, float inc_per_pixel)
+{
+	struct nk_property_variant variant;
+	NK_ASSERT(ctx);
+	NK_ASSERT(name);
+	NK_ASSERT(val);
+
+	if (!ctx || !ctx->current || !name || !val) return;
+	variant = nk_property_variant_ull(*val, min, max, step);
+	nk_property(ctx, name, &variant, inc_per_pixel, NK_FILTER_INT);
+	*val = variant.value.ull;
 }
 NK_API void
 nk_property_int(struct nk_context *ctx, const char *name,
