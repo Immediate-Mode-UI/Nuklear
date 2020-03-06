@@ -21264,15 +21264,12 @@ nk_layout_row_calculate_usable_space(const struct nk_style *style, enum nk_panel
     float panel_space;
 
     struct nk_vec2 spacing;
-    struct nk_vec2 padding;
 
     spacing = style->window.spacing;
-    padding = nk_panel_get_padding(style, type);
 
     /* calculate the usable panel space */
-    panel_padding = 2 * padding.x;
     panel_spacing = (float)NK_MAX(columns - 1, 0) * spacing.x;
-    panel_space  = total_space - panel_padding - panel_spacing;
+    panel_space  = total_space - panel_spacing;
     return panel_space;
 }
 NK_LIB void
@@ -21816,7 +21813,6 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
     NK_ASSERT(bounds);
 
     spacing = style->window.spacing;
-    padding = nk_panel_get_padding(style, layout->type);
     panel_space = nk_layout_row_calculate_usable_space(&ctx->style, layout->type,
                                             layout->bounds.w, layout->row.columns);
 
@@ -21921,7 +21917,7 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
     bounds->w = item_width;
     bounds->h = layout->row.height - spacing.y;
     bounds->y = layout->at_y - (float)*layout->offset_y;
-    bounds->x = layout->at_x + item_offset + item_spacing + padding.x;
+    bounds->x = layout->at_x + item_offset + item_spacing;
     if (((bounds->x + bounds->w) > layout->max_x) && modify)
         layout->max_x = bounds->x + bounds->w;
     bounds->x -= (float)*layout->offset_x;
@@ -29114,6 +29110,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/03/06 (4.01.7) - Fix bug where width padding was applied twice
 /// - 2020/02/06 (4.01.6) - Update stb_truetype.h and stb_rect_pack.h and separate them
 /// - 2019/12/10 (4.01.5) - Fix off-by-one error in NK_INTERSECT
 /// - 2019/10/09 (4.01.4) - Fix bug for autoscrolling in nk_do_edit
