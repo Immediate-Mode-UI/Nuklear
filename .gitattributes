@@ -1,3 +1,5 @@
 # Github language settings
 *.h linguist-language=c
 *.c linguist-language=c
+
+* text=auto

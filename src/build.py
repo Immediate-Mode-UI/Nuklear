@@ -63,18 +63,18 @@ def parse_files(arg):
             else:
                 files.append(path)
 
-    return files;
+    return files
 
 def omit_includes(str, files):
     for file in files:
         fname = os.path.basename(file)
         if ".h" in file:
-            str = str.replace("#include \"" + fname + "\"", "");
-            str = str.replace("#include <" + fname + ">", "");
+            str = str.replace("#include \"" + fname + "\"", "")
+            str = str.replace("#include <" + fname + ">", "")
     return str
 
 def fix_comments(str):
-    return re.sub(r"//(.*)(\n|$)", "/* \\1 */\\2", str)
+    return re.sub(r"//(.*)(" + os.linesep + r"|$)", "/* \\1 */\\2", str)
 
 # Main start
 # ==========
@@ -88,6 +88,7 @@ pub_files = []
 priv_files1 = []
 outro_files2 = []
 extern_files = []
+output_file = ""
 cur_arg = 1
 macro = ""
 
@@ -118,6 +119,9 @@ while cur_arg < len(sys.argv):
     elif sys.argv[cur_arg] == "--outro":
         cur_arg += 1
         outro_files = parse_files(sys.argv[cur_arg])
+    elif sys.argv[cur_arg] == "--output":
+        cur_arg += 1
+        output_file = parse_files(sys.argv[cur_arg])[0]
     else:
         print("Unknown argument " + sys.argv[cur_arg])
 
@@ -127,41 +131,46 @@ if macro == "":
     print("Option --macro <macro> is mandatory")
     exit()
 
+out = open(output_file, "wb")
+
 # Print concatenated output
 # -------------------------
-print("/*")
+out.write("/*" + os.linesep)
 for f in intro_files:
-    sys.stdout.write(open(f, 'r').read())
-print("*/")
+    out.write(open(f, 'rb').read())
+out.write("*/" + os.linesep)
 
 # print(os.linesep + "#ifndef " + macro + "_SINGLE_HEADER");
 # print("#define " + macro + "_SINGLE_HEADER");
-print("#ifndef NK_SINGLE_FILE");
-print("  #define NK_SINGLE_FILE");
-print("#endif");
-print("");
+out.write("#ifndef NK_SINGLE_FILE" + os.linesep)
+out.write("  #define NK_SINGLE_FILE" + os.linesep)
+out.write("#endif" + os.linesep)
+out.write("" + os.linesep)
 
 for f in pub_files:
-    sys.stdout.write(open(f, 'r').read())
+    out.write(open(f, 'rb').read())
+    out.write(os.linesep)
 # print("#endif /* " + macro + "_SINGLE_HEADER */");
 
-print(os.linesep + "#ifdef " + macro + "_IMPLEMENTATION");
-print("");
+out.write(os.linesep + "#ifdef " + macro + "_IMPLEMENTATION" + os.linesep)
+out.write("" + os.linesep)
 
 for f in priv_files1:
-    print(omit_includes(open(f, 'r').read(),
+    out.write(omit_includes(open(f, 'rb').read(),
                         pub_files + priv_files1 + priv_files2 + extern_files))
+    out.write(os.linesep)
 for f in extern_files:
-    print(fix_comments(open(f, 'r').read()))
+    out.write(fix_comments(open(f, 'rb').read()))
+    out.write(os.linesep)
 
 for f in priv_files2:
-    print(omit_includes(open(f, 'r').read(),
+    out.write(omit_includes(open(f, 'rb').read(),
                         pub_files + priv_files1 + priv_files2 + extern_files))
+    out.write(os.linesep)
 
-print("#endif /* " + macro + "_IMPLEMENTATION */");
+out.write("#endif /* " + macro + "_IMPLEMENTATION */" + os.linesep)
 
-print(os.linesep + "/*")
+out.write(os.linesep + "/*" + os.linesep)
 for f in outro_files:
-    sys.stdout.write(open(f, 'r').read())
-print("*/" + os.linesep)
-
+    out.write(open(f, 'rb').read())
+out.write("*/" + os.linesep)

@@ -5710,7 +5710,8 @@ static nk_handle fictional_handle = {0};
 #endif
 
 #endif /* NK_NUKLEAR_H_ */
-
+
+
 #ifdef NK_IMPLEMENTATION
 
 #ifndef NK_INTERNAL_H
@@ -29325,7 +29326,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 
 
 #endif /* NK_IMPLEMENTATION */
-
+
 /*
 /// ## License
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~none
@@ -29380,7 +29381,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
-/// - 2020/03/01 (4.01.7) - Implemented 9-slice scaling support for widget styles
+/// - 2020/03/01 (4.01.7) - Implemented 9-slice scaling support for widget styles and fixed inconsisten line endings
 /// - 2020/02/06 (4.01.6) - Update stb_truetype.h and stb_rect_pack.h and separate them
 /// - 2019/12/10 (4.01.5) - Fix off-by-one error in NK_INTERSECT
 /// - 2019/10/09 (4.01.4) - Fix bug for autoscrolling in nk_do_edit
@@ -29685,5 +29686,4 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 /// Barret for his amazing single header libraries which restored my faith
 /// in libraries and brought me to create some of my own. Finally Apoorva Joshi
 /// for his single header file packer.
-*/
-
+*/
