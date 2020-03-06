@@ -2,12 +2,15 @@
 import fnmatch
 import os.path
 import sys
+import re
 
 def print_help():
     print(
-"""usage: python single_header_packer.py --macro <macro> [--intro <files>] --pub <files> --priv <files> [--outro <files>]
+"""usage: python single_header_packer.py --macro <macro> [--intro <files>] --extern <files> --pub <files> --priv1 <files> --priv2 <files> [--outro <files>]
 
        where <files> can be a comma-separated list of files. e.g. --priv *.c,inc/*.h
+       
+       The 'extern' files are placed between 'priv1' and 'priv2'.
 
        The resulting code is packed as follows:
 
@@ -70,6 +73,9 @@ def omit_includes(str, files):
             str = str.replace("#include <" + fname + ">", "");
     return str
 
+def fix_comments(str):
+    return re.sub(r"//(.*)(\n|$)", "/* \\1 */\\2", str)
+
 # Main start
 # ==========
 
@@ -79,8 +85,9 @@ if len(sys.argv) < 2:
 
 intro_files = []
 pub_files = []
-priv_files = []
-outro_files = []
+priv_files1 = []
+outro_files2 = []
+extern_files = []
 cur_arg = 1
 macro = ""
 
@@ -99,9 +106,15 @@ while cur_arg < len(sys.argv):
     elif sys.argv[cur_arg] == "--pub":
         cur_arg += 1
         pub_files = parse_files(sys.argv[cur_arg])
-    elif sys.argv[cur_arg] == "--priv":
+    elif sys.argv[cur_arg] == "--priv1":
         cur_arg += 1
-        priv_files = parse_files(sys.argv[cur_arg])
+        priv_files1 = parse_files(sys.argv[cur_arg])
+    elif sys.argv[cur_arg] == "--priv2":
+        cur_arg += 1
+        priv_files2 = parse_files(sys.argv[cur_arg])
+    elif sys.argv[cur_arg] == "--extern":
+        cur_arg += 1
+        extern_files = parse_files(sys.argv[cur_arg])
     elif sys.argv[cur_arg] == "--outro":
         cur_arg += 1
         outro_files = parse_files(sys.argv[cur_arg])
@@ -134,9 +147,17 @@ for f in pub_files:
 
 print(os.linesep + "#ifdef " + macro + "_IMPLEMENTATION");
 print("");
-for f in priv_files:
+
+for f in priv_files1:
     print(omit_includes(open(f, 'r').read(),
-                        pub_files + priv_files))
+                        pub_files + priv_files1 + priv_files2 + extern_files))
+for f in extern_files:
+    print(fix_comments(open(f, 'r').read()))
+
+for f in priv_files2:
+    print(omit_includes(open(f, 'r').read(),
+                        pub_files + priv_files1 + priv_files2 + extern_files))
+
 print("#endif /* " + macro + "_IMPLEMENTATION */");
 
 print(os.linesep + "/*")
