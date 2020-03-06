@@ -5711,9 +5711,7 @@ static nk_handle fictional_handle = {0};
 
 #endif /* NK_NUKLEAR_H_ */
 
-
 #ifdef NK_IMPLEMENTATION
-
 #ifndef NK_INTERNAL_H
 #define NK_INTERNAL_H
 
