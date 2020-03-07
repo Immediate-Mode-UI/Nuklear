@@ -43,6 +43,7 @@
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
 #define INCLUDE_OVERVIEW
+#define INCLUDE_CONFIGURATOR
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
@@ -50,6 +51,7 @@
   #define INCLUDE_CALCULATOR
   #define INCLUDE_CANVAS
   #define INCLUDE_OVERVIEW
+  #define INCLUDE_CONFIGURATOR
   #define INCLUDE_NODE_EDITOR
 #endif
 
@@ -65,6 +67,9 @@
 #ifdef INCLUDE_OVERVIEW
   #include "../../demo/common/overview.c"
 #endif
+#ifdef INCLUDE_OVERVIEW
+  #include "../style_configurator.c"
+#endif
 #ifdef INCLUDE_NODE_EDITOR
   #include "../../demo/common/node_editor.c"
 #endif
@@ -74,7 +79,7 @@
  *                          DEMO
  *
  * ===============================================================*/
-int main(int argc, char *argv[])
+int main(void)
 {
     /* Platform */
     SDL_Window *win;
@@ -182,6 +187,9 @@ int main(int argc, char *argv[])
         #endif
         #ifdef INCLUDE_OVERVIEW
           overview(ctx);
+        #endif
+        #ifdef INCLUDE_OVERVIEW
+          style_configurator(ctx);
         #endif
         #ifdef INCLUDE_NODE_EDITOR
           node_editor(ctx);
