@@ -9241,7 +9241,7 @@ nk_draw_9slice(struct nk_command_buffer *b, struct nk_rect r,
         nk_rect(r.x + r.w - (float)slc->r, r.y + r.h - (float)slc->b, (float)slc->r, (float)slc->b),
         &img, col);
 
-#undef _IMG
+#undef IMG_RGN
 }
 NK_API void
 nk_push_custom(struct nk_command_buffer *b, struct nk_rect r,
@@ -29461,7 +29461,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
-/// - 2020/03/07 (4.01.8) - Implemented 9-slice scaling support for widget styles and fixed inconsistent line endings problem
+/// - 2020/03/07 (4.02.0) - Implemented 9-slice scaling support for widget styles and fixed inconsistent line endings problem
 /// - 2020/03/06 (4.01.7) - Fix bug where width padding was applied twice
 /// - 2020/02/06 (4.01.6) - Update stb_truetype.h and stb_rect_pack.h and separate them
 /// - 2019/12/10 (4.01.5) - Fix off-by-one error in NK_INTERSECT

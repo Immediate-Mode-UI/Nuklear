@@ -482,7 +482,7 @@ nk_draw_9slice(struct nk_command_buffer *b, struct nk_rect r,
         nk_rect(r.x + r.w - (float)slc->r, r.y + r.h - (float)slc->b, (float)slc->r, (float)slc->b),
         &img, col);
 
-#undef _IMG
+#undef IMG_RGN
 }
 NK_API void
 nk_push_custom(struct nk_command_buffer *b, struct nk_rect r,
