@@ -9177,6 +9177,8 @@ NK_API void
 nk_draw_9slice(struct nk_command_buffer *b, struct nk_rect r,
     const struct nk_9slice *slc, struct nk_color col)
 {
+    typedef struct nk_image nk_image_t;
+
     const struct nk_image *slcimg = (const struct nk_image*)slc;
     nk_ushort rgnX, rgnY, rgnW, rgnH;
     rgnX = slcimg->region[0];
@@ -9185,63 +9187,63 @@ nk_draw_9slice(struct nk_command_buffer *b, struct nk_rect r,
     rgnH = slcimg->region[3];
 
     /* top-left */
-    struct nk_image img = {slcimg->handle, slcimg->w, slcimg->h,
+    nk_image_t img = {slcimg->handle, slcimg->w, slcimg->h,
         {rgnX, rgnY, slc->l, slc->t}};
     nk_draw_image(b,
         nk_rect(r.x, r.y, (float)slc->l, (float)slc->t),
         &img, col);
 
     /* top-center */
-    img = (struct nk_image){slcimg->handle, slcimg->w, slcimg->h,
+    img = nk_image_t{slcimg->handle, slcimg->w, slcimg->h,
         {(nk_ushort)(rgnX + slc->l), rgnY, (nk_ushort)(rgnW - slc->l - slc->r), slc->t}};
     nk_draw_image(b,
         nk_rect(r.x + (float)slc->l, r.y, (float)(r.w - slc->l - slc->r), (float)slc->t),
         &img, col);
 
     /* top-right */
-    img = (struct nk_image){slcimg->handle, slcimg->w, slcimg->h,
+    img = nk_image_t{slcimg->handle, slcimg->w, slcimg->h,
         {(nk_ushort)(rgnX + rgnW - slc->r), rgnY, slc->r, slc->t}};
     nk_draw_image(b,
         nk_rect(r.x + r.w - (float)slc->r, r.y, (float)slc->r, (float)slc->t),
         &img, col);
 
     /* center-left */
-    img = (struct nk_image){slcimg->handle, slcimg->w, slcimg->h,
+    img = nk_image_t{slcimg->handle, slcimg->w, slcimg->h,
         {rgnX, (nk_ushort)(rgnY + slc->t), slc->l, (nk_ushort)(rgnH - slc->t - slc->b)}};
     nk_draw_image(b,
         nk_rect(r.x, r.y + (float)slc->t, (float)slc->l, (float)(r.h - slc->t - slc->b)),
         &img, col);
 
     /* center */
-    img = (struct nk_image){slcimg->handle, slcimg->w, slcimg->h,
+    img = nk_image_t{slcimg->handle, slcimg->w, slcimg->h,
         {(nk_ushort)(rgnX + slc->l), (nk_ushort)(rgnY + slc->t), (nk_ushort)(rgnW - slc->l - slc->r), (nk_ushort)(rgnH - slc->t - slc->b)}};
     nk_draw_image(b,
         nk_rect(r.x + (float)slc->l, r.y + (float)slc->t, (float)(r.w - slc->l - slc->r), (float)(r.h - slc->t - slc->b)),
         &img, col);
 
     /* center-right */
-    img = (struct nk_image){slcimg->handle, slcimg->w, slcimg->h,
+    img = nk_image_t{slcimg->handle, slcimg->w, slcimg->h,
         {(nk_ushort)(rgnX + rgnW - slc->r), (nk_ushort)(rgnY + slc->t), slc->r, (nk_ushort)(rgnH - slc->t - slc->b)}};
     nk_draw_image(b,
         nk_rect(r.x + r.w - (float)slc->r, r.y + (float)slc->t, (float)slc->r, (float)(r.h - slc->t - slc->b)),
         &img, col);
 
     /* bottom-left */
-    img = (struct nk_image){slcimg->handle, slcimg->w, slcimg->h,
+    img = nk_image_t{slcimg->handle, slcimg->w, slcimg->h,
         {rgnX, (nk_ushort)(rgnY + rgnH - slc->b), slc->l, slc->b}};
     nk_draw_image(b,
         nk_rect(r.x, r.y + r.h - (float)slc->b, (float)slc->l, (float)slc->b),
         &img, col);
 
     /* bottom-center */
-    img = (struct nk_image){slcimg->handle, slcimg->w, slcimg->h,
+    img = nk_image_t{slcimg->handle, slcimg->w, slcimg->h,
         {(nk_ushort)(rgnX + slc->l), (nk_ushort)(rgnY + rgnH - slc->b), (nk_ushort)(rgnW - slc->l - slc->r), slc->b}};
     nk_draw_image(b,
         nk_rect(r.x + (float)slc->l, r.y + r.h - (float)slc->b, (float)(r.w - slc->l - slc->r), (float)slc->b),
         &img, col);
 
     /* bottom-right */
-    img = (struct nk_image){slcimg->handle, slcimg->w, slcimg->h,
+    img = nk_image_t{slcimg->handle, slcimg->w, slcimg->h,
         {(nk_ushort)(rgnX + rgnW - slc->r), (nk_ushort)(rgnY + rgnH - slc->b), slc->r, slc->b}};
     nk_draw_image(b,
         nk_rect(r.x + r.w - (float)slc->r, r.y + r.h - (float)slc->b, (float)slc->r, (float)slc->b),
@@ -19475,15 +19477,20 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
 
         /* draw header background */
         header.h += 1.0f;
-        if (background->type == NK_STYLE_ITEM_IMAGE) {
-            text.background = nk_rgba(0,0,0,0);
-            nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
-        } else if (background->type == NK_STYLE_ITEM_9SLICE) {
-            text.background = nk_rgba(0, 0, 0, 0);
-            nk_draw_9slice(&win->buffer, header, &background->data.slice, nk_white);
-        } else {
-            text.background = background->data.color;
-            nk_fill_rect(out, header, 0, background->data.color);
+
+        switch(background->type) {
+            case NK_STYLE_ITEM_IMAGE:
+                text.background = nk_rgba(0,0,0,0);
+                nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
+                break;
+            case NK_STYLE_ITEM_9SLICE:
+                text.background = nk_rgba(0, 0, 0, 0);
+                nk_draw_9slice(&win->buffer, header, &background->data.slice, nk_white);
+                break;
+            case NK_STYLE_ITEM_COLOR:
+                text.background = background->data.color;
+                nk_fill_rect(out, header, 0, background->data.color);
+                break;
         }
 
         /* window close button */
@@ -19554,11 +19561,18 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         body.w = win->bounds.w;
         body.y = (win->bounds.y + layout->header_height);
         body.h = (win->bounds.h - layout->header_height);
-        if (style->window.fixed_background.type == NK_STYLE_ITEM_IMAGE)
-            nk_draw_image(out, body, &style->window.fixed_background.data.image, nk_white);
-        else if (style->window.fixed_background.type == NK_STYLE_ITEM_9SLICE)
-            nk_draw_9slice(out, body, &style->window.fixed_background.data.slice, nk_white);
-        else nk_fill_rect(out, body, 0, style->window.fixed_background.data.color);
+
+        switch(style->window.fixed_background.type) {
+            case NK_STYLE_ITEM_IMAGE:
+                nk_draw_image(out, body, &style->window.fixed_background.data.image, nk_white);
+                break;
+            case NK_STYLE_ITEM_9SLICE:
+                nk_draw_9slice(out, body, &style->window.fixed_background.data.slice, nk_white);
+                break;
+            case NK_STYLE_ITEM_COLOR:
+                nk_fill_rect(out, body, 0, style->window.fixed_background.data.color);
+                break;
+        }
     }
 
     /* set clipping rectangle */
@@ -22133,17 +22147,22 @@ nk_tree_state_base(struct nk_context *ctx, enum nk_tree_type type,
     widget_state = nk_widget(&header, ctx);
     if (type == NK_TREE_TAB) {
         const struct nk_style_item *background = &style->tab.background;
-        if (background->type == NK_STYLE_ITEM_IMAGE) {
-            text.background = nk_rgba(0, 0, 0, 0);
-            nk_draw_image(out, header, &background->data.image, nk_white);
-        } else if (background->type == NK_STYLE_ITEM_9SLICE) {
-            text.background = nk_rgba(0, 0, 0, 0);
-            nk_draw_9slice(out, header, &background->data.slice, nk_white);
-        } else {
-            text.background = background->data.color;
-            nk_fill_rect(out, header, 0, style->tab.border_color);
-            nk_fill_rect(out, nk_shrink_rect(header, style->tab.border),
-                style->tab.rounding, background->data.color);
+
+        switch(background->type) {
+            case NK_STYLE_ITEM_IMAGE:
+                text.background = nk_rgba(0, 0, 0, 0);
+                nk_draw_image(out, header, &background->data.image, nk_white);
+                break;
+            case NK_STYLE_ITEM_9SLICE:
+                text.background = nk_rgba(0, 0, 0, 0);
+                nk_draw_9slice(out, header, &background->data.slice, nk_white);
+                break;
+            case NK_STYLE_ITEM_COLOR:
+                text.background = background->data.color;
+                nk_fill_rect(out, header, 0, style->tab.border_color);
+                nk_fill_rect(out, nk_shrink_rect(header, style->tab.border),
+                    style->tab.rounding, background->data.color);
+                break;
         }
     } else text.background = style->window.background;
 
@@ -22322,17 +22341,22 @@ nk_tree_element_image_push_hashed_base(struct nk_context *ctx, enum nk_tree_type
     widget_state = nk_widget(&header, ctx);
     if (type == NK_TREE_TAB) {
         const struct nk_style_item *background = &style->tab.background;
-        if (background->type == NK_STYLE_ITEM_IMAGE) {
-            text.background = nk_rgba(0, 0, 0, 0);
-            nk_draw_image(out, header, &background->data.image, nk_white);
-        } else if (background->type == NK_STYLE_ITEM_9SLICE) {
-            text.background = nk_rgba(0, 0, 0, 0);
-            nk_draw_9slice(out, header, &background->data.slice, nk_white);
-        } else {
-            text.background = background->data.color;
-            nk_fill_rect(out, header, 0, style->tab.border_color);
-            nk_fill_rect(out, nk_shrink_rect(header, style->tab.border),
-                style->tab.rounding, background->data.color);
+
+        switch (background->type) {
+            case NK_STYLE_ITEM_IMAGE:
+                text.background = nk_rgba(0, 0, 0, 0);
+                nk_draw_image(out, header, &background->data.image, nk_white);
+                break;
+            case NK_STYLE_ITEM_9SLICE:
+                text.background = nk_rgba(0, 0, 0, 0);
+                nk_draw_9slice(out, header, &background->data.slice, nk_white);
+                break;
+            case NK_STYLE_ITEM_COLOR:
+                text.background = background->data.color;
+                nk_fill_rect(out, header, 0, style->tab.border_color);
+                nk_fill_rect(out, nk_shrink_rect(header, style->tab.border),
+                    style->tab.rounding, background->data.color);
+                break;
         }
     } else text.background = style->window.background;
 
@@ -23637,13 +23661,17 @@ nk_draw_button(struct nk_command_buffer *out,
         background = &style->active;
     else background = &style->normal;
 
-    if (background->type == NK_STYLE_ITEM_IMAGE) {
-        nk_draw_image(out, *bounds, &background->data.image, nk_white);
-    }  else if (background->type == NK_STYLE_ITEM_9SLICE) {
-        nk_draw_9slice(out, *bounds, &background->data.slice, nk_white);
-    } else {
-        nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-        nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            nk_draw_image(out, *bounds, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_9SLICE:
+            nk_draw_9slice(out, *bounds, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
+            nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+            break;
     }
     return background;
 }
@@ -24571,15 +24599,19 @@ nk_draw_selectable(struct nk_command_buffer *out,
         }
     }
     /* draw selectable background and text */
-    if (background->type == NK_STYLE_ITEM_IMAGE) {
-        text.background = nk_rgba(0, 0, 0, 0);
-        nk_draw_image(out, *bounds, &background->data.image, nk_white);
-    } else if (background->type == NK_STYLE_ITEM_9SLICE) {
-        text.background = nk_rgba(0, 0, 0, 0);
-        nk_draw_9slice(out, *bounds, &background->data.slice, nk_white);
-    } else {
-        text.background = background->data.color;
-        nk_fill_rect(out, *bounds, style->rounding, background->data.color);
+    switch (background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_image(out, *bounds, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_9SLICE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_9slice(out, *bounds, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            text.background = background->data.color;
+            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
+            break;
     }
     if (icon) {
         if (img) nk_draw_image(out, *icon, img, nk_white);
@@ -24946,13 +24978,17 @@ nk_draw_slider(struct nk_command_buffer *out, nk_flags state,
     fill.h = bar.h;
 
     /* draw background */
-    if (background->type == NK_STYLE_ITEM_IMAGE)
-        nk_draw_image(out, *bounds, &background->data.image, nk_white);
-    else if (background->type == NK_STYLE_ITEM_9SLICE)
-        nk_draw_9slice(out, *bounds, &background->data.slice, nk_white);
-    else {
-        nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-        nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            nk_draw_image(out, *bounds, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_9SLICE:
+            nk_draw_9slice(out, *bounds, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
+            nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+            break;
     }
 
     /* draw slider bar */
@@ -25173,23 +25209,31 @@ nk_draw_progress(struct nk_command_buffer *out, nk_flags state,
     }
 
     /* draw background */
-    if (background->type == NK_STYLE_ITEM_IMAGE)
-        nk_draw_image(out, *bounds, &background->data.image, nk_white);
-    else if (background->type == NK_STYLE_ITEM_9SLICE)
-        nk_draw_9slice(out, *bounds, &background->data.slice, nk_white);
-    else {
-        nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-        nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            nk_draw_image(out, *bounds, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_9SLICE:
+            nk_draw_9slice(out, *bounds, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
+            nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+            break;
     }
 
     /* draw cursor */
-    if (cursor->type == NK_STYLE_ITEM_IMAGE)
-        nk_draw_image(out, *scursor, &cursor->data.image, nk_white);
-    else if (cursor->type == NK_STYLE_ITEM_9SLICE)
-        nk_draw_9slice(out, *scursor, &cursor->data.slice, nk_white);
-    else {
-        nk_fill_rect(out, *scursor, style->rounding, cursor->data.color);
-        nk_stroke_rect(out, *scursor, style->rounding, style->border, style->border_color);
+    switch(cursor->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            nk_draw_image(out, *scursor, &cursor->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_9SLICE:
+            nk_draw_9slice(out, *scursor, &cursor->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            nk_fill_rect(out, *scursor, style->rounding, cursor->data.color);
+            nk_stroke_rect(out, *scursor, style->rounding, style->border, style->border_color);
+            break;
     }
 }
 NK_LIB nk_size
@@ -25367,23 +25411,31 @@ nk_draw_scrollbar(struct nk_command_buffer *out, nk_flags state,
     }
 
     /* draw background */
-    if (background->type == NK_STYLE_ITEM_IMAGE)
-        nk_draw_image(out, *bounds, &background->data.image, nk_white);
-    else if (background->type == NK_STYLE_ITEM_9SLICE)
-        nk_draw_9slice(out, *bounds, &background->data.slice, nk_white);
-    else {
-        nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-        nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+    switch (background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            nk_draw_image(out, *bounds, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_9SLICE:
+            nk_draw_9slice(out, *bounds, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
+            nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+            break;
     }
 
     /* draw cursor */
-    if (cursor->type == NK_STYLE_ITEM_IMAGE)
-        nk_draw_image(out, *scroll, &cursor->data.image, nk_white);
-    else if (cursor->type == NK_STYLE_ITEM_9SLICE)
-        nk_draw_9slice(out, *scroll, &cursor->data.slice, nk_white);
-    else {
-        nk_fill_rect(out, *scroll, style->rounding_cursor, cursor->data.color);
-        nk_stroke_rect(out, *scroll, style->rounding_cursor, style->border_cursor, style->cursor_border_color);
+    switch (cursor->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            nk_draw_image(out, *scroll, &cursor->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_9SLICE:
+            nk_draw_9slice(out, *scroll, &cursor->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            nk_fill_rect(out, *scroll, style->rounding_cursor, cursor->data.color);
+            nk_stroke_rect(out, *scroll, style->rounding_cursor, style->border_cursor, style->cursor_border_color);
+            break;
     }
 }
 NK_LIB float
@@ -26923,13 +26975,17 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
     else background = &style->normal;
 
     /* draw background frame */
-    if (background->type == NK_STYLE_ITEM_IMAGE)
-        nk_draw_image(out, bounds, &background->data.image, nk_white);
-    else if (background->type == NK_STYLE_ITEM_9SLICE)
-        nk_draw_9slice(out, bounds, &background->data.slice, nk_white);
-    else {
-        nk_stroke_rect(out, bounds, style->rounding, style->border, style->border_color);
-        nk_fill_rect(out, bounds, style->rounding, background->data.color);
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            nk_draw_image(out, bounds, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_9SLICE:
+            nk_draw_9slice(out, bounds, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            nk_stroke_rect(out, bounds, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, bounds, style->rounding, background->data.color);
+            break;
     }}
 
 
@@ -27496,16 +27552,20 @@ nk_draw_property(struct nk_command_buffer *out, const struct nk_style_property *
     }
 
     /* draw background */
-    if (background->type == NK_STYLE_ITEM_IMAGE) {
-        text.background = nk_rgba(0, 0, 0, 0);
-        nk_draw_image(out, *bounds, &background->data.image, nk_white);
-    } else if (background->type == NK_STYLE_ITEM_9SLICE) {
-        text.background = nk_rgba(0, 0, 0, 0);
-        nk_draw_9slice(out, *bounds, &background->data.slice, nk_white);
-    } else {
-        text.background = background->data.color;
-        nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-        nk_stroke_rect(out, *bounds, style->rounding, style->border, background->data.color);
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_image(out, *bounds, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_9SLICE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_9slice(out, *bounds, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            text.background = background->data.color;
+            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
+            nk_stroke_rect(out, *bounds, style->rounding, style->border, background->data.color);
+            break;
     }
 
     /* draw label */
@@ -27966,14 +28026,19 @@ nk_chart_begin_colored(struct nk_context *ctx, enum nk_chart_type type,
 
     /* draw chart background */
     background = &style->background;
-    if (background->type == NK_STYLE_ITEM_IMAGE)
-        nk_draw_image(&win->buffer, bounds, &background->data.image, nk_white);
-    else if (background->type == NK_STYLE_ITEM_9SLICE)
-        nk_draw_9slice(&win->buffer, bounds, &background->data.slice, nk_white);
-    else {
-        nk_fill_rect(&win->buffer, bounds, style->rounding, style->border_color);
-        nk_fill_rect(&win->buffer, nk_shrink_rect(bounds, style->border),
-            style->rounding, style->background.data.color);
+
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            nk_draw_image(&win->buffer, bounds, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_9SLICE:
+            nk_draw_9slice(&win->buffer, bounds, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            nk_fill_rect(&win->buffer, bounds, style->rounding, style->border_color);
+            nk_fill_rect(&win->buffer, nk_shrink_rect(bounds, style->border),
+                style->rounding, style->background.data.color);
+            break;
     }
     return 1;
 }
@@ -28515,16 +28580,21 @@ nk_combo_begin_text(struct nk_context *ctx, const char *selected, int len,
         background = &style->combo.normal;
         text.text = style->combo.label_normal;
     }
-    if (background->type == NK_STYLE_ITEM_IMAGE) {
-        text.background = nk_rgba(0, 0, 0, 0);
-        nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
-    } else if (background->type == NK_STYLE_ITEM_9SLICE) {
-        text.background = nk_rgba(0, 0, 0, 0);
-        nk_draw_9slice(&win->buffer, header, &background->data.slice, nk_white);
-    } else {
-        text.background = background->data.color;
-        nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-        nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_9SLICE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_9slice(&win->buffer, header, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            text.background = background->data.color;
+            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
+            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            break;
     }
     {
         /* print currently selected text item */
@@ -28605,13 +28675,17 @@ nk_combo_begin_color(struct nk_context *ctx, struct nk_color color, struct nk_ve
         background = &style->combo.hover;
     else background = &style->combo.normal;
 
-    if (background->type == NK_STYLE_ITEM_IMAGE)
-        nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
-    else if (background->type == NK_STYLE_ITEM_9SLICE)
-        nk_draw_9slice(&win->buffer, header, &background->data.slice, nk_white);
-    else {
-        nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-        nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_9SLICE:
+            nk_draw_9slice(&win->buffer, header, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
+            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            break;
     }
     {
         struct nk_rect content;
@@ -28691,16 +28765,20 @@ nk_combo_begin_symbol(struct nk_context *ctx, enum nk_symbol_type symbol, struct
         symbol_color = style->combo.symbol_hover;
     }
 
-    if (background->type == NK_STYLE_ITEM_IMAGE) {
-        sym_background = nk_rgba(0, 0, 0, 0);
-        nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
-    } else if (background->type == NK_STYLE_ITEM_9SLICE) {
-        sym_background = nk_rgba(0, 0, 0, 0);
-        nk_draw_9slice(&win->buffer, header, &background->data.slice, nk_white);
-    } else {
-        sym_background = background->data.color;
-        nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-        nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            sym_background = nk_rgba(0, 0, 0, 0);
+            nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_9SLICE:
+            sym_background = nk_rgba(0, 0, 0, 0);
+            nk_draw_9slice(&win->buffer, header, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            sym_background = background->data.color;
+            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
+            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            break;
     }
     {
         struct nk_rect bounds = {0,0,0,0};
@@ -28783,16 +28861,21 @@ nk_combo_begin_symbol_text(struct nk_context *ctx, const char *selected, int len
         symbol_color = style->combo.symbol_normal;
         text.text = style->combo.label_normal;
     }
-    if (background->type == NK_STYLE_ITEM_IMAGE) {
-        text.background = nk_rgba(0, 0, 0, 0);
-        nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
-    } else if (background->type == NK_STYLE_ITEM_9SLICE) {
-        text.background = nk_rgba(0, 0, 0, 0);
-        nk_draw_9slice(&win->buffer, header, &background->data.slice, nk_white);
-    } else {
-        text.background = background->data.color;
-        nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-        nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_9SLICE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_9slice(&win->buffer, header, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            text.background = background->data.color;
+            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
+            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            break;
     }
     {
         struct nk_rect content;
@@ -28873,13 +28956,17 @@ nk_combo_begin_image(struct nk_context *ctx, struct nk_image img, struct nk_vec2
         background = &style->combo.hover;
     else background = &style->combo.normal;
 
-    if (background->type == NK_STYLE_ITEM_IMAGE)
-        nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
-    else if (background->type == NK_STYLE_ITEM_9SLICE)
-        nk_draw_9slice(&win->buffer, header, &background->data.slice, nk_white);
-    else {
-        nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-        nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+    switch (background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_9SLICE:
+            nk_draw_9slice(&win->buffer, header, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
+            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            break;
     }
     {
         struct nk_rect bounds = {0,0,0,0};
@@ -28957,16 +29044,21 @@ nk_combo_begin_image_text(struct nk_context *ctx, const char *selected, int len,
         background = &style->combo.normal;
         text.text = style->combo.label_normal;
     }
-    if (background->type == NK_STYLE_ITEM_IMAGE) {
-        text.background = nk_rgba(0, 0, 0, 0);
-        nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
-    } else if (background->type == NK_STYLE_ITEM_9SLICE) {
-        text.background = nk_rgba(0, 0, 0, 0);
-        nk_draw_9slice(&win->buffer, header, &background->data.slice, nk_white);
-    } else {
-        text.background = background->data.color;
-        nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-        nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_9SLICE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_9slice(&win->buffer, header, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            text.background = background->data.color;
+            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
+            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            break;
     }
     {
         struct nk_rect content;
