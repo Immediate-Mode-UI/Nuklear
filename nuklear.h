@@ -9177,8 +9177,6 @@ NK_API void
 nk_draw_9slice(struct nk_command_buffer *b, struct nk_rect r,
     const struct nk_9slice *slc, struct nk_color col)
 {
-    typedef struct nk_image nk_image_t;
-
     const struct nk_image *slcimg = (const struct nk_image*)slc;
     nk_ushort rgnX, rgnY, rgnW, rgnH;
     rgnX = slcimg->region[0];
@@ -9187,67 +9185,63 @@ nk_draw_9slice(struct nk_command_buffer *b, struct nk_rect r,
     rgnH = slcimg->region[3];
 
     /* top-left */
-    nk_image_t img = {slcimg->handle, slcimg->w, slcimg->h,
+    struct nk_image img = {slcimg->handle, slcimg->w, slcimg->h,
         {rgnX, rgnY, slc->l, slc->t}};
     nk_draw_image(b,
         nk_rect(r.x, r.y, (float)slc->l, (float)slc->t),
         &img, col);
 
+#define IMG_RGN(x, y, w, h) img.region[0] = (nk_ushort)(x); img.region[1] = (nk_ushort)(y); img.region[2] = (nk_ushort)(w); img.region[3] = (nk_ushort)(h);
+
     /* top-center */
-    img = nk_image_t{slcimg->handle, slcimg->w, slcimg->h,
-        {(nk_ushort)(rgnX + slc->l), rgnY, (nk_ushort)(rgnW - slc->l - slc->r), slc->t}};
+    IMG_RGN(rgnX + slc->l, rgnY, rgnW - slc->l - slc->r, slc->t);
     nk_draw_image(b,
         nk_rect(r.x + (float)slc->l, r.y, (float)(r.w - slc->l - slc->r), (float)slc->t),
         &img, col);
 
     /* top-right */
-    img = nk_image_t{slcimg->handle, slcimg->w, slcimg->h,
-        {(nk_ushort)(rgnX + rgnW - slc->r), rgnY, slc->r, slc->t}};
+    IMG_RGN(rgnX + rgnW - slc->r, rgnY, slc->r, slc->t);
     nk_draw_image(b,
         nk_rect(r.x + r.w - (float)slc->r, r.y, (float)slc->r, (float)slc->t),
         &img, col);
 
     /* center-left */
-    img = nk_image_t{slcimg->handle, slcimg->w, slcimg->h,
-        {rgnX, (nk_ushort)(rgnY + slc->t), slc->l, (nk_ushort)(rgnH - slc->t - slc->b)}};
+    IMG_RGN(rgnX, rgnY + slc->t, slc->l, rgnH - slc->t - slc->b);
     nk_draw_image(b,
         nk_rect(r.x, r.y + (float)slc->t, (float)slc->l, (float)(r.h - slc->t - slc->b)),
         &img, col);
 
     /* center */
-    img = nk_image_t{slcimg->handle, slcimg->w, slcimg->h,
-        {(nk_ushort)(rgnX + slc->l), (nk_ushort)(rgnY + slc->t), (nk_ushort)(rgnW - slc->l - slc->r), (nk_ushort)(rgnH - slc->t - slc->b)}};
+    IMG_RGN(rgnX + slc->l, rgnY + slc->t, rgnW - slc->l - slc->r, rgnH - slc->t - slc->b);
     nk_draw_image(b,
         nk_rect(r.x + (float)slc->l, r.y + (float)slc->t, (float)(r.w - slc->l - slc->r), (float)(r.h - slc->t - slc->b)),
         &img, col);
 
     /* center-right */
-    img = nk_image_t{slcimg->handle, slcimg->w, slcimg->h,
-        {(nk_ushort)(rgnX + rgnW - slc->r), (nk_ushort)(rgnY + slc->t), slc->r, (nk_ushort)(rgnH - slc->t - slc->b)}};
+    IMG_RGN(rgnX + rgnW - slc->r, rgnY + slc->t, slc->r, rgnH - slc->t - slc->b);
     nk_draw_image(b,
         nk_rect(r.x + r.w - (float)slc->r, r.y + (float)slc->t, (float)slc->r, (float)(r.h - slc->t - slc->b)),
         &img, col);
 
     /* bottom-left */
-    img = nk_image_t{slcimg->handle, slcimg->w, slcimg->h,
-        {rgnX, (nk_ushort)(rgnY + rgnH - slc->b), slc->l, slc->b}};
+    IMG_RGN(rgnX, rgnY + rgnH - slc->b, slc->l, slc->b);
     nk_draw_image(b,
         nk_rect(r.x, r.y + r.h - (float)slc->b, (float)slc->l, (float)slc->b),
         &img, col);
 
     /* bottom-center */
-    img = nk_image_t{slcimg->handle, slcimg->w, slcimg->h,
-        {(nk_ushort)(rgnX + slc->l), (nk_ushort)(rgnY + rgnH - slc->b), (nk_ushort)(rgnW - slc->l - slc->r), slc->b}};
+    IMG_RGN(rgnX + slc->l, rgnY + rgnH - slc->b, rgnW - slc->l - slc->r, slc->b);
     nk_draw_image(b,
         nk_rect(r.x + (float)slc->l, r.y + r.h - (float)slc->b, (float)(r.w - slc->l - slc->r), (float)slc->b),
         &img, col);
 
     /* bottom-right */
-    img = nk_image_t{slcimg->handle, slcimg->w, slcimg->h,
-        {(nk_ushort)(rgnX + rgnW - slc->r), (nk_ushort)(rgnY + rgnH - slc->b), slc->r, slc->b}};
+    IMG_RGN(rgnX + rgnW - slc->r, rgnY + rgnH - slc->b, slc->r, slc->b);
     nk_draw_image(b,
         nk_rect(r.x + r.w - (float)slc->r, r.y + r.h - (float)slc->b, (float)slc->r, (float)slc->b),
         &img, col);
+
+#undef _IMG
 }
 NK_API void
 nk_push_custom(struct nk_command_buffer *b, struct nk_rect r,
@@ -21381,15 +21375,12 @@ nk_layout_row_calculate_usable_space(const struct nk_style *style, enum nk_panel
     float panel_space;
 
     struct nk_vec2 spacing;
-    struct nk_vec2 padding;
 
     spacing = style->window.spacing;
-    padding = nk_panel_get_padding(style, type);
 
     /* calculate the usable panel space */
-    panel_padding = 2 * padding.x;
     panel_spacing = (float)NK_MAX(columns - 1, 0) * spacing.x;
-    panel_space  = total_space - panel_padding - panel_spacing;
+    panel_space  = total_space - panel_spacing;
     return panel_space;
 }
 NK_LIB void
@@ -21933,7 +21924,6 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
     NK_ASSERT(bounds);
 
     spacing = style->window.spacing;
-    padding = nk_panel_get_padding(style, layout->type);
     panel_space = nk_layout_row_calculate_usable_space(&ctx->style, layout->type,
                                             layout->bounds.w, layout->row.columns);
 
@@ -22038,7 +22028,7 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
     bounds->w = item_width;
     bounds->h = layout->row.height - spacing.y;
     bounds->y = layout->at_y - (float)*layout->offset_y;
-    bounds->x = layout->at_x + item_offset + item_spacing + padding.x;
+    bounds->x = layout->at_x + item_offset + item_spacing;
     if (((bounds->x + bounds->w) > layout->max_x) && modify)
         layout->max_x = bounds->x + bounds->w;
     bounds->x -= (float)*layout->offset_x;
@@ -29471,7 +29461,8 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
-/// - 2020/03/01 (4.01.7) - Implemented 9-slice scaling support for widget styles and fixed inconsisten line endings
+/// - 2020/03/07 (4.01.8) - Implemented 9-slice scaling support for widget styles and fixed inconsistent line endings problem
+/// - 2020/03/06 (4.01.7) - Fix bug where width padding was applied twice
 /// - 2020/02/06 (4.01.6) - Update stb_truetype.h and stb_rect_pack.h and separate them
 /// - 2019/12/10 (4.01.5) - Fix off-by-one error in NK_INTERSECT
 /// - 2019/10/09 (4.01.4) - Fix bug for autoscrolling in nk_do_edit
