@@ -4,6 +4,23 @@
 // use the duplicate array method, or just let the user
 // manually set those after calling the function by accessing ctx->style->*?
 
+static const char* symbols[NK_SYMBOL_MAX] =
+{
+    "NONE",
+    "X",
+    "UNDERSCORE",
+    "CIRCLE_SOLID",
+    "CIRCLE_OUTLINE",
+    "RECT_SOLID",
+    "RECT_OUTLINE",
+    "TRIANGLE_UP",
+    "TRIANGLE_DOWN",
+    "TRIANGLE_LEFT",
+    "TRIANGLE_RIGHT",
+    "PLUS",
+    "MINUS"
+};
+
 
 
 static void
@@ -336,23 +353,6 @@ style_slider(struct nk_context* ctx, struct nk_style_slider* out_style)
 	nk_property_float(ctx, "#Bar Height:", -100.0f, &slider.bar_height, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Rounding:", -100.0f, &slider.rounding, 100.0f, 1,0.5f);
 
-	const char* symbols[NK_SYMBOL_MAX] =
-{
-    "NONE",
-    "X",
-    "UNDERSCORE",
-    "CIRCLE_SOLID",
-    "CIRCLE_OUTLINE",
-    "RECT_SOLID",
-    "RECT_OUTLINE",
-    "TRIANGLE_UP",
-    "TRIANGLE_DOWN",
-    "TRIANGLE_LEFT",
-    "TRIANGLE_RIGHT",
-    "PLUS",
-    "MINUS"
-};
-
 	nk_layout_row_dynamic(ctx, 30, 1);
 	nk_checkbox_label(ctx, "Show Buttons", &slider.show_buttons);
 
@@ -469,24 +469,6 @@ style_scrollbars(struct nk_context* ctx, struct nk_style_scrollbar* out_style, s
 	// TODO naming inconsistency with style_scrollress?
 	nk_property_float(ctx, "#Cursor Border:", -100.0f, &scroll.border_cursor, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Cursor Rounding:", -100.0f, &scroll.rounding_cursor, 100.0f, 1,0.5f);
-
-
-	const char* symbols[NK_SYMBOL_MAX] =
-{
-    "NONE",
-    "X",
-    "UNDERSCORE",
-    "CIRCLE_SOLID",
-    "CIRCLE_OUTLINE",
-    "RECT_SOLID",
-    "RECT_OUTLINE",
-    "TRIANGLE_UP",
-    "TRIANGLE_DOWN",
-    "TRIANGLE_LEFT",
-    "TRIANGLE_RIGHT",
-    "PLUS",
-    "MINUS"
-};
 
 	// TODO what is wrong with scrollbar buttons?  Also look into controlling the total width (and height) of scrollbars
 	nk_layout_row_dynamic(ctx, 30, 1);
@@ -623,22 +605,6 @@ style_property(struct nk_context* ctx, struct nk_style_property* out_style)
 	nk_property_float(ctx, "#Rounding:", -100.0f, &property.rounding, 100.0f, 1,0.5f);
 
 	// there is no property.show_buttons, they're always there
-	const char* symbols[NK_SYMBOL_MAX] =
-{
-    "NONE",
-    "X",
-    "UNDERSCORE",
-    "CIRCLE_SOLID",
-    "CIRCLE_OUTLINE",
-    "RECT_SOLID",
-    "RECT_OUTLINE",
-    "TRIANGLE_UP",
-    "TRIANGLE_DOWN",
-    "TRIANGLE_LEFT",
-    "TRIANGLE_RIGHT",
-    "PLUS",
-    "MINUS"
-};
 
 	nk_label(ctx, "Left Symbol:", NK_TEXT_LEFT);
 	property.sym_left = nk_combo(ctx, symbols, NK_SYMBOL_MAX, property.sym_left, 25, nk_vec2(200,200));
@@ -720,23 +686,6 @@ style_combo(struct nk_context* ctx, struct nk_style_combo* out_style)
 	style_rgb(ctx, "Label Hover:", &combo.label_hover);
 	style_rgb(ctx, "Label Active:", &combo.label_active);
 
-	const char* symbols[NK_SYMBOL_MAX] =
-{
-    "NONE",
-    "X",
-    "UNDERSCORE",
-    "CIRCLE_SOLID",
-    "CIRCLE_OUTLINE",
-    "RECT_SOLID",
-    "RECT_OUTLINE",
-    "TRIANGLE_UP",
-    "TRIANGLE_DOWN",
-    "TRIANGLE_LEFT",
-    "TRIANGLE_RIGHT",
-    "PLUS",
-    "MINUS"
-};
-
 	nk_label(ctx, "Normal Symbol:", NK_TEXT_LEFT);
 	combo.sym_normal = nk_combo(ctx, symbols, NK_SYMBOL_MAX, combo.sym_normal, 25, nk_vec2(200,200));
 	nk_label(ctx, "Hover Symbol:", NK_TEXT_LEFT);
@@ -777,24 +726,8 @@ style_tab(struct nk_context* ctx, struct nk_style_tab* out_style)
 	style_rgb(ctx, "Border:", &tab.border_color);
 	style_rgb(ctx, "Text:", &tab.text);
 
-	// putting these in matching order instead of at bottom because we have an odd number of float properties
-	const char* symbols[NK_SYMBOL_MAX] =
-{
-    "NONE",
-    "X",
-    "UNDERSCORE",
-    "CIRCLE_SOLID",
-    "CIRCLE_OUTLINE",
-    "RECT_SOLID",
-    "RECT_OUTLINE",
-    "TRIANGLE_UP",
-    "TRIANGLE_DOWN",
-    "TRIANGLE_LEFT",
-    "TRIANGLE_RIGHT",
-    "PLUS",
-    "MINUS"
-};
-
+	// FTR, I feel these fields are misnamed and should be sym_minimized and sym_maximized since they are
+	// what show in that state, not the button to push to get to that state
 	nk_label(ctx, "Minimize Symbol:", NK_TEXT_LEFT);
 	tab.sym_minimize = nk_combo(ctx, symbols, NK_SYMBOL_MAX, tab.sym_minimize, 25, nk_vec2(200,200));
 	nk_label(ctx, "Maxmize Symbol:", NK_TEXT_LEFT);
@@ -843,23 +776,6 @@ style_window_header(struct nk_context* ctx, struct nk_style_window_header* out_s
 	style_vec2(ctx, "Label Padding:", &header.label_padding);
 	style_vec2(ctx, "Padding:", &header.padding);
 	style_vec2(ctx, "Spacing:", &header.spacing);
-
-	const char* symbols[NK_SYMBOL_MAX] =
-{
-    "NONE",
-    "X",
-    "UNDERSCORE",
-    "CIRCLE_SOLID",
-    "CIRCLE_OUTLINE",
-    "RECT_SOLID",
-    "RECT_OUTLINE",
-    "TRIANGLE_UP",
-    "TRIANGLE_DOWN",
-    "TRIANGLE_LEFT",
-    "TRIANGLE_RIGHT",
-    "PLUS",
-    "MINUS"
-};
 
 #define NUM_ALIGNS 2
 	const char* alignments[NUM_ALIGNS] = { "LEFT", "RIGHT" };
