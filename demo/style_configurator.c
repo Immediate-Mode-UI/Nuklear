@@ -31,6 +31,20 @@ style_item_color(struct nk_context* ctx, const char* name, struct nk_style_item*
 	style_rgb(ctx, name, &item->data.color);
 }
 
+static void
+style_vec2(struct nk_context* ctx, const char* name, struct nk_vec2* vec)
+{
+	char buffer[64];
+	nk_label(ctx, name, NK_TEXT_LEFT);
+	sprintf(buffer, "%.2f, %.2f", vec->x, vec->y);
+	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
+		nk_layout_row_dynamic(ctx, 25, 1);
+		nk_property_float(ctx, "#X:", -100.0f, &vec->x, 100.0f, 1,0.5f);
+		nk_property_float(ctx, "#Y:", -100.0f, &vec->y, 100.0f, 1,0.5f);
+		nk_combo_end(ctx);
+	}
+}
+
 // style_general? pass array in instead of static?
 static void
 style_colors(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_COUNT])
@@ -83,19 +97,10 @@ style_text(struct nk_context* ctx, struct nk_style_text* out_style)
 	//text->color = table[NK_COLOR_TEXT];
 	//text->padding = nk_vec2(0,0);
 
-	char buffer[64];
-
 	nk_layout_row_dynamic(ctx, 30, 2);
 	style_rgb(ctx, "Color:", &text.color);
 
-	nk_label(ctx, "Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", text.padding.x, text.padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &text.padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &text.padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
+	style_vec2(ctx, "Padding:", &text.padding);
 
 	*out_style = text;
 }
@@ -123,10 +128,6 @@ style_button(struct nk_context* ctx, struct nk_style_button* out_style, struct n
 	//button->draw_begin      = 0;
 	//button->draw_end        = 0;
 
-
-	char buffer[64];
-
-	// Assumes all the style items are colors not images
 	nk_layout_row_dynamic(ctx, 30, 2);
 	style_item_color(ctx, "Normal:", &button.normal);
 	style_item_color(ctx, "Hover:", &button.hover);
@@ -138,33 +139,9 @@ style_button(struct nk_context* ctx, struct nk_style_button* out_style, struct n
 	style_rgb(ctx, "Text Hover:", &button.text_hover);
 	style_rgb(ctx, "Text Active:", &button.text_active);
 
-	nk_label(ctx, "Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", button.padding.x, button.padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &button.padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &button.padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Image Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", button.image_padding.x, button.image_padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &button.image_padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &button.image_padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Touch Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", button.touch_padding.x, button.touch_padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &button.touch_padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &button.touch_padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
+	style_vec2(ctx, "Padding:", &button.padding);
+	style_vec2(ctx, "Image Padding:", &button.image_padding);
+	style_vec2(ctx, "Touch Padding:", &button.touch_padding);
 
 	/*
 enum nk_text_align {
@@ -205,7 +182,6 @@ NK_TEXT_RIGHT       = NK_TEXT_ALIGN_MIDDLE|NK_TEXT_ALIGN_RIGHT
 	//button->draw_begin      = 0;
 	//button->draw_end        = 0;
 
-
 	*out_style = button;
 	if (duplicate_styles) {
 		for (int i=0; i<n_dups; ++i) {
@@ -236,8 +212,6 @@ static void style_toggle(struct nk_context* ctx, struct nk_style_toggle* out_sty
 	//toggle->spacing         = 4;
 	//
 
-	char buffer[64];
-
 	nk_layout_row_dynamic(ctx, 30, 2);
 
 	style_item_color(ctx, "Normal:", &toggle.normal);
@@ -252,27 +226,11 @@ static void style_toggle(struct nk_context* ctx, struct nk_style_toggle* out_sty
 	style_rgb(ctx, "Text Hover:", &toggle.text_hover);
 	style_rgb(ctx, "Text Active:", &toggle.text_active);
 
-	nk_label(ctx, "Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", toggle.padding.x, toggle.padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &toggle.padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &toggle.padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Touch Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", toggle.touch_padding.x, toggle.touch_padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &toggle.touch_padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &toggle.touch_padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
+	style_vec2(ctx, "Padding:", &toggle.padding);
+	style_vec2(ctx, "Touch Padding:", &toggle.touch_padding);
 
 	nk_property_float(ctx, "#Border:", -100.0f, &toggle.border, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Spacing:", -100.0f, &toggle.spacing, 100.0f, 1,0.5f);
-
 
 	*out_style = toggle;
 
@@ -303,8 +261,6 @@ style_selectable(struct nk_context* ctx, struct nk_style_selectable* out_style)
 	//select->draw_begin      = 0;
 	//select->draw_end        = 0;
 
-	char buffer[64];
-
 	nk_layout_row_dynamic(ctx, 30, 2);
 
 	style_item_color(ctx, "Normal:", &select.normal);
@@ -321,32 +277,9 @@ style_selectable(struct nk_context* ctx, struct nk_style_selectable* out_style)
 	style_rgb(ctx, "Text Hover Active:", &select.text_hover_active);
 	style_rgb(ctx, "Text Pressed Active:", &select.text_pressed_active);
 
-	nk_label(ctx, "Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", select.padding.x, select.padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &select.padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &select.padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Image Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", select.image_padding.x, select.image_padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &select.image_padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &select.image_padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Touch Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", select.touch_padding.x, select.touch_padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &select.touch_padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &select.touch_padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
+	style_vec2(ctx, "Padding:", &select.padding);
+	style_vec2(ctx, "Image Padding:", &select.image_padding);
+	style_vec2(ctx, "Touch Padding:", &select.touch_padding);
 
 	nk_property_float(ctx, "#Rounding:", -100.0f, &select.rounding, 100.0f, 1,0.5f);
 
@@ -381,8 +314,6 @@ style_slider(struct nk_context* ctx, struct nk_style_slider* out_style)
 	//slider->draw_begin      = 0;
 	//slider->draw_end        = 0;
 
-	char buffer[64];
-
 	nk_layout_row_dynamic(ctx, 30, 2);
 
 	style_item_color(ctx, "Normal:", &slider.normal);
@@ -398,32 +329,9 @@ style_slider(struct nk_context* ctx, struct nk_style_slider* out_style)
 	style_item_color(ctx, "Cursor Hover:", &slider.cursor_hover);
 	style_item_color(ctx, "Cursor Active:", &slider.cursor_active);
 
-	nk_label(ctx, "Cursor Size:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", slider.cursor_size.x, slider.cursor_size.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &slider.cursor_size.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &slider.cursor_size.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", slider.padding.x, slider.padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &slider.padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &slider.padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Spacing:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", slider.spacing.x, slider.spacing.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &slider.spacing.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &slider.spacing.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
+	style_vec2(ctx, "Cursor Size:", &slider.cursor_size);
+	style_vec2(ctx, "Padding:", &slider.padding);
+	style_vec2(ctx, "Spacing:", &slider.spacing);
 
 	nk_property_float(ctx, "#Bar Height:", -100.0f, &slider.bar_height, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Rounding:", -100.0f, &slider.rounding, 100.0f, 1,0.5f);
@@ -490,8 +398,6 @@ style_progress(struct nk_context* ctx, struct nk_style_progress* out_style)
 	//prog->draw_begin        = 0;
 	//prog->draw_end          = 0;
 
-	char buffer[64];
-
 	nk_layout_row_dynamic(ctx, 30, 2);
 
 	style_item_color(ctx, "Normal:", &prog.normal);
@@ -505,14 +411,7 @@ style_progress(struct nk_context* ctx, struct nk_style_progress* out_style)
 	style_rgb(ctx, "Border Color:", &prog.border_color);
 	style_rgb(ctx, "Cursor Border Color:", &prog.cursor_border_color);
 
-	nk_label(ctx, "Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", prog.padding.x, prog.padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &prog.padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &prog.padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
+	style_vec2(ctx, "Padding:", &prog.padding);
 
 	nk_property_float(ctx, "#Rounding:", -100.0f, &prog.rounding, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Border:", -100.0f, &prog.border, 100.0f, 1,0.5f);
@@ -549,8 +448,6 @@ style_scrollbars(struct nk_context* ctx, struct nk_style_scrollbar* out_style, s
 	//scroll->draw_end        = 0;
 	//style->scrollv = style->scrollh;
 
-	char buffer[64];
-
 	nk_layout_row_dynamic(ctx, 30, 2);
 
 	style_item_color(ctx, "Normal:", &scroll.normal);
@@ -564,14 +461,7 @@ style_scrollbars(struct nk_context* ctx, struct nk_style_scrollbar* out_style, s
 	style_rgb(ctx, "Border Color:", &scroll.border_color);
 	style_rgb(ctx, "Cursor Border Color:", &scroll.cursor_border_color);
 
-	nk_label(ctx, "Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", scroll.padding.x, scroll.padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &scroll.padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &scroll.padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
+	style_vec2(ctx, "Padding:", &scroll.padding);
 
 	nk_property_float(ctx, "#Border:", -100.0f, &scroll.border, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Rounding:", -100.0f, &scroll.rounding, 100.0f, 1,0.5f);
@@ -659,8 +549,6 @@ style_edit(struct nk_context* ctx, struct nk_style_edit* out_style)
 	//edit->border            = 1;
 	//edit->rounding          = 0;
 
-	char buffer[64];
-
 	nk_layout_row_dynamic(ctx, 30, 2);
 
 	style_item_color(ctx, "Normal:", &edit.normal);
@@ -680,23 +568,8 @@ style_edit(struct nk_context* ctx, struct nk_style_edit* out_style)
 	style_rgb(ctx, "Selected Text Normal:", &edit.selected_text_normal);
 	style_rgb(ctx, "Selected Text Hover:", &edit.selected_text_hover);
 
-	nk_label(ctx, "Scrollbar Size:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", edit.scrollbar_size.x, edit.scrollbar_size.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &edit.scrollbar_size.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &edit.scrollbar_size.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", edit.padding.x, edit.padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &edit.padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &edit.padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
+	style_vec2(ctx, "Scrollbar Size:", &edit.scrollbar_size);
+	style_vec2(ctx, "Padding:", &edit.padding);
 
 	// TODO subtree?
 	//edit->scrollbar         = style->scrollv;
@@ -732,8 +605,6 @@ style_property(struct nk_context* ctx, struct nk_style_property* out_style)
 	//property->draw_begin    = 0;
 	//property->draw_end      = 0;
 
-	char buffer[64];
-
 	nk_layout_row_dynamic(ctx, 30, 2);
 
 	style_item_color(ctx, "Normal:", &property.normal);
@@ -745,14 +616,7 @@ style_property(struct nk_context* ctx, struct nk_style_property* out_style)
 	style_rgb(ctx, "Label Hover:", &property.label_hover);
 	style_rgb(ctx, "Label Active:", &property.label_active);
 
-	nk_label(ctx, "Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", property.padding.x, property.padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &property.padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &property.padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
+	style_vec2(ctx, "Padding:", &property.padding);
 
 	// TODO check weird hover bug with properties, happens in overview basic section too
 	nk_property_float(ctx, "#Border:", -100.0f, &property.border, 100.0f, 1,0.5f);
@@ -808,8 +672,6 @@ style_chart(struct nk_context* ctx, struct nk_style_chart* out_style)
 	//chart->border           = 0;
 	//chart->rounding         = 0;
 
-	char buffer[64];
-
 	nk_layout_row_dynamic(ctx, 30, 2);
 
 	style_item_color(ctx, "Background:", &chart.background);
@@ -818,14 +680,7 @@ style_chart(struct nk_context* ctx, struct nk_style_chart* out_style)
 	style_rgb(ctx, "Selected Color:", &chart.selected_color);
 	style_rgb(ctx, "Color:", &chart.color);
 
-	nk_label(ctx, "Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", chart.padding.x, chart.padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &chart.padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &chart.padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
+	style_vec2(ctx, "Padding:", &chart.padding);
 
 	nk_property_float(ctx, "#Border:", -100.0f, &chart.border, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Rounding:", -100.0f, &chart.rounding, 100.0f, 1,0.5f);
@@ -853,8 +708,6 @@ style_combo(struct nk_context* ctx, struct nk_style_combo* out_style)
 	//combo->spacing          = nk_vec2(4,0);
 	//combo->border           = 1;
 	//combo->rounding         = 0;
-
-	char buffer[64];
 
 	nk_layout_row_dynamic(ctx, 30, 2);
 
@@ -891,33 +744,9 @@ style_combo(struct nk_context* ctx, struct nk_style_combo* out_style)
 	nk_label(ctx, "Active Symbol:", NK_TEXT_LEFT);
 	combo.sym_active = nk_combo(ctx, symbols, NK_SYMBOL_MAX, combo.sym_active, 25, nk_vec2(200,200));
 
-
-	nk_label(ctx, "Content Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", combo.content_padding.x, combo.content_padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &combo.content_padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &combo.content_padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Button Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", combo.button_padding.x, combo.button_padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &combo.button_padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &combo.button_padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Spacing:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", combo.spacing.x, combo.spacing.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &combo.spacing.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &combo.spacing.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
+	style_vec2(ctx, "Content Padding:", &combo.content_padding);
+	style_vec2(ctx, "Button Padding:", &combo.button_padding);
+	style_vec2(ctx, "Spacing:", &combo.spacing);
 
 	nk_property_float(ctx, "#Border:", -100.0f, &combo.border, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Rounding:", -100.0f, &combo.rounding, 100.0f, 1,0.5f);
@@ -940,8 +769,6 @@ style_tab(struct nk_context* ctx, struct nk_style_tab* out_style)
 	//tab->indent             = 10.0f;
 	//tab->border             = 1;
 	//tab->rounding           = 0;
-
-	char buffer[64];
 
 	nk_layout_row_dynamic(ctx, 30, 2);
 
@@ -973,23 +800,8 @@ style_tab(struct nk_context* ctx, struct nk_style_tab* out_style)
 	nk_label(ctx, "Maxmize Symbol:", NK_TEXT_LEFT);
 	tab.sym_maximize = nk_combo(ctx, symbols, NK_SYMBOL_MAX, tab.sym_maximize, 25, nk_vec2(200,200));
 
-	nk_label(ctx, "Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", tab.padding.x, tab.padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &tab.padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &tab.padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Spacing:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", tab.spacing.x, tab.spacing.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &tab.spacing.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &tab.spacing.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
+	style_vec2(ctx, "Padding:", &tab.padding);
+	style_vec2(ctx, "Spacing:", &tab.spacing);
 
 	nk_property_float(ctx, "#Indent:", -100.0f, &tab.indent, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Border:", -100.0f, &tab.border, 100.0f, 1,0.5f);
@@ -1018,8 +830,6 @@ style_window_header(struct nk_context* ctx, struct nk_style_window_header* out_s
 	//win->header.padding = nk_vec2(4,4);
 	//win->header.spacing = nk_vec2(0,0);
 
-	char buffer[64];
-
 	nk_layout_row_dynamic(ctx, 30, 2);
 
 	style_item_color(ctx, "Normal:", &header.normal);
@@ -1030,32 +840,9 @@ style_window_header(struct nk_context* ctx, struct nk_style_window_header* out_s
 	style_rgb(ctx, "Label Hover:", &header.label_hover);
 	style_rgb(ctx, "Label Active:", &header.label_active);
 
-	nk_label(ctx, "Label Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", header.label_padding.x, header.padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &header.label_padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &header.label_padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", header.padding.x, header.padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &header.padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &header.padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Spacing:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", header.spacing.x, header.spacing.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &header.spacing.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &header.spacing.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
+	style_vec2(ctx, "Label Padding:", &header.label_padding);
+	style_vec2(ctx, "Padding:", &header.padding);
+	style_vec2(ctx, "Spacing:", &header.spacing);
 
 	const char* symbols[NK_SYMBOL_MAX] =
 {
@@ -1137,8 +924,6 @@ style_window(struct nk_context* ctx, struct nk_style_window* out_style)
 	//win->menu_padding = nk_vec2(4,4);
 	//win->tooltip_padding = nk_vec2(4,4);
 
-	char buffer[64];
-
 	nk_layout_row_dynamic(ctx, 30, 2);
 
 	style_rgb(ctx, "Background:", &win.background);
@@ -1155,95 +940,16 @@ style_window(struct nk_context* ctx, struct nk_style_window* out_style)
 
 	style_item_color(ctx, "Scaler:", &win.scaler);
 
-	nk_label(ctx, "Spacing:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", win.spacing.x, win.spacing.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &win.spacing.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &win.spacing.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Scrollbar Size:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", win.scrollbar_size.x, win.scrollbar_size.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &win.scrollbar_size.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &win.scrollbar_size.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Min Size:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", win.min_size.x, win.min_size.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", 10.0f, &win.min_size.x, 10000.0f, 1,1.0f);
-		nk_property_float(ctx, "#Y:", 10.0f, &win.min_size.y, 10000.0f, 1,1.0f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", win.padding.x, win.padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &win.padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &win.padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Group Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", win.group_padding.x, win.group_padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &win.group_padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &win.group_padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Popup Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", win.popup_padding.x, win.popup_padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &win.popup_padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &win.popup_padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Combo Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", win.combo_padding.x, win.combo_padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &win.combo_padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &win.combo_padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Contextual Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", win.contextual_padding.x, win.contextual_padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &win.contextual_padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &win.contextual_padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Menu Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", win.menu_padding.x, win.menu_padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &win.menu_padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &win.menu_padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
-
-	nk_label(ctx, "Tooltip Padding:", NK_TEXT_LEFT);
-	sprintf(buffer, "%.2f, %.2f", win.tooltip_padding.x, win.tooltip_padding.y);
-	if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
-		nk_layout_row_dynamic(ctx, 25, 1);
-		nk_property_float(ctx, "#X:", -100.0f, &win.tooltip_padding.x, 100.0f, 1,0.5f);
-		nk_property_float(ctx, "#Y:", -100.0f, &win.tooltip_padding.y, 100.0f, 1,0.5f);
-		nk_combo_end(ctx);
-	}
+	style_vec2(ctx, "Spacing:", &win.spacing);
+	style_vec2(ctx, "Scrollbar Size:", &win.scrollbar_size);
+	style_vec2(ctx, "Min Size:", &win.min_size);
+	style_vec2(ctx, "Padding:", &win.padding);
+	style_vec2(ctx, "Group Padding:", &win.group_padding);
+	style_vec2(ctx, "Popup Padding:", &win.popup_padding);
+	style_vec2(ctx, "Combo Padding:", &win.combo_padding);
+	style_vec2(ctx, "Contextual Padding:", &win.contextual_padding);
+	style_vec2(ctx, "Menu Padding:", &win.menu_padding);
+	style_vec2(ctx, "Tooltip Padding:", &win.tooltip_padding);
 
 	nk_property_float(ctx, "#Rounding:", -100.0f, &win.rounding, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Combo Border:", -100.0f, &win.combo_border, 100.0f, 1,0.5f);
@@ -1287,11 +993,7 @@ style_configurator(struct nk_context *ctx)
 	if (scale_left) window_flags |= NK_WINDOW_SCALE_LEFT;
 	if (minimizable) window_flags |= NK_WINDOW_MINIMIZABLE;
 
-
 	struct nk_style *style = &ctx->style;
-
-	struct nk_style_tab *tab;
-	struct nk_style_window *win;
 
 	// TODO better way?
 	static int initialized = nk_false;
@@ -1301,7 +1003,6 @@ style_configurator(struct nk_context *ctx)
 		memcpy(color_table, nk_default_color_style, sizeof(color_table));
 		initialized = nk_true;
 	}
-
 
 	if (nk_begin(ctx, "Configurator", nk_rect(10, 10, 400, 600), window_flags))
 	{
