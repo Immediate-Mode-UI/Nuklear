@@ -21,7 +21,7 @@ static const char* symbols[NK_SYMBOL_MAX] =
     "MINUS"
 };
 
-static void
+static int
 style_rgb(struct nk_context* ctx, const char* name, struct nk_color* color)
 {
 	nk_label(ctx, name, NK_TEXT_LEFT);
@@ -36,7 +36,9 @@ style_rgb(struct nk_context* ctx, const char* name, struct nk_color* color)
 		*color = nk_rgb_cf(colorf);
 
 		nk_combo_end(ctx);
+		return 1;
 	}
+	return 0;
 }
 
 // TODO style_style_item?  how to handle images if at all?
@@ -62,7 +64,7 @@ style_vec2(struct nk_context* ctx, const char* name, struct nk_vec2* vec)
 
 // style_general? pass array in instead of static?
 static void
-style_colors(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_COUNT])
+style_global_colors(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_COUNT])
 {
 	const char* color_labels[NK_COLOR_COUNT] =
 	{
@@ -96,12 +98,16 @@ style_colors(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_COUNT]
 		"COLOR_TAB_HEADER:"
 	};
 
+	int clicked = 0;
+
 	nk_layout_row_dynamic(ctx, 30, 2);
 	for (int i=0; i<NK_COLOR_COUNT; ++i) {
-		style_rgb(ctx, color_labels[i], &color_table[i]);
+		clicked |= style_rgb(ctx, color_labels[i], &color_table[i]);
 	}
 
-	nk_style_from_table(ctx, color_table);
+	if (clicked) {
+		nk_style_from_table(ctx, color_table);
+	}
 }
 
 static void
@@ -672,8 +678,8 @@ style_configurator(struct nk_context *ctx)
 
 	if (nk_begin(ctx, "Configurator", nk_rect(10, 10, 400, 600), window_flags))
 	{
-		if (nk_tree_push(ctx, NK_TREE_TAB, "Colors", NK_MINIMIZED)) {
-			style_colors(ctx, color_table);
+		if (nk_tree_push(ctx, NK_TREE_TAB, "Global Colors", NK_MINIMIZED)) {
+			style_global_colors(ctx, color_table);
 			nk_tree_pop(ctx);
 		}
 
