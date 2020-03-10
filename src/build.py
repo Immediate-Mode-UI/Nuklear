@@ -74,7 +74,7 @@ def omit_includes(str, files):
     return str
 
 def fix_comments(str):
-    return re.sub(r"//(.*)(\n|$)", "/* \\1 */\\2", str)
+    return re.sub(r"//(.*)(" + os.linesep + r"|$)", "/* \\1 */\\2", str)
 
 # Main start
 # ==========
@@ -82,6 +82,12 @@ def fix_comments(str):
 if len(sys.argv) < 2:
     print_help()
     exit()
+
+# Python 2.x Windows fix for newline madness
+# ==========
+if sys.platform == "win32":
+    import os, msvcrt
+    msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
 
 intro_files = []
 pub_files = []
@@ -129,39 +135,42 @@ if macro == "":
 
 # Print concatenated output
 # -------------------------
-print("/*")
+sys.stdout.write("/*" + os.linesep)
 for f in intro_files:
-    sys.stdout.write(open(f, 'r').read())
-print("*/")
+    sys.stdout.write(open(f, 'rb').read())
+sys.stdout.write("*/" + os.linesep)
 
 # print(os.linesep + "#ifndef " + macro + "_SINGLE_HEADER");
 # print("#define " + macro + "_SINGLE_HEADER");
-print("#ifndef NK_SINGLE_FILE");
-print("  #define NK_SINGLE_FILE");
-print("#endif");
-print("");
+sys.stdout.write("#ifndef NK_SINGLE_FILE" + os.linesep);
+sys.stdout.write("  #define NK_SINGLE_FILE" + os.linesep);
+sys.stdout.write("#endif" + os.linesep);
+sys.stdout.write(os.linesep);
 
 for f in pub_files:
-    sys.stdout.write(open(f, 'r').read())
+    sys.stdout.write(open(f, 'rb').read())
 # print("#endif /* " + macro + "_SINGLE_HEADER */");
 
-print(os.linesep + "#ifdef " + macro + "_IMPLEMENTATION");
-print("");
+sys.stdout.write(os.linesep + "#ifdef " + macro + "_IMPLEMENTATION" + os.linesep)
 
 for f in priv_files1:
-    print(omit_includes(open(f, 'r').read(),
+    sys.stdout.write(omit_includes(open(f, 'rb').read(),
                         pub_files + priv_files1 + priv_files2 + extern_files))
+    sys.stdout.write(os.linesep)
+
 for f in extern_files:
-    print(fix_comments(open(f, 'r').read()))
+    sys.stdout.write(fix_comments(open(f, 'rb').read()))
+    sys.stdout.write(os.linesep)
 
 for f in priv_files2:
-    print(omit_includes(open(f, 'r').read(),
+    sys.stdout.write(omit_includes(open(f, 'rb').read(),
                         pub_files + priv_files1 + priv_files2 + extern_files))
+    sys.stdout.write(os.linesep)
 
-print("#endif /* " + macro + "_IMPLEMENTATION */");
+sys.stdout.write("#endif /* " + macro + "_IMPLEMENTATION */" + os.linesep);
 
-print(os.linesep + "/*")
+sys.stdout.write(os.linesep + "/*" + os.linesep)
 for f in outro_files:
-    sys.stdout.write(open(f, 'r').read())
-print("*/" + os.linesep)
+    sys.stdout.write(open(f, 'rb').read())
+sys.stdout.write("*/" + os.linesep)
 

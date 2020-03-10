@@ -22,43 +22,42 @@ nk_handle_id(int id)
     return handle;
 }
 NK_API struct nk_image
-nk_subimage_ptr(void *ptr, unsigned short w, unsigned short h, struct nk_rect r)
+nk_subimage_ptr(void *ptr, nk_ushort w, nk_ushort h, struct nk_rect r)
 {
     struct nk_image s;
     nk_zero(&s, sizeof(s));
     s.handle.ptr = ptr;
     s.w = w; s.h = h;
-    s.region[0] = (unsigned short)r.x;
-    s.region[1] = (unsigned short)r.y;
-    s.region[2] = (unsigned short)r.w;
-    s.region[3] = (unsigned short)r.h;
+    s.region[0] = (nk_ushort)r.x;
+    s.region[1] = (nk_ushort)r.y;
+    s.region[2] = (nk_ushort)r.w;
+    s.region[3] = (nk_ushort)r.h;
     return s;
 }
 NK_API struct nk_image
-nk_subimage_id(int id, unsigned short w, unsigned short h, struct nk_rect r)
+nk_subimage_id(int id, nk_ushort w, nk_ushort h, struct nk_rect r)
 {
     struct nk_image s;
     nk_zero(&s, sizeof(s));
     s.handle.id = id;
     s.w = w; s.h = h;
-    s.region[0] = (unsigned short)r.x;
-    s.region[1] = (unsigned short)r.y;
-    s.region[2] = (unsigned short)r.w;
-    s.region[3] = (unsigned short)r.h;
+    s.region[0] = (nk_ushort)r.x;
+    s.region[1] = (nk_ushort)r.y;
+    s.region[2] = (nk_ushort)r.w;
+    s.region[3] = (nk_ushort)r.h;
     return s;
 }
 NK_API struct nk_image
-nk_subimage_handle(nk_handle handle, unsigned short w, unsigned short h,
-    struct nk_rect r)
+nk_subimage_handle(nk_handle handle, nk_ushort w, nk_ushort h, struct nk_rect r)
 {
     struct nk_image s;
     nk_zero(&s, sizeof(s));
     s.handle = handle;
     s.w = w; s.h = h;
-    s.region[0] = (unsigned short)r.x;
-    s.region[1] = (unsigned short)r.y;
-    s.region[2] = (unsigned short)r.w;
-    s.region[3] = (unsigned short)r.h;
+    s.region[0] = (nk_ushort)r.x;
+    s.region[1] = (nk_ushort)r.y;
+    s.region[2] = (nk_ushort)r.w;
+    s.region[3] = (nk_ushort)r.h;
     return s;
 }
 NK_API struct nk_image
