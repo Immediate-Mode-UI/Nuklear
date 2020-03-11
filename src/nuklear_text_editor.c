@@ -34,24 +34,22 @@ NK_INTERN float
 nk_textedit_get_width(const struct nk_text_edit *edit, int line_start, int char_id,
     const struct nk_user_font *font)
 {
-    int len = 0;
     nk_rune unicode = 0;
-    const char *str = nk_str_at_const(&edit->string, line_start + char_id, &unicode, &len);
-    return font->width(font->userdata, font->height, str, len);
+    struct nk_slice str = nk_str_at_const(&edit->string, line_start + char_id, &unicode);
+    return font->width(font->userdata, font->height, str);
 }
 NK_INTERN void
 nk_textedit_layout_row(struct nk_text_edit_row *r, struct nk_text_edit *edit,
     int line_start_id, float row_height, const struct nk_user_font *font)
 {
-    int l;
     int glyphs = 0;
     nk_rune unicode;
-    const char *remaining;
-    int len = nk_str_len_char(&edit->string);
-    const char *end = nk_str_get_const(&edit->string) + len;
-    const char *text = nk_str_at_const(&edit->string, line_start_id, &unicode, &l);
+    struct nk_slice remaining;
+    struct nk_slice text = nk_str_get_const(&edit->string);
+    const char *start = nk_str_at_const(&edit->string, line_start_id, &unicode).ptr;
+    const char *end = text.ptr + text.len;
     const struct nk_vec2 size = nk_text_calculate_text_bounds(font,
-        text, (int)(end - text), row_height, &remaining, 0, &glyphs, NK_STOP_ON_NEW_LINE);
+        nk_slice(start, end - start), row_height, &remaining, 0, &glyphs, NK_STOP_ON_NEW_LINE);
 
     r->x0 = 0.0f;
     r->x1 = size.x;
@@ -330,11 +328,10 @@ nk_textedit_cut(struct nk_text_edit *state)
    return 0;
 }
 NK_API nk_bool
-nk_textedit_paste(struct nk_text_edit *state, char const *ctext, int len)
+nk_textedit_paste(struct nk_text_edit *state, struct nk_slice text)
 {
     /* API paste: replace existing selection with passed-in text */
     int glyphs;
-    const char *text = (const char *) ctext;
     if (state->mode == NK_TEXT_EDIT_MODE_VIEW) return 0;
 
     /* if there's a selection, the paste should delete it */
@@ -342,10 +339,10 @@ nk_textedit_paste(struct nk_text_edit *state, char const *ctext, int len)
     nk_textedit_delete_selection(state);
 
     /* try to insert the characters */
-    glyphs = nk_utf_len(ctext, len);
-    if (nk_str_insert_text_char(&state->string, state->cursor, text, len)) {
+    glyphs = nk_utf_len(text);
+    if (nk_str_insert_at_rune(&state->string, state->cursor, text)) {
         nk_textedit_makeundo_insert(state, state->cursor, glyphs);
-        state->cursor += len;
+        state->cursor += text.len;
         state->has_preferred_x = 0;
         return 1;
     }
@@ -355,18 +352,18 @@ nk_textedit_paste(struct nk_text_edit *state, char const *ctext, int len)
     return 0;
 }
 NK_API void
-nk_textedit_text(struct nk_text_edit *state, const char *text, int total_len)
+nk_textedit_text(struct nk_text_edit *state, struct nk_slice text)
 {
     nk_rune unicode;
     int glyph_len;
-    int text_len = 0;
+    nk_size text_len = 0;
 
     NK_ASSERT(state);
-    NK_ASSERT(text);
-    if (!text || !total_len || state->mode == NK_TEXT_EDIT_MODE_VIEW) return;
+    NK_ASSERT(text.ptr);
+    if (!text.ptr || !text.len || state->mode == NK_TEXT_EDIT_MODE_VIEW) return;
 
-    glyph_len = nk_utf_decode(text, &unicode, total_len);
-    while ((text_len < total_len) && glyph_len)
+    glyph_len = nk_utf_decode(text, &unicode);
+    while ((text_len < text.len) && glyph_len)
     {
         /* don't insert a backward delete, just process the event */
         if (unicode == 127) goto next;
@@ -382,16 +379,16 @@ nk_textedit_text(struct nk_text_edit *state, const char *text, int total_len)
                 nk_textedit_makeundo_replace(state, state->cursor, 1, 1);
                 nk_str_delete_runes(&state->string, state->cursor, 1);
             }
-            if (nk_str_insert_text_utf8(&state->string, state->cursor,
-                                        text+text_len, 1))
+            if (nk_str_insert_at_rune(&state->string, state->cursor,
+                                        nk_substr(text, text_len, text_len+1)))
             {
                 ++state->cursor;
                 state->has_preferred_x = 0;
             }
         } else {
             nk_textedit_delete_selection(state); /* implicitly clamps */
-            if (nk_str_insert_text_utf8(&state->string, state->cursor,
-                                        text+text_len, 1))
+            if (nk_str_insert_at_rune(&state->string, state->cursor,
+                                        nk_substr(text, text_len, text_len+1)))
             {
                 nk_textedit_makeundo_insert(state, state->cursor, 1);
                 ++state->cursor;
@@ -400,7 +397,7 @@ nk_textedit_text(struct nk_text_edit *state, const char *text, int total_len)
         }
         next:
         text_len += glyph_len;
-        glyph_len = nk_utf_decode(text + text_len, &unicode, total_len-text_len);
+        glyph_len = nk_utf_decode(nk_substr(text, text_len, text.len), &unicode);
     }
 }
 NK_LIB void

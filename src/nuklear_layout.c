@@ -41,12 +41,11 @@ nk_layout_reset_min_row_height(struct nk_context *ctx)
     layout->row.min_height += ctx->style.window.min_row_height_padding*2;
 }
 NK_LIB float
-nk_layout_row_calculate_usable_space(const struct nk_style *style, enum nk_panel_type type,
+nk_layout_row_calculate_usable_space(const struct nk_style *style,
     float total_space, int columns)
 {
     float panel_spacing;
     float panel_space;
-
     struct nk_vec2 spacing;
 
     NK_UNUSED(type);
@@ -390,7 +389,7 @@ nk_layout_row_template_end(struct nk_context *ctx)
         }
     }
     if (variable_count) {
-        float space = nk_layout_row_calculate_usable_space(&ctx->style, layout->type,
+        float space = nk_layout_row_calculate_usable_space(&ctx->style,
                             layout->bounds.w, layout->row.columns);
         float var_width = (NK_MAX(space-min_fixed_width,0.0f)) / (float)variable_count;
         int enough_space = var_width >= max_variable_width;
@@ -598,7 +597,7 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
     NK_ASSERT(bounds);
 
     spacing = style->window.spacing;
-    panel_space = nk_layout_row_calculate_usable_space(&ctx->style, layout->type,
+    panel_space = nk_layout_row_calculate_usable_space(&ctx->style,
                                             layout->bounds.w, layout->row.columns);
 
     #define NK_FRAC(x) (x - (float)(int)x) /* will be used to remove fookin gaps */

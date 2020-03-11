@@ -180,12 +180,10 @@ nk_widget(struct nk_rect *bounds, const struct nk_context *ctx)
     return NK_WIDGET_VALID;
 }
 NK_API enum nk_widget_layout_states
-nk_widget_fitting(struct nk_rect *bounds, struct nk_context *ctx,
-    struct nk_vec2 item_padding)
+nk_widget_fitting(struct nk_rect *bounds, struct nk_context *ctx)
 {
     /* update the bounds to stand without padding  */
     enum nk_widget_layout_states state;
-    NK_UNUSED(item_padding);
 
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);

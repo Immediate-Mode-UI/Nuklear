@@ -304,7 +304,7 @@ nk_sfml_clipboard_paste(nk_handle usr, struct nk_text_edit* edit)
 #endif
 }
 static void
-nk_sfml_clipboard_copy(nk_handle usr, const char* text, int len)
+nk_sfml_clipboard_copy(nk_handle usr, struct nk_slice text)
 {
 #if 0
     char* str = 0;

@@ -642,33 +642,38 @@ nk_xfont_create(Display *dpy, const char *name)
 }
 
 NK_INTERN float
-nk_xfont_get_text_width(nk_handle handle, float height, const char *text, int len)
+nk_xfont_get_text_width(nk_handle handle, float height, struct nk_slice text)
 {
     XFont *font = (XFont*)handle.ptr;
+#ifdef NK_XLIB_USE_XFT
+    XGlyphInfo g;
+#else
+    XRectangle r;
+#endif
 
 #ifdef NK_XLIB_USE_XFT
     XGlyphInfo g;
 
     NK_UNUSED(height);
 
-	if(!font || !text)
+	if(!font || !text.ptr)
 		return 0;
 
-    XftTextExtentsUtf8(xlib.dpy, font->ft, (FcChar8*)text, len, &g);
+    XftTextExtentsUtf8(xlib.dpy, font->ft, (FcChar8*)text.ptr, text.len, &g);
     return g.xOff;
 #else
     XRectangle r;
 
     NK_UNUSED(height);
 
-	if(!font || !text)
+	if(!font || !text.ptr)
 		return 0;
 
     if(font->set) {
-        XmbTextExtents(font->set, (const char*)text, len, NULL, &r);
+        XmbTextExtents(font->set, text.ptr, text.len, NULL, &r);
         return (float)r.width;
     } else{
-        int w = XTextWidth(font->xfont, (const char*)text, len);
+        int w = XTextWidth(font->xfont, text.ptr, text.len);
         return (float)w;
     }
 #endif
@@ -942,7 +947,7 @@ nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt)
             XGetWindowProperty(dpy, win, XA_PRIMARY, (int)pos, 1024, False,
                 AnyPropertyType, &actual_type, &actual_format, &len, &remain, &data);
             if (len && data)
-                nk_textedit_text(xlib.clipboard_target, (char*)data, (int)len);
+                nk_textedit_text(xlib.clipboard_target, nk_slice((char*)data, len));
             if (data != 0) XFree(data);
             pos += (len * (unsigned long)actual_format) / 32;
         } while (remain != 0);}

@@ -92,7 +92,7 @@ ui_piemenu(struct nk_context *ctx, struct nk_vec2 pos, float radius,
     ctx->style.window.spacing = nk_vec2(0,0);
     ctx->style.window.padding = nk_vec2(0,0);
 
-    if (nk_popup_begin(ctx, NK_POPUP_STATIC, "piemenu", NK_WINDOW_NO_SCROLLBAR,
+    if (nk_popup_begin(ctx, NK_POPUP_STATIC, nk_slicez("piemenu"), NK_WINDOW_NO_SCROLLBAR,
         nk_rect(pos.x - total_space.x - radius, pos.y - radius - total_space.y,
         2*radius,2*radius)))
     {
@@ -188,25 +188,25 @@ grid_demo(struct nk_context *ctx, struct media *media)
 
     int i;
     nk_style_set_font(ctx, &media->font_20->handle);
-    if (nk_begin(ctx, "Grid Demo", nk_rect(600, 350, 275, 250),
+    if (nk_begin(ctx, nk_slicez("Grid Demo"), nk_rect(600, 350, 275, 250),
         NK_WINDOW_TITLE|NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|
         NK_WINDOW_NO_SCROLLBAR))
     {
         nk_style_set_font(ctx, &media->font_18->handle);
         nk_layout_row_dynamic(ctx, 30, 2);
-        nk_label(ctx, "Floating point:", NK_TEXT_RIGHT);
+        nk_label(ctx, nk_slicez("Floating point:"), NK_TEXT_RIGHT);
         nk_edit_string(ctx, NK_EDIT_FIELD, text[0], &text_len[0], 64, nk_filter_float);
-        nk_label(ctx, "Hexadecimal:", NK_TEXT_RIGHT);
+        nk_label(ctx, nk_slicez("Hexadecimal:"), NK_TEXT_RIGHT);
         nk_edit_string(ctx, NK_EDIT_FIELD, text[1], &text_len[1], 64, nk_filter_hex);
-        nk_label(ctx, "Binary:", NK_TEXT_RIGHT);
+        nk_label(ctx, nk_slicez("Binary:"), NK_TEXT_RIGHT);
         nk_edit_string(ctx, NK_EDIT_FIELD, text[2], &text_len[2], 64, nk_filter_binary);
-        nk_label(ctx, "Checkbox:", NK_TEXT_RIGHT);
-        nk_checkbox_label(ctx, "Check me", &check);
-        nk_label(ctx, "Combobox:", NK_TEXT_RIGHT);
-        if (nk_combo_begin_label(ctx, items[selected_item], nk_vec2(nk_widget_width(ctx), 200))) {
+        nk_label(ctx, nk_slicez("Checkbox:"), NK_TEXT_RIGHT);
+        nk_checkbox_label(ctx, nk_slicez("Check me"), &check);
+        nk_label(ctx, nk_slicez("Combobox:"), NK_TEXT_RIGHT);
+        if (nk_combo_begin_label(ctx, nk_slicez(items[selected_item]), nk_vec2(nk_widget_width(ctx), 200))) {
             nk_layout_row_dynamic(ctx, 25, 1);
             for (i = 0; i < 3; ++i)
-                if (nk_combo_item_label(ctx, items[i], NK_TEXT_LEFT))
+                if (nk_combo_item_label(ctx, nk_slicez(items[i]), NK_TEXT_LEFT))
                     selected_item = i;
             nk_combo_end(ctx);
         }
@@ -225,7 +225,7 @@ ui_header(struct nk_context *ctx, struct media *media, const char *title)
 {
     nk_style_set_font(ctx, &media->font_18->handle);
     nk_layout_row_dynamic(ctx, 20, 1);
-    nk_label(ctx, title, NK_TEXT_LEFT);
+    nk_label(ctx, nk_slicez(title), NK_TEXT_LEFT);
 }
 
 static void
@@ -255,7 +255,7 @@ button_demo(struct nk_context *ctx, struct media *media)
     static int toggle2 = 1;
 
     nk_style_set_font(ctx, &media->font_20->handle);
-    nk_begin(ctx, "Button Demo", nk_rect(50,50,255,610),
+    nk_begin(ctx, nk_slicez("Button Demo"), nk_rect(50,50,255,610),
         NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE);
 
     /*------------------------------------------------
@@ -265,15 +265,15 @@ button_demo(struct nk_context *ctx, struct media *media)
     {
         /* toolbar */
         nk_layout_row_static(ctx, 40, 40, 4);
-        if (nk_menu_begin_image(ctx, "Music", media->play, nk_vec2(110,120)))
+        if (nk_menu_begin_image(ctx, nk_slicez("Music"), media->play, nk_vec2(110,120)))
         {
             /* settings */
             nk_layout_row_dynamic(ctx, 25, 1);
-            nk_menu_item_image_label(ctx, media->play, "Play", NK_TEXT_RIGHT);
-            nk_menu_item_image_label(ctx, media->stop, "Stop", NK_TEXT_RIGHT);
-            nk_menu_item_image_label(ctx, media->pause, "Pause", NK_TEXT_RIGHT);
-            nk_menu_item_image_label(ctx, media->next, "Next", NK_TEXT_RIGHT);
-            nk_menu_item_image_label(ctx, media->prev, "Prev", NK_TEXT_RIGHT);
+            nk_menu_item_image_label(ctx, media->play, nk_slicez("Play"), NK_TEXT_RIGHT);
+            nk_menu_item_image_label(ctx, media->stop, nk_slicez("Stop"), NK_TEXT_RIGHT);
+            nk_menu_item_image_label(ctx, media->pause, nk_slicez("Pause"), NK_TEXT_RIGHT);
+            nk_menu_item_image_label(ctx, media->next, nk_slicez("Next"), NK_TEXT_RIGHT);
+            nk_menu_item_image_label(ctx, media->prev, nk_slicez("Prev"), NK_TEXT_RIGHT);
             nk_menu_end(ctx);
         }
         nk_button_image(ctx, media->tools);
@@ -287,10 +287,10 @@ button_demo(struct nk_context *ctx, struct media *media)
      *------------------------------------------------*/
     ui_header(ctx, media, "Push buttons");
     ui_widget(ctx, media, 35);
-    if (nk_button_label(ctx, "Push me"))
+    if (nk_button_label(ctx, nk_slicez("Push me")))
         fprintf(stdout, "pushed!\n");
     ui_widget(ctx, media, 35);
-    if (nk_button_image_label(ctx, media->rocket, "Styled", NK_TEXT_CENTERED))
+    if (nk_button_image_label(ctx, media->rocket, nk_slicez("Styled"), NK_TEXT_CENTERED))
         fprintf(stdout, "rocket!\n");
 
     /*------------------------------------------------
@@ -298,7 +298,7 @@ button_demo(struct nk_context *ctx, struct media *media)
      *------------------------------------------------*/
     ui_header(ctx, media, "Repeater");
     ui_widget(ctx, media, 35);
-    if (nk_button_label(ctx, "Press me"))
+    if (nk_button_label(ctx, nk_slicez("Press me")))
         fprintf(stdout, "pressed!\n");
 
     /*------------------------------------------------
@@ -306,15 +306,15 @@ button_demo(struct nk_context *ctx, struct media *media)
      *------------------------------------------------*/
     ui_header(ctx, media, "Toggle buttons");
     ui_widget(ctx, media, 35);
-    if (nk_button_image_label(ctx, (toggle0) ? media->checked: media->unchecked, "Toggle", NK_TEXT_LEFT))
+    if (nk_button_image_label(ctx, (toggle0) ? media->checked: media->unchecked, nk_slicez("Toggle"), NK_TEXT_LEFT))
         toggle0 = !toggle0;
 
     ui_widget(ctx, media, 35);
-    if (nk_button_image_label(ctx, (toggle1) ? media->checked: media->unchecked, "Toggle", NK_TEXT_LEFT))
+    if (nk_button_image_label(ctx, (toggle1) ? media->checked: media->unchecked, nk_slicez("Toggle"), NK_TEXT_LEFT))
         toggle1 = !toggle1;
 
     ui_widget(ctx, media, 35);
-    if (nk_button_image_label(ctx, (toggle2) ? media->checked: media->unchecked, "Toggle", NK_TEXT_LEFT))
+    if (nk_button_image_label(ctx, (toggle2) ? media->checked: media->unchecked, nk_slicez("Toggle"), NK_TEXT_LEFT))
         toggle2 = !toggle2;
 
     /*------------------------------------------------
@@ -322,13 +322,13 @@ button_demo(struct nk_context *ctx, struct media *media)
      *------------------------------------------------*/
     ui_header(ctx, media, "Radio buttons");
     ui_widget(ctx, media, 35);
-    if (nk_button_symbol_label(ctx, (option == 0)?NK_SYMBOL_CIRCLE_OUTLINE:NK_SYMBOL_CIRCLE_SOLID, "Select", NK_TEXT_LEFT))
+    if (nk_button_symbol_label(ctx, (option == 0)?NK_SYMBOL_CIRCLE_OUTLINE:NK_SYMBOL_CIRCLE_SOLID, nk_slicez("Select"), NK_TEXT_LEFT))
         option = 0;
     ui_widget(ctx, media, 35);
-    if (nk_button_symbol_label(ctx, (option == 1)?NK_SYMBOL_CIRCLE_OUTLINE:NK_SYMBOL_CIRCLE_SOLID, "Select", NK_TEXT_LEFT))
+    if (nk_button_symbol_label(ctx, (option == 1)?NK_SYMBOL_CIRCLE_OUTLINE:NK_SYMBOL_CIRCLE_SOLID, nk_slicez("Select"), NK_TEXT_LEFT))
         option = 1;
     ui_widget(ctx, media, 35);
-    if (nk_button_symbol_label(ctx, (option == 2)?NK_SYMBOL_CIRCLE_OUTLINE:NK_SYMBOL_CIRCLE_SOLID, "Select", NK_TEXT_LEFT))
+    if (nk_button_symbol_label(ctx, (option == 2)?NK_SYMBOL_CIRCLE_OUTLINE:NK_SYMBOL_CIRCLE_SOLID, nk_slicez("Select"), NK_TEXT_LEFT))
         option = 2;
 
     /*------------------------------------------------
@@ -337,13 +337,13 @@ button_demo(struct nk_context *ctx, struct media *media)
     nk_style_set_font(ctx, &media->font_18->handle);
     if (nk_contextual_begin(ctx, NK_WINDOW_NO_SCROLLBAR, nk_vec2(150, 300), nk_window_get_bounds(ctx))) {
         nk_layout_row_dynamic(ctx, 30, 1);
-        if (nk_contextual_item_image_label(ctx, media->copy, "Clone", NK_TEXT_RIGHT))
+        if (nk_contextual_item_image_label(ctx, media->copy, nk_slicez("Clone"), NK_TEXT_RIGHT))
             fprintf(stdout, "pressed clone!\n");
-        if (nk_contextual_item_image_label(ctx, media->del, "Delete", NK_TEXT_RIGHT))
+        if (nk_contextual_item_image_label(ctx, media->del, nk_slicez("Delete"), NK_TEXT_RIGHT))
             fprintf(stdout, "pressed delete!\n");
-        if (nk_contextual_item_image_label(ctx, media->convert, "Convert", NK_TEXT_RIGHT))
+        if (nk_contextual_item_image_label(ctx, media->convert, nk_slicez("Convert"), NK_TEXT_RIGHT))
             fprintf(stdout, "pressed convert!\n");
-        if (nk_contextual_item_image_label(ctx, media->edit, "Edit", NK_TEXT_RIGHT))
+        if (nk_contextual_item_image_label(ctx, media->edit, nk_slicez("Edit"), NK_TEXT_RIGHT))
             fprintf(stdout, "pressed edit!\n");
         nk_contextual_end(ctx);
     }
@@ -372,7 +372,7 @@ basic_demo(struct nk_context *ctx, struct media *media)
 
     int i = 0;
     nk_style_set_font(ctx, &media->font_20->handle);
-    nk_begin(ctx, "Basic Demo", nk_rect(320, 50, 275, 610),
+    nk_begin(ctx, nk_slicez("Basic Demo"), nk_rect(320, 50, 275, 610),
         NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE);
 
     /*------------------------------------------------
@@ -380,7 +380,7 @@ basic_demo(struct nk_context *ctx, struct media *media)
      *------------------------------------------------*/
     ui_header(ctx, media, "Popup & Scrollbar & Images");
     ui_widget(ctx, media, 35);
-    if (nk_button_image_label(ctx, media->dir, "Images", NK_TEXT_CENTERED))
+    if (nk_button_image_label(ctx, media->dir, nk_slicez("Images"), NK_TEXT_CENTERED))
         image_active = !image_active;
 
     /*------------------------------------------------
@@ -394,7 +394,7 @@ basic_demo(struct nk_context *ctx, struct media *media)
      *                  IMAGE POPUP
      *------------------------------------------------*/
     if (image_active) {
-        if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Image Popup", 0, nk_rect(265, 0, 320, 220))) {
+        if (nk_popup_begin(ctx, NK_POPUP_STATIC, nk_slicez("Image Popup"), 0, nk_rect(265, 0, 320, 220))) {
             nk_layout_row_static(ctx, 82, 82, 3);
             for (i = 0; i < 9; ++i) {
                 if (nk_button_image(ctx, media->images[i])) {
@@ -411,19 +411,19 @@ basic_demo(struct nk_context *ctx, struct media *media)
      *------------------------------------------------*/
     ui_header(ctx, media, "Combo box");
     ui_widget(ctx, media, 40);
-    if (nk_combo_begin_label(ctx, items[selected_item], nk_vec2(nk_widget_width(ctx), 200))) {
+    if (nk_combo_begin_label(ctx, nk_slicez(items[selected_item]), nk_vec2(nk_widget_width(ctx), 200))) {
         nk_layout_row_dynamic(ctx, 35, 1);
         for (i = 0; i < 3; ++i)
-            if (nk_combo_item_label(ctx, items[i], NK_TEXT_LEFT))
+            if (nk_combo_item_label(ctx, nk_slicez(items[i]), NK_TEXT_LEFT))
                 selected_item = i;
         nk_combo_end(ctx);
     }
 
     ui_widget(ctx, media, 40);
-    if (nk_combo_begin_image_label(ctx, items[selected_icon], media->images[selected_icon], nk_vec2(nk_widget_width(ctx), 200))) {
+    if (nk_combo_begin_image_label(ctx, nk_slicez(items[selected_icon]), media->images[selected_icon], nk_vec2(nk_widget_width(ctx), 200))) {
         nk_layout_row_dynamic(ctx, 35, 1);
         for (i = 0; i < 3; ++i)
-            if (nk_combo_item_image_label(ctx, media->images[i], items[i], NK_TEXT_RIGHT))
+            if (nk_combo_item_image_label(ctx, media->images[i], nk_slicez(items[i]), NK_TEXT_RIGHT))
                 selected_icon = i;
         nk_combo_end(ctx);
     }
@@ -433,9 +433,9 @@ basic_demo(struct nk_context *ctx, struct media *media)
      *------------------------------------------------*/
     ui_header(ctx, media, "Checkbox");
     ui_widget(ctx, media, 30);
-    nk_checkbox_label(ctx, "Flag 1", &check0);
+    nk_checkbox_label(ctx, nk_slicez("Flag 1"), &check0);
     ui_widget(ctx, media, 30);
-    nk_checkbox_label(ctx, "Flag 2", &check1);
+    nk_checkbox_label(ctx, nk_slicez("Flag 2"), &check1);
 
     /*------------------------------------------------
      *                  PROGRESSBAR

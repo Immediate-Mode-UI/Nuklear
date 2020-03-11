@@ -8,9 +8,8 @@
  * ===============================================================*/
 NK_API nk_bool
 nk_list_view_begin(struct nk_context *ctx, struct nk_list_view *view,
-    const char *title, nk_flags flags, int row_height, int row_count)
+    struct nk_slice title, nk_flags flags, int row_height, int row_count)
 {
-    int title_len;
     nk_hash title_hash;
     nk_uint *x_offset;
     nk_uint *y_offset;
@@ -23,8 +22,8 @@ nk_list_view_begin(struct nk_context *ctx, struct nk_list_view *view,
 
     NK_ASSERT(ctx);
     NK_ASSERT(view);
-    NK_ASSERT(title);
-    if (!ctx || !view || !title) return 0;
+    NK_ASSERT(title.ptr);
+    if (!ctx || !view || !title.ptr) return 0;
 
     win = ctx->current;
     style = &ctx->style;
@@ -32,8 +31,7 @@ nk_list_view_begin(struct nk_context *ctx, struct nk_list_view *view,
     row_height += NK_MAX(0, (int)item_spacing.y);
 
     /* find persistent list view scrollbar offset */
-    title_len = (int)nk_strlen(title);
-    title_hash = nk_murmur_hash(title, (int)title_len, NK_PANEL_GROUP);
+    title_hash = nk_murmur_hash(title, NK_PANEL_GROUP);
     x_offset = nk_find_value(win, title_hash);
     if (!x_offset) {
         x_offset = nk_add_value(ctx, win, title_hash, 0);
