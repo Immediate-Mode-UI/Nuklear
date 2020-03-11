@@ -22839,16 +22839,6 @@ nk_widget_fitting(struct nk_rect *bounds, struct nk_context *ctx,
     style = &ctx->style;
     layout = win->layout;
     state = nk_widget(bounds, ctx);
-
-    panel_padding = nk_panel_get_padding(style, layout->type);
-    if (layout->row.index == 1) {
-        bounds->w += panel_padding.x;
-        bounds->x -= panel_padding.x;
-    } else bounds->x -= item_padding.x;
-
-    if (layout->row.index == layout->row.columns)
-        bounds->w += panel_padding.x;
-    else bounds->w += item_padding.x;
     return state;
 }
 NK_API void
@@ -29110,6 +29100,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/03/11 (4.01.8) - Fix bug where padding is subtracted from widget
 /// - 2020/03/06 (4.01.7) - Fix bug where width padding was applied twice
 /// - 2020/02/06 (4.01.6) - Update stb_truetype.h and stb_rect_pack.h and separate them
 /// - 2019/12/10 (4.01.5) - Fix off-by-one error in NK_INTERSECT
