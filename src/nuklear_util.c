@@ -521,10 +521,6 @@ nk_ulltoa(char *s, unsigned long long n)
 		s[i] = 0;
 		return s;
 	}
-	if (n < 0) {
-		s[i++] = '-';
-		n = -n;
-	}
 	while (n > 0) {
 		s[i++] = (char)('0' + (n % 10));
 		n /= 10;
