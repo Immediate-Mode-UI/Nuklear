@@ -1,7 +1,6 @@
 #ifndef NK_INTERNAL_H
 #define NK_INTERNAL_H
 
-#include "nuklear.h"
 
 #ifndef NK_POOL_DEFAULT_CAPACITY
 #define NK_POOL_DEFAULT_CAPACITY 16
@@ -137,7 +136,7 @@ NK_LIB void* nk_memcopy(void *dst, const void *src, nk_size n);
 NK_LIB void nk_memset(void *ptr, int c0, nk_size size);
 NK_LIB void nk_zero(void *ptr, nk_size size);
 NK_LIB char *nk_itoa(char *s, long n);
-NK_LIB char*nk_ulltoa(char *s, unsigned long long n);
+NK_LIB char *nk_ulltoa(char *s, unsigned long long n);
 NK_LIB int nk_string_float_limit(char *string, int prec);
 NK_LIB char *nk_dtoa(char *s, double n);
 NK_LIB int nk_text_clamp(const struct nk_user_font *font, const char *text, int text_len, float space, int *glyphs, float *text_width, nk_rune *sep_list, int sep_count);
@@ -308,10 +307,10 @@ enum nk_property_filter {
     NK_FILTER_FLOAT
 };
 enum nk_property_kind {
-	NK_PROPERTY_INT,
-	NK_PROPERTY_FLOAT,
-	NK_PROPERTY_DOUBLE,
-	NK_PROPERTY_ULL
+    NK_PROPERTY_INT,
+    NK_PROPERTY_FLOAT,
+    NK_PROPERTY_DOUBLE,
+    NK_PROPERTY_ULL
 };
 union nk_property {
 	int i;
