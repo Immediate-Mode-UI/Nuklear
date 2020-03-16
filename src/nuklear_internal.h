@@ -1,7 +1,6 @@
 #ifndef NK_INTERNAL_H
 #define NK_INTERNAL_H
 
-
 #ifndef NK_POOL_DEFAULT_CAPACITY
 #define NK_POOL_DEFAULT_CAPACITY 16
 #endif
@@ -313,10 +312,10 @@ enum nk_property_kind {
     NK_PROPERTY_ULL
 };
 union nk_property {
-	int i;
-	float f;
-	double d;
-	unsigned long long ull;
+    int i;
+    float f;
+    double d;
+    unsigned long long ull;
 };
 struct nk_property_variant {
     enum nk_property_kind kind;
