@@ -161,7 +161,6 @@ nk_strtoi(const char *str, const char **endptr)
 NK_API unsigned long long
 nk_strtoull(const char *str, const char **endptr)
 {
-	unsigned long long neg = 1;
 	const char *p = str;
 	unsigned long long value = 0;
 
@@ -170,17 +169,13 @@ nk_strtoull(const char *str, const char **endptr)
 
 	/* skip whitespace */
 	while (*p == ' ') p++;
-	if (*p == '-') {
-		neg = -1;
-		p++;
-	}
 	while (*p && *p >= '0' && *p <= '9') {
 		value = value * 10 + (unsigned long long) (*p - '0');
 		p++;
 	}
 	if (endptr)
 		*endptr = p;
-	return neg*value;
+	return value;
 }
 NK_API double
 nk_strtod(const char *str, const char **endptr)
