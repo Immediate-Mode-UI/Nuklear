@@ -308,15 +308,15 @@ enum nk_property_filter {
     NK_FILTER_FLOAT
 };
 enum nk_property_kind {
-    NK_PROPERTY_INT,
-    NK_PROPERTY_FLOAT,
+	NK_PROPERTY_INT,
+	NK_PROPERTY_FLOAT,
 	NK_PROPERTY_DOUBLE,
 	NK_PROPERTY_ULL
 };
 union nk_property {
-    int i;
-    float f;
-    double d;
+	int i;
+	float f;
+	double d;
 	unsigned long long ull;
 };
 struct nk_property_variant {

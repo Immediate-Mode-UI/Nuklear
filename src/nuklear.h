@@ -3119,6 +3119,27 @@ NK_API void nk_property_float(struct nk_context*, const char *name, float min, f
 /// __inc_per_pixel__   | Value per pixel added or subtracted on dragging
 */
 NK_API void nk_property_double(struct nk_context*, const char *name, double min, double *val, double max, double step, float inc_per_pixel);
+/*/// #### nk_property_ull
+/// Integer property directly modifing a passed in value
+/// !!! WARNING
+///     To generate a unique property ID using the same label make sure to insert
+///     a `#` at the beginning. It will not be shown but guarantees correct behavior.
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// void nk_property_ull(struct nk_context *ctx, const char *name, unsigned long long min, unsigned long long *val, unsigned long long max, unsigned long long step, float inc_per_pixel);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter           | Description
+/// --------------------|-----------------------------------------------------------
+/// __ctx__             | Must point to an previously initialized `nk_context` struct after calling a layouting function
+/// __name__            | String used both as a label as well as a unique identifier
+/// __min__             | Minimum value not allowed to be underflown
+/// __val__             | Unsigned long long pointer to be modified
+/// __max__             | Maximum value not allowed to be overflown
+/// __step__            | Increment added and subtracted on increment and decrement button
+/// __inc_per_pixel__   | Value per pixel added or subtracted on dragging
+*/
+NK_API void nk_property_ull(struct nk_context *ctx, const char *name, unsigned long long min, unsigned long long *val, unsigned long long max, unsigned long long step, float inc_per_pixel);
 /*/// #### nk_propertyi
 /// Integer property modifing a passed in value and returning the new value
 /// !!! WARNING
@@ -3141,9 +3162,6 @@ NK_API void nk_property_double(struct nk_context*, const char *name, double min,
 ///
 /// Returns the new modified integer value
 */
-NK_API void
-nk_property_ull(struct nk_context *ctx, const char *name, unsigned long long min, unsigned long long *val, unsigned long long max, unsigned long long step, float inc_per_pixel);
-
 NK_API int nk_propertyi(struct nk_context*, const char *name, int min, int val, int max, int step, float inc_per_pixel);
 /*/// #### nk_propertyf
 /// Float property modifing a passed in value and returning the new value
