@@ -13,6 +13,8 @@ NK_LIB int nk_is_upper(int c){return (c >= 'A' && c <= 'Z') || (c >= 0xC0 && c <
 NK_LIB int nk_to_upper(int c) {return (c >= 'a' && c <= 'z') ? (c - ('a' - 'A')) : c;}
 NK_LIB int nk_to_lower(int c) {return (c >= 'A' && c <= 'Z') ? (c - ('a' + 'A')) : c;}
 
+#ifndef NK_MEMCPY
+#define NK_MEMCPY nk_memcopy
 NK_LIB void*
 nk_memcopy(void *dst0, const void *src0, nk_size length)
 {
@@ -69,6 +71,9 @@ nk_memcopy(void *dst0, const void *src0, nk_size length)
 done:
     return (dst0);
 }
+#endif
+#ifndef NK_MEMSET
+#define NK_MEMSET nk_memset
 NK_LIB void
 nk_memset(void *ptr, int c0, nk_size size)
 {
@@ -120,6 +125,7 @@ nk_memset(void *ptr, int c0, nk_size size)
     #undef nk_wsize
     #undef nk_wmask
 }
+#endif
 NK_LIB void
 nk_zero(void *ptr, nk_size size)
 {
@@ -493,6 +499,8 @@ nk_itoa(char *s, long n)
     nk_strrev_ascii(s);
     return s;
 }
+#ifndef NK_DTOA
+#define NK_DTOA nk_dtoa
 NK_LIB char*
 nk_dtoa(char *s, double n)
 {
@@ -571,6 +579,7 @@ nk_dtoa(char *s, double n)
     *(c) = '\0';
     return s;
 }
+#endif
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 #ifndef NK_INCLUDE_STANDARD_IO
 NK_INTERN int

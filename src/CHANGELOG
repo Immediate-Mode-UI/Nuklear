@@ -8,6 +8,9 @@
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/04/09 (4.02.1) - Removed unused nk_sqrt function to fix compiler warnings
+///                       - Fixed compiler warnings if you bring your own methods for
+///                        nk_cos/nk_sin/nk_strtod/nk_memset/nk_memcopy/nk_dtoa
 /// - 2020/04/06 (4.01.10) - Fix bug: Do not use pool before checking for NULL
 /// - 2020/03/22 (4.01.9) - Fix bug where layout state wasn't restored correctly after
 ///                        popping a tree.

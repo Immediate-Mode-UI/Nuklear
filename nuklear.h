@@ -3730,7 +3730,10 @@ NK_API int nk_stricmp(const char *s1, const char *s2);
 NK_API int nk_stricmpn(const char *s1, const char *s2, int n);
 NK_API int nk_strtoi(const char *str, const char **endptr);
 NK_API float nk_strtof(const char *str, const char **endptr);
+#ifndef NK_STRTOD
+#define NK_STRTOD nk_strtod
 NK_API double nk_strtod(const char *str, const char **endptr);
+#endif
 NK_API int nk_strfilter(const char *text, const char *regexp);
 NK_API int nk_strmatch_fuzzy_string(char const *str, char const *pattern, int *out_score);
 NK_API int nk_strmatch_fuzzy_text(const char *txt, int txt_len, const char *pattern, int *out_score);
@@ -5688,7 +5691,7 @@ template<typename T> struct nk_alignof{struct Big {T x; char c;}; enum {
 #ifndef STBTT_malloc
 static nk_handle fictional_handle = {0};
 
-#define STBTT_malloc(x,u)  nk_malloc( fictional_handle, 0, x ) 
+#define STBTT_malloc(x,u)  nk_malloc( fictional_handle, 0, x )
 #define STBTT_free(x,u)    nk_mfree( fictional_handle , x)
 #endif
 
@@ -5724,28 +5727,6 @@ static nk_handle fictional_handle = {0};
 #ifndef NK_ASSERT
 #include <assert.h>
 #define NK_ASSERT(expr) assert(expr)
-#endif
-
-#ifndef NK_MEMSET
-#define NK_MEMSET nk_memset
-#endif
-#ifndef NK_MEMCPY
-#define NK_MEMCPY nk_memcopy
-#endif
-#ifndef NK_SQRT
-#define NK_SQRT nk_sqrt
-#endif
-#ifndef NK_SIN
-#define NK_SIN nk_sin
-#endif
-#ifndef NK_COS
-#define NK_COS nk_cos
-#endif
-#ifndef NK_STRTOD
-#define NK_STRTOD nk_strtod
-#endif
-#ifndef NK_DTOA
-#define NK_DTOA nk_dtoa
 #endif
 
 #define NK_DEFAULT (-1)
@@ -5810,9 +5791,12 @@ NK_GLOBAL const struct nk_color nk_yellow = {255,255,0,255};
 
 /* math */
 NK_LIB float nk_inv_sqrt(float n);
-NK_LIB float nk_sqrt(float x);
+#ifndef NK_SIN
 NK_LIB float nk_sin(float x);
+#endif
+#ifndef NK_COS
 NK_LIB float nk_cos(float x);
+#endif
 NK_LIB nk_uint nk_round_up_pow2(nk_uint v);
 NK_LIB struct nk_rect nk_shrink_rect(struct nk_rect r, float amount);
 NK_LIB struct nk_rect nk_pad_rect(struct nk_rect r, struct nk_vec2 pad);
@@ -5829,12 +5813,19 @@ NK_LIB int nk_is_lower(int c);
 NK_LIB int nk_is_upper(int c);
 NK_LIB int nk_to_upper(int c);
 NK_LIB int nk_to_lower(int c);
+
+#ifndef NK_MEMCPY
 NK_LIB void* nk_memcopy(void *dst, const void *src, nk_size n);
+#endif
+#ifndef NK_MEMSET
 NK_LIB void nk_memset(void *ptr, int c0, nk_size size);
+#endif
 NK_LIB void nk_zero(void *ptr, nk_size size);
 NK_LIB char *nk_itoa(char *s, long n);
 NK_LIB int nk_string_float_limit(char *string, int prec);
+#ifndef NK_DTOA
 NK_LIB char *nk_dtoa(char *s, double n);
+#endif
 NK_LIB int nk_text_clamp(const struct nk_user_font *font, const char *text, int text_len, float space, int *glyphs, float *text_width, nk_rune *sep_list, int sep_count);
 NK_LIB struct nk_vec2 nk_text_calculate_text_bounds(const struct nk_user_font *font, const char *begin, int byte_len, float row_height, const char **remaining, struct nk_vec2 *out_offset, int *glyphs, int op);
 #ifdef NK_INCLUDE_STANDARD_VARARGS
@@ -6079,11 +6070,8 @@ nk_inv_sqrt(float n)
     conv.f = conv.f * (threehalfs - (x2 * conv.f * conv.f));
     return conv.f;
 }
-NK_LIB float
-nk_sqrt(float x)
-{
-    return x * nk_inv_sqrt(x);
-}
+#ifndef NK_SIN
+#define NK_SIN nk_sin
 NK_LIB float
 nk_sin(float x)
 {
@@ -6097,6 +6085,9 @@ nk_sin(float x)
     NK_STORAGE const float a7 = +1.38235642404333740e-4f;
     return a0 + x*(a1 + x*(a2 + x*(a3 + x*(a4 + x*(a5 + x*(a6 + x*a7))))));
 }
+#endif
+#ifndef NK_COS
+#define NK_COS nk_cos
 NK_LIB float
 nk_cos(float x)
 {
@@ -6113,6 +6104,7 @@ nk_cos(float x)
     NK_STORAGE const float a8 = -1.8776444013090451e-5f;
     return a0 + x*(a1 + x*(a2 + x*(a3 + x*(a4 + x*(a5 + x*(a6 + x*(a7 + x*a8)))))));
 }
+#endif
 NK_LIB nk_uint
 nk_round_up_pow2(nk_uint v)
 {
@@ -6346,6 +6338,8 @@ NK_LIB int nk_is_upper(int c){return (c >= 'A' && c <= 'Z') || (c >= 0xC0 && c <
 NK_LIB int nk_to_upper(int c) {return (c >= 'a' && c <= 'z') ? (c - ('a' - 'A')) : c;}
 NK_LIB int nk_to_lower(int c) {return (c >= 'A' && c <= 'Z') ? (c - ('a' + 'A')) : c;}
 
+#ifndef NK_MEMCPY
+#define NK_MEMCPY nk_memcopy
 NK_LIB void*
 nk_memcopy(void *dst0, const void *src0, nk_size length)
 {
@@ -6402,6 +6396,9 @@ nk_memcopy(void *dst0, const void *src0, nk_size length)
 done:
     return (dst0);
 }
+#endif
+#ifndef NK_MEMSET
+#define NK_MEMSET nk_memset
 NK_LIB void
 nk_memset(void *ptr, int c0, nk_size size)
 {
@@ -6453,6 +6450,7 @@ nk_memset(void *ptr, int c0, nk_size size)
     #undef nk_wsize
     #undef nk_wmask
 }
+#endif
 NK_LIB void
 nk_zero(void *ptr, nk_size size)
 {
@@ -6826,6 +6824,8 @@ nk_itoa(char *s, long n)
     nk_strrev_ascii(s);
     return s;
 }
+#ifndef NK_DTOA
+#define NK_DTOA nk_dtoa
 NK_LIB char*
 nk_dtoa(char *s, double n)
 {
@@ -6904,6 +6904,7 @@ nk_dtoa(char *s, double n)
     *(c) = '\0';
     return s;
 }
+#endif
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 #ifndef NK_INCLUDE_STANDARD_IO
 NK_INTERN int
@@ -22185,7 +22186,6 @@ nk_tree_element_image_push_hashed_base(struct nk_context *ctx, enum nk_tree_type
     struct nk_vec2 item_spacing;
     struct nk_rect header = {0,0,0,0};
     struct nk_rect sym = {0,0,0,0};
-    struct nk_text text;
 
     nk_flags ws = 0;
     enum nk_widget_layout_states widget_state;
@@ -22215,14 +22215,12 @@ nk_tree_element_image_push_hashed_base(struct nk_context *ctx, enum nk_tree_type
         const struct nk_style_item *background = &style->tab.background;
         if (background->type == NK_STYLE_ITEM_IMAGE) {
             nk_draw_image(out, header, &background->data.image, nk_white);
-            text.background = nk_rgba(0,0,0,0);
         } else {
-            text.background = background->data.color;
             nk_fill_rect(out, header, 0, style->tab.border_color);
             nk_fill_rect(out, nk_shrink_rect(header, style->tab.border),
                 style->tab.rounding, background->data.color);
         }
-    } else text.background = style->window.background;
+    }
 
     in = (!(layout->flags & NK_WINDOW_ROM)) ? &ctx->input: 0;
     in = (in && widget_state == NK_WIDGET_VALID) ? &ctx->input : 0;
@@ -29095,6 +29093,9 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/04/09 (4.02.1) - Removed unused nk_sqrt function to fix compiler warnings
+///                       - Fixed compiler warnings if you bring your own methods for
+///                        nk_cos/nk_sin/nk_strtod/nk_memset/nk_memcopy/nk_dtoa
 /// - 2020/04/06 (4.01.10) - Fix bug: Do not use pool before checking for NULL
 /// - 2020/03/22 (4.01.9) - Fix bug where layout state wasn't restored correctly after
 ///                        popping a tree.
