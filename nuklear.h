@@ -21260,7 +21260,6 @@ NK_LIB float
 nk_layout_row_calculate_usable_space(const struct nk_style *style, enum nk_panel_type type,
     float total_space, int columns)
 {
-    float panel_padding;
     float panel_spacing;
     float panel_space;
 
@@ -21795,7 +21794,6 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
     const struct nk_style *style;
 
     struct nk_vec2 spacing;
-    struct nk_vec2 padding;
 
     float item_offset = 0;
     float item_width = 0;
