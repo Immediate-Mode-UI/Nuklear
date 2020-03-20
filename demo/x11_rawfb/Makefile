@@ -1,8 +1,8 @@
 # Install
 BIN = zahnrad
 
-# Flags
-CFLAGS += -std=c89 -pedantic -O2 -Wunused
+PARENT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/..)
+include $(PARENT_DIR)/Makefile.inc
 
 SRC = main.c
 OBJ = $(SRC:.c=.o)

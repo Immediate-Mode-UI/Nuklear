@@ -1,5 +1,5 @@
 # Flags
-CFLAGS += -std=c99 -pedantic -O2
+CFLAGS += -std=c99 -pedantic -Wall -Wextra -O2
 LIBS :=
 
 ifeq ($(OS),Windows_NT)

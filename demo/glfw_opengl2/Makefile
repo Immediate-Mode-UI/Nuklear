@@ -1,8 +1,8 @@
 # Install
 BIN = demo
 
-# Flags
-CFLAGS += -std=c99 -pedantic -O2
+PARENT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/..)
+include $(PARENT_DIR)/Makefile.inc
 
 SRC = main.c
 OBJ = $(SRC:.c=.o)
