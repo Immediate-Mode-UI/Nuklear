@@ -3,9 +3,11 @@ CFLAGS += -std=c99 -pedantic -O2
 LIBS :=
 
 ifeq ($(OS),Windows_NT)
-BIN := $(BIN).exe
+	DEL_BIN = IF EXIST bin DEL /F /Q bin\*
+	BIN := $(BIN).exe
 	LIBS := -lglfw3 -lopengl32 -lm -lGLU32 -lGLEW32
 else
+	DEL_BIN = rm -rf bin
 	UNAME_S := $(shell uname -s)
 	GLFW3 := $(shell pkg-config --libs glfw3)
 	ifeq ($(UNAME_S),Darwin)
@@ -26,7 +28,7 @@ else
 endif
 
 clean:
-	@rm -rf bin
+	$(DEL_BIN)
 
 file_browser: generate
 	$(CC) $(CFLAGS) -o bin/file_browser file_browser.c $(LIBS)
