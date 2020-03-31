@@ -656,7 +656,7 @@ style_window(struct nk_context* ctx, struct nk_style_window* out_style)
 }
 
 static int
-style_configurator(struct nk_context *ctx)
+style_configurator(struct nk_context *ctx, struct nk_color color_table[NK_COLOR_COUNT])
 {
 	/* window flags */
 	int border = nk_true;
@@ -677,15 +677,6 @@ style_configurator(struct nk_context *ctx)
 	if (minimizable) window_flags |= NK_WINDOW_MINIMIZABLE;
 
 	struct nk_style *style = &ctx->style;
-
-	// TODO better way?
-	static int initialized = nk_false;
-	static struct nk_color color_table[NK_COLOR_COUNT];
-
-	if (!initialized) {
-		memcpy(color_table, nk_default_color_style, sizeof(color_table));
-		initialized = nk_true;
-	}
 
 	if (nk_begin(ctx, "Configurator", nk_rect(10, 10, 400, 600), window_flags))
 	{
@@ -804,7 +795,7 @@ style_configurator(struct nk_context *ctx)
 
 		nk_layout_row_dynamic(ctx, 30, 1);
 		if (nk_button_label(ctx, "Reset all styles to defaults")) {
-			memcpy(color_table, nk_default_color_style, sizeof(color_table));
+			memcpy(color_table, nk_default_color_style, sizeof(nk_default_color_style));
 			nk_style_default(ctx);
 		}
 
