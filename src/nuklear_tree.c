@@ -162,7 +162,7 @@ nk_tree_state_pop(struct nk_context *ctx)
 
     win = ctx->current;
     layout = win->layout;
-    layout->at_x -= ctx->style.tab.indent + ctx->style.window.padding.x;
+    layout->at_x -= ctx->style.tab.indent + (float)*layout->offset_x;
     layout->bounds.w += ctx->style.tab.indent + ctx->style.window.padding.x;
     NK_ASSERT(layout->row.tree_depth);
     layout->row.tree_depth--;
