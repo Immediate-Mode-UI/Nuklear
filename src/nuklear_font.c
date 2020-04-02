@@ -195,7 +195,12 @@ nk_font_bake_pack(struct nk_font_baker *baker,
         } while ((it = it->n) != config_iter);
     }
     *height = 0;
-    *width = (total_glyph_count > 1000) ? 1024 : 512;
+   
+	/* Be able to handle very large fonts */
+	int factor = total_glyph_count / 1024;
+	if (!factor) factor = 1;
+    *width = NK_MIN(0xFFFF, (512 * factor));
+	
     stbtt_PackBegin(&baker->spc, 0, (int)*width, (int)max_height, 0, 1, alloc);
     {
         int input_i = 0;
