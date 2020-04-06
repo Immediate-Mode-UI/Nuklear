@@ -19,8 +19,9 @@ nk_pool_init(struct nk_pool *pool, struct nk_allocator *alloc,
 NK_LIB void
 nk_pool_free(struct nk_pool *pool)
 {
-    struct nk_page *iter = pool->pages;
+    struct nk_page *iter;
     if (!pool) return;
+    iter = pool->pages;
     if (pool->type == NK_BUFFER_FIXED) return;
     while (iter) {
         struct nk_page *next = iter->next;

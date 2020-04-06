@@ -18962,8 +18962,9 @@ nk_pool_init(struct nk_pool *pool, struct nk_allocator *alloc,
 NK_LIB void
 nk_pool_free(struct nk_pool *pool)
 {
-    struct nk_page *iter = pool->pages;
+    struct nk_page *iter;
     if (!pool) return;
+    iter = pool->pages;
     if (pool->type == NK_BUFFER_FIXED) return;
     while (iter) {
         struct nk_page *next = iter->next;
@@ -29094,6 +29095,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/04/06 (4.01.10) - Fix bug: Do not use pool before checking for NULL
 /// - 2020/03/22 (4.01.9) - Fix bug where layout state wasn't restored correctly after
 ///                        popping a tree.
 /// - 2020/03/11 (4.01.8) - Fix bug where padding is subtracted from widget
