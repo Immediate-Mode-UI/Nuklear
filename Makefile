@@ -1,5 +1,6 @@
 SRCDIR      := src
 SRCFILES    := $(wildcard $(SRCDIR)/*)
+UPDATEDIR   := /tmp
 Q           ?= @
 
 CFLAGS += -std=c99
@@ -48,3 +49,17 @@ glfw_opengl3: nuklear.h
 	$(Q)$(MAKE) CFLAGS="$(CFLAGS)" -C demo/$@
 
 demos: glfw_opengl2 glfw_opengl3
+
+define UPDATE_GIT
+	$(Q)if [ ! -d $(UPDATEDIR)/$(1).sync ]; then \
+		git clone --depth=1 $(2) $(UPDATEDIR)/$(1).sync; \
+	else \
+		cd $(UPDATEDIR)/$(1).sync && git pull --depth=1 --rebase; \
+	fi;
+endef
+
+update-stb:
+	$(call UPDATE_GIT,stb,https://github.com/nothings/stb.git)
+	cp $(UPDATEDIR)/stb.sync/stb_image.h example
+	cp $(UPDATEDIR)/stb.sync/stb_rect_pack.h src
+	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src
