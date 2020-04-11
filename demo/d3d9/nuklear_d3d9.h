@@ -190,6 +190,7 @@ nk_d3d9_render(enum nk_anti_aliasing AA)
     }
 
     nk_clear(&d3d9.ctx);
+    nk_buffer_clear(&d3d9.cmds);
 
     IDirect3DStateBlock9_Apply(d3d9.state);
     IDirect3DStateBlock9_Release(d3d9.state);

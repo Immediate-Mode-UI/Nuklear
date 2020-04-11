@@ -717,6 +717,7 @@ device_draw(struct device *dev, struct nk_context *ctx, int width, int height,
             offset += cmd->elem_count;
         }
         nk_clear(ctx);
+        nk_buffer_clear(&dev->cmds);
     }
 
     /* default OpenGL state */
