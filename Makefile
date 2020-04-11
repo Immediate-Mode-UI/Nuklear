@@ -6,7 +6,7 @@ Q           ?= @
 CFLAGS += -std=c99
 CFLAGS += -pedantic
 CFLAGS += -O2
-CFLAGS += -Winline
+#CFLAGS += -Winline
 CFLAGS += -Wcast-align
 CFLAGS += -Wpointer-arith
 CFLAGS += -Wno-long-long
@@ -18,6 +18,7 @@ CFLAGS += -Wreturn-type
 CFLAGS += -Wwrite-strings
 CFLAGS += -Wno-variadic-macros
 CFLAGS += -Wno-format-zero-length
+CFLAGS += -Wno-misleading-indentation
 #CFLAGS += -Wcast-qual
 #CFLAGS += -Wmissing-declarations
 
@@ -42,10 +43,7 @@ doc: doc/nuklear.html
 example: nuklear.h
 	$(Q)$(MAKE) CFLAGS="$(CFLAGS)" -C $@
 
-glfw_opengl2: nuklear.h
-	$(Q)$(MAKE) CFLAGS="$(CFLAGS)" -C demo/$@
-
-glfw_opengl3: nuklear.h
+glfw_opengl2 glfw_opengl3: nuklear.h
 	$(Q)$(MAKE) CFLAGS="$(CFLAGS)" -C demo/$@
 
 demos: glfw_opengl2 glfw_opengl3
