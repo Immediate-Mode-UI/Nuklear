@@ -28188,7 +28188,10 @@ nk_combo_begin(struct nk_context *ctx, struct nk_window *win,
     popup = win->popup.win;
     body.x = header.x;
     body.w = size.x;
-    body.y = header.y + header.h-ctx->style.window.combo_border;
+	if (win->bounds.h < header.h + size.y) //DropUp
+		body.y = header.y - ctx->style.window.combo_border - size.y;
+	else //DropDown
+		body.y = header.y + header.h - ctx->style.window.combo_border;
     body.h = size.y;
 
     hash = win->popup.combo_count++;
