@@ -412,33 +412,33 @@ nk_gdi_stroke_circle(HDC dc, short x, short y, unsigned short w,
 static void
 nk_gdi_stroke_arc(HDC dc, short cx, short cy, unsigned short r, float amin, float adelta, unsigned short line_thickness, struct nk_color col)
 {
-	COLORREF color = convert_color(col);
+    COLORREF color = convert_color(col);
 
-	/* setup pen */
+    /* setup pen */
     HPEN pen = NULL;
     if (line_thickness == 1)
         SetDCPenColor(dc, color);
     else
     {
-    	DWORD pen_style = PS_SOLID | PS_ENDCAP_FLAT | PS_GEOMETRIC; /* without that endcap round caps are used which looks really weird for thick arcs */
+        DWORD pen_style = PS_SOLID | PS_ENDCAP_FLAT | PS_GEOMETRIC; /* without that endcap round caps are used which looks really weird for thick arcs */
 
-    	LOGBRUSH brush;
-		brush.lbStyle = BS_SOLID;
-		brush.lbColor = color;
-		brush.lbHatch = 0;
+        LOGBRUSH brush;
+        brush.lbStyle = BS_SOLID;
+        brush.lbColor = color;
+        brush.lbHatch = 0;
 
-    	pen = ExtCreatePen(pen_style, line_thickness, &brush, 0, NULL);
+        pen = ExtCreatePen(pen_style, line_thickness, &brush, 0, NULL);
         SelectObject(dc, pen);
     }
 
     /* calculate arc and draw */
     float start_x = cx + r*nk_cos((amin+adelta)*NK_PI/180.0);
-	float start_y = cy + r*nk_sin((amin+adelta)*NK_PI/180.0);
+    float start_y = cy + r*nk_sin((amin+adelta)*NK_PI/180.0);
 
-	float end_x = cx + r*nk_cos(amin*NK_PI/180.0);
-	float end_y = cy + r*nk_sin(amin*NK_PI/180.0);
+    float end_x = cx + r*nk_cos(amin*NK_PI/180.0);
+    float end_y = cy + r*nk_sin(amin*NK_PI/180.0);
 
-	SetArcDirection(dc, AD_COUNTERCLOCKWISE);
+    SetArcDirection(dc, AD_COUNTERCLOCKWISE);
     Arc(dc, cx-r, cy-r, cx+r, cy+r, start_x, start_y, end_x, end_y);
 
     if (pen)
@@ -451,12 +451,12 @@ nk_gdi_stroke_arc(HDC dc, short cx, short cy, unsigned short r, float amin, floa
 static void
 nk_gdi_fill_arc(HDC dc, short cx, short cy, unsigned short r, float amin, float adelta, struct nk_color col)
 {
-	COLORREF color = convert_color(col);
+    COLORREF color = convert_color(col);
     SetDCBrushColor(dc, color);
     SetDCPenColor(dc, color);
 
     float start_x = cx + r*nk_cos((amin+adelta)*NK_PI/180.0);
-	float start_y = cy + r*nk_sin((amin+adelta)*NK_PI/180.0);
+    float start_y = cy + r*nk_sin((amin+adelta)*NK_PI/180.0);
 
     float end_x = cx + r*nk_cos(amin*NK_PI/180.0);
     float end_y = cy + r*nk_sin(amin*NK_PI/180.0);
@@ -942,14 +942,14 @@ nk_gdi_render(struct nk_color clear)
             nk_gdi_draw_image(i->x, i->y, i->w, i->h, i->img, i->col);
         } break;
         case NK_COMMAND_ARC: {
-        	const struct nk_command_arc *q = (const struct nk_command_arc *)cmd;
-			nk_gdi_stroke_arc(memory_dc, q->cx, q->cy, q->r, q->a[0], q->a[1], q->line_thickness, q->color);
-			break;
+            const struct nk_command_arc *q = (const struct nk_command_arc *)cmd;
+            nk_gdi_stroke_arc(memory_dc, q->cx, q->cy, q->r, q->a[0], q->a[1], q->line_thickness, q->color);
+            break;
         }
         case NK_COMMAND_ARC_FILLED: {
-        	const struct nk_command_arc_filled *q = (const struct nk_command_arc_filled *)cmd;
-        	nk_gdi_fill_arc(memory_dc, q->cx, q->cy, q->r, q->a[0], q->a[1], q->color);
-        	break;
+            const struct nk_command_arc_filled *q = (const struct nk_command_arc_filled *)cmd;
+            nk_gdi_fill_arc(memory_dc, q->cx, q->cy, q->r, q->a[0], q->a[1], q->color);
+            break;
         }
         default: break;
         }
