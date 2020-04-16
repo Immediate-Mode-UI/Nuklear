@@ -352,10 +352,10 @@ overview(struct nk_context *ctx)
 
                 /* default combobox */
                 nk_layout_row_static(ctx, 25, 200, 1);
-                current_weapon = nk_combo(ctx, weapons, NK_LEN(weapons), current_weapon, 25, nk_vec2(200,200));
+                current_weapon = nk_combo(ctx, weapons, NK_LEN(weapons), current_weapon, 25, nk_vec2(200,200), NK_DROP_AUTO);
 
                 /* slider color combobox */
-                if (nk_combo_begin_color(ctx, combo_color, nk_vec2(200,200))) {
+                if (nk_combo_begin_color(ctx, combo_color, nk_vec2(200,200), NK_DROP_AUTO)) {
                     float ratios[] = {0.15f, 0.85f};
                     nk_layout_row(ctx, NK_DYNAMIC, 30, 2, ratios);
                     nk_label(ctx, "R:", NK_TEXT_LEFT);
@@ -369,7 +369,7 @@ overview(struct nk_context *ctx)
                     nk_combo_end(ctx);
                 }
                 /* complex color combobox */
-                if (nk_combo_begin_color(ctx, nk_rgb_cf(combo_color2), nk_vec2(200,400))) {
+                if (nk_combo_begin_color(ctx, nk_rgb_cf(combo_color2), nk_vec2(200,400), NK_DROP_AUTO)) {
                     enum color_mode {COL_RGB, COL_HSV};
                     static int col_mode = COL_RGB;
                     #ifndef DEMO_DO_NOT_USE_COLOR_PICKER
@@ -401,7 +401,7 @@ overview(struct nk_context *ctx)
                 /* progressbar combobox */
                 sum = prog_a + prog_b + prog_c + prog_d;
                 sprintf(buffer, "%lu", sum);
-                if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
+                if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200), NK_DROP_AUTO)) {
                     nk_layout_row_dynamic(ctx, 30, 1);
                     nk_progress(ctx, &prog_a, 100, NK_MODIFIABLE);
                     nk_progress(ctx, &prog_b, 100, NK_MODIFIABLE);
@@ -413,7 +413,7 @@ overview(struct nk_context *ctx)
                 /* checkbox combobox */
                 sum = (size_t)(check_values[0] + check_values[1] + check_values[2] + check_values[3] + check_values[4]);
                 sprintf(buffer, "%lu", sum);
-                if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
+                if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200), NK_DROP_AUTO)) {
                     nk_layout_row_dynamic(ctx, 30, 1);
                     nk_checkbox_label(ctx, weapons[0], &check_values[0]);
                     nk_checkbox_label(ctx, weapons[1], &check_values[1]);
@@ -424,7 +424,7 @@ overview(struct nk_context *ctx)
 
                 /* complex text combobox */
                 sprintf(buffer, "%.2f, %.2f, %.2f", position[0], position[1],position[2]);
-                if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
+                if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200), NK_DROP_AUTO)) {
                     nk_layout_row_dynamic(ctx, 25, 1);
                     nk_property_float(ctx, "#X:", -1024.0f, &position[0], 1024.0f, 1,0.5f);
                     nk_property_float(ctx, "#Y:", -1024.0f, &position[1], 1024.0f, 1,0.5f);
@@ -434,7 +434,7 @@ overview(struct nk_context *ctx)
 
                 /* chart combobox */
                 sprintf(buffer, "%.1f", chart_selection);
-                if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,250))) {
+                if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,250), NK_DROP_AUTO)) {
                     size_t i = 0;
                     static const float values[]={26.0f,13.0f,30.0f,15.0f,25.0f,10.0f,20.0f,40.0f, 12.0f, 8.0f, 22.0f, 28.0f, 5.0f};
                     nk_layout_row_dynamic(ctx, 150, 1);
@@ -467,7 +467,7 @@ overview(struct nk_context *ctx)
 
                     /* time combobox */
                     sprintf(buffer, "%02d:%02d:%02d", sel_time.tm_hour, sel_time.tm_min, sel_time.tm_sec);
-                    if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,250))) {
+                    if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,250), NK_DROP_AUTO)) {
                         time_selected = 1;
                         nk_layout_row_dynamic(ctx, 25, 1);
                         sel_time.tm_sec = nk_propertyi(ctx, "#S:", 0, sel_time.tm_sec, 60, 1, 1);
@@ -478,7 +478,7 @@ overview(struct nk_context *ctx)
 
                     /* date combobox */
                     sprintf(buffer, "%02d-%02d-%02d", sel_date.tm_mday, sel_date.tm_mon+1, sel_date.tm_year+1900);
-                    if (nk_combo_begin_label(ctx, buffer, nk_vec2(350,400)))
+                    if (nk_combo_begin_label(ctx, buffer, nk_vec2(350,400), NK_DROP_AUTO))
                     {
                         int i = 0;
                         const char *month[] = {"January", "February", "March",
