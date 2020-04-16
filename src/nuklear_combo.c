@@ -27,21 +27,21 @@ nk_combo_begin(struct nk_context *ctx, struct nk_window *win,
 	/* Check Drop direction */
 	switch (drop_dir) {
 	case NK_DROP_AUTO_PREFER_DOWN:
-		if (win->bounds.h < header.h + size.y)
+		if (win->bounds.y + win->bounds.h < header.y + header.h + size.y)
 			drop_y = header.y - ctx->style.window.combo_border - size.y;
 		else
 			drop_y = header.y + header.h - ctx->style.window.combo_border;
 		break;
 	case NK_DROP_AUTO_PREFER_UP:
-		if (win->bounds.h >= header.h + size.y)
-			drop_y = header.y - ctx->style.window.combo_border - size.y;
-		else
+		if (win->bounds.y > header.y + header.h - size.y)
 			drop_y = header.y + header.h - ctx->style.window.combo_border;
+		else
+			drop_y = header.y - ctx->style.window.combo_border - size.y;
 		break;
 	case NK_DROP_DOWN:
 		drop_y = header.y + header.h - ctx->style.window.combo_border; break;
 	case NK_DROP_UP:
-		drop_y = header.y - ctx->style.window.combo_border - size.y; break;
+		drop_y = header.y + ctx->style.window.combo_border - size.y; break;
 	default:
 		drop_y = header.y + header.h - ctx->style.window.combo_border;
 	}
