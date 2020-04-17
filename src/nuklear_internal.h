@@ -28,28 +28,6 @@
 #define NK_ASSERT(expr) assert(expr)
 #endif
 
-#ifndef NK_MEMSET
-#define NK_MEMSET nk_memset
-#endif
-#ifndef NK_MEMCPY
-#define NK_MEMCPY nk_memcopy
-#endif
-#ifndef NK_SQRT
-#define NK_SQRT nk_sqrt
-#endif
-#ifndef NK_SIN
-#define NK_SIN nk_sin
-#endif
-#ifndef NK_COS
-#define NK_COS nk_cos
-#endif
-#ifndef NK_STRTOD
-#define NK_STRTOD nk_strtod
-#endif
-#ifndef NK_DTOA
-#define NK_DTOA nk_dtoa
-#endif
-
 #define NK_DEFAULT (-1)
 
 #ifndef NK_VSNPRINTF
@@ -112,9 +90,12 @@ NK_GLOBAL const struct nk_color nk_yellow = {255,255,0,255};
 
 /* math */
 NK_LIB float nk_inv_sqrt(float n);
-NK_LIB float nk_sqrt(float x);
+#ifndef NK_SIN
 NK_LIB float nk_sin(float x);
+#endif
+#ifndef NK_COS
 NK_LIB float nk_cos(float x);
+#endif
 NK_LIB nk_uint nk_round_up_pow2(nk_uint v);
 NK_LIB struct nk_rect nk_shrink_rect(struct nk_rect r, float amount);
 NK_LIB struct nk_rect nk_pad_rect(struct nk_rect r, struct nk_vec2 pad);
@@ -131,12 +112,19 @@ NK_LIB int nk_is_lower(int c);
 NK_LIB int nk_is_upper(int c);
 NK_LIB int nk_to_upper(int c);
 NK_LIB int nk_to_lower(int c);
+
+#ifndef NK_MEMCPY
 NK_LIB void* nk_memcopy(void *dst, const void *src, nk_size n);
+#endif
+#ifndef NK_MEMSET
 NK_LIB void nk_memset(void *ptr, int c0, nk_size size);
+#endif
 NK_LIB void nk_zero(void *ptr, nk_size size);
 NK_LIB char *nk_itoa(char *s, long n);
 NK_LIB int nk_string_float_limit(char *string, int prec);
+#ifndef NK_DTOA
 NK_LIB char *nk_dtoa(char *s, double n);
+#endif
 NK_LIB int nk_text_clamp(const struct nk_user_font *font, const char *text, int text_len, float space, int *glyphs, float *text_width, nk_rune *sep_list, int sep_count);
 NK_LIB struct nk_vec2 nk_text_calculate_text_bounds(const struct nk_user_font *font, const char *begin, int byte_len, float row_height, const char **remaining, struct nk_vec2 *out_offset, int *glyphs, int op);
 #ifdef NK_INCLUDE_STANDARD_VARARGS

@@ -394,7 +394,6 @@ basic_demo(struct nk_context *ctx, struct media *media)
      *                  IMAGE POPUP
      *------------------------------------------------*/
     if (image_active) {
-        struct nk_panel popup;
         if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Image Popup", 0, nk_rect(265, 0, 320, 220))) {
             nk_layout_row_static(ctx, 82, 82, 3);
             for (i = 0; i < 9; ++i) {
