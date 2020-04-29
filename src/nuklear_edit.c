@@ -327,8 +327,8 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
 
     /* draw background frame */
     if (background->type == NK_STYLE_ITEM_COLOR) {
-        nk_stroke_rect(out, bounds, style->rounding, style->border, style->border_color);
         nk_fill_rect(out, bounds, style->rounding, background->data.color);
+        nk_stroke_rect(out, bounds, style->rounding, style->border, style->border_color);
     } else nk_draw_image(out, bounds, &background->data.image, nk_white);}
 
     area.w = NK_MAX(0, area.w - style->cursor_size);
