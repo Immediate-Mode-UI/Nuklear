@@ -25,7 +25,7 @@ render backends, it focuses only on the actual UI.
 - No global or hidden state
 - Customizable library modules (you can compile and use only what you need)
 - Optional font baker and vertex buffer output
-- [Documentation](https://riri.github.io/Nuklear/doc/nuklear.html)
+- [Documentation](https://Immediate-Mode-UI.github.io/Nuklear/doc/nuklear.html)
 
 ## Building
 
