@@ -734,7 +734,7 @@ overview(struct nk_context *ctx)
 
             /* color contextual */
             nk_layout_row_begin(ctx, NK_STATIC, 30, 2);
-            nk_layout_row_push(ctx, 100);
+            nk_layout_row_push(ctx, 120);
             nk_label(ctx, "Right Click here:", NK_TEXT_LEFT);
             nk_layout_row_push(ctx, 50);
             bounds = nk_widget_bounds(ctx);
@@ -752,7 +752,7 @@ overview(struct nk_context *ctx)
 
             /* popup */
             nk_layout_row_begin(ctx, NK_STATIC, 30, 2);
-            nk_layout_row_push(ctx, 100);
+            nk_layout_row_push(ctx, 120);
             nk_label(ctx, "Popup:", NK_TEXT_LEFT);
             nk_layout_row_push(ctx, 50);
             if (nk_button_label(ctx, "Popup"))
