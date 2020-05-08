@@ -20,7 +20,40 @@ enum nk_glfw_init_state{
     NK_GLFW3_INSTALL_CALLBACKS
 };
 
-struct nk_glfw;
+#ifndef NK_GLFW_TEXT_MAX
+#define NK_GLFW_TEXT_MAX 256
+#endif
+
+struct nk_glfw_device {
+    struct nk_buffer cmds;
+    struct nk_draw_null_texture null;
+    GLuint vbo, vao, ebo;
+    GLuint prog;
+    GLuint vert_shdr;
+    GLuint frag_shdr;
+    GLint attrib_pos;
+    GLint attrib_uv;
+    GLint attrib_col;
+    GLint uniform_tex;
+    GLint uniform_proj;
+    GLuint font_tex;
+};
+
+struct nk_glfw {
+    GLFWwindow *win;
+    int width, height;
+    int display_width, display_height;
+    struct nk_glfw_device ogl;
+    struct nk_context ctx;
+    struct nk_font_atlas atlas;
+    struct nk_vec2 fb_scale;
+    unsigned int text[NK_GLFW_TEXT_MAX];
+    int text_len;
+    struct nk_vec2 scroll;
+    double last_button_click;
+    int is_double_click_down;
+    struct nk_vec2 double_click_pos;
+};
 
 NK_API struct nk_context*   nk_glfw3_init(struct nk_glfw* glfw, GLFWwindow *win, enum nk_glfw_init_state);
 NK_API void                 nk_glfw3_shutdown(struct nk_glfw* glfw);
@@ -46,9 +79,6 @@ NK_API void                 nk_glfw3_mouse_button_callback(GLFWwindow *win, int 
  */
 #ifdef NK_GLFW_GL3_IMPLEMENTATION
 
-#ifndef NK_GLFW_TEXT_MAX
-#define NK_GLFW_TEXT_MAX 256
-#endif
 #ifndef NK_GLFW_DOUBLE_CLICK_LO
 #define NK_GLFW_DOUBLE_CLICK_LO 0.02
 #endif
@@ -56,41 +86,10 @@ NK_API void                 nk_glfw3_mouse_button_callback(GLFWwindow *win, int 
 #define NK_GLFW_DOUBLE_CLICK_HI 0.2
 #endif
 
-struct nk_glfw_device {
-    struct nk_buffer cmds;
-    struct nk_draw_null_texture null;
-    GLuint vbo, vao, ebo;
-    GLuint prog;
-    GLuint vert_shdr;
-    GLuint frag_shdr;
-    GLint attrib_pos;
-    GLint attrib_uv;
-    GLint attrib_col;
-    GLint uniform_tex;
-    GLint uniform_proj;
-    GLuint font_tex;
-};
-
 struct nk_glfw_vertex {
     float position[2];
     float uv[2];
     nk_byte col[4];
-};
-
-struct nk_glfw {
-    GLFWwindow *win;
-    int width, height;
-    int display_width, display_height;
-    struct nk_glfw_device ogl;
-    struct nk_context ctx;
-    struct nk_font_atlas atlas;
-    struct nk_vec2 fb_scale;
-    unsigned int text[NK_GLFW_TEXT_MAX];
-    int text_len;
-    struct nk_vec2 scroll;
-    double last_button_click;
-    int is_double_click_down;
-    struct nk_vec2 double_click_pos;
 };
 
 #ifdef __APPLE__
