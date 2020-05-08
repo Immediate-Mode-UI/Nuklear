@@ -26664,8 +26664,8 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
 
     /* draw background frame */
     if (background->type == NK_STYLE_ITEM_COLOR) {
-        nk_stroke_rect(out, bounds, style->rounding, style->border, style->border_color);
         nk_fill_rect(out, bounds, style->rounding, background->data.color);
+        nk_stroke_rect(out, bounds, style->rounding, style->border, style->border_color);
     } else nk_draw_image(out, bounds, &background->data.image, nk_white);}
 
     area.w = NK_MAX(0, area.w - style->cursor_size);
@@ -29091,6 +29091,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/04/30 (4.02.2) - Fix nk_edit border drawing bug
 /// - 2020/04/09 (4.02.1) - Removed unused nk_sqrt function to fix compiler warnings
 ///                       - Fixed compiler warnings if you bring your own methods for
 ///                        nk_cos/nk_sin/nk_strtod/nk_memset/nk_memcopy/nk_dtoa
