@@ -20984,13 +20984,15 @@ nk_menubar_end(struct nk_context *ctx)
     if (layout->flags & NK_WINDOW_HIDDEN || layout->flags & NK_WINDOW_MINIMIZED)
         return;
 
-    layout->menu.h = layout->at_y - layout->menu.y;
-    layout->bounds.y += layout->menu.h + ctx->style.window.spacing.y + layout->row.height;
-    layout->bounds.h -= layout->menu.h + ctx->style.window.spacing.y + layout->row.height;
+    layout->menu.h  = layout->at_y - layout->menu.y;
+    layout->menu.h += layout->row.height + ctx->style.window.spacing.y;
+
+    layout->bounds.y += layout->menu.h;
+    layout->bounds.h -= layout->menu.h;
 
     *layout->offset_x = layout->menu.offset.x;
     *layout->offset_y = layout->menu.offset.y;
-    layout->at_y = layout->bounds.y - layout->row.height;
+    layout->at_y      = layout->bounds.y - layout->row.height;
 
     layout->clip.y = layout->bounds.y;
     layout->clip.h = layout->bounds.h;
@@ -29092,6 +29094,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/05/09 (4.02.4) - Fix nk_menubar height calculation bug
 /// - 2020/05/08 (4.02.3) - Fix missing stdarg.h with NK_INCLUDE_STANDARD_VARARGS
 /// - 2020/04/30 (4.02.2) - Fix nk_edit border drawing bug
 /// - 2020/04/09 (4.02.1) - Removed unused nk_sqrt function to fix compiler warnings
