@@ -19,7 +19,10 @@
 #include <math.h>
 #include <time.h>
 #include <sys/time.h>
+
 #include "../../nuklear.h"
+
+#include "xdg-shell.h"
 #include "nuklear_raw_wayland.h"
 
 
@@ -156,24 +159,38 @@ static struct wl_seat_listener seat_listener =
 //-------------------------------------------------------------------- endof WAYLAND SEAT INTERFACE
 
 // WAYLAND SHELL INTERFACE
-static void nk_wayland_shell_surface_ping (void *data, struct wl_shell_surface *shell_surface, uint32_t serial) 
+static void nk_wayland_xdg_wm_base_ping (void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial)
 {
-	wl_shell_surface_pong (shell_surface, serial);
+	xdg_wm_base_pong (xdg_wm_base, serial);
 }
 
-static void nk_wayland_shell_surface_configure (void *data, struct wl_shell_surface *shell_surface, uint32_t edges, int32_t width, int32_t height) 
+static struct xdg_wm_base_listener nk_wayland_xdg_wm_base_listener =
+{
+    &nk_wayland_xdg_wm_base_ping
+};
+
+static void nk_wayland_xdg_surface_configure (void *data, struct xdg_surface *xdg_surface, uint32_t serial)
+{
+    xdg_surface_ack_configure(xdg_surface, serial);
+}
+
+static struct xdg_surface_listener nk_wayland_xdg_surface_listener =
+{
+    &nk_wayland_xdg_surface_configure,
+};
+
+static void nk_wayland_xdg_toplevel_configure (void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states)
 {
 }
 
-static void nk_wayland_shell_surface_popup_done (void *data, struct wl_shell_surface *shell_surface) 
-{	
+static void nk_wayland_xdg_toplevel_close (void *data, struct xdg_toplevel *xdg_toplevel)
+{
 }
 
-static struct wl_shell_surface_listener nk_wayland_shell_surface_listener = 
+static struct xdg_toplevel_listener nk_wayland_xdg_toplevel_listener =
 {
-    &nk_wayland_shell_surface_ping, 
-    &nk_wayland_shell_surface_configure, 
-    &nk_wayland_shell_surface_popup_done
+    &nk_wayland_xdg_toplevel_configure,
+    &nk_wayland_xdg_toplevel_close
 };
 //--------------------------------------------------------------------- endof WAYLAND SHELL INTERFACE
 
@@ -187,9 +204,9 @@ static void nk_wayland_registry_add_object (void *data, struct wl_registry *regi
 	if (!strcmp(interface,"wl_compositor")) {
 		win->compositor = wl_registry_bind (registry, name, &wl_compositor_interface, 1);
         
-	} else if (!strcmp(interface,"wl_shell")) {
-		win->shell = wl_registry_bind (registry, name, &wl_shell_interface, 1);
-        
+	} else if (!strcmp(interface,"xdg_wm_base")) {
+		win->xdg_wm_base = wl_registry_bind (registry, name, &xdg_wm_base_interface, 1);
+		xdg_wm_base_add_listener (win->xdg_wm_base, &nk_wayland_xdg_wm_base_listener, win);
 	} else if (!strcmp(interface,"wl_shm")) {
 		win->wl_shm = wl_registry_bind (registry, name, &wl_shm_interface, 1);
         
@@ -254,7 +271,9 @@ static void nk_wayland_init(struct nk_wayland* win)
 
 static void nk_wayland_deinit(struct nk_wayland *win) 
 {
-	wl_shell_surface_destroy (win->shell_surface);
+	xdg_toplevel_destroy (win->xdg_toplevel);
+	xdg_surface_destroy (win->xdg_surface);
+	xdg_wm_base_destroy (win->xdg_wm_base);
 	wl_surface_destroy (win->surface);
 }
 
@@ -338,15 +357,20 @@ int main ()
     //2. Create Window
     nk_wayland_ctx.width = WIDTH;
 	nk_wayland_ctx.height = HEIGHT;
+
 	nk_wayland_ctx.surface = wl_compositor_create_surface (nk_wayland_ctx.compositor);
-	nk_wayland_ctx.shell_surface = wl_shell_get_shell_surface (nk_wayland_ctx.shell, nk_wayland_ctx.surface);
-	wl_shell_surface_add_listener (nk_wayland_ctx.shell_surface, &nk_wayland_shell_surface_listener, &nk_wayland_ctx);
-	wl_shell_surface_set_toplevel (nk_wayland_ctx.shell_surface);
-	
-    
+
+	nk_wayland_ctx.xdg_surface = xdg_wm_base_get_xdg_surface(nk_wayland_ctx.xdg_wm_base, nk_wayland_ctx.surface);
+	xdg_surface_add_listener (nk_wayland_ctx.xdg_surface, &nk_wayland_xdg_surface_listener, &nk_wayland_ctx);
+
+	nk_wayland_ctx.xdg_toplevel = xdg_surface_get_toplevel(nk_wayland_ctx.xdg_surface);
+	xdg_toplevel_add_listener (nk_wayland_ctx.xdg_toplevel, &nk_wayland_xdg_toplevel_listener, &nk_wayland_ctx);
+
     nk_wayland_ctx.frame_callback = wl_surface_frame(nk_wayland_ctx.surface);
     wl_callback_add_listener(nk_wayland_ctx.frame_callback, &frame_listener, &nk_wayland_ctx);
-    
+
+    wl_surface_commit (nk_wayland_ctx.surface);
+
 	size_t size = WIDTH * HEIGHT * 4;
 	char *xdg_runtime_dir = getenv ("XDG_RUNTIME_DIR");
 	int fd = open (xdg_runtime_dir, O_TMPFILE|O_RDWR|O_EXCL, 0600);
@@ -356,15 +380,15 @@ int main ()
 	nk_wayland_ctx.front_buffer = wl_shm_pool_create_buffer (pool, 0, WIDTH, HEIGHT, WIDTH*4, WL_SHM_FORMAT_XRGB8888);
 	wl_shm_pool_destroy (pool);
 	close (fd);
-    
-    
-    
-    
+
+	wl_display_roundtrip (nk_wayland_ctx.display);
+
+
     //3. Clear window and start rendering loop    
 	nk_wayland_surf_clear(&nk_wayland_ctx);
     wl_surface_attach (nk_wayland_ctx.surface, nk_wayland_ctx.front_buffer, 0, 0);
     wl_surface_commit (nk_wayland_ctx.surface);
-    
+
     nk_wayland_init(&nk_wayland_ctx);
     
     
