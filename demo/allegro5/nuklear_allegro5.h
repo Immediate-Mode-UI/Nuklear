@@ -27,6 +27,9 @@ NK_API void                   nk_allegro5_handle_event(ALLEGRO_EVENT *ev);
 NK_API void                   nk_allegro5_shutdown(void);
 NK_API void                   nk_allegro5_render(void);
 
+NK_API struct nk_image*       nk_allegro5_create_image(const char* file_name);
+NK_API void                   nk_allegro5_del_image(struct nk_image* image);
+
 /* Fonts. We wrap normal allegro fonts in some nuklear book keeping */
 NK_API NkAllegro5Font*        nk_allegro5_font_create_from_file(const char *file_name, int font_size, int flags);
 NK_API void                   nk_allegro5_font_del(NkAllegro5Font *font);
@@ -63,6 +66,33 @@ static struct nk_allegro5 {
     struct nk_buffer cmds;
 } allegro5;
 
+
+NK_API struct nk_image* nk_create_image(const char* file_name)
+{
+    if (!al_init_image_addon()) {
+        fprintf(stdout, "Unable to initialize required allegro5 image addon\n");
+        exit(1);
+    }
+
+    ALLEGRO_BITMAP* bitmap = al_load_bitmap(file_name);
+    if (bitmap == NULL) {
+        fprintf(stdout, "Unable to load image file: %s\n", file_name);
+        return NULL;
+    }
+
+    struct nk_image *image = (struct nk_image*)calloc(1, sizeof(struct nk_image));
+    image->handle.ptr = bitmap;
+    image->w = al_get_bitmap_width(bitmap);
+    image->h = al_get_bitmap_height(bitmap);
+    return image;
+}
+
+NK_API void nk_allegro5_del_image(struct nk_image* image)
+{
+    if(!image) return;
+    al_destroy_bitmap(image->handle.ptr);
+    free(image);
+}
 
 /* Flags are identical to al_load_font() flags argument */
 NK_API NkAllegro5Font*
@@ -264,8 +294,11 @@ nk_allegro5_render()
             al_draw_arc((float)a->cx, (float)a->cy, (float)a->r, a->a[0],
                 a->a[1], color, (float)a->line_thickness);
         } break;
+        case NK_COMMAND_IMAGE: {
+            const struct nk_command_image *i = (const struct nk_command_image *)cmd;
+            al_draw_bitmap_region(i->img.handle.ptr, 0, 0, i->w, i->h, i->x, i->y, 0);
+        } break;
         case NK_COMMAND_RECT_MULTI_COLOR:
-        case NK_COMMAND_IMAGE:
         case NK_COMMAND_ARC_FILLED:
         default: break;
         }
