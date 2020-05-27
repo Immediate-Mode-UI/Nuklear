@@ -67,7 +67,7 @@ static struct nk_allegro5 {
 } allegro5;
 
 
-NK_API struct nk_image* nk_create_image(const char* file_name)
+NK_API struct nk_image* nk_allegro5_create_image(const char* file_name)
 {
     if (!al_init_image_addon()) {
         fprintf(stdout, "Unable to initialize required allegro5 image addon\n");
