@@ -134,7 +134,7 @@ for f in intro_files:
     sys.stdout.write(open(f, 'r').read())
 print("*/")
 
-# print(os.linesep + "#ifndef " + macro + "_SINGLE_HEADER");
+# print("\n#ifndef " + macro + "_SINGLE_HEADER");
 # print("#define " + macro + "_SINGLE_HEADER");
 print("#ifndef NK_SINGLE_FILE");
 print("  #define NK_SINGLE_FILE");
@@ -145,7 +145,7 @@ for f in pub_files:
     sys.stdout.write(open(f, 'r').read())
 # print("#endif /* " + macro + "_SINGLE_HEADER */");
 
-print(os.linesep + "#ifdef " + macro + "_IMPLEMENTATION");
+print("\n#ifdef " + macro + "_IMPLEMENTATION");
 print("");
 
 for f in priv_files1:
@@ -160,8 +160,8 @@ for f in priv_files2:
 
 print("#endif /* " + macro + "_IMPLEMENTATION */");
 
-print(os.linesep + "/*")
+print("\n/*")
 for f in outro_files:
     sys.stdout.write(open(f, 'r').read())
-print("*/" + os.linesep)
+print("*/\n")
 
