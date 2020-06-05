@@ -2,7 +2,7 @@
 BIN = demo
 
 # Flags
-CFLAGS += -std=c99 -pedantic -O2
+CFLAGS += -std=c99 -pedantic -O2 -w
 
 SRC = main.c
 OBJ = $(SRC:.c=.o)
@@ -15,7 +15,7 @@ else
 	ifeq ($(UNAME_S),Darwin)
 		LIBS = -lSDL2 -framework OpenGL -lm
 	else
-		LIBS = -lSDL2 -lGL -lm -lGLU
+		LIBS = `sdl2-config --libs` -lSDL2_ttf -lSDL2_gfx -lm
 	endif
 endif
 
