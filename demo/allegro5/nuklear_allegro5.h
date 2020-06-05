@@ -33,6 +33,7 @@ NK_API void                   nk_allegro5_del_image(struct nk_image* image);
 /* Fonts. We wrap normal allegro fonts in some nuklear book keeping */
 NK_API NkAllegro5Font*        nk_allegro5_font_create_from_file(const char *file_name, int font_size, int flags);
 NK_API void                   nk_allegro5_font_del(NkAllegro5Font *font);
+NK_API struct nk_user_font*   nk_allegro5_font(NkAllegro5Font *allegro5font);
 NK_API void                   nk_allegro5_font_set_font(NkAllegro5Font *font);
 
 #endif
@@ -136,6 +137,16 @@ nk_allegro5_font_get_text_width(nk_handle handle, float height, const char *text
     strncpy((char*)&strcpy, text, len);
     strcpy[len] = '\0';
     return al_get_text_width(font->font, strcpy);
+}
+
+NK_API struct nk_user_font*
+nk_allegro5_font(NkAllegro5Font *allegro5font)
+{
+    struct nk_user_font *font = &allegro5font->nk;
+    font->userdata = nk_handle_ptr(allegro5font);
+    font->height = (float)allegro5font->height;
+    font->width = nk_allegro5_font_get_text_width;
+    return font;
 }
 
 NK_API void
