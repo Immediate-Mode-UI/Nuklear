@@ -33,6 +33,8 @@ NK_API void                   nk_allegro5_del_image(struct nk_image* image);
 /* Fonts. We wrap normal allegro fonts in some nuklear book keeping */
 NK_API NkAllegro5Font*        nk_allegro5_font_create_from_file(const char *file_name, int font_size, int flags);
 NK_API void                   nk_allegro5_font_del(NkAllegro5Font *font);
+/* NOTE : just use NkAllegro5Font instead of nk_user_font,
+    since the former just extends the latter*/
 NK_API void                   nk_allegro5_font_set_font(NkAllegro5Font *font);
 
 #endif
@@ -52,7 +54,6 @@ NK_API void                   nk_allegro5_font_set_font(NkAllegro5Font *font);
 
 struct NkAllegro5Font {
     struct nk_user_font nk;
-    int height;
     ALLEGRO_FONT *font;
 };
 
@@ -94,6 +95,23 @@ NK_API void nk_allegro5_del_image(struct nk_image* image)
     free(image);
 }
 
+static float
+nk_allegro5_font_get_text_width(nk_handle handle, float height, const char *text, int len)
+{
+    NkAllegro5Font *font = (NkAllegro5Font*)handle.ptr;
+    if (!font || !text) {
+        return 0;
+    }
+    /* We must copy into a new buffer with exact length null-terminated
+       as nuklear uses variable size buffers and al_get_text_width doesn't
+       accept a length, it infers length from null-termination
+       (which is unsafe API design by allegro devs!) */
+    char strcpy[len+1];
+    strncpy((char*)&strcpy, text, len);
+    strcpy[len] = '\0';
+    return al_get_text_width(font->font, strcpy);
+}
+
 /* Flags are identical to al_load_font() flags argument */
 NK_API NkAllegro5Font*
 nk_allegro5_font_create_from_file(const char *file_name, int font_size, int flags)
@@ -117,34 +135,16 @@ nk_allegro5_font_create_from_file(const char *file_name, int font_size, int flag
         fprintf(stdout, "Unable to load font file: %s\n", file_name);
         return NULL;
     }
-    font->height = al_get_font_line_height(font->font);
+    font->nk.userdata = nk_handle_ptr(font);
+    font->nk.height = (float)al_get_font_line_height(font->font);
+    font->nk.width = nk_allegro5_font_get_text_width;
     return font;
-}
-
-static float
-nk_allegro5_font_get_text_width(nk_handle handle, float height, const char *text, int len)
-{
-    NkAllegro5Font *font = (NkAllegro5Font*)handle.ptr;
-    if (!font || !text) {
-        return 0;
-    }
-    /* We must copy into a new buffer with exact length null-terminated
-       as nuklear uses variable size buffers and al_get_text_width doesn't
-       accept a length, it infers length from null-termination
-       (which is unsafe API design by allegro devs!) */
-    char strcpy[len+1];
-    strncpy((char*)&strcpy, text, len);
-    strcpy[len] = '\0';
-    return al_get_text_width(font->font, strcpy);
 }
 
 NK_API void
 nk_allegro5_font_set_font(NkAllegro5Font *allegro5font)
 {
     struct nk_user_font *font = &allegro5font->nk;
-    font->userdata = nk_handle_ptr(allegro5font);
-    font->height = (float)allegro5font->height;
-    font->width = nk_allegro5_font_get_text_width;
     nk_style_set_font(&allegro5.ctx, font);
 }
 
@@ -464,9 +464,6 @@ nk_allegro5_init(NkAllegro5Font *allegro5font, ALLEGRO_DISPLAY *dsp,
     }
 
     struct nk_user_font *font = &allegro5font->nk;
-    font->userdata = nk_handle_ptr(allegro5font);
-    font->height = (float)allegro5font->height;
-    font->width = nk_allegro5_font_get_text_width;
 
     allegro5.dsp = dsp;
     allegro5.width = width;
