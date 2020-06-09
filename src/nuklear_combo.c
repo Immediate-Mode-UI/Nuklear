@@ -95,13 +95,18 @@ nk_combo_begin_text(struct nk_context *ctx, const char *selected, int len,
         struct nk_rect label;
         struct nk_rect button;
         struct nk_rect content;
+        int draw_button_symbol;
 
         enum nk_symbol_type sym;
         if (ctx->last_widget_state & NK_WIDGET_STATE_HOVER)
             sym = style->combo.sym_hover;
         else if (is_clicked)
             sym = style->combo.sym_active;
-        else sym = style->combo.sym_normal;
+        else 
+            sym = style->combo.sym_normal;
+
+        /* represents whether or not the combo's button symbol should be drawn */
+        draw_button_symbol = sym != NK_SYMBOL_NONE;
 
         /* calculate button */
         button.w = header.h - 2 * style->combo.button_padding.y;
@@ -118,14 +123,18 @@ nk_combo_begin_text(struct nk_context *ctx, const char *selected, int len,
         text.padding = nk_vec2(0,0);
         label.x = header.x + style->combo.content_padding.x;
         label.y = header.y + style->combo.content_padding.y;
-        label.w = button.x - (style->combo.content_padding.x + style->combo.spacing.x) - label.x;;
         label.h = header.h - 2 * style->combo.content_padding.y;
+        if (draw_button_symbol)
+            label.w = button.x - (style->combo.content_padding.x + style->combo.spacing.x) - label.x;
+        else
+            label.w = header.w - 2 * style->combo.content_padding.x;
         nk_widget_text(&win->buffer, label, selected, len, &text,
             NK_TEXT_LEFT, ctx->style.font);
 
         /* draw open/close button */
-        nk_draw_button_symbol(&win->buffer, &button, &content, ctx->last_widget_state,
-            &ctx->style.combo.button, sym, style->font);
+        if (draw_button_symbol)
+            nk_draw_button_symbol(&win->buffer, &button, &content, ctx->last_widget_state,
+                &ctx->style.combo.button, sym, style->font);
     }
     return nk_combo_begin(ctx, win, size, is_clicked, header);
 }
@@ -179,6 +188,7 @@ nk_combo_begin_color(struct nk_context *ctx, struct nk_color color, struct nk_ve
         struct nk_rect content;
         struct nk_rect button;
         struct nk_rect bounds;
+        int draw_button_symbol;
 
         enum nk_symbol_type sym;
         if (ctx->last_widget_state & NK_WIDGET_STATE_HOVER)
@@ -186,6 +196,9 @@ nk_combo_begin_color(struct nk_context *ctx, struct nk_color color, struct nk_ve
         else if (is_clicked)
             sym = style->combo.sym_active;
         else sym = style->combo.sym_normal;
+
+        /* represents whether or not the combo's button symbol should be drawn */
+        draw_button_symbol = sym != NK_SYMBOL_NONE;
 
         /* calculate button */
         button.w = header.h - 2 * style->combo.button_padding.y;
@@ -202,12 +215,16 @@ nk_combo_begin_color(struct nk_context *ctx, struct nk_color color, struct nk_ve
         bounds.h = header.h - 4 * style->combo.content_padding.y;
         bounds.y = header.y + 2 * style->combo.content_padding.y;
         bounds.x = header.x + 2 * style->combo.content_padding.x;
-        bounds.w = (button.x - (style->combo.content_padding.x + style->combo.spacing.x)) - bounds.x;
+        if (draw_button_symbol)
+            bounds.w = (button.x - (style->combo.content_padding.x + style->combo.spacing.x)) - bounds.x;
+        else
+            bounds.w = header.w - 4 * style->combo.content_padding.x;
         nk_fill_rect(&win->buffer, bounds, 0, color);
 
         /* draw open/close button */
-        nk_draw_button_symbol(&win->buffer, &button, &content, ctx->last_widget_state,
-            &ctx->style.combo.button, sym, style->font);
+        if (draw_button_symbol)
+            nk_draw_button_symbol(&win->buffer, &button, &content, ctx->last_widget_state,
+                &ctx->style.combo.button, sym, style->font);
     }
     return nk_combo_begin(ctx, win, size, is_clicked, header);
 }
@@ -439,6 +456,7 @@ nk_combo_begin_image(struct nk_context *ctx, struct nk_image img, struct nk_vec2
         struct nk_rect bounds = {0,0,0,0};
         struct nk_rect content;
         struct nk_rect button;
+        int draw_button_symbol;
 
         enum nk_symbol_type sym;
         if (ctx->last_widget_state & NK_WIDGET_STATE_HOVER)
@@ -446,6 +464,9 @@ nk_combo_begin_image(struct nk_context *ctx, struct nk_image img, struct nk_vec2
         else if (is_clicked)
             sym = style->combo.sym_active;
         else sym = style->combo.sym_normal;
+
+        /* represents whether or not the combo's button symbol should be drawn */
+        draw_button_symbol = sym != NK_SYMBOL_NONE;
 
         /* calculate button */
         button.w = header.h - 2 * style->combo.button_padding.y;
@@ -462,12 +483,16 @@ nk_combo_begin_image(struct nk_context *ctx, struct nk_image img, struct nk_vec2
         bounds.h = header.h - 2 * style->combo.content_padding.y;
         bounds.y = header.y + style->combo.content_padding.y;
         bounds.x = header.x + style->combo.content_padding.x;
-        bounds.w = (button.x - style->combo.content_padding.y) - bounds.x;
+        if (draw_button_symbol)
+            bounds.w = (button.x - style->combo.content_padding.y) - bounds.x;
+        else
+            bounds.w = header.w - 2 * style->combo.content_padding.x;
         nk_draw_image(&win->buffer, bounds, &img, nk_white);
 
         /* draw open/close button */
-        nk_draw_button_symbol(&win->buffer, &bounds, &content, ctx->last_widget_state,
-            &ctx->style.combo.button, sym, style->font);
+        if (draw_button_symbol)
+            nk_draw_button_symbol(&win->buffer, &bounds, &content, ctx->last_widget_state,
+                &ctx->style.combo.button, sym, style->font);
     }
     return nk_combo_begin(ctx, win, size, is_clicked, header);
 }
@@ -524,6 +549,7 @@ nk_combo_begin_image_text(struct nk_context *ctx, const char *selected, int len,
         struct nk_rect button;
         struct nk_rect label;
         struct nk_rect image;
+        int draw_button_symbol;
 
         enum nk_symbol_type sym;
         if (ctx->last_widget_state & NK_WIDGET_STATE_HOVER)
@@ -531,6 +557,9 @@ nk_combo_begin_image_text(struct nk_context *ctx, const char *selected, int len,
         else if (is_clicked)
             sym = style->combo.sym_active;
         else sym = style->combo.sym_normal;
+
+        /* represents whether or not the combo's button symbol should be drawn */
+        draw_button_symbol = sym != NK_SYMBOL_NONE;
 
         /* calculate button */
         button.w = header.h - 2 * style->combo.button_padding.y;
@@ -542,8 +571,9 @@ nk_combo_begin_image_text(struct nk_context *ctx, const char *selected, int len,
         content.y = button.y + style->combo.button.padding.y;
         content.w = button.w - 2 * style->combo.button.padding.x;
         content.h = button.h - 2 * style->combo.button.padding.y;
-        nk_draw_button_symbol(&win->buffer, &button, &content, ctx->last_widget_state,
-            &ctx->style.combo.button, sym, style->font);
+        if (draw_button_symbol)
+            nk_draw_button_symbol(&win->buffer, &button, &content, ctx->last_widget_state,
+                &ctx->style.combo.button, sym, style->font);
 
         /* draw image */
         image.x = header.x + style->combo.content_padding.x;
@@ -556,8 +586,11 @@ nk_combo_begin_image_text(struct nk_context *ctx, const char *selected, int len,
         text.padding = nk_vec2(0,0);
         label.x = image.x + image.w + style->combo.spacing.x + style->combo.content_padding.x;
         label.y = header.y + style->combo.content_padding.y;
-        label.w = (button.x - style->combo.content_padding.x) - label.x;
         label.h = header.h - 2 * style->combo.content_padding.y;
+        if (draw_button_symbol)
+            label.w = (button.x - style->combo.content_padding.x) - label.x;
+        else
+            label.w = (header.x + header.w - style->combo.content_padding.x) - label.x;
         nk_widget_text(&win->buffer, label, selected, len, &text, NK_TEXT_LEFT, style->font);
     }
     return nk_combo_begin(ctx, win, size, is_clicked, header);
