@@ -233,7 +233,7 @@ overview(struct nk_context *ctx)
                 nk_label(ctx, "Property float:", NK_TEXT_LEFT);
                 nk_property_float(ctx, "Float:", 0, &property_float, 64.0f, 0.1f, 0.2f);
                 nk_label(ctx, "Property int:", NK_TEXT_LEFT);
-                nk_property_int(ctx, "Int:", 0, &property_int, 100.0f, 1, 1);
+                nk_property_int(ctx, "Int:", 0, &property_int, 100, 1, 1);
                 nk_label(ctx, "Property neg:", NK_TEXT_LEFT);
                 nk_property_int(ctx, "Neg:", -10, &property_neg, 10, 1, 1);
 
