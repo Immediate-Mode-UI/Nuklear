@@ -492,7 +492,7 @@ void nk_glfw3_shutdown(struct nk_glfw* glfw)
     nk_font_atlas_clear(&glfw->atlas);
     nk_free(&glfw->ctx);
     nk_glfw3_device_destroy(glfw);
-    memset(glfw, 0, sizeof(glfw));
+    memset(glfw, 0, sizeof(*glfw));
 }
 
 #endif
