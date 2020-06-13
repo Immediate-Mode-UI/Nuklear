@@ -18955,6 +18955,7 @@ NK_LIB void
 nk_pool_init(struct nk_pool *pool, struct nk_allocator *alloc,
     unsigned int capacity)
 {
+    NK_ASSERT(capacity >= 1);
     nk_zero(pool, sizeof(*pool));
     pool->alloc = *alloc;
     pool->capacity = capacity;
@@ -18980,7 +18981,7 @@ nk_pool_init_fixed(struct nk_pool *pool, void *memory, nk_size size)
     nk_zero(pool, sizeof(*pool));
     NK_ASSERT(size >= sizeof(struct nk_page));
     if (size < sizeof(struct nk_page)) return;
-    pool->capacity = (unsigned)(size - sizeof(struct nk_page)) / sizeof(struct nk_page_element);
+    pool->capacity = 1 + (unsigned)(size - sizeof(struct nk_page)) / sizeof(struct nk_page_element);
     pool->pages = (struct nk_page*)memory;
     pool->type = NK_BUFFER_FIXED;
     pool->size = size;
@@ -18998,7 +18999,7 @@ nk_pool_alloc(struct nk_pool *pool)
             return 0;
         } else {
             nk_size size = sizeof(struct nk_page);
-            size += NK_POOL_DEFAULT_CAPACITY * sizeof(union nk_page_data);
+            size += (pool->capacity - 1) * sizeof(struct nk_page_element);
             page = (struct nk_page*)pool->alloc.alloc(pool->alloc.userdata,0, size);
             page->next = pool->pages;
             pool->pages = page;
