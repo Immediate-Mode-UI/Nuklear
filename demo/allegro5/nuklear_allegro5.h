@@ -23,7 +23,7 @@
 typedef struct NkAllegro5Font NkAllegro5Font;
 NK_API struct nk_context*     nk_allegro5_init(NkAllegro5Font *font, ALLEGRO_DISPLAY *dsp,
                                   unsigned int width, unsigned int height);
-NK_API void                   nk_allegro5_handle_event(ALLEGRO_EVENT *ev);
+NK_API int                    nk_allegro5_handle_event(ALLEGRO_EVENT *ev);
 NK_API void                   nk_allegro5_shutdown(void);
 NK_API void                   nk_allegro5_render(void);
 
@@ -306,7 +306,7 @@ nk_allegro5_render()
     nk_clear(&allegro5.ctx);
 }
 
-NK_API void
+NK_API int
 nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
 {
     struct nk_context *ctx = &allegro5.ctx;
@@ -315,12 +315,14 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
             allegro5.width = (unsigned int)ev->display.width;
             allegro5.height = (unsigned int)ev->display.height;
             al_acknowledge_resize(ev->display.source);
+            return 1;
         } break;
         case ALLEGRO_EVENT_MOUSE_AXES: {
             nk_input_motion(ctx, ev->mouse.x, ev->mouse.y);
             if (ev->mouse.dz != 0) {
                 nk_input_scroll(ctx, nk_vec2(0,(float)ev->mouse.dz / al_get_mouse_wheel_precision()));
             }
+            return 1;
         } break;
         case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
         case ALLEGRO_EVENT_MOUSE_BUTTON_UP: {
@@ -332,6 +334,7 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
                 button = NK_BUTTON_MIDDLE;
             }
             nk_input_button(ctx, button, ev->mouse.x, ev->mouse.y, ev->type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN);
+            return 1;
         } break;
         /* This essentially converts touch events to mouse events */
         case ALLEGRO_EVENT_TOUCH_BEGIN:
@@ -340,7 +343,7 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
                would be manipulating multiple nuklear elements, as if there
                were multiple mouse cursors */
             if (allegro5.is_touch_down && allegro5.touch_down_id != ev->touch.id) {
-                return;
+                return 0;
             }
             if (ev->type == ALLEGRO_EVENT_TOUCH_BEGIN) {
                 allegro5.is_touch_down = 1;
@@ -359,14 +362,16 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
                 allegro5.touch_down_id = -1;
             }
             nk_input_button(ctx, NK_BUTTON_LEFT, (int)ev->touch.x, (int)ev->touch.y, ev->type == ALLEGRO_EVENT_TOUCH_BEGIN);
+            return 1;
         } break;
         case ALLEGRO_EVENT_TOUCH_MOVE: {
             /* Only acknowledge movements of a single touch, we are
                simulating a mouse cursor */
             if (!allegro5.is_touch_down || allegro5.touch_down_id != ev->touch.id) {
-                return;
+                return 0;
             }
             nk_input_motion(ctx, (int)ev->touch.x, (int)ev->touch.y);
+            return 1;
         } break;
         case ALLEGRO_EVENT_KEY_DOWN:
         case ALLEGRO_EVENT_KEY_UP: {
@@ -392,6 +397,7 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
                 nk_input_key(ctx, NK_KEY_TEXT_END, down);
                 nk_input_key(ctx, NK_KEY_SCROLL_END, down);
             }
+            return 1;
         } break;
         case ALLEGRO_EVENT_KEY_CHAR: {
             int kc = ev->keyboard.keycode;
@@ -426,8 +432,9 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
                     nk_input_unicode(ctx, ev->keyboard.unichar);
                 }
             }
+            return 1;
         } break;
-        default: break;
+        default: return 0; break;
     }
 }
 
