@@ -18955,6 +18955,7 @@ NK_LIB void
 nk_pool_init(struct nk_pool *pool, struct nk_allocator *alloc,
     unsigned int capacity)
 {
+    NK_ASSERT(capacity >= 1);
     nk_zero(pool, sizeof(*pool));
     pool->alloc = *alloc;
     pool->capacity = capacity;
@@ -18980,7 +18981,8 @@ nk_pool_init_fixed(struct nk_pool *pool, void *memory, nk_size size)
     nk_zero(pool, sizeof(*pool));
     NK_ASSERT(size >= sizeof(struct nk_page));
     if (size < sizeof(struct nk_page)) return;
-    pool->capacity = (unsigned)(size - sizeof(struct nk_page)) / sizeof(struct nk_page_element);
+    /* first nk_page_element is embedded in nk_page, additional elements follow in adjacent space */
+    pool->capacity = 1 + (unsigned)(size - sizeof(struct nk_page)) / sizeof(struct nk_page_element);
     pool->pages = (struct nk_page*)memory;
     pool->type = NK_BUFFER_FIXED;
     pool->size = size;
@@ -18998,7 +19000,7 @@ nk_pool_alloc(struct nk_pool *pool)
             return 0;
         } else {
             nk_size size = sizeof(struct nk_page);
-            size += NK_POOL_DEFAULT_CAPACITY * sizeof(union nk_page_data);
+            size += (pool->capacity - 1) * sizeof(struct nk_page_element);
             page = (struct nk_page*)pool->alloc.alloc(pool->alloc.userdata,0, size);
             page->next = pool->pages;
             pool->pages = page;
@@ -29130,6 +29132,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/06/13 (4.03.1) - Fix nk_pool allocation sizes.
 /// - 2020/06/04 (4.03.0) - Made nk_combo header symbols optional.
 /// - 2020/05/27 (4.02.5) - Fix nk_do_edit: Keep scroll position when re-activating edit widget.
 /// - 2020/05/09 (4.02.4) - Fix nk_menubar height calculation bug

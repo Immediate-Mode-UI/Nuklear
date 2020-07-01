@@ -8,6 +8,7 @@
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/06/13 (4.03.1) - Fix nk_pool allocation sizes.
 /// - 2020/06/04 (4.03.0) - Made nk_combo header symbols optional.
 /// - 2020/05/27 (4.02.5) - Fix nk_do_edit: Keep scroll position when re-activating edit widget.
 /// - 2020/05/09 (4.02.4) - Fix nk_menubar height calculation bug
