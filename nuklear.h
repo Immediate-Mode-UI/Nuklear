@@ -19322,6 +19322,8 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
     layout->bounds = win->bounds;
     layout->bounds.x += panel_padding.x;
     layout->bounds.w -= 2*panel_padding.x;
+    layout->bounds.y += panel_padding.y;
+    layout->bounds.h -= 2*panel_padding.y;
     if (win->flags & NK_WINDOW_BORDER) {
         layout->border = nk_panel_get_border(style, win->flags, panel_type);
         layout->bounds = nk_shrink_rect(layout->bounds, layout->border);
@@ -29132,6 +29134,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/07/01 (4.03.2) - Fix layout bounds not accounting for padding.
 /// - 2020/06/13 (4.03.1) - Fix nk_pool allocation sizes.
 /// - 2020/06/04 (4.03.0) - Made nk_combo header symbols optional.
 /// - 2020/05/27 (4.02.5) - Fix nk_do_edit: Keep scroll position when re-activating edit widget.
