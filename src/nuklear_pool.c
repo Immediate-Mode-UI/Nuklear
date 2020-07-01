@@ -36,6 +36,7 @@ nk_pool_init_fixed(struct nk_pool *pool, void *memory, nk_size size)
     nk_zero(pool, sizeof(*pool));
     NK_ASSERT(size >= sizeof(struct nk_page));
     if (size < sizeof(struct nk_page)) return;
+    /* first nk_page_element is embedded in nk_page, additional elements follow in adjacent space */
     pool->capacity = 1 + (unsigned)(size - sizeof(struct nk_page)) / sizeof(struct nk_page_element);
     pool->pages = (struct nk_page*)memory;
     pool->type = NK_BUFFER_FIXED;

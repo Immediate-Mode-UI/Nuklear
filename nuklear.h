@@ -18981,6 +18981,7 @@ nk_pool_init_fixed(struct nk_pool *pool, void *memory, nk_size size)
     nk_zero(pool, sizeof(*pool));
     NK_ASSERT(size >= sizeof(struct nk_page));
     if (size < sizeof(struct nk_page)) return;
+    /* first nk_page_element is embedded in nk_page, additional elements follow in adjacent space */
     pool->capacity = 1 + (unsigned)(size - sizeof(struct nk_page)) / sizeof(struct nk_page_element);
     pool->pages = (struct nk_page*)memory;
     pool->type = NK_BUFFER_FIXED;
@@ -29131,6 +29132,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/06/13 (4.03.1) - Fix nk_pool allocation sizes.
 /// - 2020/06/04 (4.03.0) - Made nk_combo header symbols optional.
 /// - 2020/05/27 (4.02.5) - Fix nk_do_edit: Keep scroll position when re-activating edit widget.
 /// - 2020/05/09 (4.02.4) - Fix nk_menubar height calculation bug
