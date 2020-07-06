@@ -274,7 +274,7 @@ enum nk_chart_event     {NK_CHART_HOVERING = 0x01, NK_CHART_CLICKED = 0x02};
 enum nk_color_format    {NK_RGB, NK_RGBA};
 enum nk_popup_type      {NK_POPUP_STATIC, NK_POPUP_DYNAMIC};
 enum nk_layout_format   {NK_DYNAMIC, NK_STATIC};
-enum nk_tree_type       {NK_TREE_NODE, NK_TREE_TAB};
+enum nk_tree_type       {NK_TREE_NODE, NK_TREE_TAB, NK_TREE_CHILD};
 
 typedef void*(*nk_plugin_alloc)(nk_handle, void *old, nk_size);
 typedef void (*nk_plugin_free)(nk_handle, void *old);
@@ -2671,6 +2671,7 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
 /// ----------------|----------------------------------------
 /// NK_TREE_NODE    | Highlighted tree header to mark a collapsable UI section
 /// NK_TREE_TAB     | Non-highighted tree header closer to tree representations
+/// NK_TREE_CHILD   | A node without a dropdown
 */
 /*/// #### nk_tree_push
 /// Starts a collapsable UI section with internal state management
@@ -4999,8 +5000,10 @@ struct nk_style_tab {
     struct nk_style_button tab_minimize_button;
     struct nk_style_button node_maximize_button;
     struct nk_style_button node_minimize_button;
+    struct nk_style_button child_button;
     enum nk_symbol_type sym_minimize;
     enum nk_symbol_type sym_maximize;
+    enum nk_symbol_type sym_child;
 
     /* properties */
     float border;

@@ -493,7 +493,7 @@ enum nk_chart_event     {NK_CHART_HOVERING = 0x01, NK_CHART_CLICKED = 0x02};
 enum nk_color_format    {NK_RGB, NK_RGBA};
 enum nk_popup_type      {NK_POPUP_STATIC, NK_POPUP_DYNAMIC};
 enum nk_layout_format   {NK_DYNAMIC, NK_STATIC};
-enum nk_tree_type       {NK_TREE_NODE, NK_TREE_TAB};
+enum nk_tree_type       {NK_TREE_NODE, NK_TREE_TAB, NK_TREE_CHILD};
 
 typedef void*(*nk_plugin_alloc)(nk_handle, void *old, nk_size);
 typedef void (*nk_plugin_free)(nk_handle, void *old);
@@ -2890,6 +2890,7 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
 /// ----------------|----------------------------------------
 /// NK_TREE_NODE    | Highlighted tree header to mark a collapsable UI section
 /// NK_TREE_TAB     | Non-highighted tree header closer to tree representations
+/// NK_TREE_CHILD   | A node without a dropdown
 */
 /*/// #### nk_tree_push
 /// Starts a collapsable UI section with internal state management
@@ -5218,8 +5219,10 @@ struct nk_style_tab {
     struct nk_style_button tab_minimize_button;
     struct nk_style_button node_maximize_button;
     struct nk_style_button node_minimize_button;
+    struct nk_style_button child_button;
     enum nk_symbol_type sym_minimize;
     enum nk_symbol_type sym_maximize;
+    enum nk_symbol_type sym_child;
 
     /* properties */
     float border;
@@ -18831,8 +18834,9 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     tab->background         = nk_style_item_color(table[NK_COLOR_TAB_HEADER]);
     tab->border_color       = table[NK_COLOR_BORDER];
     tab->text               = table[NK_COLOR_TEXT];
-    tab->sym_minimize       = NK_SYMBOL_TRIANGLE_RIGHT;
-    tab->sym_maximize       = NK_SYMBOL_TRIANGLE_DOWN;
+    tab->sym_minimize       = NK_SYMBOL_PLUS;
+    tab->sym_maximize       = NK_SYMBOL_MINUS;
+    tab->sym_child          = NK_SYMBOL_NONE;
     tab->padding            = nk_vec2(4,4);
     tab->spacing            = nk_vec2(4,4);
     tab->indent             = 10.0f;
@@ -18880,6 +18884,7 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     button->draw_begin      = 0;
     button->draw_end        = 0;
     style->tab.node_maximize_button =*button;
+    style->tab.child_button =*button;
 
     /* window header */
     win = &style->window;
@@ -22734,7 +22739,11 @@ nk_tree_state_base(struct nk_context *ctx, enum nk_tree_type type,
         *state = (*state == NK_MAXIMIZED) ? NK_MINIMIZED : NK_MAXIMIZED;
 
     /* select correct button style */
-    if (*state == NK_MAXIMIZED) {
+
+    if (type == NK_TREE_CHILD) {
+        symbol = style->tab.sym_child;
+        button = &style->tab.child_button;
+    } else if (*state == NK_MAXIMIZED) {
         symbol = style->tab.sym_maximize;
         if (type == NK_TREE_TAB)
             button = &style->tab.tab_maximize_button;
@@ -22914,7 +22923,11 @@ nk_tree_element_image_push_hashed_base(struct nk_context *ctx, enum nk_tree_type
     in = (in && widget_state == NK_WIDGET_VALID) ? &ctx->input : 0;
 
     /* select correct button style */
-    if (*state == NK_MAXIMIZED) {
+
+    if (type == NK_TREE_CHILD) {
+        symbol = style->tab.sym_child;
+        button = &style->tab.child_button;
+    } else if (*state == NK_MAXIMIZED) {
         symbol = style->tab.sym_maximize;
         if (type == NK_TREE_TAB)
             button = &style->tab.tab_maximize_button;
