@@ -3532,14 +3532,14 @@ NK_API void nk_popup_set_scroll(struct nk_context*, nk_uint offset_x, nk_uint of
  *                                  COMBOBOX
  *
  * ============================================================================= */
-NK_API int nk_combo(struct nk_context*, const char **items, int count, int selected, int item_height, struct nk_vec2 size);
+NK_API int nk_combo(struct nk_context*, const char * const *items, int count, int selected, int item_height, struct nk_vec2 size);
 NK_API int nk_combo_separator(struct nk_context*, const char *items_separated_by_separator, int separator, int selected, int count, int item_height, struct nk_vec2 size);
 NK_API int nk_combo_string(struct nk_context*, const char *items_separated_by_zeros, int selected, int count, int item_height, struct nk_vec2 size);
-NK_API int nk_combo_callback(struct nk_context*, void(*item_getter)(void*, int, const char**), void *userdata, int selected, int count, int item_height, struct nk_vec2 size);
-NK_API void nk_combobox(struct nk_context*, const char **items, int count, int *selected, int item_height, struct nk_vec2 size);
+NK_API int nk_combo_callback(struct nk_context*, void(*item_getter)(void*, int, const char* const *), void *userdata, int selected, int count, int item_height, struct nk_vec2 size);
+NK_API void nk_combobox(struct nk_context*, const char * const *items, int count, int *selected, int item_height, struct nk_vec2 size);
 NK_API void nk_combobox_string(struct nk_context*, const char *items_separated_by_zeros, int *selected, int count, int item_height, struct nk_vec2 size);
 NK_API void nk_combobox_separator(struct nk_context*, const char *items_separated_by_separator, int separator,int *selected, int count, int item_height, struct nk_vec2 size);
-NK_API void nk_combobox_callback(struct nk_context*, void(*item_getter)(void*, int, const char**), void*, int *selected, int count, int item_height, struct nk_vec2 size);
+NK_API void nk_combobox_callback(struct nk_context*, void(*item_getter)(void*, int, const char* const *), void*, int *selected, int count, int item_height, struct nk_vec2 size);
 /* =============================================================================
  *
  *                                  ABSTRACT COMBOBOX
@@ -5791,9 +5791,14 @@ template<typename T> struct nk_alignof{struct Big {T x; char c;}; enum {
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 #include <stdarg.h> /* valist, va_start, va_end, ... */
 #endif
+
 #ifndef NK_ASSERT
 #include <assert.h>
 #define NK_ASSERT(expr) assert(expr)
+#endif
+
+#ifndef NK_ERROR
+#define NK_ERROR(expr) assert(0 && expr)
 #endif
 
 #ifndef NK_MEMSET
@@ -7305,7 +7310,7 @@ nk_vsnprintf(char *buf, int buf_size, const char *fmt, va_list args)
             }
         } else {
             /* Specifier not supported: g,G,e,E,p,z */
-            NK_ASSERT(0 && "specifier is not supported!");
+            NK_ERROR("specifier is not supported!");
             return result;
         }
     }
@@ -9990,7 +9995,7 @@ nk_draw_vertex_color(void *attr, const float *vals,
     val[3] = NK_SATURATE(vals[3]);
 
     switch (format) {
-    default: NK_ASSERT(0 && "Invalid vertex layout color format"); break;
+    default: NK_ERROR("Invalid vertex layout color format"); break;
     case NK_FORMAT_R8G8B8A8:
     case NK_FORMAT_R8G8B8: {
         struct nk_color col = nk_rgba_fv(val);
@@ -10060,7 +10065,7 @@ nk_draw_vertex_element(void *dst, const float *values, int value_count,
     if (format >= NK_FORMAT_COLOR_BEGIN && format <= NK_FORMAT_COLOR_END) return;
     for (value_index = 0; value_index < value_count; ++value_index) {
         switch (format) {
-        default: NK_ASSERT(0 && "invalid vertex layout format"); break;
+        default: NK_ERROR("invalid vertex layout format"); break;
         case NK_FORMAT_SCHAR: {
             char value = (char)NK_CLAMP((float)NK_SCHAR_MIN, values[value_index], (float)NK_SCHAR_MAX);
             NK_MEMCPY(attribute, &value, sizeof(value));
@@ -10113,7 +10118,7 @@ nk_draw_vertex(void *dst, const struct nk_convert_config *config,
         void *address = (void*)((char*)dst + elem_iter->offset);
         switch (elem_iter->attribute) {
         case NK_VERTEX_ATTRIBUTE_COUNT:
-        default: NK_ASSERT(0 && "wrong element attribute"); break;
+        default: NK_ERROR("wrong element attribute"); break;
         case NK_VERTEX_POSITION: nk_draw_vertex_element(address, &pos.x, 2, elem_iter->format); break;
         case NK_VERTEX_TEXCOORD: nk_draw_vertex_element(address, &uv.x, 2, elem_iter->format); break;
         case NK_VERTEX_COLOR: nk_draw_vertex_color(address, &color.r, elem_iter->format); break;
@@ -11687,7 +11692,7 @@ nk_tt_FindGlyphIndex(const struct nk_tt_fontinfo *info, int unicode_codepoint)
             return nk_ttUSHORT(data + index_map + 10 + (unicode_codepoint - (int)first)*2);
         return 0;
     } else if (format == 2) {
-        NK_ASSERT(0); /* @TODO: high-byte mapping for japanese/chinese/korean */
+        NK_ERROR("High byte mapping for Japanese/Chinese/Korean not supported yet"); /* @TODO: high-byte mapping for japanese/chinese/korean */
         return 0;
     } else if (format == 4) { /* standard mapping for windows fonts: binary search collection of ranges */
         nk_ushort segcount = nk_ttUSHORT(data+index_map+6) >> 1;
@@ -11758,7 +11763,7 @@ nk_tt_FindGlyphIndex(const struct nk_tt_fontinfo *info, int unicode_codepoint)
         return 0; /* not found */
     }
     /* @TODO */
-    NK_ASSERT(0);
+   NK_ERROR("Unsupported character format");
     return 0;
 }
 NK_INTERN void
@@ -11976,7 +11981,7 @@ nk_tt_GetGlyphShape(const struct nk_tt_fontinfo *info, struct nk_allocator *allo
                 }
             } else {
                 /* @TODO handle matching point */
-                NK_ASSERT(0);
+                NK_ERROR("Matching point not supported yet");
             }
             if (flags & (1<<3)) { /* WE_HAVE_A_SCALE */
                 mtx[0] = mtx[3] = nk_ttSHORT(comp)/16384.0f; comp+=2;
@@ -12031,7 +12036,7 @@ nk_tt_GetGlyphShape(const struct nk_tt_fontinfo *info, struct nk_allocator *allo
         }
     } else if (numberOfContours < 0) {
         /* @TODO other compound variations? */
-        NK_ASSERT(0);
+        NK_ERROR("Compound variations not supported yet");
     } else {
         /* numberOfCounters == 0, do nothing */
     }
@@ -13876,7 +13881,7 @@ nk_decompress(unsigned char *output, unsigned char *i, unsigned int length)
                     return 0;
                 return olen;
             } else {
-                NK_ASSERT(0); /* NOTREACHED */
+                NK_ERROR("Invalid decompression data"); /* NOTREACHED */
                 return 0;
             }
         }
@@ -18956,7 +18961,7 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
         if (modify) layout->row.item_offset += w;
     } break;
     #undef NK_FRAC
-    default: NK_ASSERT(0); break;
+    default: NK_ERROR("Invalid layout"); break;
     };
 
     /* set the bounds of the newly allocated widget */
@@ -25845,7 +25850,7 @@ NK_API void nk_combo_close(struct nk_context *ctx)
     nk_contextual_close(ctx);
 }
 NK_API int
-nk_combo(struct nk_context *ctx, const char **items, int count,
+nk_combo(struct nk_context *ctx, const char * const *items, int count,
     int selected, int item_height, struct nk_vec2 size)
 {
     int i = 0;
@@ -25930,7 +25935,7 @@ nk_combo_string(struct nk_context *ctx, const char *items_separated_by_zeros,
     return nk_combo_separator(ctx, items_separated_by_zeros, '\0', selected, count, item_height, size);
 }
 NK_API int
-nk_combo_callback(struct nk_context *ctx, void(*item_getter)(void*, int, const char**),
+nk_combo_callback(struct nk_context *ctx, void(*item_getter)(void*, int, const char* const *),
     void *userdata, int selected, int count, int item_height, struct nk_vec2 size)
 {
     int i;
@@ -25963,7 +25968,7 @@ nk_combo_callback(struct nk_context *ctx, void(*item_getter)(void*, int, const c
     } return selected;
 }
 NK_API void
-nk_combobox(struct nk_context *ctx, const char **items, int count,
+nk_combobox(struct nk_context *ctx, const char * const *items, int count,
     int *selected, int item_height, struct nk_vec2 size)
 {
     *selected = nk_combo(ctx, items, count, *selected, item_height, size);
@@ -25983,7 +25988,7 @@ nk_combobox_separator(struct nk_context *ctx, const char *items_separated_by_sep
 }
 NK_API void
 nk_combobox_callback(struct nk_context *ctx,
-    void(*item_getter)(void* data, int id, const char **out_text),
+    void(*item_getter)(void* data, int id, const char * const *out_text),
     void *userdata, int *selected, int count, int item_height, struct nk_vec2 size)
 {
     *selected = nk_combo_callback(ctx, item_getter, userdata,  *selected, count, item_height, size);

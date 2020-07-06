@@ -699,7 +699,7 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
         if (modify) layout->row.item_offset += w;
     } break;
     #undef NK_FRAC
-    default: NK_ASSERT(0); break;
+    default: NK_ERROR("Invalid layout"); break;
     };
 
     /* set the bounds of the newly allocated widget */

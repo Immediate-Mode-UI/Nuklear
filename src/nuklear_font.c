@@ -636,7 +636,7 @@ nk_tt_FindGlyphIndex(const struct nk_tt_fontinfo *info, int unicode_codepoint)
             return nk_ttUSHORT(data + index_map + 10 + (unicode_codepoint - (int)first)*2);
         return 0;
     } else if (format == 2) {
-        NK_ASSERT(0); /* @TODO: high-byte mapping for japanese/chinese/korean */
+        NK_ERROR("High byte mapping for Japanese/Chinese/Korean not supported yet"); /* @TODO: high-byte mapping for japanese/chinese/korean */
         return 0;
     } else if (format == 4) { /* standard mapping for windows fonts: binary search collection of ranges */
         nk_ushort segcount = nk_ttUSHORT(data+index_map+6) >> 1;
@@ -707,7 +707,7 @@ nk_tt_FindGlyphIndex(const struct nk_tt_fontinfo *info, int unicode_codepoint)
         return 0; /* not found */
     }
     /* @TODO */
-    NK_ASSERT(0);
+   NK_ERROR("Unsupported character format");
     return 0;
 }
 NK_INTERN void
@@ -925,7 +925,7 @@ nk_tt_GetGlyphShape(const struct nk_tt_fontinfo *info, struct nk_allocator *allo
                 }
             } else {
                 /* @TODO handle matching point */
-                NK_ASSERT(0);
+                NK_ERROR("Matching point not supported yet");
             }
             if (flags & (1<<3)) { /* WE_HAVE_A_SCALE */
                 mtx[0] = mtx[3] = nk_ttSHORT(comp)/16384.0f; comp+=2;
@@ -980,7 +980,7 @@ nk_tt_GetGlyphShape(const struct nk_tt_fontinfo *info, struct nk_allocator *allo
         }
     } else if (numberOfContours < 0) {
         /* @TODO other compound variations? */
-        NK_ASSERT(0);
+        NK_ERROR("Compound variations not supported yet");
     } else {
         /* numberOfCounters == 0, do nothing */
     }
@@ -2825,7 +2825,7 @@ nk_decompress(unsigned char *output, unsigned char *i, unsigned int length)
                     return 0;
                 return olen;
             } else {
-                NK_ASSERT(0); /* NOTREACHED */
+                NK_ERROR("Invalid decompression data"); /* NOTREACHED */
                 return 0;
             }
         }

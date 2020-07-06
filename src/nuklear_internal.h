@@ -23,9 +23,14 @@
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 #include <stdarg.h> /* valist, va_start, va_end, ... */
 #endif
+
 #ifndef NK_ASSERT
 #include <assert.h>
 #define NK_ASSERT(expr) assert(expr)
+#endif
+
+#ifndef NK_ERROR
+#define NK_ERROR(expr) assert(0 && expr)
 #endif
 
 #ifndef NK_MEMSET

@@ -893,7 +893,7 @@ nk_vsnprintf(char *buf, int buf_size, const char *fmt, va_list args)
             }
         } else {
             /* Specifier not supported: g,G,e,E,p,z */
-            NK_ASSERT(0 && "specifier is not supported!");
+            NK_ERROR("specifier is not supported!");
             return result;
         }
     }
