@@ -161,7 +161,8 @@ nk_d3d11_render(ID3D11DeviceContext *context, enum nk_anti_aliasing AA)
         ID3D11DeviceContext_DrawIndexed(context, (UINT)cmd->elem_count, offset, 0);
         offset += cmd->elem_count;
     }
-    nk_clear(&d3d11.ctx);}
+    nk_clear(&d3d11.ctx);
+    nk_buffer_clear(&d3d11.cmds);}
 }
 
 static void

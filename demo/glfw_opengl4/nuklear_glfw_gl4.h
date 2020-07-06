@@ -446,6 +446,7 @@ nk_glfw3_render(enum nk_anti_aliasing AA)
             offset += cmd->elem_count;
         }
         nk_clear(&glfw.ctx);
+        nk_buffer_clear(&dev->cmds);
     }
     /* default OpenGL state */
     glUseProgram(0);

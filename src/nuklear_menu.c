@@ -62,13 +62,15 @@ nk_menubar_end(struct nk_context *ctx)
     if (layout->flags & NK_WINDOW_HIDDEN || layout->flags & NK_WINDOW_MINIMIZED)
         return;
 
-    layout->menu.h = layout->at_y - layout->menu.y;
-    layout->bounds.y += layout->menu.h + ctx->style.window.spacing.y + layout->row.height;
-    layout->bounds.h -= layout->menu.h + ctx->style.window.spacing.y + layout->row.height;
+    layout->menu.h  = layout->at_y - layout->menu.y;
+    layout->menu.h += layout->row.height + ctx->style.window.spacing.y;
+
+    layout->bounds.y += layout->menu.h;
+    layout->bounds.h -= layout->menu.h;
 
     *layout->offset_x = layout->menu.offset.x;
     *layout->offset_y = layout->menu.offset.y;
-    layout->at_y = layout->bounds.y - layout->row.height;
+    layout->at_y      = layout->bounds.y - layout->row.height;
 
     layout->clip.y = layout->bounds.y;
     layout->clip.h = layout->bounds.h;

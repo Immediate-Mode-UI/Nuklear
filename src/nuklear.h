@@ -85,6 +85,7 @@ extern "C" {
 #define NK_CLAMP(i,v,x) (NK_MAX(NK_MIN(v,x), i))
 
 #ifdef NK_INCLUDE_STANDARD_VARARGS
+  #include <stdarg.h>
   #if defined(_MSC_VER) && (_MSC_VER >= 1600) /* VS 2010 and above */
     #include <sal.h>
     #define NK_PRINTF_FORMAT_STRING _Printf_format_string_
@@ -3569,7 +3570,10 @@ NK_API int nk_stricmp(const char *s1, const char *s2);
 NK_API int nk_stricmpn(const char *s1, const char *s2, int n);
 NK_API int nk_strtoi(const char *str, const char **endptr);
 NK_API float nk_strtof(const char *str, const char **endptr);
+#ifndef NK_STRTOD
+#define NK_STRTOD nk_strtod
 NK_API double nk_strtod(const char *str, const char **endptr);
+#endif
 NK_API int nk_strfilter(const char *text, const char *regexp);
 NK_API int nk_strmatch_fuzzy_string(char const *str, char const *pattern, int *out_score);
 NK_API int nk_strmatch_fuzzy_text(const char *txt, int txt_len, const char *pattern, int *out_score);
@@ -5541,6 +5545,18 @@ template<typename T> struct nk_alignof{struct Big {T x; char c;}; enum {
 #define NK_ALIGNOF(t) (__alignof(t))
 #else
 #define NK_ALIGNOF(t) ((char*)(&((struct {char c; t _h;}*)0)->_h) - (char*)0)
+#endif
+
+#ifdef NK_IMPLEMENTATION
+#define STB_RECT_PACK_IMPLEMENTATION
+#define STB_TRUETYPE_IMPLEMENTATION
+#endif
+
+#ifndef STBTT_malloc
+static nk_handle fictional_handle = {0};
+
+#define STBTT_malloc(x,u)  ((void)u, nk_malloc( fictional_handle, 0, x ))
+#define STBTT_free(x,u)    ((void)u, nk_mfree( fictional_handle , x))
 #endif
 
 #endif /* NK_NUKLEAR_H_ */

@@ -279,6 +279,7 @@ nk_sfml_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_
             offset += cmd->elem_count;
         }
         nk_clear(&sfml.ctx);
+        nk_buffer_clear(&dev->cmds);
     }
     glUseProgram(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -442,7 +443,10 @@ nk_sfml_handle_event(sf::Event* evt)
         } else nk_input_motion(ctx, evt->touch.x, evt->touch.y);
         return 1;
     } else if(evt->type == sf::Event::TextEntered) {
-        nk_input_unicode(ctx, evt->text.unicode);
+		/* 8 ~ backspace */
+		if (evt->text.unicode != 8) {  
+			nk_input_unicode(ctx, evt->text.unicode);
+		}
         return 1;
     } else if(evt->type == sf::Event::MouseWheelScrolled) {
         nk_input_scroll(ctx, nk_vec2(0,evt->mouseWheelScroll.delta));

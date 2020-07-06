@@ -1,6 +1,6 @@
 # Nuklear
 
-![](https://github.com/Immediate-Mode-UI/Nuklear/workflows/C%2FC++%20CI/badge.svg )
+[![](https://github.com/Immediate-Mode-UI/Nuklear/workflows/C%2FC++%20CI/badge.svg )](https://github.com/Immediate-Mode-UI/Nuklear/actions)
 
 This is a minimal-state, immediate-mode graphical user interface toolkit
 written in ANSI C and licensed under public domain. It was designed as a simple
@@ -25,7 +25,7 @@ render backends, it focuses only on the actual UI.
 - No global or hidden state
 - Customizable library modules (you can compile and use only what you need)
 - Optional font baker and vertex buffer output
-- [Documentation](https://cdn.statically.io/gh/Immediate-Mode-UI/nuklear/master/doc/nuklear.html)
+- [Documentation](https://Immediate-Mode-UI.github.io/Nuklear/doc/nuklear.html)
 
 ## Building
 
@@ -127,6 +127,7 @@ languages. Furthermore there are no guarantee that all bindings will always be k
   - [pyNuklear](https://github.com/billsix/pyNuklear) by William Emerison Six (ctypes-based wrapper)
   - [pynk](https://github.com/nathanrw/nuklear-cffi) by nathanrw@github.com (cffi binding)
 - [CSharp/.NET](https://github.com/cartman300/NuklearDotNet) by cartman300@github.com
+- [V](https://github.com/nsauzede/vnk) by Nicolas Sauzede
 
 ## Credits
 Developed by Micha Mettke and every direct or indirect contributor to the GitHub.
@@ -184,3 +185,39 @@ ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -----------------------------------------------------------------------------
 ```
+
+## Reviewers guide
+
+When reviewing pull request there are common things a reviewer should keep
+in mind.
+
+Reviewing changes to `src/*` and `nuklear.h`:
+
+* Ensure C89 compatibility.
+* The code should work for several backends to an acceptable degree.
+* Check no other parts of `nuklear.h` are related to the PR and thus nothing is missing.
+* Recommend simple optimizations.
+  * Pass small structs by value instead of by pointer.
+  * Use local buffers over heap allocation when possible.
+* Check that the coding style is consistent with code around it.
+  * Variable/function name casing.
+  * Indentation.
+  * Curly bracket (`{}`) placement.
+* Ensure that the contributer have bumped the appropriate version in
+  [package.json](https://github.com/Immediate-Mode-UI/Nuklear/blob/master/package.json)
+  and added their changes to the
+  [CHANGELOG](https://github.com/Immediate-Mode-UI/Nuklear/blob/master/src/CHANGELOG).
+* Have at least one other person review the changes before merging.
+
+Reviewing changes to `demo/*`, `example/*` and other files in the repo:
+
+* Focus on getting working code merged.
+  * We want to make it easy for people to get started with Nuklear, and any
+    `demo` and `example` improvements helps in this regard.
+* Use of newer C features, or even other languages is not discouraged.
+  * If another language is used, ensure that the build process is easy to figure out.
+* Messy or less efficient code can be merged so long as these outliers are pointed out
+  and easy to find.
+* Version shouldn't be bumped for these changes.
+* Changes that improves code to be more inline with `nuklear.h` are ofc always welcome.
+

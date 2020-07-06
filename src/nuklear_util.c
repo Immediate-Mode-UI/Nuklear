@@ -503,6 +503,8 @@ nk_itoa(char *s, long n)
     nk_strrev_ascii(s);
     return s;
 }
+#ifndef NK_DTOA
+#define NK_DTOA nk_dtoa
 NK_LIB char*
 nk_dtoa(char *s, double n)
 {
@@ -581,6 +583,7 @@ nk_dtoa(char *s, double n)
     *(c) = '\0';
     return s;
 }
+#endif
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 #ifndef NK_INCLUDE_STANDARD_IO
 NK_INTERN int

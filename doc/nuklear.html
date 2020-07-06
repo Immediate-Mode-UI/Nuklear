@@ -1,4 +1,4 @@
-<meta charset='utf-8' emacsmode='-*- markdown -*-'>
+﻿<meta charset='utf-8' emacsmode='-*- markdown -*-'>
 <link rel='stylesheet' href='https://casual-effects.com/markdeep/latest/apidoc.css?'>
 # Nuklear
 ![](https://cloud.githubusercontent.com/assets/8057201/11761525/ae06f0ca-a0c6-11e5-819d-5610b25f6ef4.gif)
@@ -136,6 +136,7 @@ NK_SIN      | You can define this to 'sinf' or your own sine implementation repl
 NK_COS      | You can define this to 'cosf' or your own cosine implementation replacement. If not nuklear will use its own approximation implementation.
 NK_STRTOD   | You can define this to `strtod` or your own string to double conversion implementation replacement. If not defined nuklear will use its own imprecise and possibly unsafe version (does not handle nan or infinity!).
 NK_DTOA     | You can define this to `dtoa` or your own double to string conversion implementation replacement. If not defined nuklear will use its own imprecise and possibly unsafe version (does not handle nan or infinity!).
+NK_ERROR    | Defined to NK_ASSERT(0 && ...), when an assert always returns false. This is done to allow strict C++17 implementations to keep on working.
 NK_VSNPRINTF| If you define `NK_INCLUDE_STANDARD_VARARGS` as well as `NK_INCLUDE_STANDARD_IO` and want to be safe define this to `vsnprintf` on compilers supporting later versions of C or C++. By default nuklear will check for your stdlib version in C as well as compiler version in C++. if `vsnprintf` is available it will define it to `vsnprintf` directly. If not defined and if you have older versions of C or C++ it will be defined to `vsprintf` which is unsafe.
 !!! WARNING
     The following dependencies will pull in the standard C library if not redefined:
@@ -2312,6 +2313,27 @@ X...XXXXXXXXXXXXX...X -           "
    - [x]: Major version with API and library breaking changes
    - [yy]: Minor version with non-breaking API and library changes
    - [zz]: Bug fix version with no direct changes to API
+- 2020/07/06 (4.04.0) - Added subpixel API from itsuhane. Allowing you to turn on 
+                        NK_ENABLE_SUBPIXEL_API to position window and elements in subpixels
+                        Changed nk_begin to return a nk_window so you can get the position and other useful info.
+                        Fixed radio buttons' style.
+                        Fixed click cascading through multiple buttons; it should only click the upper button.
+                        Strict c++17 now compiles: only declaring memset, memcpy if they are used.
+                        Only asserting index range if ushorts are used for indices.
+                        Made paq.sh identical to paq.bat (outputs to nuklear.h).
+                        Replaced NK_ASSERT(0 && ...) with NK_ERROR(), to ensure it compiles on strict C++17.
+                        Replaced const char** by const char * const * in combobox, to ensure const List&lt;const char*&gt; can be used.
+                        Added nk_tree_type for allowing the symbol next to a tree element to be hidden (for children) if it's not an image.
+- 2020/04/09 (4.02.1) - Removed unused nk_sqrt function to fix compiler warnings
+                      - Fixed compiler warnings if you bring your own methods for
+                       nk_cos/nk_sin/nk_strtod/nk_memset/nk_memcopy/nk_dtoa
+- 2020/04/06 (4.01.10) - Fix bug: Do not use pool before checking for NULL
+- 2020/03/22 (4.01.9) - Fix bug where layout state wasn't restored correctly after
+                       popping a tree.
+- 2020/03/11 (4.01.8) - Fix bug where padding is subtracted from widget
+- 2020/03/06 (4.01.7) - Fix bug where width padding was applied twice
+- 2020/02/06 (4.01.6) - Update stb_truetype.h and stb_rect_pack.h and separate them
+- 2019/12/10 (4.01.5) - Fix off-by-one error in NK_INTERSECT
 - 2019/10/09 (4.01.4) - Fix bug for autoscrolling in nk_do_edit
 - 2019/09/20 (4.01.3) - Fixed a bug wherein combobox cannot be closed by clicking the header
                        when NK_BUTTON_TRIGGER_ON_RELEASE is defined.

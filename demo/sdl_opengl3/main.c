@@ -6,7 +6,6 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
-#include <math.h>
 #include <limits.h>
 #include <time.h>
 
@@ -70,7 +69,7 @@
  *                          DEMO
  *
  * ===============================================================*/
-int main(void)
+int main(int argc, char *argv[])
 {
     /* Platform */
     SDL_Window *win;
