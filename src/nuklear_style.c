@@ -482,8 +482,9 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     tab->background         = nk_style_item_color(table[NK_COLOR_TAB_HEADER]);
     tab->border_color       = table[NK_COLOR_BORDER];
     tab->text               = table[NK_COLOR_TEXT];
-    tab->sym_minimize       = NK_SYMBOL_TRIANGLE_RIGHT;
-    tab->sym_maximize       = NK_SYMBOL_TRIANGLE_DOWN;
+    tab->sym_minimize       = NK_SYMBOL_PLUS;
+    tab->sym_maximize       = NK_SYMBOL_MINUS;
+    tab->sym_child          = NK_SYMBOL_NONE;
     tab->padding            = nk_vec2(4,4);
     tab->spacing            = nk_vec2(4,4);
     tab->indent             = 10.0f;
@@ -531,6 +532,7 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     button->draw_begin      = 0;
     button->draw_end        = 0;
     style->tab.node_maximize_button =*button;
+    style->tab.child_button =*button;
 
     /* window header */
     win = &style->window;

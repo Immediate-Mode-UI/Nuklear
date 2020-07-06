@@ -14,7 +14,7 @@ nk_tree_state_base(struct nk_context *ctx, enum nk_tree_type type,
     struct nk_panel *layout;
     const struct nk_style *style;
     struct nk_command_buffer *out;
-    const struct nk_input *in;
+    struct nk_input *in;
     const struct nk_style_button *button;
     enum nk_symbol_type symbol;
     float row_height;
@@ -67,7 +67,11 @@ nk_tree_state_base(struct nk_context *ctx, enum nk_tree_type type,
         *state = (*state == NK_MAXIMIZED) ? NK_MINIMIZED : NK_MAXIMIZED;
 
     /* select correct button style */
-    if (*state == NK_MAXIMIZED) {
+
+    if (type == NK_TREE_CHILD) {
+        symbol = style->tab.sym_child;
+        button = &style->tab.child_button;
+    } else if (*state == NK_MAXIMIZED) {
         symbol = style->tab.sym_maximize;
         if (type == NK_TREE_TAB)
             button = &style->tab.tab_maximize_button;
@@ -195,7 +199,7 @@ nk_tree_element_image_push_hashed_base(struct nk_context *ctx, enum nk_tree_type
     struct nk_panel *layout;
     const struct nk_style *style;
     struct nk_command_buffer *out;
-    const struct nk_input *in;
+    struct nk_input *in;
     const struct nk_style_button *button;
     enum nk_symbol_type symbol;
     float row_height;
@@ -247,7 +251,11 @@ nk_tree_element_image_push_hashed_base(struct nk_context *ctx, enum nk_tree_type
     in = (in && widget_state == NK_WIDGET_VALID) ? &ctx->input : 0;
 
     /* select correct button style */
-    if (*state == NK_MAXIMIZED) {
+
+    if (type == NK_TREE_CHILD) {
+        symbol = style->tab.sym_child;
+        button = &style->tab.child_button;
+    } else if (*state == NK_MAXIMIZED) {
         symbol = style->tab.sym_maximize;
         if (type == NK_TREE_TAB)
             button = &style->tab.tab_maximize_button;
@@ -335,4 +343,3 @@ nk_tree_element_pop(struct nk_context *ctx)
 {
     nk_tree_state_pop(ctx);
 }
-

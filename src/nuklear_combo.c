@@ -44,7 +44,7 @@ NK_API int
 nk_combo_begin_text(struct nk_context *ctx, const char *selected, int len,
     struct nk_vec2 size)
 {
-    const struct nk_input *in;
+    struct nk_input *in;
     struct nk_window *win;
     struct nk_style *style;
 
@@ -148,7 +148,7 @@ nk_combo_begin_color(struct nk_context *ctx, struct nk_color color, struct nk_ve
 {
     struct nk_window *win;
     struct nk_style *style;
-    const struct nk_input *in;
+    struct nk_input *in;
 
     struct nk_rect header;
     int is_clicked = nk_false;
@@ -233,7 +233,7 @@ nk_combo_begin_symbol(struct nk_context *ctx, enum nk_symbol_type symbol, struct
 {
     struct nk_window *win;
     struct nk_style *style;
-    const struct nk_input *in;
+    struct nk_input *in;
 
     struct nk_rect header;
     int is_clicked = nk_false;
@@ -416,7 +416,7 @@ nk_combo_begin_image(struct nk_context *ctx, struct nk_image img, struct nk_vec2
 {
     struct nk_window *win;
     struct nk_style *style;
-    const struct nk_input *in;
+    struct nk_input *in;
 
     struct nk_rect header;
     int is_clicked = nk_false;
@@ -650,7 +650,7 @@ NK_API void nk_combo_close(struct nk_context *ctx)
     nk_contextual_close(ctx);
 }
 NK_API int
-nk_combo(struct nk_context *ctx, const char **items, int count,
+nk_combo(struct nk_context *ctx, const char * const *items, int count,
     int selected, int item_height, struct nk_vec2 size)
 {
     int i = 0;
@@ -735,7 +735,7 @@ nk_combo_string(struct nk_context *ctx, const char *items_separated_by_zeros,
     return nk_combo_separator(ctx, items_separated_by_zeros, '\0', selected, count, item_height, size);
 }
 NK_API int
-nk_combo_callback(struct nk_context *ctx, void(*item_getter)(void*, int, const char**),
+nk_combo_callback(struct nk_context *ctx, void(*item_getter)(void*, int, const char* const *),
     void *userdata, int selected, int count, int item_height, struct nk_vec2 size)
 {
     int i;
@@ -768,7 +768,7 @@ nk_combo_callback(struct nk_context *ctx, void(*item_getter)(void*, int, const c
     } return selected;
 }
 NK_API void
-nk_combobox(struct nk_context *ctx, const char **items, int count,
+nk_combobox(struct nk_context *ctx, const char * const *items, int count,
     int *selected, int item_height, struct nk_vec2 size)
 {
     *selected = nk_combo(ctx, items, count, *selected, item_height, size);
@@ -788,7 +788,7 @@ nk_combobox_separator(struct nk_context *ctx, const char *items_separated_by_sep
 }
 NK_API void
 nk_combobox_callback(struct nk_context *ctx,
-    void(*item_getter)(void* data, int id, const char **out_text),
+    void(*item_getter)(void* data, int id, const char * const *out_text),
     void *userdata, int *selected, int count, int item_height, struct nk_vec2 size)
 {
     *selected = nk_combo_callback(ctx, item_getter, userdata,  *selected, count, item_height, size);

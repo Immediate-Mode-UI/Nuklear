@@ -7,7 +7,7 @@
  *
  * ===============================================================*/
 NK_LIB int
-nk_toggle_behavior(const struct nk_input *in, struct nk_rect select,
+nk_toggle_behavior(struct nk_input *in, struct nk_rect select,
     nk_flags *state, int active)
 {
     nk_widget_state_reset(state);
@@ -52,6 +52,7 @@ nk_draw_checkbox(struct nk_command_buffer *out,
         nk_fill_rect(out, *selector, 0, style->border_color);
         nk_fill_rect(out, nk_shrink_rect(*selector, style->border), 0, background->data.color);
     } else nk_draw_image(out, *selector, &background->data.image, nk_white);
+
     if (active) {
         if (cursor->type == NK_STYLE_ITEM_IMAGE)
             nk_draw_image(out, *cursors, &cursor->data.image, nk_white);
@@ -91,13 +92,13 @@ nk_draw_option(struct nk_command_buffer *out,
 
     /* draw background and cursor */
     if (background->type == NK_STYLE_ITEM_COLOR) {
-        nk_fill_circle(out, *selector, style->border_color);
-        nk_fill_circle(out, nk_shrink_rect(*selector, style->border), background->data.color);
+        nk_stroke_circle(out, *selector, 1, background->data.color);
     } else nk_draw_image(out, *selector, &background->data.image, nk_white);
+
     if (active) {
         if (cursor->type == NK_STYLE_ITEM_IMAGE)
             nk_draw_image(out, *cursors, &cursor->data.image, nk_white);
-        else nk_fill_circle(out, *cursors, cursor->data.color);
+        else nk_fill_circle(out, *cursors, background->data.color);
     }
 
     text.padding.x = 0;
@@ -109,7 +110,7 @@ NK_LIB int
 nk_do_toggle(nk_flags *state,
     struct nk_command_buffer *out, struct nk_rect r,
     int *active, const char *str, int len, enum nk_toggle_type type,
-    const struct nk_style_toggle *style, const struct nk_input *in,
+    const struct nk_style_toggle *style, struct nk_input *in,
     const struct nk_user_font *font)
 {
     int was_active;
@@ -177,7 +178,7 @@ nk_check_text(struct nk_context *ctx, const char *text, int len, int active)
 {
     struct nk_window *win;
     struct nk_panel *layout;
-    const struct nk_input *in;
+    struct nk_input *in;
     const struct nk_style *style;
 
     struct nk_rect bounds;
@@ -272,7 +273,7 @@ nk_option_text(struct nk_context *ctx, const char *text, int len, int is_active)
 {
     struct nk_window *win;
     struct nk_panel *layout;
-    const struct nk_input *in;
+    struct nk_input *in;
     const struct nk_style *style;
 
     struct nk_rect bounds;

@@ -1,8 +1,9 @@
 
 import fnmatch
 import os.path
-import sys
-import re
+import sys, io, re
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, newline='\n' )
 
 def print_help():
     print(
