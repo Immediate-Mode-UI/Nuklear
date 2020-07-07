@@ -2,7 +2,9 @@ demo/*/*.exe
 demo/*/*.obj
 demo/*/bin/*
 example/bin/*
+/generatedoc
 docs/xml
 docs/build
 docs/src
 *.tmp
+*.o
