@@ -2732,6 +2732,24 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
 /// Returns `true(1)` if visible and fillable with widgets or `false(0)` otherwise
 */
 NK_API int nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states initial_state, const char *hash, int len,int seed);
+/*/// #### nk_tree_push_from_hash
+/// Start a collapsable UI section with internal state management with full
+/// control over internal unique ID used to store state
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// int nk_tree_push_from_hash(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states initial_state, nk_hash hash);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct
+/// __type__    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+/// __title__   | Label printed in the tree header
+/// __state__   | Initial tree state value out of nk_collapse_states
+/// __hash__    | Hash that is used to identify this tree
+///
+/// Returns `true(1)` if visible and fillable with widgets or `false(0)` otherwise
+*/
+NK_API int nk_tree_push_from_hash(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states initial_state, nk_hash hash);
 /*/// #### nk_tree_image_push
 /// Start a collapsable UI section with image and label header
 /// !!! WARNING

@@ -2951,6 +2951,24 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
 /// Returns `true(1)` if visible and fillable with widgets or `false(0)` otherwise
 */
 NK_API int nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states initial_state, const char *hash, int len,int seed);
+/*/// #### nk_tree_push_from_hash
+/// Start a collapsable UI section with internal state management with full
+/// control over internal unique ID used to store state
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// int nk_tree_push_from_hash(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states initial_state, nk_hash hash);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct
+/// __type__    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+/// __title__   | Label printed in the tree header
+/// __state__   | Initial tree state value out of nk_collapse_states
+/// __hash__    | Hash that is used to identify this tree
+///
+/// Returns `true(1)` if visible and fillable with widgets or `false(0)` otherwise
+*/
+NK_API int nk_tree_push_from_hash(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states initial_state, nk_hash hash);
 /*/// #### nk_tree_image_push
 /// Start a collapsable UI section with image and label header
 /// !!! WARNING
@@ -22791,26 +22809,36 @@ nk_tree_state_base(struct nk_context *ctx, enum nk_tree_type type,
     } else return nk_false;
 }
 NK_INTERN int
+nk_tree_base_with_hash(struct nk_context *ctx, enum nk_tree_type type,
+                       struct nk_image *img, const char *title, enum nk_collapse_states initial_state,
+                       nk_hash hash)
+{
+    struct nk_window *win = ctx->current;
+    nk_uint *state = 0;
+
+    /* retrieve tree state from internal widget state tables */
+    state = nk_find_value(win, hash);
+    if (!state) {
+        state = nk_add_value(ctx, win, hash, 0);
+        *state = initial_state;
+    }
+    return nk_tree_state_base(ctx, type, img, title, (enum nk_collapse_states*)state);
+}
+NK_INTERN int
 nk_tree_base(struct nk_context *ctx, enum nk_tree_type type,
     struct nk_image *img, const char *title, enum nk_collapse_states initial_state,
     const char *hash, int len, int line)
 {
-    struct nk_window *win = ctx->current;
-    int title_len = 0;
-    nk_hash tree_hash = 0;
-    nk_uint *state = 0;
+    /* make hash from name */
 
-    /* retrieve tree state from internal widget state tables */
+    nk_hash tree_hash;
+
     if (!hash) {
-        title_len = (int)nk_strlen(title);
+        int title_len = (int)nk_strlen(title);
         tree_hash = nk_murmur_hash(title, (int)title_len, (nk_hash)line);
     } else tree_hash = nk_murmur_hash(hash, len, (nk_hash)line);
-    state = nk_find_value(win, tree_hash);
-    if (!state) {
-        state = nk_add_value(ctx, win, tree_hash, 0);
-        *state = initial_state;
-    }
-    return nk_tree_state_base(ctx, type, img, title, (enum nk_collapse_states*)state);
+
+    return nk_tree_base_with_hash(ctx, type, img, title, initial_state, tree_hash);
 }
 NK_API int
 nk_tree_state_push(struct nk_context *ctx, enum nk_tree_type type,
@@ -22849,6 +22877,13 @@ nk_tree_push_hashed(struct nk_context *ctx, enum nk_tree_type type,
     const char *hash, int len, int line)
 {
     return nk_tree_base(ctx, type, 0, title, initial_state, hash, len, line);
+}
+NK_API int
+nk_tree_push_from_hash(struct nk_context *ctx, enum nk_tree_type type,
+    const char *title, enum nk_collapse_states initial_state,
+    nk_hash hash)
+{
+    return nk_tree_base_with_hash(ctx, type, 0, title, initial_state, hash);
 }
 NK_API int
 nk_tree_image_push_hashed(struct nk_context *ctx, enum nk_tree_type type,
