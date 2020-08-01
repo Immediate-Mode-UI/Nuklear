@@ -3272,6 +3272,7 @@ NK_API double nk_propertyd(struct nk_context*, const char *name, double min, dou
  *
  * ============================================================================= */
 enum nk_edit_flags {
+
     NK_EDIT_DEFAULT                 = 0,
     NK_EDIT_READ_ONLY               = NK_FLAG(0),
     NK_EDIT_AUTO_SELECT             = NK_FLAG(1),
@@ -3284,9 +3285,8 @@ enum nk_edit_flags {
     NK_EDIT_NO_HORIZONTAL_SCROLL    = NK_FLAG(8),
     NK_EDIT_ALWAYS_INSERT_MODE      = NK_FLAG(9),
     NK_EDIT_MULTILINE               = NK_FLAG(10),
-    NK_EDIT_GOTO_END_ON_ACTIVATE    = NK_FLAG(11)
-};
-enum nk_edit_types {
+    NK_EDIT_GOTO_END_ON_ACTIVATE    = NK_FLAG(11),
+
     NK_EDIT_SIMPLE  = NK_EDIT_ALWAYS_INSERT_MODE,
     NK_EDIT_FIELD   = NK_EDIT_SIMPLE|NK_EDIT_SELECTABLE|NK_EDIT_CLIPBOARD,
     NK_EDIT_BOX     = NK_EDIT_ALWAYS_INSERT_MODE| NK_EDIT_SELECTABLE| NK_EDIT_MULTILINE|NK_EDIT_ALLOW_TAB|NK_EDIT_CLIPBOARD,
@@ -5138,6 +5138,7 @@ NK_API struct nk_style_item nk_style_item_hide(void);
 #endif
 
 enum nk_panel_type {
+
     NK_PANEL_NONE       = 0,
     NK_PANEL_WINDOW     = NK_FLAG(0),
     NK_PANEL_GROUP      = NK_FLAG(1),
@@ -5145,9 +5146,8 @@ enum nk_panel_type {
     NK_PANEL_CONTEXTUAL = NK_FLAG(4),
     NK_PANEL_COMBO      = NK_FLAG(5),
     NK_PANEL_MENU       = NK_FLAG(6),
-    NK_PANEL_TOOLTIP    = NK_FLAG(7)
-};
-enum nk_panel_set {
+    NK_PANEL_TOOLTIP    = NK_FLAG(7),
+
     NK_PANEL_SET_NONBLOCK = NK_PANEL_CONTEXTUAL|NK_PANEL_COMBO|NK_PANEL_MENU|NK_PANEL_TOOLTIP,
     NK_PANEL_SET_POPUP = NK_PANEL_SET_NONBLOCK|NK_PANEL_POPUP,
     NK_PANEL_SET_SUB = NK_PANEL_SET_POPUP|NK_PANEL_GROUP
@@ -5243,7 +5243,7 @@ enum nk_window_flags {
     /* special window type growing up in height while being filled to a certain maximum height */
     NK_WINDOW_ROM           = NK_FLAG(12),
     /* sets window widgets into a read only mode and does not allow input changes */
-    NK_WINDOW_NOT_INTERACTIVE = NK_WINDOW_ROM|NK_WINDOW_NO_INPUT,
+    NK_WINDOW_NOT_INTERACTIVE = NK_WINDOW_ROM | (int) NK_WINDOW_NO_INPUT,
     /* prevents all interaction caused by input to either window or widgets inside */
     NK_WINDOW_HIDDEN        = NK_FLAG(13),
     /* Hides window and stops any window interaction and drawing */

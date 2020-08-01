@@ -124,7 +124,6 @@ nk_tree_base_with_hash(struct nk_context *ctx, enum nk_tree_type type,
                        nk_hash hash)
 {
     struct nk_window *win = ctx->current;
-    int title_len = 0;
     nk_uint *state = 0;
 
     /* retrieve tree state from internal widget state tables */
