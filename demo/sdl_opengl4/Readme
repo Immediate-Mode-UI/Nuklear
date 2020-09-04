@@ -1,0 +1,5 @@
+The sdl_opengl4 demo reuses the same code as the sdl_opengl3 demo, but changes the opengl context version to 4.0.
+
+It works because opengl4 is backwards compatible with opengl3.
+
+The demo won't work if your machine doesn't support opengl4. glew will fail with error 'Missing GL version'.
