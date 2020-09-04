@@ -101,7 +101,7 @@ nk_image_id(int id)
     s.region[3] = 0;
     return s;
 }
-NK_API int
+NK_API nk_bool
 nk_image_is_subimage(const struct nk_image* img)
 {
     NK_ASSERT(img);

@@ -6,7 +6,7 @@
  *                          CHART
  *
  * ===============================================================*/
-NK_API int
+NK_API nk_bool
 nk_chart_begin_colored(struct nk_context *ctx, enum nk_chart_type type,
     struct nk_color color, struct nk_color highlight,
     int count, float min_value, float max_value)
@@ -65,7 +65,7 @@ nk_chart_begin_colored(struct nk_context *ctx, enum nk_chart_type type,
     }
     return 1;
 }
-NK_API int
+NK_API nk_bool
 nk_chart_begin(struct nk_context *ctx, const enum nk_chart_type type,
     int count, float min_value, float max_value)
 {

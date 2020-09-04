@@ -6,7 +6,7 @@
  *                          LIST VIEW
  *
  * ===============================================================*/
-NK_API int
+NK_API nk_bool
 nk_list_view_begin(struct nk_context *ctx, struct nk_list_view *view,
     const char *title, nk_flags flags, int row_height, int row_count)
 {
