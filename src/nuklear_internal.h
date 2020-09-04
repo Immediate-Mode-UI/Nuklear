@@ -71,6 +71,11 @@ NK_STATIC_ASSERT(sizeof(nk_short) == 2);
 NK_STATIC_ASSERT(sizeof(nk_uint) == 4);
 NK_STATIC_ASSERT(sizeof(nk_int) == 4);
 NK_STATIC_ASSERT(sizeof(nk_byte) == 1);
+#ifdef NK_INCLUDE_STANDARD_BOOL
+NK_STATIC_ASSERT(sizeof(nk_bool) == sizeof(bool));
+#else
+NK_STATIC_ASSERT(sizeof(nk_bool) == 4);
+#endif
 
 NK_GLOBAL const struct nk_rect nk_null_rect = {-8192.0f, -8192.0f, 16384, 16384};
 #define NK_FLOAT_PRECISION 0.00000000000001

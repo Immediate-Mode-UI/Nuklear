@@ -99,6 +99,7 @@
 /// NK_INCLUDE_DEFAULT_ALLOCATOR    | If defined it will include header `<stdlib.h>` and provide additional functions to use this library without caring for memory allocation control and therefore ease memory management.
 /// NK_INCLUDE_STANDARD_IO          | If defined it will include header `<stdio.h>` and provide additional functions depending on file loading.
 /// NK_INCLUDE_STANDARD_VARARGS     | If defined it will include header <stdarg.h> and provide additional functions depending on file loading.
+/// NK_INCLUDE_STANDARD_BOOL        | If defined it will include header `<stdbool.h>` for nk_bool otherwise nuklear defines nk_bool as int.
 /// NK_INCLUDE_VERTEX_BUFFER_OUTPUT | Defining this adds a vertex draw command list backend to this library, which allows you to convert queue commands into vertex draw commands. This is mainly if you need a hardware accessible format for OpenGL, DirectX, Vulkan, Metal,...
 /// NK_INCLUDE_FONT_BAKING          | Defining this adds `stb_truetype` and `stb_rect_pack` implementation to this library and provides font baking and rendering. If you already have font handling or do not want to use this font handler you don't have to define it.
 /// NK_INCLUDE_DEFAULT_FONT         | Defining this adds the default font: ProggyClean.ttf into this library which can be loaded into a font atlas and allows using this library without having a truetype font
@@ -119,6 +120,7 @@
 ///     - NK_INCLUDE_FIXED_TYPES
 ///     - NK_INCLUDE_DEFAULT_ALLOCATOR
 ///     - NK_INCLUDE_STANDARD_VARARGS
+///     - NK_INCLUDE_STANDARD_BOOL
 ///     - NK_INCLUDE_VERTEX_BUFFER_OUTPUT
 ///     - NK_INCLUDE_FONT_BAKING
 ///     - NK_INCLUDE_DEFAULT_FONT
@@ -396,6 +398,15 @@ extern "C" {
   #endif
 #endif
 
+#ifndef NK_BOOL
+  #ifdef NK_INCLUDE_STANDARD_BOOL
+    #include <stdbool.h>
+    #define NK_BOOL bool
+  #else
+    #define NK_BOOL int /* could be char, use int for drop-in replacement backwards compatibility */
+  #endif
+#endif
+
 typedef NK_INT8 nk_char;
 typedef NK_UINT8 nk_uchar;
 typedef NK_UINT8 nk_byte;
@@ -405,6 +416,7 @@ typedef NK_INT32 nk_int;
 typedef NK_UINT32 nk_uint;
 typedef NK_SIZE_TYPE nk_size;
 typedef NK_POINTER_TYPE nk_ptr;
+typedef NK_BOOL nk_bool;
 
 typedef nk_uint nk_hash;
 typedef nk_uint nk_flags;
@@ -422,6 +434,11 @@ NK_STATIC_ASSERT(sizeof(nk_flags) >= 4);
 NK_STATIC_ASSERT(sizeof(nk_rune) >= 4);
 NK_STATIC_ASSERT(sizeof(nk_size) >= sizeof(void*));
 NK_STATIC_ASSERT(sizeof(nk_ptr) >= sizeof(void*));
+#ifdef NK_INCLUDE_STANDARD_BOOL
+NK_STATIC_ASSERT(sizeof(nk_bool) == sizeof(bool));
+#else
+NK_STATIC_ASSERT(sizeof(nk_bool) == 4);
+#endif
 
 /* ============================================================================
  *
@@ -5773,6 +5790,11 @@ NK_STATIC_ASSERT(sizeof(nk_short) == 2);
 NK_STATIC_ASSERT(sizeof(nk_uint) == 4);
 NK_STATIC_ASSERT(sizeof(nk_int) == 4);
 NK_STATIC_ASSERT(sizeof(nk_byte) == 1);
+#ifdef NK_INCLUDE_STANDARD_BOOL
+NK_STATIC_ASSERT(sizeof(nk_bool) == sizeof(bool));
+#else
+NK_STATIC_ASSERT(sizeof(nk_bool) == 4);
+#endif
 
 NK_GLOBAL const struct nk_rect nk_null_rect = {-8192.0f, -8192.0f, 16384, 16384};
 #define NK_FLOAT_PRECISION 0.00000000000001
@@ -29132,6 +29154,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/09/04 (4.04.0) - Add nk_bool with NK_INCLUDE_STANDARD_BOOL
 /// - 2020/06/13 (4.03.1) - Fix nk_pool allocation sizes.
 /// - 2020/06/04 (4.03.0) - Made nk_combo header symbols optional.
 /// - 2020/05/27 (4.02.5) - Fix nk_do_edit: Keep scroll position when re-activating edit widget.
