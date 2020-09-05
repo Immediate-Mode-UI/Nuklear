@@ -28309,7 +28309,7 @@ nk_combo_begin_text(struct nk_context *ctx, const char *selected, int len,
             sym = style->combo.sym_hover;
         else if (is_clicked)
             sym = style->combo.sym_active;
-        else 
+        else
             sym = style->combo.sym_normal;
 
         /* represents whether or not the combo's button symbol should be drawn */

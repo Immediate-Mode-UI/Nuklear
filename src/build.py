@@ -9,7 +9,7 @@ def print_help():
 """usage: python single_header_packer.py --macro <macro> [--intro <files>] --extern <files> --pub <files> --priv1 <files> --priv2 <files> [--outro <files>]
 
        where <files> can be a comma-separated list of files. e.g. --priv *.c,inc/*.h
-       
+
        The 'extern' files are placed between 'priv1' and 'priv2'.
 
        The resulting code is packed as follows:
