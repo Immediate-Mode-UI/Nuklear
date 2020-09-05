@@ -324,5 +324,31 @@ NK_LIB void nk_draw_property(struct nk_command_buffer *out, const struct nk_styl
 NK_LIB void nk_do_property(nk_flags *ws, struct nk_command_buffer *out, struct nk_rect property, const char *name, struct nk_property_variant *variant, float inc_per_pixel, char *buffer, int *len, int *state, int *cursor, int *select_begin, int *select_end, const struct nk_style_property *style, enum nk_property_filter filter, struct nk_input *in, const struct nk_user_font *font, struct nk_text_edit *text_edit, enum nk_button_behavior behavior);
 NK_LIB void nk_property(struct nk_context *ctx, const char *name, struct nk_property_variant *variant, float inc_per_pixel, const enum nk_property_filter filter);
 
+#ifdef NK_INCLUDE_FONT_BAKING
+
+#define STB_RECT_PACK_IMPLEMENTATION
+#define STB_TRUETYPE_IMPLEMENTATION
+
+/* Allow consumer to define own STBTT_malloc/STBTT_free, and use the font atlas' allocator otherwise */
+#ifndef STBTT_malloc
+static void*
+nk_stbtt_malloc(nk_size size, void *user_data) {
+	struct nk_allocator *alloc = (struct nk_allocator *) user_data;
+	return alloc->alloc(alloc->userdata, 0, size);
+}
+
+static void
+nk_stbtt_free(void *ptr, void *user_data) {
+	struct nk_allocator *alloc = (struct nk_allocator *) user_data;
+	alloc->free(alloc->userdata, ptr);
+}
+
+#define STBTT_malloc(x,u)  nk_stbtt_malloc(x,u)
+#define STBTT_free(x,u)    nk_stbtt_free(x,u)
+
+#endif // STBTT_malloc
+
+#endif // NK_INCLUDE_FONT_BAKING
+
 #endif
 

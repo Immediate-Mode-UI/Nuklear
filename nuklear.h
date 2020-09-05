@@ -5701,18 +5701,6 @@ template<typename T> struct nk_alignof{struct Big {T x; char c;}; enum {
 #define NK_ALIGNOF(t) ((char*)(&((struct {char c; t _h;}*)0)->_h) - (char*)0)
 #endif
 
-#ifdef NK_IMPLEMENTATION
-#define STB_RECT_PACK_IMPLEMENTATION
-#define STB_TRUETYPE_IMPLEMENTATION
-#endif
-
-#ifndef STBTT_malloc
-static nk_handle fictional_handle = {0};
-
-#define STBTT_malloc(x,u)  nk_malloc( fictional_handle, 0, x )
-#define STBTT_free(x,u)    nk_mfree( fictional_handle , x)
-#endif
-
 #endif /* NK_NUKLEAR_H_ */
 
 #ifdef NK_IMPLEMENTATION
@@ -6042,6 +6030,32 @@ NK_LIB void nk_property_behavior(nk_flags *ws, const struct nk_input *in, struct
 NK_LIB void nk_draw_property(struct nk_command_buffer *out, const struct nk_style_property *style, const struct nk_rect *bounds, const struct nk_rect *label, nk_flags state, const char *name, int len, const struct nk_user_font *font);
 NK_LIB void nk_do_property(nk_flags *ws, struct nk_command_buffer *out, struct nk_rect property, const char *name, struct nk_property_variant *variant, float inc_per_pixel, char *buffer, int *len, int *state, int *cursor, int *select_begin, int *select_end, const struct nk_style_property *style, enum nk_property_filter filter, struct nk_input *in, const struct nk_user_font *font, struct nk_text_edit *text_edit, enum nk_button_behavior behavior);
 NK_LIB void nk_property(struct nk_context *ctx, const char *name, struct nk_property_variant *variant, float inc_per_pixel, const enum nk_property_filter filter);
+
+#ifdef NK_INCLUDE_FONT_BAKING
+
+#define STB_RECT_PACK_IMPLEMENTATION
+#define STB_TRUETYPE_IMPLEMENTATION
+
+/* Allow consumer to define own STBTT_malloc/STBTT_free, and use the font atlas' allocator otherwise */
+#ifndef STBTT_malloc
+static void*
+nk_stbtt_malloc(nk_size size, void *user_data) {
+	struct nk_allocator *alloc = (struct nk_allocator *) user_data;
+	return alloc->alloc(alloc->userdata, 0, size);
+}
+
+static void
+nk_stbtt_free(void *ptr, void *user_data) {
+	struct nk_allocator *alloc = (struct nk_allocator *) user_data;
+	alloc->free(alloc->userdata, ptr);
+}
+
+#define STBTT_malloc(x,u)  nk_stbtt_malloc(x,u)
+#define STBTT_free(x,u)    nk_stbtt_free(x,u)
+
+#endif // STBTT_malloc
+
+#endif // NK_INCLUDE_FONT_BAKING
 
 #endif
 
@@ -16419,7 +16433,9 @@ nk_font_bake_pack(struct nk_font_baker *baker,
     /* setup font baker from temporary memory */
     for (config_iter = config_list; config_iter; config_iter = config_iter->next) {
         it = config_iter;
-        do {if (!stbtt_InitFont(&baker->build[i++].info, (const unsigned char*)it->ttf_blob, 0))
+        struct stbtt_fontinfo *font_info = &baker->build[i++].info;
+        font_info->userdata = alloc;
+        do {if (!stbtt_InitFont(font_info, (const unsigned char*)it->ttf_blob, 0))
             return nk_false;
         } while ((it = it->n) != config_iter);
     }
@@ -29154,6 +29170,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/09/05 (4.05.0) - Use the nk_font_atlas allocator for stb_truetype memory management.
 /// - 2020/09/04 (4.04.1) - Replace every boolean int by nk_bool
 /// - 2020/09/04 (4.04.0) - Add nk_bool with NK_INCLUDE_STANDARD_BOOL
 /// - 2020/06/13 (4.03.1) - Fix nk_pool allocation sizes.
