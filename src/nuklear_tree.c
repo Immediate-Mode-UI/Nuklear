@@ -136,13 +136,13 @@ nk_tree_base(struct nk_context *ctx, enum nk_tree_type type,
     }
     return nk_tree_state_base(ctx, type, img, title, (enum nk_collapse_states*)state);
 }
-NK_API int
+NK_API nk_bool
 nk_tree_state_push(struct nk_context *ctx, enum nk_tree_type type,
     const char *title, enum nk_collapse_states *state)
 {
     return nk_tree_state_base(ctx, type, 0, title, state);
 }
-NK_API int
+NK_API nk_bool
 nk_tree_state_image_push(struct nk_context *ctx, enum nk_tree_type type,
     struct nk_image img, const char *title, enum nk_collapse_states *state)
 {
@@ -167,14 +167,14 @@ nk_tree_state_pop(struct nk_context *ctx)
     NK_ASSERT(layout->row.tree_depth);
     layout->row.tree_depth--;
 }
-NK_API int
+NK_API nk_bool
 nk_tree_push_hashed(struct nk_context *ctx, enum nk_tree_type type,
     const char *title, enum nk_collapse_states initial_state,
     const char *hash, int len, int line)
 {
     return nk_tree_base(ctx, type, 0, title, initial_state, hash, len, line);
 }
-NK_API int
+NK_API nk_bool
 nk_tree_image_push_hashed(struct nk_context *ctx, enum nk_tree_type type,
     struct nk_image img, const char *title, enum nk_collapse_states initial_state,
     const char *hash, int len,int seed)
@@ -189,7 +189,7 @@ nk_tree_pop(struct nk_context *ctx)
 NK_INTERN int
 nk_tree_element_image_push_hashed_base(struct nk_context *ctx, enum nk_tree_type type,
     struct nk_image *img, const char *title, int title_len,
-    enum nk_collapse_states *state, int *selected)
+    enum nk_collapse_states *state, nk_bool *selected)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -297,7 +297,7 @@ nk_tree_element_image_push_hashed_base(struct nk_context *ctx, enum nk_tree_type
 NK_INTERN int
 nk_tree_element_base(struct nk_context *ctx, enum nk_tree_type type,
     struct nk_image *img, const char *title, enum nk_collapse_states initial_state,
-    int *selected, const char *hash, int len, int line)
+    nk_bool *selected, const char *hash, int len, int line)
 {
     struct nk_window *win = ctx->current;
     int title_len = 0;
@@ -316,17 +316,17 @@ nk_tree_element_base(struct nk_context *ctx, enum nk_tree_type type,
     } return nk_tree_element_image_push_hashed_base(ctx, type, img, title,
         nk_strlen(title), (enum nk_collapse_states*)state, selected);
 }
-NK_API int
+NK_API nk_bool
 nk_tree_element_push_hashed(struct nk_context *ctx, enum nk_tree_type type,
     const char *title, enum nk_collapse_states initial_state,
-    int *selected, const char *hash, int len, int seed)
+    nk_bool *selected, const char *hash, int len, int seed)
 {
     return nk_tree_element_base(ctx, type, 0, title, initial_state, selected, hash, len, seed);
 }
-NK_API int
+NK_API nk_bool
 nk_tree_element_image_push_hashed(struct nk_context *ctx, enum nk_tree_type type,
     struct nk_image img, const char *title, enum nk_collapse_states initial_state,
-    int *selected, const char *hash, int len,int seed)
+    nk_bool *selected, const char *hash, int len,int seed)
 {
     return nk_tree_element_base(ctx, type, &img, title, initial_state, selected, hash, len, seed);
 }

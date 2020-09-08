@@ -8,7 +8,7 @@
  * ===============================================================*/
 NK_LIB nk_size
 nk_progress_behavior(nk_flags *state, struct nk_input *in,
-    struct nk_rect r, struct nk_rect cursor, nk_size max, nk_size value, int modifiable)
+    struct nk_rect r, struct nk_rect cursor, nk_size max, nk_size value, nk_bool modifiable)
 {
     int left_mouse_down = 0;
     int left_mouse_click_in_cursor = 0;
@@ -74,7 +74,7 @@ nk_draw_progress(struct nk_command_buffer *out, nk_flags state,
 NK_LIB nk_size
 nk_do_progress(nk_flags *state,
     struct nk_command_buffer *out, struct nk_rect bounds,
-    nk_size value, nk_size max, int modifiable,
+    nk_size value, nk_size max, nk_bool modifiable,
     const struct nk_style_progress *style, struct nk_input *in)
 {
     float prog_scale;
@@ -102,8 +102,8 @@ nk_do_progress(nk_flags *state,
     if (style->draw_end) style->draw_end(out, style->userdata);
     return prog_value;
 }
-NK_API int
-nk_progress(struct nk_context *ctx, nk_size *cur, nk_size max, int is_modifyable)
+NK_API nk_bool
+nk_progress(struct nk_context *ctx, nk_size *cur, nk_size max, nk_bool is_modifyable)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -134,7 +134,7 @@ nk_progress(struct nk_context *ctx, nk_size *cur, nk_size max, int is_modifyable
     return (*cur != old_value);
 }
 NK_API nk_size
-nk_prog(struct nk_context *ctx, nk_size cur, nk_size max, int modifyable)
+nk_prog(struct nk_context *ctx, nk_size cur, nk_size max, nk_bool modifyable)
 {
     nk_progress(ctx, &cur, max, modifyable);
     return cur;

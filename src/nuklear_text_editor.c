@@ -316,7 +316,7 @@ nk_textedit_prep_selection_at_cursor(struct nk_text_edit *state)
         state->select_start = state->select_end = state->cursor;
     else state->cursor = state->select_end;
 }
-NK_API int
+NK_API nk_bool
 nk_textedit_cut(struct nk_text_edit *state)
 {
     /* API cut: delete selection */
@@ -329,7 +329,7 @@ nk_textedit_cut(struct nk_text_edit *state)
     }
    return 0;
 }
-NK_API int
+NK_API nk_bool
 nk_textedit_paste(struct nk_text_edit *state, char const *ctext, int len)
 {
     /* API paste: replace existing selection with passed-in text */

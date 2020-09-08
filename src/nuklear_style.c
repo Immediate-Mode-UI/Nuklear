@@ -635,7 +635,7 @@ nk_style_set_font(struct nk_context *ctx, const struct nk_user_font *font)
     if (ctx->current)
         nk_layout_reset_min_row_height(ctx);
 }
-NK_API int
+NK_API nk_bool
 nk_style_push_font(struct nk_context *ctx, const struct nk_user_font *font)
 {
     struct nk_config_stack_user_font *font_stack;
@@ -655,7 +655,7 @@ nk_style_push_font(struct nk_context *ctx, const struct nk_user_font *font)
     ctx->style.font = font;
     return 1;
 }
-NK_API int
+NK_API nk_bool
 nk_style_pop_font(struct nk_context *ctx)
 {
     struct nk_config_stack_user_font *font_stack;
@@ -705,19 +705,19 @@ nk_style_pop_##type(struct nk_context *ctx)\
     *element->address = element->old_value;\
     return 1;\
 }
-NK_API int NK_STYLE_PUSH_IMPLEMENATION(struct nk, style_item, style_items)
-NK_API int NK_STYLE_PUSH_IMPLEMENATION(nk,float, floats)
-NK_API int NK_STYLE_PUSH_IMPLEMENATION(struct nk, vec2, vectors)
-NK_API int NK_STYLE_PUSH_IMPLEMENATION(nk,flags, flags)
-NK_API int NK_STYLE_PUSH_IMPLEMENATION(struct nk,color, colors)
+NK_API nk_bool NK_STYLE_PUSH_IMPLEMENATION(struct nk, style_item, style_items)
+NK_API nk_bool NK_STYLE_PUSH_IMPLEMENATION(nk,float, floats)
+NK_API nk_bool NK_STYLE_PUSH_IMPLEMENATION(struct nk, vec2, vectors)
+NK_API nk_bool NK_STYLE_PUSH_IMPLEMENATION(nk,flags, flags)
+NK_API nk_bool NK_STYLE_PUSH_IMPLEMENATION(struct nk,color, colors)
 
-NK_API int NK_STYLE_POP_IMPLEMENATION(style_item, style_items)
-NK_API int NK_STYLE_POP_IMPLEMENATION(float,floats)
-NK_API int NK_STYLE_POP_IMPLEMENATION(vec2, vectors)
-NK_API int NK_STYLE_POP_IMPLEMENATION(flags,flags)
-NK_API int NK_STYLE_POP_IMPLEMENATION(color,colors)
+NK_API nk_bool NK_STYLE_POP_IMPLEMENATION(style_item, style_items)
+NK_API nk_bool NK_STYLE_POP_IMPLEMENATION(float,floats)
+NK_API nk_bool NK_STYLE_POP_IMPLEMENATION(vec2, vectors)
+NK_API nk_bool NK_STYLE_POP_IMPLEMENATION(flags,flags)
+NK_API nk_bool NK_STYLE_POP_IMPLEMENATION(color,colors)
 
-NK_API int
+NK_API nk_bool
 nk_style_set_cursor(struct nk_context *ctx, enum nk_style_cursor c)
 {
     struct nk_style *style;

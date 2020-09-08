@@ -196,7 +196,7 @@ nk_do_slider(nk_flags *state,
     if (style->draw_end) style->draw_end(out, style->userdata);
     return slider_value;
 }
-NK_API int
+NK_API nk_bool
 nk_slider_float(struct nk_context *ctx, float min_value, float *value, float max_value,
     float value_step)
 {
@@ -242,7 +242,7 @@ nk_slide_int(struct nk_context *ctx, int min, int val, int max, int step)
     nk_slider_float(ctx, (float)min, &value, (float)max, (float)step);
     return (int)value;
 }
-NK_API int
+NK_API nk_bool
 nk_slider_int(struct nk_context *ctx, int min, int *val, int max, int step)
 {
     int ret;

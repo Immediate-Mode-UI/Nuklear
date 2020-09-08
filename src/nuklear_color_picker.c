@@ -6,15 +6,15 @@
  *                          COLOR PICKER
  *
  * ===============================================================*/
-NK_LIB int
+NK_LIB nk_bool
 nk_color_picker_behavior(nk_flags *state,
     const struct nk_rect *bounds, const struct nk_rect *matrix,
     const struct nk_rect *hue_bar, const struct nk_rect *alpha_bar,
     struct nk_colorf *color, const struct nk_input *in)
 {
     float hsva[4];
-    int value_changed = 0;
-    int hsv_changed = 0;
+    nk_bool value_changed = 0;
+    nk_bool hsv_changed = 0;
 
     NK_ASSERT(state);
     NK_ASSERT(matrix);
@@ -117,7 +117,7 @@ nk_draw_color_picker(struct nk_command_buffer *o, const struct nk_rect *matrix,
     nk_stroke_line(o, p.x, p.y + crosshair_size + 1, p.x, p.y+3, 1.0f, white);
     nk_stroke_line(o, p.x, p.y - crosshair_size, p.x, p.y-2, 1.0f, white);}
 }
-NK_LIB int
+NK_LIB nk_bool
 nk_do_color_picker(nk_flags *state,
     struct nk_command_buffer *out, struct nk_colorf *col,
     enum nk_color_format fmt, struct nk_rect bounds,
@@ -163,7 +163,7 @@ nk_do_color_picker(nk_flags *state,
     nk_draw_color_picker(out, &matrix, &hue_bar, (fmt == NK_RGBA) ? &alpha_bar:0, *col);
     return ret;
 }
-NK_API int
+NK_API nk_bool
 nk_color_pick(struct nk_context * ctx, struct nk_colorf *color,
     enum nk_color_format fmt)
 {

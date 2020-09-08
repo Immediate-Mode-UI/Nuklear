@@ -6,21 +6,21 @@
  *                          FILTER
  *
  * ===============================================================*/
-NK_API int
+NK_API nk_bool
 nk_filter_default(const struct nk_text_edit *box, nk_rune unicode)
 {
     NK_UNUSED(unicode);
     NK_UNUSED(box);
     return nk_true;
 }
-NK_API int
+NK_API nk_bool
 nk_filter_ascii(const struct nk_text_edit *box, nk_rune unicode)
 {
     NK_UNUSED(box);
     if (unicode > 128) return nk_false;
     else return nk_true;
 }
-NK_API int
+NK_API nk_bool
 nk_filter_float(const struct nk_text_edit *box, nk_rune unicode)
 {
     NK_UNUSED(box);
@@ -28,7 +28,7 @@ nk_filter_float(const struct nk_text_edit *box, nk_rune unicode)
         return nk_false;
     else return nk_true;
 }
-NK_API int
+NK_API nk_bool
 nk_filter_decimal(const struct nk_text_edit *box, nk_rune unicode)
 {
     NK_UNUSED(box);
@@ -36,7 +36,7 @@ nk_filter_decimal(const struct nk_text_edit *box, nk_rune unicode)
         return nk_false;
     else return nk_true;
 }
-NK_API int
+NK_API nk_bool
 nk_filter_hex(const struct nk_text_edit *box, nk_rune unicode)
 {
     NK_UNUSED(box);
@@ -46,7 +46,7 @@ nk_filter_hex(const struct nk_text_edit *box, nk_rune unicode)
         return nk_false;
     else return nk_true;
 }
-NK_API int
+NK_API nk_bool
 nk_filter_oct(const struct nk_text_edit *box, nk_rune unicode)
 {
     NK_UNUSED(box);
@@ -54,7 +54,7 @@ nk_filter_oct(const struct nk_text_edit *box, nk_rune unicode)
         return nk_false;
     else return nk_true;
 }
-NK_API int
+NK_API nk_bool
 nk_filter_binary(const struct nk_text_edit *box, nk_rune unicode)
 {
     NK_UNUSED(box);
@@ -73,7 +73,7 @@ nk_edit_draw_text(struct nk_command_buffer *out,
     const struct nk_style_edit *style, float pos_x, float pos_y,
     float x_offset, const char *text, int byte_len, float row_height,
     const struct nk_user_font *font, struct nk_color background,
-    struct nk_color foreground, int is_selected)
+    struct nk_color foreground, nk_bool is_selected)
 {
     NK_ASSERT(out);
     NK_ASSERT(font);
