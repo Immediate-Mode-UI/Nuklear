@@ -437,7 +437,7 @@ NK_STATIC_ASSERT(sizeof(nk_ptr) >= sizeof(void*));
 #ifdef NK_INCLUDE_STANDARD_BOOL
 NK_STATIC_ASSERT(sizeof(nk_bool) == sizeof(bool));
 #else
-NK_STATIC_ASSERT(sizeof(nk_bool) == 4);
+NK_STATIC_ASSERT(sizeof(nk_bool) >= 2);
 #endif
 
 /* ============================================================================
