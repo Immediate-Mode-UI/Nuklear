@@ -177,7 +177,7 @@ int main(int argc, char **argv)
         }
         nk_end(&(context->ctx));
 
-        grid_demo(&(context->ctx));
+//        grid_demo(&(context->ctx));
 
         nk_sdlsurface_render(context, clear, 1);
 
