@@ -29154,6 +29154,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/10/07 (4.06.0) - Fix nk_combo return type wrongly changed to nk_bool
 /// - 2020/09/04 (4.04.1) - Replace every boolean int by nk_bool
 /// - 2020/09/04 (4.04.0) - Add nk_bool with NK_INCLUDE_STANDARD_BOOL
 /// - 2020/06/13 (4.03.1) - Fix nk_pool allocation sizes.
