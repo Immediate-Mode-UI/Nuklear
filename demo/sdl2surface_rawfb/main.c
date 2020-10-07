@@ -179,7 +179,6 @@ int main(int argc, char **argv)
 
         grid_demo(&(context->ctx));
 
-        printf("render\n");
         nk_sdlsurface_render(context, clear, 1);
 
 
