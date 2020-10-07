@@ -999,9 +999,10 @@ NK_API void
 nk_sdlsurface_shutdown(struct sdlsurface_context *sdlsurface)
 {
     if (sdlsurface) {
-    nk_free(&sdlsurface->ctx);
-    NK_MEMSET(sdlsurface, 0, sizeof(struct sdlsurface_context));
-    free(sdlsurface);
+        SDL_FreeSurface(sdlsurface->font_tex);
+        nk_free(&sdlsurface->ctx);
+        NK_MEMSET(sdlsurface, 0, sizeof(struct sdlsurface_context));
+        free(sdlsurface);
     }
 }
 

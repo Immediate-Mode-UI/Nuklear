@@ -182,8 +182,6 @@ int main(int argc, char **argv)
         nk_sdlsurface_render(context, clear, 1);
 
 
-//      SDL_Rect rect = {100, 100, 200, 100};
-//      SDL_FillRect(surface, &rect, 0x00FF00FF);
 
 
         SDL_Texture *tex = SDL_CreateTextureFromSurface(renderer, surface);
@@ -191,13 +189,13 @@ int main(int argc, char **argv)
         SDL_RenderPresent(renderer);
         SDL_DestroyTexture(tex);
 
-        //sdl blit surface
-        // sdl_renderer present
     }
 
     nk_sdlsurface_shutdown(context);
 
-    //! todo destroy rest of state
+    SDL_FreeSurface(surface);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
 }
 
 
