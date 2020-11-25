@@ -16576,8 +16576,10 @@ nk_font_bake(struct nk_font_baker *baker, void *image_memory, int width, int hei
                 dst_font->ascent = ((float)unscaled_ascent * font_scale);
                 dst_font->descent = ((float)unscaled_descent * font_scale);
                 dst_font->glyph_offset = glyph_n;
-                // Need to zero this, or it will carry over from a previous
-                // bake, and cause a segfault when accessing glyphs[].
+                /*
+                    Need to zero this, or it will carry over from a previous
+                    bake, and cause a segfault when accessing glyphs[].
+                */
                 dst_font->glyph_count = 0;
             }
 
@@ -29170,6 +29172,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/10/11 (4.06.1) - Fix C++ style comments which are not allowed in ISO C90.
 /// - 2020/10/07 (4.06.0) - Fix nk_combo return type wrongly changed to nk_bool
 /// - 2020/09/05 (4.05.0) - Use the nk_font_atlas allocator for stb_truetype memory management.
 /// - 2020/09/04 (4.04.1) - Replace every boolean int by nk_bool
