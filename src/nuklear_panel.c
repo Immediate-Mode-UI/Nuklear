@@ -451,7 +451,10 @@ nk_panel_end(struct nk_context *ctx)
         {
             /* horizontal scrollbar */
             nk_flags state = 0;
-            scroll.x = layout->bounds.x;
+            if(layout->flags & NK_WINDOW_SCALE_LEFT)
+                scroll.x = layout->bounds.x + scrollbar_size.x + panel_padding.x * 0.5;
+            else
+                scroll.x = layout->bounds.x;
             scroll.y = layout->bounds.y + layout->bounds.h;
             scroll.w = layout->bounds.w;
             scroll.h = scrollbar_size.y;
@@ -528,15 +531,17 @@ nk_panel_end(struct nk_context *ctx)
                     NK_BUTTON_LEFT, scaler, nk_true);
 
             if (left_mouse_down && left_mouse_click_in_scaler) {
-                float delta_x = in->mouse.delta.x;
                 if (layout->flags & NK_WINDOW_SCALE_LEFT) {
-                    delta_x = -delta_x;
                     window->bounds.x += in->mouse.delta.x;
                 }
                 /* dragging in x-direction  */
-                if (window->bounds.w + delta_x >= window_size.x) {
-                    if ((delta_x < 0) || (delta_x > 0 && in->mouse.pos.x >= scaler.x)) {
-                        window->bounds.w = window->bounds.w + delta_x;
+                if (window->bounds.w + in->mouse.delta.x >= window_size.x) {
+                    if ((in->mouse.delta.x < 0) || (in->mouse.delta.x > 0 && in->mouse.pos.x >= scaler.x)) {
+                        if (layout->flags & NK_WINDOW_SCALE_LEFT) {
+                            window->bounds.w -= in->mouse.delta.x;
+                        }else {
+                            window->bounds.w += in->mouse.delta.x;
+                        }
                         scaler.x += in->mouse.delta.x;
                     }
                 }

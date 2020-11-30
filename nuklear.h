@@ -19657,7 +19657,10 @@ nk_panel_end(struct nk_context *ctx)
         {
             /* horizontal scrollbar */
             nk_flags state = 0;
-            scroll.x = layout->bounds.x;
+            if(layout->flags & NK_WINDOW_SCALE_LEFT)
+                scroll.x = layout->bounds.x + scrollbar_size.x + panel_padding.x * 0.5;
+            else
+                scroll.x = layout->bounds.x;
             scroll.y = layout->bounds.y + layout->bounds.h;
             scroll.w = layout->bounds.w;
             scroll.h = scrollbar_size.y;
@@ -19734,15 +19737,17 @@ nk_panel_end(struct nk_context *ctx)
                     NK_BUTTON_LEFT, scaler, nk_true);
 
             if (left_mouse_down && left_mouse_click_in_scaler) {
-                float delta_x = in->mouse.delta.x;
                 if (layout->flags & NK_WINDOW_SCALE_LEFT) {
-                    delta_x = -delta_x;
                     window->bounds.x += in->mouse.delta.x;
                 }
                 /* dragging in x-direction  */
-                if (window->bounds.w + delta_x >= window_size.x) {
-                    if ((delta_x < 0) || (delta_x > 0 && in->mouse.pos.x >= scaler.x)) {
-                        window->bounds.w = window->bounds.w + delta_x;
+                if (window->bounds.w + in->mouse.delta.x >= window_size.x) {
+                    if ((in->mouse.delta.x < 0) || (in->mouse.delta.x > 0 && in->mouse.pos.x >= scaler.x)) {
+                        if (layout->flags & NK_WINDOW_SCALE_LEFT) {
+                            window->bounds.w -= in->mouse.delta.x;
+                        }else {
+                            window->bounds.w += in->mouse.delta.x;
+                        }
                         scaler.x += in->mouse.delta.x;
                     }
                 }
@@ -29172,6 +29177,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/11/30 (4.06.2) - Fix scaling and horizontal scrollbar position when scaler placed left
 /// - 2020/10/11 (4.06.1) - Fix C++ style comments which are not allowed in ISO C90.
 /// - 2020/10/07 (4.06.0) - Fix nk_combo return type wrongly changed to nk_bool
 /// - 2020/09/05 (4.05.0) - Use the nk_font_atlas allocator for stb_truetype memory management.
