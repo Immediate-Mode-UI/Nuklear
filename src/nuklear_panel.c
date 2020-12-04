@@ -548,18 +548,21 @@ nk_panel_end(struct nk_context *ctx)
                     NK_BUTTON_LEFT, scaler, nk_true);
 
             if (left_mouse_down && left_mouse_click_in_scaler) {
-                if (layout->flags & NK_WINDOW_SCALE_LEFT) {
-                    window->bounds.x += in->mouse.delta.x;
-                }
                 /* dragging in x-direction  */
-                if (window->bounds.w + in->mouse.delta.x >= window_size.x) {
-                    if ((in->mouse.delta.x < 0) || (in->mouse.delta.x > 0 && in->mouse.pos.x >= scaler.x)) {
-                        if (layout->flags & NK_WINDOW_SCALE_LEFT) {
+                if (layout->flags & NK_WINDOW_SCALE_LEFT) {
+                    if (window->bounds.w - in->mouse.delta.x >= window_size.x) {
+                        if ((in->mouse.delta.x < 0) || (in->mouse.delta.x > 0 && in->mouse.pos.x >= scaler.x)) {
+                            window->bounds.x += in->mouse.delta.x;
                             window->bounds.w -= in->mouse.delta.x;
-                        }else {
-                            window->bounds.w += in->mouse.delta.x;
+                            scaler.x += in->mouse.delta.x;
                         }
-                        scaler.x += in->mouse.delta.x;
+                    }
+                }else{
+                    if (window->bounds.w + in->mouse.delta.x >= window_size.x) {
+                        if ((in->mouse.delta.x < 0) || (in->mouse.delta.x > 0 && in->mouse.pos.x >= scaler.x)) {
+                            window->bounds.w += in->mouse.delta.x;
+                            scaler.x += in->mouse.delta.x;
+                        }
                     }
                 }
                 /* dragging in y-direction (only possible if static window) */
