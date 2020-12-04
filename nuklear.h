@@ -19737,20 +19737,24 @@ nk_panel_end(struct nk_context *ctx)
                     NK_BUTTON_LEFT, scaler, nk_true);
 
             if (left_mouse_down && left_mouse_click_in_scaler) {
-                if (layout->flags & NK_WINDOW_SCALE_LEFT) {
-                    window->bounds.x += in->mouse.delta.x;
-                }
                 /* dragging in x-direction  */
-                if (window->bounds.w + in->mouse.delta.x >= window_size.x) {
-                    if ((in->mouse.delta.x < 0) || (in->mouse.delta.x > 0 && in->mouse.pos.x >= scaler.x)) {
-                        if (layout->flags & NK_WINDOW_SCALE_LEFT) {
+                if (layout->flags & NK_WINDOW_SCALE_LEFT) {
+                    if (window->bounds.w - in->mouse.delta.x >= window_size.x) {
+                        if ((in->mouse.delta.x < 0) || (in->mouse.delta.x > 0 && in->mouse.pos.x >= scaler.x)) {
+                            window->bounds.x += in->mouse.delta.x;
                             window->bounds.w -= in->mouse.delta.x;
-                        }else {
-                            window->bounds.w += in->mouse.delta.x;
+                            scaler.x += in->mouse.delta.x;
                         }
-                        scaler.x += in->mouse.delta.x;
+                    }
+                }else{
+                    if (window->bounds.w + in->mouse.delta.x >= window_size.x) {
+                        if ((in->mouse.delta.x < 0) || (in->mouse.delta.x > 0 && in->mouse.pos.x >= scaler.x)) {
+                            window->bounds.w += in->mouse.delta.x;
+                            scaler.x += in->mouse.delta.x;
+                        }
                     }
                 }
+
                 /* dragging in y-direction (only possible if static window) */
                 if (!(layout->flags & NK_WINDOW_DYNAMIC)) {
                     if (window_size.y < window->bounds.h + in->mouse.delta.y) {
@@ -29177,6 +29181,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/12/04 (4.06.3) - Fix minimum window width when scaling left
 /// - 2020/11/30 (4.06.2) - Fix scaling and horizontal scrollbar position when scaler placed left
 /// - 2020/10/11 (4.06.1) - Fix C++ style comments which are not allowed in ISO C90.
 /// - 2020/10/07 (4.06.0) - Fix nk_combo return type wrongly changed to nk_bool
