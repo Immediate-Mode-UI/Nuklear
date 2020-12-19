@@ -6053,9 +6053,9 @@ nk_stbtt_free(void *ptr, void *user_data) {
 #define STBTT_malloc(x,u)  nk_stbtt_malloc(x,u)
 #define STBTT_free(x,u)    nk_stbtt_free(x,u)
 
-#endif // STBTT_malloc
+#endif /* STBTT_malloc */
 
-#endif // NK_INCLUDE_FONT_BAKING
+#endif /* NK_INCLUDE_FONT_BAKING */
 
 #endif
 
@@ -16432,8 +16432,8 @@ nk_font_bake_pack(struct nk_font_baker *baker,
     }
     /* setup font baker from temporary memory */
     for (config_iter = config_list; config_iter; config_iter = config_iter->next) {
-        it = config_iter;
         struct stbtt_fontinfo *font_info = &baker->build[i++].info;
+        it = config_iter;
         font_info->userdata = alloc;
         do {if (!stbtt_InitFont(font_info, (const unsigned char*)it->ttf_blob, 0))
             return nk_false;
