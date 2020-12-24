@@ -346,9 +346,9 @@ nk_stbtt_free(void *ptr, void *user_data) {
 #define STBTT_malloc(x,u)  nk_stbtt_malloc(x,u)
 #define STBTT_free(x,u)    nk_stbtt_free(x,u)
 
-#endif // STBTT_malloc
+#endif /* STBTT_malloc */
 
-#endif // NK_INCLUDE_FONT_BAKING
+#endif /* NK_INCLUDE_FONT_BAKING */
 
 #endif
 
