@@ -17889,9 +17889,9 @@ NK_API void nk_style_default(struct nk_context *ctx){nk_style_from_table(ctx, 0)
     NK_COLOR(NK_COLOR_BUTTON,                   50, 50, 50, 255) \
     NK_COLOR(NK_COLOR_BUTTON_HOVER,             40, 40, 40, 255) \
     NK_COLOR(NK_COLOR_BUTTON_ACTIVE,            35, 35, 35, 255) \
-    NK_COLOR(NK_COLOR_TOGGLE,                   100,100,100,255) \
+    NK_COLOR(NK_COLOR_TOGGLE,                   80,80,80,255) \
     NK_COLOR(NK_COLOR_TOGGLE_HOVER,             120,120,120,255) \
-    NK_COLOR(NK_COLOR_TOGGLE_CURSOR,            45, 45, 45, 255) \
+    NK_COLOR(NK_COLOR_TOGGLE_CURSOR,            170, 170, 170, 255) \
     NK_COLOR(NK_COLOR_SELECT,                   45, 45, 45, 255) \
     NK_COLOR(NK_COLOR_SELECT_ACTIVE,            35, 35, 35,255) \
     NK_COLOR(NK_COLOR_SLIDER,                   38, 38, 38, 255) \
