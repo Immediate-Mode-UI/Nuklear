@@ -24172,7 +24172,7 @@ nk_do_toggle(nk_flags *state,
     if (style->draw_begin)
         style->draw_begin(out, style->userdata);
     if (type == NK_TOGGLE_CHECK) {
-        nk_draw_checkbox(out, *state, style, *active, &label, &select, &cursor, str, len, font);
+        nk_draw_checkbox(out, *state, style, !*active, &label, &select, &cursor, str, len, font);
     } else {
         nk_draw_option(out, *state, style, *active, &label, &select, &cursor, str, len, font);
     }
