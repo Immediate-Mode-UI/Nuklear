@@ -279,6 +279,7 @@ nk_sfml_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_
             offset += cmd->elem_count;
         }
         nk_clear(&sfml.ctx);
+        nk_buffer_clear(&dev->cmds);
     }
     glUseProgram(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);

@@ -2312,6 +2312,16 @@ X...XXXXXXXXXXXXX...X -           "
    - [x]: Major version with API and library breaking changes
    - [yy]: Minor version with non-breaking API and library changes
    - [zz]: Bug fix version with no direct changes to API
+- 2020/04/09 (4.02.1) - Removed unused nk_sqrt function to fix compiler warnings
+                      - Fixed compiler warnings if you bring your own methods for
+                       nk_cos/nk_sin/nk_strtod/nk_memset/nk_memcopy/nk_dtoa
+- 2020/04/06 (4.01.10) - Fix bug: Do not use pool before checking for NULL
+- 2020/03/22 (4.01.9) - Fix bug where layout state wasn't restored correctly after
+                       popping a tree.
+- 2020/03/11 (4.01.8) - Fix bug where padding is subtracted from widget
+- 2020/03/06 (4.01.7) - Fix bug where width padding was applied twice
+- 2020/02/06 (4.01.6) - Update stb_truetype.h and stb_rect_pack.h and separate them
+- 2019/12/10 (4.01.5) - Fix off-by-one error in NK_INTERSECT
 - 2019/10/09 (4.01.4) - Fix bug for autoscrolling in nk_do_edit
 - 2019/09/20 (4.01.3) - Fixed a bug wherein combobox cannot be closed by clicking the header
                        when NK_BUTTON_TRIGGER_ON_RELEASE is defined.

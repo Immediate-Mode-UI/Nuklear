@@ -85,10 +85,15 @@ nk_d3d11_render(ID3D11DeviceContext *context, enum nk_anti_aliasing AA)
     const float blend_factor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
     const UINT stride = sizeof(struct nk_d3d11_vertex);
     const UINT offset = 0;
+#ifdef NK_UINT_DRAW_INDEX
+    DXGI_FORMAT index_buffer_format = DXGI_FORMAT_R32_UINT;
+#else
+    DXGI_FORMAT index_buffer_format = DXGI_FORMAT_R16_UINT;
+#endif
 
     ID3D11DeviceContext_IASetInputLayout(context, d3d11.input_layout);
     ID3D11DeviceContext_IASetVertexBuffers(context, 0, 1, &d3d11.vertex_buffer, &stride, &offset);
-    ID3D11DeviceContext_IASetIndexBuffer(context, d3d11.index_buffer, DXGI_FORMAT_R16_UINT, 0);
+    ID3D11DeviceContext_IASetIndexBuffer(context, d3d11.index_buffer, index_buffer_format, 0);
     ID3D11DeviceContext_IASetPrimitiveTopology(context, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     ID3D11DeviceContext_VSSetShader(context, d3d11.vertex_shader, NULL, 0);
@@ -161,7 +166,8 @@ nk_d3d11_render(ID3D11DeviceContext *context, enum nk_anti_aliasing AA)
         ID3D11DeviceContext_DrawIndexed(context, (UINT)cmd->elem_count, offset, 0);
         offset += cmd->elem_count;
     }
-    nk_clear(&d3d11.ctx);}
+    nk_clear(&d3d11.ctx);
+    nk_buffer_clear(&d3d11.cmds);}
 }
 
 static void

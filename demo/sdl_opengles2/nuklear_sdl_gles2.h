@@ -276,6 +276,7 @@ nk_sdl_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
             offset += cmd->elem_count;
         }
         nk_clear(&sdl.ctx);
+        nk_buffer_clear(&dev->cmds);
     }
 
     glUseProgram(0);

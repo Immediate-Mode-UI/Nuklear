@@ -184,6 +184,7 @@ nk_x11_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
             offset += cmd->elem_count;
         }
         nk_clear(&x11.ctx);
+        nk_buffer_clear(&dev->cmds);
         nk_buffer_free(&vbuf);
         nk_buffer_free(&ebuf);
     }

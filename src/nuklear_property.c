@@ -113,7 +113,7 @@ nk_do_property(nk_flags *ws,
         nk_filter_decimal,
         nk_filter_float
     };
-    int active, old;
+    nk_bool active, old;
     int num_len, name_len;
     char string[NK_MAX_NUMBER_BUFFER];
     float size;
@@ -450,7 +450,7 @@ nk_property_double(struct nk_context *ctx, const char *name,
     nk_property(ctx, name, &variant, inc_per_pixel, NK_FILTER_FLOAT);
     *val = variant.value.d;
 }
-NK_API int
+NK_API nk_bool
 nk_propertyi(struct nk_context *ctx, const char *name, int min, int val,
     int max, int step, float inc_per_pixel)
 {
