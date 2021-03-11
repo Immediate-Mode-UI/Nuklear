@@ -161,7 +161,9 @@ nk_widget(struct nk_rect *bounds, const struct nk_context *ctx)
     NK_ASSERT(!(layout->flags & NK_WINDOW_HIDDEN));
     NK_ASSERT(!(layout->flags & NK_WINDOW_CLOSED));
 
+	/* ronaaron: remove the fp->int conversion */
     /* need to convert to int here to remove floating point errors */
+	/*
     bounds->x = (float)((int)bounds->x);
     bounds->y = (float)((int)bounds->y);
     bounds->w = (float)((int)bounds->w);
@@ -171,6 +173,7 @@ nk_widget(struct nk_rect *bounds, const struct nk_context *ctx)
     c.y = (float)((int)c.y);
     c.w = (float)((int)c.w);
     c.h = (float)((int)c.h);
+	*/
 
     nk_unify(&v, &c, bounds->x, bounds->y, bounds->x + bounds->w, bounds->y + bounds->h);
     if (!NK_INTERSECT(c.x, c.y, c.w, c.h, bounds->x, bounds->y, bounds->w, bounds->h))

@@ -901,8 +901,6 @@ NK_API void nk_input_end(struct nk_context*);
 /// cfg.vertex_layout = vertex_layout;
 /// cfg.vertex_size = sizeof(struct your_vertex);
 /// cfg.vertex_alignment = NK_ALIGNOF(struct your_vertex);
-/// cfg.circle_segment_count = 22;
-/// cfg.curve_segment_count = 22;
 /// cfg.arc_segment_count = 22;
 /// cfg.global_alpha = 1.0f;
 /// cfg.null = dev->null;
@@ -948,12 +946,11 @@ struct nk_draw_null_texture {
     nk_handle texture; /* texture handle to a texture with a white pixel */
     struct nk_vec2 uv; /* coordinates to a white pixel in the texture  */
 };
+/* ronaaron: remove circle and arc segment count */
 struct nk_convert_config {
     float global_alpha; /* global alpha value */
     enum nk_anti_aliasing line_AA; /* line anti-aliasing flag can be turned off if you are tight on memory */
     enum nk_anti_aliasing shape_AA; /* shape anti-aliasing flag can be turned off if you are tight on memory */
-    unsigned circle_segment_count; /* number of segments used for circles: default to 22 */
-    unsigned arc_segment_count; /* number of segments used for arcs: default to 22 */
     unsigned curve_segment_count; /* number of segments used for curves: default to 22 */
     struct nk_draw_null_texture null; /* handle to texture with a white pixel for shape drawing */
     const struct nk_draw_vertex_layout_element *vertex_layout; /* describes the vertex output format and packing */
@@ -4567,7 +4564,7 @@ NK_API const struct nk_draw_command* nk__draw_list_end(const struct nk_draw_list
 NK_API void nk_draw_list_path_clear(struct nk_draw_list*);
 NK_API void nk_draw_list_path_line_to(struct nk_draw_list*, struct nk_vec2 pos);
 NK_API void nk_draw_list_path_arc_to_fast(struct nk_draw_list*, struct nk_vec2 center, float radius, int a_min, int a_max);
-NK_API void nk_draw_list_path_arc_to(struct nk_draw_list*, struct nk_vec2 center, float radius, float a_min, float a_max, unsigned int segments);
+NK_API void nk_draw_list_path_arc_to(struct nk_draw_list*, struct nk_vec2 center, float radius, float a_min, float a_max);
 NK_API void nk_draw_list_path_rect_to(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, float rounding);
 NK_API void nk_draw_list_path_curve_to(struct nk_draw_list*, struct nk_vec2 p2, struct nk_vec2 p3, struct nk_vec2 p4, unsigned int num_segments);
 NK_API void nk_draw_list_path_fill(struct nk_draw_list*, struct nk_color);
@@ -4577,7 +4574,7 @@ NK_API void nk_draw_list_path_stroke(struct nk_draw_list*, struct nk_color, enum
 NK_API void nk_draw_list_stroke_line(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, struct nk_color, float thickness);
 NK_API void nk_draw_list_stroke_rect(struct nk_draw_list*, struct nk_rect rect, struct nk_color, float rounding, float thickness);
 NK_API void nk_draw_list_stroke_triangle(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, struct nk_vec2 c, struct nk_color, float thickness);
-NK_API void nk_draw_list_stroke_circle(struct nk_draw_list*, struct nk_vec2 center, float radius, struct nk_color, unsigned int segs, float thickness);
+NK_API void nk_draw_list_stroke_circle(struct nk_draw_list*, struct nk_vec2 center, float radius, struct nk_color, float thickness);
 NK_API void nk_draw_list_stroke_curve(struct nk_draw_list*, struct nk_vec2 p0, struct nk_vec2 cp0, struct nk_vec2 cp1, struct nk_vec2 p1, struct nk_color, unsigned int segments, float thickness);
 NK_API void nk_draw_list_stroke_poly_line(struct nk_draw_list*, const struct nk_vec2 *pnts, const unsigned int cnt, struct nk_color, enum nk_draw_list_stroke, float thickness, enum nk_anti_aliasing);
 
@@ -4585,7 +4582,7 @@ NK_API void nk_draw_list_stroke_poly_line(struct nk_draw_list*, const struct nk_
 NK_API void nk_draw_list_fill_rect(struct nk_draw_list*, struct nk_rect rect, struct nk_color, float rounding);
 NK_API void nk_draw_list_fill_rect_multi_color(struct nk_draw_list*, struct nk_rect rect, struct nk_color left, struct nk_color top, struct nk_color right, struct nk_color bottom);
 NK_API void nk_draw_list_fill_triangle(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, struct nk_vec2 c, struct nk_color);
-NK_API void nk_draw_list_fill_circle(struct nk_draw_list*, struct nk_vec2 center, float radius, struct nk_color col, unsigned int segs);
+NK_API void nk_draw_list_fill_circle(struct nk_draw_list*, struct nk_vec2 center, float radius, struct nk_color col);
 NK_API void nk_draw_list_fill_poly_convex(struct nk_draw_list*, const struct nk_vec2 *points, const unsigned int count, struct nk_color, enum nk_anti_aliasing);
 
 /* misc */

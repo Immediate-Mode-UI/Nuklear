@@ -36,6 +36,13 @@ nk_tooltip_begin(struct nk_context *ctx, float width)
     bounds.y = (float)y;
     bounds.w = (float)w;
     bounds.h = (float)h;
+	
+	/* ronaaron: fix tooltip going off the window and getting cut off */
+	if ((bounds.x + bounds.w) > (win->bounds.x + win->bounds.w))
+	{
+		float newx = win->bounds.x + (win->bounds.w - bounds.w);
+		if (newx >= win->bounds.x) bounds.x = newx;
+	}
 
     ret = nk_popup_begin(ctx, NK_POPUP_DYNAMIC,
         "__##Tooltip##__", NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BORDER, bounds);
@@ -86,7 +93,7 @@ nk_tooltip(struct nk_context *ctx, const char *text)
     /* execute tooltip and fill with text */
     if (nk_tooltip_begin(ctx, (float)text_width)) {
         nk_layout_row_dynamic(ctx, (float)text_height, 1);
-        nk_text(ctx, text, text_len, NK_TEXT_LEFT);
+        nk_text(ctx, text, text_len, NK_TEXT_RIGHT);
         nk_tooltip_end(ctx);
     }
 }

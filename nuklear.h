@@ -1122,8 +1122,6 @@ NK_API void nk_input_end(struct nk_context*);
 /// cfg.vertex_layout = vertex_layout;
 /// cfg.vertex_size = sizeof(struct your_vertex);
 /// cfg.vertex_alignment = NK_ALIGNOF(struct your_vertex);
-/// cfg.circle_segment_count = 22;
-/// cfg.curve_segment_count = 22;
 /// cfg.arc_segment_count = 22;
 /// cfg.global_alpha = 1.0f;
 /// cfg.null = dev->null;
@@ -1169,12 +1167,11 @@ struct nk_draw_null_texture {
     nk_handle texture; /* texture handle to a texture with a white pixel */
     struct nk_vec2 uv; /* coordinates to a white pixel in the texture  */
 };
+/* ronaaron: remove circle and arc segment count */
 struct nk_convert_config {
     float global_alpha; /* global alpha value */
     enum nk_anti_aliasing line_AA; /* line anti-aliasing flag can be turned off if you are tight on memory */
     enum nk_anti_aliasing shape_AA; /* shape anti-aliasing flag can be turned off if you are tight on memory */
-    unsigned circle_segment_count; /* number of segments used for circles: default to 22 */
-    unsigned arc_segment_count; /* number of segments used for arcs: default to 22 */
     unsigned curve_segment_count; /* number of segments used for curves: default to 22 */
     struct nk_draw_null_texture null; /* handle to texture with a white pixel for shape drawing */
     const struct nk_draw_vertex_layout_element *vertex_layout; /* describes the vertex output format and packing */
@@ -4788,7 +4785,7 @@ NK_API const struct nk_draw_command* nk__draw_list_end(const struct nk_draw_list
 NK_API void nk_draw_list_path_clear(struct nk_draw_list*);
 NK_API void nk_draw_list_path_line_to(struct nk_draw_list*, struct nk_vec2 pos);
 NK_API void nk_draw_list_path_arc_to_fast(struct nk_draw_list*, struct nk_vec2 center, float radius, int a_min, int a_max);
-NK_API void nk_draw_list_path_arc_to(struct nk_draw_list*, struct nk_vec2 center, float radius, float a_min, float a_max, unsigned int segments);
+NK_API void nk_draw_list_path_arc_to(struct nk_draw_list*, struct nk_vec2 center, float radius, float a_min, float a_max);
 NK_API void nk_draw_list_path_rect_to(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, float rounding);
 NK_API void nk_draw_list_path_curve_to(struct nk_draw_list*, struct nk_vec2 p2, struct nk_vec2 p3, struct nk_vec2 p4, unsigned int num_segments);
 NK_API void nk_draw_list_path_fill(struct nk_draw_list*, struct nk_color);
@@ -4798,7 +4795,7 @@ NK_API void nk_draw_list_path_stroke(struct nk_draw_list*, struct nk_color, enum
 NK_API void nk_draw_list_stroke_line(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, struct nk_color, float thickness);
 NK_API void nk_draw_list_stroke_rect(struct nk_draw_list*, struct nk_rect rect, struct nk_color, float rounding, float thickness);
 NK_API void nk_draw_list_stroke_triangle(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, struct nk_vec2 c, struct nk_color, float thickness);
-NK_API void nk_draw_list_stroke_circle(struct nk_draw_list*, struct nk_vec2 center, float radius, struct nk_color, unsigned int segs, float thickness);
+NK_API void nk_draw_list_stroke_circle(struct nk_draw_list*, struct nk_vec2 center, float radius, struct nk_color, float thickness);
 NK_API void nk_draw_list_stroke_curve(struct nk_draw_list*, struct nk_vec2 p0, struct nk_vec2 cp0, struct nk_vec2 cp1, struct nk_vec2 p1, struct nk_color, unsigned int segments, float thickness);
 NK_API void nk_draw_list_stroke_poly_line(struct nk_draw_list*, const struct nk_vec2 *pnts, const unsigned int cnt, struct nk_color, enum nk_draw_list_stroke, float thickness, enum nk_anti_aliasing);
 
@@ -4806,7 +4803,7 @@ NK_API void nk_draw_list_stroke_poly_line(struct nk_draw_list*, const struct nk_
 NK_API void nk_draw_list_fill_rect(struct nk_draw_list*, struct nk_rect rect, struct nk_color, float rounding);
 NK_API void nk_draw_list_fill_rect_multi_color(struct nk_draw_list*, struct nk_rect rect, struct nk_color left, struct nk_color top, struct nk_color right, struct nk_color bottom);
 NK_API void nk_draw_list_fill_triangle(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, struct nk_vec2 c, struct nk_color);
-NK_API void nk_draw_list_fill_circle(struct nk_draw_list*, struct nk_vec2 center, float radius, struct nk_color col, unsigned int segs);
+NK_API void nk_draw_list_fill_circle(struct nk_draw_list*, struct nk_vec2 center, float radius, struct nk_color col);
 NK_API void nk_draw_list_fill_poly_convex(struct nk_draw_list*, const struct nk_vec2 *points, const unsigned int count, struct nk_color, enum nk_anti_aliasing);
 
 /* misc */
@@ -9237,13 +9234,25 @@ nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
 
     /* make sure text fits inside bounds */
     text_width = font->width(font->userdata, font->height, string, length);
+    float txt_width = (float)text_width;
     if (text_width > r.w){
         int glyphs = 0;
-        float txt_width = (float)text_width;
+		/* ronaaron: remove this because the text width can be wrong */
+        /* float txt_width = (float)text_width; */
         length = nk_text_clamp(font, string, length, r.w, &glyphs, &txt_width, 0,0);
     }
 
     if (!length) return;
+
+	/* ronaaron: fix for text background being ignored */
+	if (bg.a)
+	{
+		struct nk_rect r2 = r;
+		r2.h = font->height;
+		r2.w = text_width;
+		nk_fill_rect(b, r2 ,0, bg);
+	}
+
     cmd = (struct nk_command_text*)
         nk_command_buffer_push(b, NK_COMMAND_TEXT, sizeof(*cmd) + (nk_size)(length + 1));
     if (!cmd) return;
@@ -10080,9 +10089,11 @@ nk_draw_list_path_arc_to_fast(struct nk_draw_list *list, struct nk_vec2 center,
         }
     }
 }
+
+/* ronaaron: remove segment count */
 NK_API void
 nk_draw_list_path_arc_to(struct nk_draw_list *list, struct nk_vec2 center,
-    float radius, float a_min, float a_max, unsigned int segments)
+    float radius, float a_min, float a_max)
 {
     unsigned int i = 0;
     NK_ASSERT(list);
@@ -10107,23 +10118,33 @@ nk_draw_list_path_arc_to(struct nk_draw_list *list, struct nk_vec2 center,
 
         [1] https://en.wikipedia.org/wiki/List_of_trigonometric_identities#Angle_sum_and_difference_identities
     */
-    {const float d_angle = (a_max - a_min) / (float)segments;
-    const float sin_d = (float)NK_SIN(d_angle);
-    const float cos_d = (float)NK_COS(d_angle);
+	{
+        /* ronaaron: make segments smaller than tolerance: */
+        const static float tolerance = 3;
+        /* adjust segments based on the radius and number of degrees */
+        const float angle = NK_ABS(a_max-a_min);
+        const float arc_length = radius * angle ;
+        /* clamp segments to range of [6,1024] */
+        unsigned int segments = NK_CLAMP(6, NK_ABS(arc_length / tolerance), 1024);
+        const float d_angle = angle / (float)segments;
 
-    float cx = (float)NK_COS(a_min) * radius;
-    float cy = (float)NK_SIN(a_min) * radius;
-    for(i = 0; i <= segments; ++i) {
-        float new_cx, new_cy;
-        const float x = center.x + cx;
-        const float y = center.y + cy;
-        nk_draw_list_path_line_to(list, nk_vec2(x, y));
+		const float sin_d = (float)NK_SIN(d_angle);
+		const float cos_d = (float)NK_COS(d_angle);
 
-        new_cx = cx * cos_d - cy * sin_d;
-        new_cy = cy * cos_d + cx * sin_d;
-        cx = new_cx;
-        cy = new_cy;
-    }}
+		float cx = (float)NK_COS(a_min) * radius;
+		float cy = (float)NK_SIN(a_min) * radius;
+		for(i = 0; i <= segments; ++i) {
+			float new_cx, new_cy;
+			const float x = center.x + cx;
+			const float y = center.y + cy;
+			nk_draw_list_path_line_to(list, nk_vec2(x, y));
+
+			new_cx = cx * cos_d - cy * sin_d;
+			new_cy = cy * cos_d + cx * sin_d;
+			cx = new_cx;
+			cy = new_cy;
+		}
+	}
 }
 NK_API void
 nk_draw_list_path_rect_to(struct nk_draw_list *list, struct nk_vec2 a,
@@ -10148,6 +10169,8 @@ nk_draw_list_path_rect_to(struct nk_draw_list *list, struct nk_vec2 a,
         nk_draw_list_path_arc_to_fast(list, nk_vec2(a.x + r, b.y - r), r, 3, 6);
     }
 }
+
+/* ronaaron: remove segment count */
 NK_API void
 nk_draw_list_path_curve_to(struct nk_draw_list *list, struct nk_vec2 p2,
     struct nk_vec2 p3, struct nk_vec2 p4, unsigned int num_segments)
@@ -10297,26 +10320,27 @@ nk_draw_list_stroke_triangle(struct nk_draw_list *list, struct nk_vec2 a,
     nk_draw_list_path_line_to(list, c);
     nk_draw_list_path_stroke(list, col, NK_STROKE_CLOSED, thickness);
 }
+/* ronaaron: remove segment */
 NK_API void
 nk_draw_list_fill_circle(struct nk_draw_list *list, struct nk_vec2 center,
-    float radius, struct nk_color col, unsigned int segs)
+    float radius, struct nk_color col)
 {
     float a_max;
     NK_ASSERT(list);
     if (!list || !col.a) return;
-    a_max = NK_PI * 2.0f * ((float)segs - 1.0f) / (float)segs;
-    nk_draw_list_path_arc_to(list, center, radius, 0.0f, a_max, segs);
+    a_max = NK_PI * 2.0f ;
+    nk_draw_list_path_arc_to(list, center, radius, 0.0f, a_max);
     nk_draw_list_path_fill(list, col);
 }
 NK_API void
 nk_draw_list_stroke_circle(struct nk_draw_list *list, struct nk_vec2 center,
-    float radius, struct nk_color col, unsigned int segs, float thickness)
+    float radius, struct nk_color col,  float thickness)
 {
     float a_max;
     NK_ASSERT(list);
     if (!list || !col.a) return;
-    a_max = NK_PI * 2.0f * ((float)segs - 1.0f) / (float)segs;
-    nk_draw_list_path_arc_to(list, center, radius, 0.0f, a_max, segs);
+    a_max = NK_PI * 2.0f ;
+    nk_draw_list_path_arc_to(list, center, radius, 0.0f, a_max);
     nk_draw_list_path_stroke(list, col, NK_STROKE_CLOSED, thickness);
 }
 NK_API void
@@ -10497,28 +10521,29 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
         } break;
         case NK_COMMAND_CIRCLE: {
             const struct nk_command_circle *c = (const struct nk_command_circle*)cmd;
+			/* ronaaron: remove circle segment count */
             nk_draw_list_stroke_circle(&ctx->draw_list, nk_vec2((float)c->x + (float)c->w/2,
                 (float)c->y + (float)c->h/2), (float)c->w/2, c->color,
-                config->circle_segment_count, c->line_thickness);
+                c->line_thickness);
         } break;
         case NK_COMMAND_CIRCLE_FILLED: {
             const struct nk_command_circle_filled *c = (const struct nk_command_circle_filled *)cmd;
             nk_draw_list_fill_circle(&ctx->draw_list, nk_vec2((float)c->x + (float)c->w/2,
-                (float)c->y + (float)c->h/2), (float)c->w/2, c->color,
-                config->circle_segment_count);
+                (float)c->y + (float)c->h/2), (float)c->w/2, c->color);
         } break;
         case NK_COMMAND_ARC: {
             const struct nk_command_arc *c = (const struct nk_command_arc*)cmd;
             nk_draw_list_path_line_to(&ctx->draw_list, nk_vec2(c->cx, c->cy));
+			/* ronaaron: remove arc segment count */
             nk_draw_list_path_arc_to(&ctx->draw_list, nk_vec2(c->cx, c->cy), c->r,
-                c->a[0], c->a[1], config->arc_segment_count);
+                c->a[0], c->a[1]);
             nk_draw_list_path_stroke(&ctx->draw_list, c->color, NK_STROKE_CLOSED, c->line_thickness);
         } break;
         case NK_COMMAND_ARC_FILLED: {
             const struct nk_command_arc_filled *c = (const struct nk_command_arc_filled*)cmd;
             nk_draw_list_path_line_to(&ctx->draw_list, nk_vec2(c->cx, c->cy));
             nk_draw_list_path_arc_to(&ctx->draw_list, nk_vec2(c->cx, c->cy), c->r,
-                c->a[0], c->a[1], config->arc_segment_count);
+                c->a[0], c->a[1]);
             nk_draw_list_path_fill(&ctx->draw_list, c->color);
         } break;
         case NK_COMMAND_TRIANGLE: {
@@ -16432,8 +16457,8 @@ nk_font_bake_pack(struct nk_font_baker *baker,
     }
     /* setup font baker from temporary memory */
     for (config_iter = config_list; config_iter; config_iter = config_iter->next) {
-        struct stbtt_fontinfo *font_info = &baker->build[i++].info;
         it = config_iter;
+        struct stbtt_fontinfo *font_info = &baker->build[i++].info;
         font_info->userdata = alloc;
         do {if (!stbtt_InitFont(font_info, (const unsigned char*)it->ttf_blob, 0))
             return nk_false;
@@ -16442,9 +16467,9 @@ nk_font_bake_pack(struct nk_font_baker *baker,
     *height = 0;
    
 	/* Be able to handle very large fonts */
-	int factor = total_glyph_count / 1024;
-	if (!factor) factor = 1;
-    *width = NK_MIN(0xFFFF, (512 * factor));
+	/* ronaaron: updated to better algo */
+	int factor = total_glyph_count >> 1;
+    *width = NK_CLAMP(512, factor, 0xFFFFFF);
 	
     stbtt_PackBegin(&baker->spc, 0, (int)*width, (int)max_height, 0, 1, alloc);
     {
@@ -16519,7 +16544,8 @@ nk_font_bake_pack(struct nk_font_baker *baker,
         NK_ASSERT(char_n == total_glyph_count);
         NK_ASSERT(range_n == total_range_count);
     }
-    *height = (int)nk_round_up_pow2((nk_uint)*height);
+	/* ronaaron: more memory fixes */
+    /* *height = (int)nk_round_up_pow2((nk_uint)*height); */
     *image_memory = (nk_size)(*width) * (nk_size)(*height);
     return nk_true;
 }
@@ -16600,7 +16626,8 @@ nk_font_bake(struct nk_font_baker *baker, void *image_memory, int width, int hei
 
                     /* query glyph bounds from stb_truetype */
                     const stbtt_packedchar *pc = &range->chardata_for_range[char_idx];
-                    if (!pc->x0 && !pc->x1 && !pc->y0 && !pc->y1) continue;
+					/* removed following line because it messes-up glyph count in ranges */
+                    /* if (!pc->x0 && !pc->x1 && !pc->y0 && !pc->y1) continue; */
                     codepoint = (nk_rune)(range->first_unicode_codepoint_in_range + char_idx);
                     stbtt_GetPackedQuad(range->chardata_for_range, (int)width,
                         (int)height, char_idx, &dummy_x, &dummy_y, &q, 0);
@@ -19367,6 +19394,10 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
     layout->bounds = win->bounds;
     layout->bounds.x += panel_padding.x;
     layout->bounds.w -= 2*panel_padding.x;
+	/* ronaaron: fix panel padding bug */
+    layout->bounds.y += panel_padding.y;
+    layout->bounds.h -= 2*panel_padding.y;
+
     if (win->flags & NK_WINDOW_BORDER) {
         layout->border = nk_panel_get_border(style, win->flags, panel_type);
         layout->bounds = nk_shrink_rect(layout->bounds, layout->border);
@@ -22847,7 +22878,9 @@ nk_widget(struct nk_rect *bounds, const struct nk_context *ctx)
     NK_ASSERT(!(layout->flags & NK_WINDOW_HIDDEN));
     NK_ASSERT(!(layout->flags & NK_WINDOW_CLOSED));
 
+	/* ronaaron: remove the fp->int conversion */
     /* need to convert to int here to remove floating point errors */
+	/*
     bounds->x = (float)((int)bounds->x);
     bounds->y = (float)((int)bounds->y);
     bounds->w = (float)((int)bounds->w);
@@ -22857,6 +22890,7 @@ nk_widget(struct nk_rect *bounds, const struct nk_context *ctx)
     c.y = (float)((int)c.y);
     c.w = (float)((int)c.w);
     c.h = (float)((int)c.h);
+	*/
 
     nk_unify(&v, &c, bounds->x, bounds->y, bounds->x + bounds->w, bounds->y + bounds->h);
     if (!NK_INTERSECT(c.x, c.y, c.w, c.h, bounds->x, bounds->y, bounds->w, bounds->h))
@@ -23502,6 +23536,10 @@ nk_draw_button_text(struct nk_command_buffer *out,
         text.text = style->text_active;
     else text.text = style->text_normal;
 
+	/* ronaaron: fix for background getting drawn in button due to nk_draw_text() background fix */
+	text.background = style->text_background;
+	text.background.a=0;
+
     text.padding = nk_vec2(0,0);
     nk_widget_text(out, *content, txt, len, &text, text_alignment, font);
 }
@@ -23644,6 +23682,8 @@ nk_draw_button_text_symbol(struct nk_command_buffer *out,
 
     text.padding = nk_vec2(0,0);
     nk_draw_symbol(out, type, *symbol, style->text_background, sym, 0, font);
+	text.background = style->text_background;
+	text.background.a=0;
     nk_widget_text(out, *label, str, len, &text, NK_TEXT_CENTERED, font);
 }
 NK_LIB nk_bool
@@ -23700,6 +23740,8 @@ nk_draw_button_text_image(struct nk_command_buffer *out,
     else text.text = style->text_normal;
 
     text.padding = nk_vec2(0,0);
+	text.background = style->text_background;
+	text.background.a=0;
     nk_widget_text(out, *label, str, len, &text, NK_TEXT_CENTERED, font);
     nk_draw_image(out, *image, img, nk_white);
 }
@@ -29052,6 +29094,13 @@ nk_tooltip_begin(struct nk_context *ctx, float width)
     bounds.y = (float)y;
     bounds.w = (float)w;
     bounds.h = (float)h;
+	
+	/* ronaaron: fix tooltip going off the window and getting cut off */
+	if ((bounds.x + bounds.w) > (win->bounds.x + win->bounds.w))
+	{
+		float newx = win->bounds.x + (win->bounds.w - bounds.w);
+		if (newx >= win->bounds.x) bounds.x = newx;
+	}
 
     ret = nk_popup_begin(ctx, NK_POPUP_DYNAMIC,
         "__##Tooltip##__", NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BORDER, bounds);
@@ -29102,7 +29151,7 @@ nk_tooltip(struct nk_context *ctx, const char *text)
     /* execute tooltip and fill with text */
     if (nk_tooltip_begin(ctx, (float)text_width)) {
         nk_layout_row_dynamic(ctx, (float)text_height, 1);
-        nk_text(ctx, text, text_len, NK_TEXT_LEFT);
+        nk_text(ctx, text, text_len, NK_TEXT_RIGHT);
         nk_tooltip_end(ctx);
     }
 }
@@ -29182,6 +29231,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/12/19 (4.06.2) - Fix additional C++ style comments which are not allowed in ISO C90.
 /// - 2020/10/11 (4.06.1) - Fix C++ style comments which are not allowed in ISO C90.
 /// - 2020/10/07 (4.06.0) - Fix nk_combo return type wrongly changed to nk_bool
 /// - 2020/09/05 (4.05.0) - Use the nk_font_atlas allocator for stb_truetype memory management.

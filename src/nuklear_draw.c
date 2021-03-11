@@ -456,13 +456,25 @@ nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
 
     /* make sure text fits inside bounds */
     text_width = font->width(font->userdata, font->height, string, length);
+    float txt_width = (float)text_width;
     if (text_width > r.w){
         int glyphs = 0;
-        float txt_width = (float)text_width;
+		/* ronaaron: remove this because the text width can be wrong */
+        /* float txt_width = (float)text_width; */
         length = nk_text_clamp(font, string, length, r.w, &glyphs, &txt_width, 0,0);
     }
 
     if (!length) return;
+
+	/* ronaaron: fix for text background being ignored */
+	if (bg.a)
+	{
+		struct nk_rect r2 = r;
+		r2.h = font->height;
+		r2.w = text_width;
+		nk_fill_rect(b, r2 ,0, bg);
+	}
+
     cmd = (struct nk_command_text*)
         nk_command_buffer_push(b, NK_COMMAND_TEXT, sizeof(*cmd) + (nk_size)(length + 1));
     if (!cmd) return;

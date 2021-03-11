@@ -151,6 +151,10 @@ nk_draw_button_text(struct nk_command_buffer *out,
         text.text = style->text_active;
     else text.text = style->text_normal;
 
+	/* ronaaron: fix for background getting drawn in button due to nk_draw_text() background fix */
+	text.background = style->text_background;
+	text.background.a=0;
+
     text.padding = nk_vec2(0,0);
     nk_widget_text(out, *content, txt, len, &text, text_alignment, font);
 }
@@ -293,6 +297,8 @@ nk_draw_button_text_symbol(struct nk_command_buffer *out,
 
     text.padding = nk_vec2(0,0);
     nk_draw_symbol(out, type, *symbol, style->text_background, sym, 0, font);
+	text.background = style->text_background;
+	text.background.a=0;
     nk_widget_text(out, *label, str, len, &text, NK_TEXT_CENTERED, font);
 }
 NK_LIB nk_bool
@@ -349,6 +355,8 @@ nk_draw_button_text_image(struct nk_command_buffer *out,
     else text.text = style->text_normal;
 
     text.padding = nk_vec2(0,0);
+	text.background = style->text_background;
+	text.background.a=0;
     nk_widget_text(out, *label, str, len, &text, NK_TEXT_CENTERED, font);
     nk_draw_image(out, *image, img, nk_white);
 }

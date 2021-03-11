@@ -817,9 +817,11 @@ nk_draw_list_path_arc_to_fast(struct nk_draw_list *list, struct nk_vec2 center,
         }
     }
 }
+
+/* ronaaron: remove segment count */
 NK_API void
 nk_draw_list_path_arc_to(struct nk_draw_list *list, struct nk_vec2 center,
-    float radius, float a_min, float a_max, unsigned int segments)
+    float radius, float a_min, float a_max)
 {
     unsigned int i = 0;
     NK_ASSERT(list);
@@ -844,23 +846,33 @@ nk_draw_list_path_arc_to(struct nk_draw_list *list, struct nk_vec2 center,
 
         [1] https://en.wikipedia.org/wiki/List_of_trigonometric_identities#Angle_sum_and_difference_identities
     */
-    {const float d_angle = (a_max - a_min) / (float)segments;
-    const float sin_d = (float)NK_SIN(d_angle);
-    const float cos_d = (float)NK_COS(d_angle);
+	{
+        /* ronaaron: make segments smaller than tolerance: */
+        const static float tolerance = 3;
+        /* adjust segments based on the radius and number of degrees */
+        const float angle = NK_ABS(a_max-a_min);
+        const float arc_length = radius * angle ;
+        /* clamp segments to range of [6,1024] */
+        unsigned int segments = NK_CLAMP(6, NK_ABS(arc_length / tolerance), 1024);
+        const float d_angle = angle / (float)segments;
 
-    float cx = (float)NK_COS(a_min) * radius;
-    float cy = (float)NK_SIN(a_min) * radius;
-    for(i = 0; i <= segments; ++i) {
-        float new_cx, new_cy;
-        const float x = center.x + cx;
-        const float y = center.y + cy;
-        nk_draw_list_path_line_to(list, nk_vec2(x, y));
+		const float sin_d = (float)NK_SIN(d_angle);
+		const float cos_d = (float)NK_COS(d_angle);
 
-        new_cx = cx * cos_d - cy * sin_d;
-        new_cy = cy * cos_d + cx * sin_d;
-        cx = new_cx;
-        cy = new_cy;
-    }}
+		float cx = (float)NK_COS(a_min) * radius;
+		float cy = (float)NK_SIN(a_min) * radius;
+		for(i = 0; i <= segments; ++i) {
+			float new_cx, new_cy;
+			const float x = center.x + cx;
+			const float y = center.y + cy;
+			nk_draw_list_path_line_to(list, nk_vec2(x, y));
+
+			new_cx = cx * cos_d - cy * sin_d;
+			new_cy = cy * cos_d + cx * sin_d;
+			cx = new_cx;
+			cy = new_cy;
+		}
+	}
 }
 NK_API void
 nk_draw_list_path_rect_to(struct nk_draw_list *list, struct nk_vec2 a,
@@ -885,6 +897,8 @@ nk_draw_list_path_rect_to(struct nk_draw_list *list, struct nk_vec2 a,
         nk_draw_list_path_arc_to_fast(list, nk_vec2(a.x + r, b.y - r), r, 3, 6);
     }
 }
+
+/* ronaaron: remove segment count */
 NK_API void
 nk_draw_list_path_curve_to(struct nk_draw_list *list, struct nk_vec2 p2,
     struct nk_vec2 p3, struct nk_vec2 p4, unsigned int num_segments)
@@ -1034,26 +1048,27 @@ nk_draw_list_stroke_triangle(struct nk_draw_list *list, struct nk_vec2 a,
     nk_draw_list_path_line_to(list, c);
     nk_draw_list_path_stroke(list, col, NK_STROKE_CLOSED, thickness);
 }
+/* ronaaron: remove segment */
 NK_API void
 nk_draw_list_fill_circle(struct nk_draw_list *list, struct nk_vec2 center,
-    float radius, struct nk_color col, unsigned int segs)
+    float radius, struct nk_color col)
 {
     float a_max;
     NK_ASSERT(list);
     if (!list || !col.a) return;
-    a_max = NK_PI * 2.0f * ((float)segs - 1.0f) / (float)segs;
-    nk_draw_list_path_arc_to(list, center, radius, 0.0f, a_max, segs);
+    a_max = NK_PI * 2.0f ;
+    nk_draw_list_path_arc_to(list, center, radius, 0.0f, a_max);
     nk_draw_list_path_fill(list, col);
 }
 NK_API void
 nk_draw_list_stroke_circle(struct nk_draw_list *list, struct nk_vec2 center,
-    float radius, struct nk_color col, unsigned int segs, float thickness)
+    float radius, struct nk_color col,  float thickness)
 {
     float a_max;
     NK_ASSERT(list);
     if (!list || !col.a) return;
-    a_max = NK_PI * 2.0f * ((float)segs - 1.0f) / (float)segs;
-    nk_draw_list_path_arc_to(list, center, radius, 0.0f, a_max, segs);
+    a_max = NK_PI * 2.0f ;
+    nk_draw_list_path_arc_to(list, center, radius, 0.0f, a_max);
     nk_draw_list_path_stroke(list, col, NK_STROKE_CLOSED, thickness);
 }
 NK_API void
@@ -1234,28 +1249,29 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
         } break;
         case NK_COMMAND_CIRCLE: {
             const struct nk_command_circle *c = (const struct nk_command_circle*)cmd;
+			/* ronaaron: remove circle segment count */
             nk_draw_list_stroke_circle(&ctx->draw_list, nk_vec2((float)c->x + (float)c->w/2,
                 (float)c->y + (float)c->h/2), (float)c->w/2, c->color,
-                config->circle_segment_count, c->line_thickness);
+                c->line_thickness);
         } break;
         case NK_COMMAND_CIRCLE_FILLED: {
             const struct nk_command_circle_filled *c = (const struct nk_command_circle_filled *)cmd;
             nk_draw_list_fill_circle(&ctx->draw_list, nk_vec2((float)c->x + (float)c->w/2,
-                (float)c->y + (float)c->h/2), (float)c->w/2, c->color,
-                config->circle_segment_count);
+                (float)c->y + (float)c->h/2), (float)c->w/2, c->color);
         } break;
         case NK_COMMAND_ARC: {
             const struct nk_command_arc *c = (const struct nk_command_arc*)cmd;
             nk_draw_list_path_line_to(&ctx->draw_list, nk_vec2(c->cx, c->cy));
+			/* ronaaron: remove arc segment count */
             nk_draw_list_path_arc_to(&ctx->draw_list, nk_vec2(c->cx, c->cy), c->r,
-                c->a[0], c->a[1], config->arc_segment_count);
+                c->a[0], c->a[1]);
             nk_draw_list_path_stroke(&ctx->draw_list, c->color, NK_STROKE_CLOSED, c->line_thickness);
         } break;
         case NK_COMMAND_ARC_FILLED: {
             const struct nk_command_arc_filled *c = (const struct nk_command_arc_filled*)cmd;
             nk_draw_list_path_line_to(&ctx->draw_list, nk_vec2(c->cx, c->cy));
             nk_draw_list_path_arc_to(&ctx->draw_list, nk_vec2(c->cx, c->cy), c->r,
-                c->a[0], c->a[1], config->arc_segment_count);
+                c->a[0], c->a[1]);
             nk_draw_list_path_fill(&ctx->draw_list, c->color);
         } break;
         case NK_COMMAND_TRIANGLE: {

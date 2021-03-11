@@ -189,8 +189,8 @@ nk_font_bake_pack(struct nk_font_baker *baker,
     }
     /* setup font baker from temporary memory */
     for (config_iter = config_list; config_iter; config_iter = config_iter->next) {
-        struct stbtt_fontinfo *font_info = &baker->build[i++].info;
         it = config_iter;
+        struct stbtt_fontinfo *font_info = &baker->build[i++].info;
         font_info->userdata = alloc;
         do {if (!stbtt_InitFont(font_info, (const unsigned char*)it->ttf_blob, 0))
             return nk_false;
@@ -199,9 +199,9 @@ nk_font_bake_pack(struct nk_font_baker *baker,
     *height = 0;
    
 	/* Be able to handle very large fonts */
-	int factor = total_glyph_count / 1024;
-	if (!factor) factor = 1;
-    *width = NK_MIN(0xFFFF, (512 * factor));
+	/* ronaaron: updated to better algo */
+	int factor = total_glyph_count >> 1;
+    *width = NK_CLAMP(512, factor, 0xFFFFFF);
 	
     stbtt_PackBegin(&baker->spc, 0, (int)*width, (int)max_height, 0, 1, alloc);
     {
@@ -276,7 +276,8 @@ nk_font_bake_pack(struct nk_font_baker *baker,
         NK_ASSERT(char_n == total_glyph_count);
         NK_ASSERT(range_n == total_range_count);
     }
-    *height = (int)nk_round_up_pow2((nk_uint)*height);
+	/* ronaaron: more memory fixes */
+    /* *height = (int)nk_round_up_pow2((nk_uint)*height); */
     *image_memory = (nk_size)(*width) * (nk_size)(*height);
     return nk_true;
 }
@@ -357,7 +358,8 @@ nk_font_bake(struct nk_font_baker *baker, void *image_memory, int width, int hei
 
                     /* query glyph bounds from stb_truetype */
                     const stbtt_packedchar *pc = &range->chardata_for_range[char_idx];
-                    if (!pc->x0 && !pc->x1 && !pc->y0 && !pc->y1) continue;
+					/* removed following line because it messes-up glyph count in ranges */
+                    /* if (!pc->x0 && !pc->x1 && !pc->y0 && !pc->y1) continue; */
                     codepoint = (nk_rune)(range->first_unicode_codepoint_in_range + char_idx);
                     stbtt_GetPackedQuad(range->chardata_for_range, (int)width,
                         (int)height, char_idx, &dummy_x, &dummy_y, &q, 0);
