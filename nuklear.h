@@ -19693,7 +19693,11 @@ nk_panel_end(struct nk_context *ctx)
         {
             /* horizontal scrollbar */
             nk_flags state = 0;
-            scroll.x = layout->bounds.x;
+			/* ronaaron: merge fix from MikemathuKE # 51a4bc8b0787b1a6cc9fa5144d256642f88d9642 */
+			if(layout->flags & NK_WINDOW_SCALE_LEFT)
+				scroll.x = layout->bounds.x + scrollbar_size.x + panel_padding.x * 0.5;
+			else
+				scroll.x = layout->bounds.x;
             scroll.y = layout->bounds.y + layout->bounds.h;
             scroll.w = layout->bounds.w;
             scroll.h = scrollbar_size.y;
@@ -19769,19 +19773,26 @@ nk_panel_end(struct nk_context *ctx)
             int left_mouse_click_in_scaler = nk_input_has_mouse_click_down_in_rect(in,
                     NK_BUTTON_LEFT, scaler, nk_true);
 
+			/* ronaaron: merge fix from MikemathuKE # 51a4bc8b0787b1a6cc9fa5144d256642f88d9642 */
             if (left_mouse_down && left_mouse_click_in_scaler) {
-                float delta_x = in->mouse.delta.x;
-                if (layout->flags & NK_WINDOW_SCALE_LEFT) {
-                    delta_x = -delta_x;
-                    window->bounds.x += in->mouse.delta.x;
-                }
                 /* dragging in x-direction  */
-                if (window->bounds.w + delta_x >= window_size.x) {
-                    if ((delta_x < 0) || (delta_x > 0 && in->mouse.pos.x >= scaler.x)) {
-                        window->bounds.w = window->bounds.w + delta_x;
-                        scaler.x += in->mouse.delta.x;
+				if (layout->flags & NK_WINDOW_SCALE_LEFT) {
+					if (window->bounds.w - in->mouse.delta.x >= window_size.x) {
+						if ((in->mouse.delta.x < 0) || (in->mouse.delta.x > 0 && in->mouse.pos.x >= scaler.x)) {
+							window->bounds.x += in->mouse.delta.x;
+							window->bounds.w -= in->mouse.delta.x;
+							scaler.x += in->mouse.delta.x;
+						}
                     }
-                }
+                } else {
+					if (window->bounds.w + in->mouse.delta.x >= window_size.x) {
+						if ((in->mouse.delta.x < 0) || (in->mouse.delta.x > 0 && in->mouse.pos.x >= scaler.x)) {
+							window->bounds.w += in->mouse.delta.x;
+							scaler.x += in->mouse.delta.x;
+						}
+						scaler.x += in->mouse.delta.x;
+					}
+				}
                 /* dragging in y-direction (only possible if static window) */
                 if (!(layout->flags & NK_WINDOW_DYNAMIC)) {
                     if (window_size.y < window->bounds.h + in->mouse.delta.y) {
