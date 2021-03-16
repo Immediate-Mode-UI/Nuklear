@@ -3378,7 +3378,7 @@ NK_API void nk_property_double(struct nk_context*, const char *name, double min,
 ///
 /// Returns the new modified integer value
 */
-NK_API nk_bool nk_propertyi(struct nk_context*, const char *name, int min, int val, int max, int step, float inc_per_pixel);
+NK_API int nk_propertyi(struct nk_context*, const char *name, int min, int val, int max, int step, float inc_per_pixel);
 /*/// #### nk_propertyf
 /// Float property modifing a passed in value and returning the new value
 /// !!! WARNING
@@ -27642,7 +27642,7 @@ nk_property_double(struct nk_context *ctx, const char *name,
     nk_property(ctx, name, &variant, inc_per_pixel, NK_FILTER_FLOAT);
     *val = variant.value.d;
 }
-NK_API nk_bool
+NK_API int
 nk_propertyi(struct nk_context *ctx, const char *name, int min, int val,
     int max, int step, float inc_per_pixel)
 {
@@ -29172,6 +29172,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2020/12/19 (4.06.4) - Change nk_propertyi back to int
 /// - 2020/12/19 (4.06.3) - Update documentation for functions that now return nk_bool
 /// - 2020/12/19 (4.06.2) - Fix additional C++ style comments which are not allowed in ISO C90.
 /// - 2020/10/11 (4.06.1) - Fix C++ style comments which are not allowed in ISO C90.
