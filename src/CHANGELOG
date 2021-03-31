@@ -9,13 +9,19 @@
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
 <<<<<<< HEAD
+<<<<<<< HEAD
 /// - 2020/12/04 (4.06.3) - Fix minimum window width when scaling left
 /// - 2020/11/30 (4.06.2) - Fix scaling and horizontal scrollbar position when scaler placed left
 =======
+=======
+>>>>>>> 6e80e2a646f35be4afc157a932f2936392ec8f74
 /// - 2021/03/17 (4.07.0) - Fix nk_property hover bug
 /// - 2021/03/15 (4.06.4) - Change nk_propertyi back to int
 /// - 2021/03/15 (4.06.3) - Update documentation for functions that now return nk_bool
 /// - 2020/12/19 (4.06.2) - Fix additional C++ style comments which are not allowed in ISO C90.
+<<<<<<< HEAD
+>>>>>>> 6e80e2a646f35be4afc157a932f2936392ec8f74
+=======
 >>>>>>> 6e80e2a646f35be4afc157a932f2936392ec8f74
 /// - 2020/10/11 (4.06.1) - Fix C++ style comments which are not allowed in ISO C90.
 /// - 2020/10/07 (4.06.0) - Fix nk_combo return type wrongly changed to nk_bool
