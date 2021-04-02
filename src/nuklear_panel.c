@@ -141,26 +141,12 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         left_mouse_clicked = (int)in->mouse.buttons[NK_BUTTON_LEFT].clicked;
         left_mouse_click_in_cursor = nk_input_has_mouse_click_down_in_rect(in,
             NK_BUTTON_LEFT, header, nk_true);
-        left_mouse_clicked_in_panel = nk_input_has_mouse_click_down_in_rect(in,
-            NK_BUTTON_LEFT, header, nk_false);
         if (left_mouse_down && left_mouse_click_in_cursor && !left_mouse_clicked) {
             win->bounds.x = win->bounds.x + in->mouse.delta.x;
             win->bounds.y = win->bounds.y + in->mouse.delta.y;
             in->mouse.buttons[NK_BUTTON_LEFT].clicked_pos.x += in->mouse.delta.x;
             in->mouse.buttons[NK_BUTTON_LEFT].clicked_pos.y += in->mouse.delta.y;
             ctx->style.cursor_active = ctx->style.cursors[NK_CURSOR_MOVE];
-
-            struct nk_rect inner_bound = nk_dockspace_dock_inner_highlight(ctx);
-            struct nk_rect top_bound = nk_dockspace_dock_highlight(ctx, NK_DOCK_HEADER);
-            struct nk_rect left_bound = nk_dockspace_dock_highlight(ctx, NK_DOCK_LEFT);
-            struct nk_color highlightColor = {255, 255, 255, 64};
-            if (inner_bound.w != 0 && inner_bound.h != 0)
-                nk_fill_rect(out, inner_bound, 0, highlightColor);
-            nk_fill_rect(out, top_bound, 0, highlightColor);
-            nk_fill_rect(out, left_bound, 0, highlightColor);
-        }
-        if (left_mouse_clicked && left_mouse_clicked_in_panel && !left_mouse_down) {
-            nk_dockspace_add_window(ctx, win);
         }
     }
 
@@ -465,10 +451,7 @@ nk_panel_end(struct nk_context *ctx)
         {
             /* horizontal scrollbar */
             nk_flags state = 0;
-            if(layout->flags & NK_WINDOW_SCALE_LEFT)
-                scroll.x = layout->bounds.x + scrollbar_size.x + panel_padding.x * 0.5;
-            else
-                scroll.x = layout->bounds.x;
+            scroll.x = layout->bounds.x;
             scroll.y = layout->bounds.y + layout->bounds.h;
             scroll.w = layout->bounds.w;
             scroll.h = scrollbar_size.y;
@@ -549,14 +532,12 @@ nk_panel_end(struct nk_context *ctx)
                 if (layout->flags & NK_WINDOW_SCALE_LEFT) {
                     delta_x = -delta_x;
                     window->bounds.x += in->mouse.delta.x;
-                    nk_dockspace_scale_horizontally(ctx, window, delta_x);
                 }
                 /* dragging in x-direction  */
                 if (window->bounds.w + delta_x >= window_size.x) {
                     if ((delta_x < 0) || (delta_x > 0 && in->mouse.pos.x >= scaler.x)) {
                         window->bounds.w = window->bounds.w + delta_x;
                         scaler.x += in->mouse.delta.x;
-                        nk_dockspace_scale_horizontally(ctx, window, delta_x);
                     }
                 }
                 /* dragging in y-direction (only possible if static window) */
@@ -565,7 +546,6 @@ nk_panel_end(struct nk_context *ctx)
                         if ((in->mouse.delta.y < 0) || (in->mouse.delta.y > 0 && in->mouse.pos.y >= scaler.y)) {
                             window->bounds.h = window->bounds.h + in->mouse.delta.y;
                             scaler.y += in->mouse.delta.y;
-                            nk_dockspace_scale_vertically(ctx, window, in->mouse.delta.y);
                         }
                     }
                 }
