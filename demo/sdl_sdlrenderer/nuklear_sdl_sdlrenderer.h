@@ -107,9 +107,13 @@ nk_sdl_render(enum nk_anti_aliasing AA)
         nk_buffer_init_default(&vbuf);
         nk_buffer_init_default(&ebuf);
         nk_convert(&sdl.ctx, &dev->cmds, &vbuf, &ebuf, &config);
-        
+
         /* iterate over and execute each draw command */
         offset = (const nk_draw_index*)nk_buffer_memory_const(&ebuf);
+
+        SDL_Rect saved_clip;
+        SDL_RenderGetClipRect(sdl.renderer, &saved_clip);
+
         nk_draw_foreach(cmd, &sdl.ctx, &dev->cmds)
         {
             if (!cmd->elem_count) continue;
@@ -125,8 +129,8 @@ nk_sdl_render(enum nk_anti_aliasing AA)
 
             const void *vertices = nk_buffer_memory_const(&vbuf);
 
-            int ret = SDL_RenderGeometryRaw(sdl.renderer, 
-                    (SDL_Texture *)cmd->texture.ptr, 
+            int ret = SDL_RenderGeometryRaw(sdl.renderer,
+                    (SDL_Texture *)cmd->texture.ptr,
                     (const void*)((const nk_byte*)vertices + vp), vs,
                     (const void*)((const nk_byte*)vertices + vc), vs,
                     (const void*)((const nk_byte*)vertices + vt), vs,
@@ -136,6 +140,9 @@ nk_sdl_render(enum nk_anti_aliasing AA)
             offset += cmd->elem_count;
 
         }
+
+        SDL_RenderSetClipRect(sdl.renderer, &saved_clip);
+
         nk_clear(&sdl.ctx);
         nk_buffer_clear(&dev->cmds);
         nk_buffer_free(&vbuf);
