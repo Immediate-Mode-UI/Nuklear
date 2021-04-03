@@ -112,6 +112,7 @@ nk_sdl_render(enum nk_anti_aliasing AA)
         offset = (const nk_draw_index*)nk_buffer_memory_const(&ebuf);
 
         SDL_Rect saved_clip;
+        SDL_bool clipping_enabled = SDL_RenderIsClipEnabled(sdl.renderer);
         SDL_RenderGetClipRect(sdl.renderer, &saved_clip);
 
         nk_draw_foreach(cmd, &sdl.ctx, &dev->cmds)
@@ -142,6 +143,9 @@ nk_sdl_render(enum nk_anti_aliasing AA)
         }
 
         SDL_RenderSetClipRect(sdl.renderer, &saved_clip);
+        if (!clipping_enabled) {
+            SDL_RenderSetClipRect(sdl.renderer, NULL);
+        }
 
         nk_clear(&sdl.ctx);
         nk_buffer_clear(&dev->cmds);
