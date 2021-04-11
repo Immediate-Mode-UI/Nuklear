@@ -434,7 +434,7 @@ nk_window_is_hovered(struct nk_context *ctx)
     if (!ctx || !ctx->current) return 0;
     if(ctx->current->flags & NK_WINDOW_HIDDEN)
         return 0;
-        struct nk_rect actual_bounds = ctx->current->bounds;
+    struct nk_rect actual_bounds = ctx->current->bounds;
     if (ctx->begin->flags & NK_WINDOW_MINIMIZED) {
         actual_bounds.h = ctx->current->layout->header_height;
     }
