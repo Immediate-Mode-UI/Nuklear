@@ -477,6 +477,9 @@ int main(int argc, char *argv[])
         canvas_end(&ctx, &canvas);}
 
         /* Draw */
+        /* Framebuffer size is used instead of window size because the window size is in screen coordinates instead of pixels.
+         * See https://www.glfw.org/docs/latest/window_guide.html#window_size for more info
+         */
         glfwGetFramebufferSize(win, &width, &height);
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
