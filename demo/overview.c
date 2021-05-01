@@ -16,6 +16,11 @@ overview(struct nk_context *ctx)
     static enum nk_style_header_align header_align = NK_HEADER_RIGHT;
     static int show_app_about = nk_false;
 
+#ifdef INCLUDE_STYLE
+    static const char* themes[] = {"Black", "White", "Red", "Blue", "Dark"};
+    static int current_theme = 0;
+#endif
+
     /* window flags */
     window_flags = 0;
     ctx->style.window.header.align = header_align;
@@ -128,6 +133,18 @@ overview(struct nk_context *ctx)
                 nk_popup_end(ctx);
             } else show_app_about = nk_false;
         }
+
+#ifdef INCLUDE_STYLE
+        /* style selector */
+        nk_layout_row_static(ctx, 25, 200, 1);
+        {
+            int new_theme = nk_combo(ctx, themes, NK_LEN(themes), current_theme, 25, nk_vec2(200, 200));
+            if (new_theme != current_theme) {
+                current_theme = new_theme;
+                set_style(ctx, current_theme);
+            }
+        }
+#endif
 
         /* window flags */
         if (nk_tree_push(ctx, NK_TREE_TAB, "Window", NK_MINIMIZED)) {

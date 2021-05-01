@@ -86,6 +86,8 @@ main(void)
     nk_init_default(ctx, font);
 
     #ifdef INCLUDE_STYLE
+    set_style(ctx, THEME_BLACK);
+    /*nk_style_push_float(ctx, &ctx->style.window.rounding, 20.0f);*/
     /*set_style(ctx, THEME_WHITE);*/
     /*set_style(ctx, THEME_RED);*/
     /*set_style(ctx, THEME_BLUE);*/
