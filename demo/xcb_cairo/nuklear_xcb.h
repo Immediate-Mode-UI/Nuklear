@@ -637,9 +637,33 @@ NK_API int nk_cairo_render(struct nk_cairo_context *cairo_ctx, struct nk_context
             break;
         case NK_COMMAND_RECT_MULTI_COLOR:
             {
-                /* const struct nk_command_rect_multi_color *r =
-                    (const struct nk_command_rect_multi_color *) cmd; */
-                /* TODO */
+                struct nk_color c0, c1;
+                const struct nk_command_rect_multi_color *r = (const struct nk_command_rect_multi_color *)cmd;
+                nk_uint lc = nk_color_u32(r->left), tc = nk_color_u32(r->top), rc = nk_color_u32(r->right);
+                cairo_pattern_t *pat;
+                double x0, x1, y0, y1;
+                /* for now, only accept 2 colors gradients, so either left=right (vertical gradient) or left!=right (horizontal gradient) */
+                if (nk_color_u32(r->left) == nk_color_u32(r->right)) {
+                    x0 = x1 = 0.0;
+                    y0 = 1.0;
+                    y1 = 0.0;
+                    c0 = r->top;
+                    c1 = r->bottom;
+                }
+                else {
+                    y0 = y1 = 0.0;
+                    x0 = 0.0;
+                    x1 = 1.0;
+                    c0 = r->left;
+                    c1 = r->right;
+                }
+                pat = cairo_pattern_create_linear(x0, y0, x1, y1);
+                cairo_pattern_add_color_stop_rgba(pat, 0, NK_TO_CAIRO(c0.r), NK_TO_CAIRO(c0.g), NK_TO_CAIRO(c0.b), NK_TO_CAIRO(c0.a));
+                cairo_pattern_add_color_stop_rgba(pat, 1, NK_TO_CAIRO(c1.r), NK_TO_CAIRO(c1.g), NK_TO_CAIRO(c1.b), NK_TO_CAIRO(c1.a));
+                cairo_rectangle(cr, r->x, r->y, r->w, r->h);
+                cairo_set_source(cr, pat);
+                cairo_fill(cr);
+                cairo_pattern_destroy(pat);
             }
             break;
         case NK_COMMAND_CIRCLE:
