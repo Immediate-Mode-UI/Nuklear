@@ -1,8 +1,9 @@
 /*****************************************************************************
  *
  * Nuklear XCB/Cairo Render Backend - v0.0.2
- *
  * Copyright 2021 Richard Gill
+ * 
+ * Grabbed and adapted from https://github.com/griebd/nuklear_xcb
  * Copyright 2017 Adriano Grieb
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -31,8 +32,8 @@
  *
  ****************************************************************************/
 
-#ifndef NK_XCB_H
-#define NK_XCB_H
+#ifndef NK_XCB_CAIRO_H
+#define NK_XCB_CAIRO_H
 
 /* just to make my IDE happy */
 #ifndef NK_NUKLEAR_H_
@@ -42,13 +43,16 @@
 struct nk_xcb_context;
 struct nk_cairo_context;
 
+/* With Xcb, we work mostly on events, so to do something only when
+ * needed it's good to know what kind of events pulled us from sleep
+ */
 enum nk_xcb_event_type {
     NK_XCB_EVENT_PAINT      = 0x02,
     NK_XCB_EVENT_RESIZED    = 0x04,
     NK_XCB_EVENT_STOP       = 0x08
 };
 
-
+/* Xcb part: work on windows */
 NK_API struct nk_xcb_context *nk_xcb_init(const char *title, int pos_x, int pos_y, int width, int height);
 NK_API void nk_xcb_free(struct nk_xcb_context *xcb_ctx);
 
@@ -56,17 +60,22 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
 NK_API void nk_xcb_render(struct nk_xcb_context *xcb_ctx);
 NK_API void nk_xcb_size(struct nk_xcb_context *xcb_ctx, int *width, int *height);
 
-NK_API void *nk_xcb_create_cairo_surface(struct nk_xcb_context *xcb_ctx);
-NK_API void nk_xcb_resize_cairo_surface(struct nk_xcb_context *xcb_ctx, void *surface);
+/* TODO: copy/paste */
 
-NK_API struct nk_cairo_context *nk_cairo_init(struct nk_color *bg, const char *font_file, void *surface);
+/* Cairo part: work on painting */
+NK_API struct nk_cairo_context *nk_cairo_init(struct nk_color *bg, const char *font_file, double font_size, void *surface);
 NK_API void nk_cairo_free(struct nk_cairo_context *cairo_ctx);
 
 NK_API struct nk_user_font *nk_cairo_default_font(struct nk_cairo_context *cairo_ctx);
 NK_API void nk_cairo_damage(struct nk_cairo_context *cairo_ctx);
 NK_API int nk_cairo_render(struct nk_cairo_context *cairo_ctx, struct nk_context *ctx);
 
-#endif /* NK_XCB_H */
+/* Bridge between xcb and cairo (so it's possible to use them like legos) */
+NK_API void *nk_xcb_create_cairo_surface(struct nk_xcb_context *xcb_ctx);
+NK_API void nk_xcb_resize_cairo_surface(struct nk_xcb_context *xcb_ctx, void *surface);
+
+
+#endif /* NK_XCB_CAIRO_H */
 
 /*****************************************************************************
  *
@@ -74,14 +83,14 @@ NK_API int nk_cairo_render(struct nk_cairo_context *cairo_ctx, struct nk_context
  *
  ****************************************************************************/
 
-/*#ifdef NK_XCB_IMPLEMENTATION*/
+/*#ifdef NK_XCB_CAIRO_IMPLEMENTATION*/
 
 #include <xcb/xcb.h>
 #include <xcb/xcb_util.h>
 #include <xcb/xcb_keysyms.h>
 #include <X11/keysym.h>
-#include <cairo-xcb.h>
-#include <cairo-ft.h>
+#include <cairo/cairo-xcb.h>
+#include <cairo/cairo-ft.h>
 
 #if defined _XOPEN_SOURCE && _XOPEN_SOURCE >= 600 || \
     defined _POSIX_C_SOURCE && _POSIX_C_SOURCE >= 200112L
@@ -426,9 +435,7 @@ NK_API void nk_xcb_size(struct nk_xcb_context *xcb_ctx, int *width, int *height)
     *height = xcb_ctx->height;
 }
 
-
-
-NK_API void *nk_xcb_create_surface(struct nk_xcb_context *xcb_ctx)
+NK_API void *nk_xcb_create_cairo_surface(struct nk_xcb_context *xcb_ctx)
 {
     xcb_screen_t *screen;
     xcb_visualtype_t *visual;
@@ -438,7 +445,7 @@ NK_API void *nk_xcb_create_surface(struct nk_xcb_context *xcb_ctx)
     return cairo_xcb_surface_create(xcb_ctx->conn, xcb_ctx->window, visual, xcb_ctx->width, xcb_ctx->height);
 }
 
-NK_API void nk_xcb_resize_surface(struct nk_xcb_context *xcb_ctx, void *surface)
+NK_API void nk_xcb_resize_cairo_surface(struct nk_xcb_context *xcb_ctx, void *surface)
 {
     cairo_xcb_surface_set_size((cairo_surface_t *)surface, xcb_ctx->width, xcb_ctx->height);
 }
@@ -462,7 +469,7 @@ NK_INTERN float nk_cairo_text_width(nk_handle handle, float height __attribute__
     return extents.x_advance;
 }
 
-NK_API struct nk_cairo_context *nk_cairo_init(struct nk_color *bg, const char *font_file, void *surf)
+NK_API struct nk_cairo_context *nk_cairo_init(struct nk_color *bg, const char *font_file, double font_size, void *surf)
 {
     cairo_surface_t *surface = surf;
     struct nk_cairo_context *cairo_ctx;
@@ -485,7 +492,10 @@ NK_API struct nk_cairo_context *nk_cairo_init(struct nk_color *bg, const char *f
         cairo_font_face_set_user_data(font_face, &key, face, (cairo_destroy_func_t)FT_Done_Face);
         cairo_set_font_face(cr, font_face);
     }
-    cairo_set_font_size(cr, 11);
+    if (font_size < 0.01) {
+        font_size = 11.0;
+    }
+    cairo_set_font_size(cr, font_size);
     default_font = cairo_get_scaled_font(cr);
     cairo_scaled_font_extents(default_font, &extents);
     font->userdata.ptr = default_font;
@@ -558,8 +568,6 @@ NK_API int nk_cairo_render(struct nk_cairo_context *cairo_ctx, struct nk_context
     nk_foreach(cmd, nk_ctx) {
         switch (cmd->type) {
         case NK_COMMAND_NOP:
-            printf("seriously\n");
-            abort();
             break;
         case NK_COMMAND_SCISSOR:
             {
@@ -637,33 +645,26 @@ NK_API int nk_cairo_render(struct nk_cairo_context *cairo_ctx, struct nk_context
             break;
         case NK_COMMAND_RECT_MULTI_COLOR:
             {
-                struct nk_color c0, c1;
+                /* from https://github.com/taiwins/twidgets/blob/master/src/nk_wl_cairo.c */
                 const struct nk_command_rect_multi_color *r = (const struct nk_command_rect_multi_color *)cmd;
-                nk_uint lc = nk_color_u32(r->left), tc = nk_color_u32(r->top), rc = nk_color_u32(r->right);
-                cairo_pattern_t *pat;
-                double x0, x1, y0, y1;
-                /* for now, only accept 2 colors gradients, so either left=right (vertical gradient) or left!=right (horizontal gradient) */
-                if (nk_color_u32(r->left) == nk_color_u32(r->right)) {
-                    x0 = x1 = 0.0;
-                    y0 = 1.0;
-                    y1 = 0.0;
-                    c0 = r->top;
-                    c1 = r->bottom;
+                cairo_pattern_t *pat = cairo_pattern_create_mesh();
+                if (pat) {
+                    cairo_mesh_pattern_begin_patch(pat);
+                    cairo_mesh_pattern_move_to(pat, r->x, r->y);
+                    cairo_mesh_pattern_line_to(pat, r->x, r->y + r->h);
+                    cairo_mesh_pattern_line_to(pat, r->x + r->w, r->y + r->h);
+                    cairo_mesh_pattern_line_to(pat, r->x + r->w, r->y);
+                    cairo_mesh_pattern_set_corner_color_rgba(pat, 0, NK_TO_CAIRO(r->left.r), NK_TO_CAIRO(r->left.g), NK_TO_CAIRO(r->left.b), NK_TO_CAIRO(r->left.a));
+                    cairo_mesh_pattern_set_corner_color_rgba(pat, 0, NK_TO_CAIRO(r->bottom.r), NK_TO_CAIRO(r->bottom.g), NK_TO_CAIRO(r->bottom.b), NK_TO_CAIRO(r->bottom.a));
+                    cairo_mesh_pattern_set_corner_color_rgba(pat, 0, NK_TO_CAIRO(r->right.r), NK_TO_CAIRO(r->right.g), NK_TO_CAIRO(r->right.b), NK_TO_CAIRO(r->right.a));
+                    cairo_mesh_pattern_set_corner_color_rgba(pat, 0, NK_TO_CAIRO(r->top.r), NK_TO_CAIRO(r->top.g), NK_TO_CAIRO(r->top.b), NK_TO_CAIRO(r->top.a));
+                    cairo_mesh_pattern_end_patch(pat);
+
+                    cairo_rectangle(cr, r->x, r->y, r->w, r->h);
+                    cairo_set_source(cr, pat);
+                    cairo_fill(cr);
+                    cairo_pattern_destroy(pat);
                 }
-                else {
-                    y0 = y1 = 0.0;
-                    x0 = 0.0;
-                    x1 = 1.0;
-                    c0 = r->left;
-                    c1 = r->right;
-                }
-                pat = cairo_pattern_create_linear(x0, y0, x1, y1);
-                cairo_pattern_add_color_stop_rgba(pat, 0, NK_TO_CAIRO(c0.r), NK_TO_CAIRO(c0.g), NK_TO_CAIRO(c0.b), NK_TO_CAIRO(c0.a));
-                cairo_pattern_add_color_stop_rgba(pat, 1, NK_TO_CAIRO(c1.r), NK_TO_CAIRO(c1.g), NK_TO_CAIRO(c1.b), NK_TO_CAIRO(c1.a));
-                cairo_rectangle(cr, r->x, r->y, r->w, r->h);
-                cairo_set_source(cr, pat);
-                cairo_fill(cr);
-                cairo_pattern_destroy(pat);
             }
             break;
         case NK_COMMAND_CIRCLE:
@@ -796,14 +797,45 @@ NK_API int nk_cairo_render(struct nk_cairo_context *cairo_ctx, struct nk_context
             break;
         case NK_COMMAND_IMAGE:
             {
-                printf ("TODO: NK_COMMAND_IMAGE\n");
-                /* TODO */
+                /* from https://github.com/taiwins/twidgets/blob/master/src/nk_wl_cairo.c */
+                const struct nk_command_image *im = (const struct nk_command_image *)cmd;
+                cairo_surface_t *img_surf;
+                double sw = (double)im->w / (double)im->img.region[2];
+                double sh = (double)im->h / (double)im->img.region[3];
+                cairo_format_t format = CAIRO_FORMAT_ARGB32;
+                int stride = cairo_format_stride_for_width(format, im->img.w);
+
+                if (!im->img.handle.ptr) return;
+                img_surf = cairo_image_surface_create_for_data(im->img.handle.ptr, format, im->img.w, im->img.h, stride);
+                if (!img_surf) return;
+                cairo_save(cr);
+
+                cairo_rectangle(cr, im->x, im->y, im->w, im->h);
+                /* scale here, if after source set, the scale would not apply to source
+                 * surface
+                 */
+                cairo_scale(cr, sw, sh);
+                /* the coordinates system in cairo is not intuitive, scale, translate,
+                 * are applied to source. Refer to
+                 * "https://www.cairographics.org/FAQ/#paint_from_a_surface" for details
+                 * 
+                 * if you set source_origin to (0,0), it would be like source origin
+                 * aligned to dest origin, then if you draw a rectangle on (x, y, w, h).
+                 * it would clip out the (x, y, w, h) of the source on you dest as well.
+                 */
+                cairo_set_source_surface(cr, img_surf, im->x/sw - im->img.region[0], im->y/sh - im->img.region[1]);
+                cairo_fill(cr);
+
+                cairo_restore(cr);
+                cairo_surface_destroy(img_surf);
             }
             break;
         case NK_COMMAND_CUSTOM:
             {
-                printf ("TODO: NK_COMMAND_CUSTOM\n");
-                /* TODO */
+	            const struct nk_command_custom *cu = (const struct nk_command_custom *)cmd;
+                if (cu->callback) {
+                    cu->callback(cr, cu->x, cu->y, cu->w, cu->h, cu->callback_data);
+                }
             }
         default:
             break;
@@ -817,4 +849,4 @@ NK_API int nk_cairo_render(struct nk_cairo_context *cairo_ctx, struct nk_context
     return nk_true;
 }
 
-/*#endif /* NK_XCB_IMPLEMENTATION */
+/*#endif /* NK_XCB_CAIRO_IMPLEMENTATION */

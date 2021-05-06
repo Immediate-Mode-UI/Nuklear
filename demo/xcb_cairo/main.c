@@ -80,7 +80,8 @@ main(void)
     int events;
 
     xcb_ctx = nk_xcb_init("Nuklear XCB/Cairo", 20, 20, 800, 600);
-    cairo_ctx = nk_cairo_init(&background, NULL, nk_xcb_create_surface(xcb_ctx));
+    cairo_ctx = nk_cairo_init(&background, NULL, 0, nk_xcb_create_cairo_surface(xcb_ctx));
+    /*cairo_ctx = nk_cairo_init(&background, "../../extra_font/DroidSans.ttf", 0, nk_xcb_create_surface(xcb_ctx));*/
     font = nk_cairo_default_font(cairo_ctx);
     ctx = malloc(sizeof(struct nk_context));
     nk_init_default(ctx, font);
@@ -105,7 +106,7 @@ main(void)
             nk_cairo_damage(cairo_ctx);
         }
         if (events & NK_XCB_EVENT_RESIZED) {
-            nk_xcb_resize_surface(xcb_ctx, nk_cairo_surface(cairo_ctx));
+            nk_xcb_resize_cairo_surface(xcb_ctx, nk_cairo_surface(cairo_ctx));
         }
 
         /* GUI */
