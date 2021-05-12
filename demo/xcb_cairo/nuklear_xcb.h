@@ -655,9 +655,9 @@ NK_API int nk_cairo_render(struct nk_cairo_context *cairo_ctx, struct nk_context
                     cairo_mesh_pattern_line_to(pat, r->x + r->w, r->y + r->h);
                     cairo_mesh_pattern_line_to(pat, r->x + r->w, r->y);
                     cairo_mesh_pattern_set_corner_color_rgba(pat, 0, NK_TO_CAIRO(r->left.r), NK_TO_CAIRO(r->left.g), NK_TO_CAIRO(r->left.b), NK_TO_CAIRO(r->left.a));
-                    cairo_mesh_pattern_set_corner_color_rgba(pat, 0, NK_TO_CAIRO(r->bottom.r), NK_TO_CAIRO(r->bottom.g), NK_TO_CAIRO(r->bottom.b), NK_TO_CAIRO(r->bottom.a));
-                    cairo_mesh_pattern_set_corner_color_rgba(pat, 0, NK_TO_CAIRO(r->right.r), NK_TO_CAIRO(r->right.g), NK_TO_CAIRO(r->right.b), NK_TO_CAIRO(r->right.a));
-                    cairo_mesh_pattern_set_corner_color_rgba(pat, 0, NK_TO_CAIRO(r->top.r), NK_TO_CAIRO(r->top.g), NK_TO_CAIRO(r->top.b), NK_TO_CAIRO(r->top.a));
+                    cairo_mesh_pattern_set_corner_color_rgba(pat, 1, NK_TO_CAIRO(r->bottom.r), NK_TO_CAIRO(r->bottom.g), NK_TO_CAIRO(r->bottom.b), NK_TO_CAIRO(r->bottom.a));
+                    cairo_mesh_pattern_set_corner_color_rgba(pat, 2, NK_TO_CAIRO(r->right.r), NK_TO_CAIRO(r->right.g), NK_TO_CAIRO(r->right.b), NK_TO_CAIRO(r->right.a));
+                    cairo_mesh_pattern_set_corner_color_rgba(pat, 3, NK_TO_CAIRO(r->top.r), NK_TO_CAIRO(r->top.g), NK_TO_CAIRO(r->top.b), NK_TO_CAIRO(r->top.a));
                     cairo_mesh_pattern_end_patch(pat);
 
                     cairo_rectangle(cr, r->x, r->y, r->w, r->h);
