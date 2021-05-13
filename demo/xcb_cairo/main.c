@@ -4,11 +4,11 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-/*#include <limits.h>*/
-/*#include <math.h>*/
-/*#include <sys/time.h>*/
-/*#include <unistd.h>*/
-/*#include <time.h>*/
+#include <limits.h>
+#include <math.h>
+#include <sys/time.h>
+#include <unistd.h>
+#include <time.h>
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -17,7 +17,7 @@
 #define NK_IMPLEMENTATION
 #include "../../nuklear.h"
 
-#define NK_XCB_IMPLEMENTATION
+#define NK_XCB_CAIRO_IMPLEMENTATION
 #include "nuklear_xcb.h"
 
 static void die(const char *fmt, ...)

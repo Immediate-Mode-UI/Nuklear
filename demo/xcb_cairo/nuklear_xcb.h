@@ -35,11 +35,6 @@
 #ifndef NK_XCB_CAIRO_H
 #define NK_XCB_CAIRO_H
 
-/* just to make my IDE happy */
-#ifndef NK_NUKLEAR_H_
-#include "../../nuklear.h"
-#endif
-
 struct nk_xcb_context;
 struct nk_cairo_context;
 
@@ -83,7 +78,7 @@ NK_API void nk_xcb_resize_cairo_surface(struct nk_xcb_context *xcb_ctx, void *su
  *
  ****************************************************************************/
 
-/*#ifdef NK_XCB_CAIRO_IMPLEMENTATION*/
+#ifdef NK_XCB_CAIRO_IMPLEMENTATION
 
 #include <xcb/xcb.h>
 #include <xcb/xcb_util.h>
@@ -163,10 +158,7 @@ NK_API struct nk_xcb_context *nk_xcb_init(const char *title, int pos_x, int pos_
         | XCB_EVENT_MASK_KEY_RELEASE
         | XCB_EVENT_MASK_BUTTON_PRESS
         | XCB_EVENT_MASK_BUTTON_RELEASE
-        /*| XCB_EVENT_MASK_ENTER_WINDOW*/
-        /*| XCB_EVENT_MASK_LEAVE_WINDOW*/
         | XCB_EVENT_MASK_POINTER_MOTION
-        /*| XCB_EVENT_MASK_POINTER_MOTION_HINT*/
         | XCB_EVENT_MASK_BUTTON_1_MOTION
         | XCB_EVENT_MASK_BUTTON_2_MOTION
         | XCB_EVENT_MASK_BUTTON_3_MOTION
@@ -175,15 +167,7 @@ NK_API struct nk_xcb_context *nk_xcb_init(const char *title, int pos_x, int pos_
         | XCB_EVENT_MASK_BUTTON_MOTION
         | XCB_EVENT_MASK_KEYMAP_STATE
         | XCB_EVENT_MASK_EXPOSURE
-        /*| XCB_EVENT_MASK_VISIBILITY_CHANGE*/
         | XCB_EVENT_MASK_STRUCTURE_NOTIFY
-        /*| XCB_EVENT_MASK_RESIZE_REDIRECT*/
-        /*| XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY*/
-        /*| XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT*/
-        /*| XCB_EVENT_MASK_FOCUS_CHANGE*/
-        /*| XCB_EVENT_MASK_PROPERTY_CHANGE*/
-        /*| XCB_EVENT_MASK_COLOR_MAP_CHANGE*/
-        /*| XCB_EVENT_MASK_OWNER_GRAB_BUTTON*/
         ;
     xcb_create_window(conn, XCB_COPY_FROM_PARENT, window, screen->root,
             pos_x, pos_y, width, height, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
@@ -849,4 +833,4 @@ NK_API int nk_cairo_render(struct nk_cairo_context *cairo_ctx, struct nk_context
     return nk_true;
 }
 
-/*#endif /* NK_XCB_CAIRO_IMPLEMENTATION */
+#endif /* NK_XCB_CAIRO_IMPLEMENTATION */
