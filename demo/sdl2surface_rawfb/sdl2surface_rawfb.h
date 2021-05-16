@@ -813,7 +813,7 @@ nk_sdlsurface_init(SDL_Surface *fb, float fontSize)
     if (!sdlsurface)
         return NULL;
 
-    NK_MEMSET(sdlsurface, 0, sizeof(struct sdlsurface_context));
+    memset(sdlsurface, 0, sizeof(struct sdlsurface_context));
 
     sdlsurface->fb = fb;
 
@@ -1001,7 +1001,7 @@ nk_sdlsurface_shutdown(struct sdlsurface_context *sdlsurface)
     if (sdlsurface) {
         SDL_FreeSurface(sdlsurface->font_tex);
         nk_free(&sdlsurface->ctx);
-        NK_MEMSET(sdlsurface, 0, sizeof(struct sdlsurface_context));
+        memset(sdlsurface, 0, sizeof(struct sdlsurface_context));
         free(sdlsurface);
     }
 }
