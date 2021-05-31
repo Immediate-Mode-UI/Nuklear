@@ -51,6 +51,7 @@ nk_property_behavior(nk_flags *ws, const struct nk_input *in,
     struct nk_rect empty, int *state, struct nk_property_variant *variant,
     float inc_per_pixel)
 {
+    nk_widget_state_reset(ws);
     if (in && *state == NK_PROPERTY_DEFAULT) {
         if (nk_button_behavior(ws, edit, in, NK_BUTTON_DEFAULT))
             *state = NK_PROPERTY_EDIT;
@@ -120,7 +121,7 @@ nk_do_property(nk_flags *ws,
         nk_filter_decimal,
         nk_filter_float
     };
-    int active, old;
+    nk_bool active, old;
     int num_len, name_len;
     char string[NK_MAX_NUMBER_BUFFER];
     float size;

@@ -6,7 +6,7 @@
  *                              POPUP
  *
  * ===============================================================*/
-NK_API int
+NK_API nk_bool
 nk_popup_begin(struct nk_context *ctx, enum nk_popup_type type,
     const char *title, nk_flags flags, struct nk_rect rect)
 {
@@ -102,7 +102,7 @@ nk_popup_begin(struct nk_context *ctx, enum nk_popup_type type,
         return 0;
     }
 }
-NK_LIB int
+NK_LIB nk_bool
 nk_nonblock_begin(struct nk_context *ctx,
     nk_flags flags, struct nk_rect body, struct nk_rect header,
     enum nk_panel_type panel_type)

@@ -233,7 +233,7 @@ overview(struct nk_context *ctx)
                 nk_label(ctx, "Property float:", NK_TEXT_LEFT);
                 nk_property_float(ctx, "Float:", 0, &property_float, 64.0f, 0.1f, 0.2f);
                 nk_label(ctx, "Property int:", NK_TEXT_LEFT);
-                nk_property_int(ctx, "Int:", 0, &property_int, 100.0f, 1, 1);
+                nk_property_int(ctx, "Int:", 0, &property_int, 100, 1, 1);
                 nk_label(ctx, "Property neg:", NK_TEXT_LEFT);
                 nk_property_int(ctx, "Neg:", -10, &property_neg, 10, 1, 1);
 
@@ -734,7 +734,7 @@ overview(struct nk_context *ctx)
 
             /* color contextual */
             nk_layout_row_begin(ctx, NK_STATIC, 30, 2);
-            nk_layout_row_push(ctx, 100);
+            nk_layout_row_push(ctx, 120);
             nk_label(ctx, "Right Click here:", NK_TEXT_LEFT);
             nk_layout_row_push(ctx, 50);
             bounds = nk_widget_bounds(ctx);
@@ -752,7 +752,7 @@ overview(struct nk_context *ctx)
 
             /* popup */
             nk_layout_row_begin(ctx, NK_STATIC, 30, 2);
-            nk_layout_row_push(ctx, 100);
+            nk_layout_row_push(ctx, 120);
             nk_label(ctx, "Popup:", NK_TEXT_LEFT);
             nk_layout_row_push(ctx, 50);
             if (nk_button_label(ctx, "Popup"))

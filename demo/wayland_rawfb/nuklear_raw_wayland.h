@@ -27,12 +27,13 @@ struct nk_wayland{
     /*wayland vars*/
     struct wl_display *display;
     struct wl_compositor *compositor;
-    struct wl_shell *shell;
+    struct xdg_wm_base *xdg_wm_base;
     struct wl_shm *wl_shm;
     struct wl_seat* seat;
     struct wl_callback *frame_callback;
     struct wl_surface *surface;
-	struct wl_shell_surface *shell_surface;
+	struct xdg_surface *xdg_surface;
+	struct xdg_toplevel *xdg_toplevel;
 	struct wl_buffer *front_buffer;
 
     

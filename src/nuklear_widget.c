@@ -65,7 +65,7 @@ nk_widget_height(struct nk_context *ctx)
     nk_layout_peek(&bounds, ctx);
     return bounds.h;
 }
-NK_API int
+NK_API nk_bool
 nk_widget_is_hovered(struct nk_context *ctx)
 {
     struct nk_rect c, v;
@@ -87,7 +87,7 @@ nk_widget_is_hovered(struct nk_context *ctx)
         return 0;
     return nk_input_is_mouse_hovering_rect(&ctx->input, bounds);
 }
-NK_API int
+NK_API nk_bool
 nk_widget_is_mouse_clicked(struct nk_context *ctx, enum nk_buttons btn)
 {
     struct nk_rect c, v;
@@ -109,8 +109,8 @@ nk_widget_is_mouse_clicked(struct nk_context *ctx, enum nk_buttons btn)
         return 0;
     return nk_input_mouse_clicked(&ctx->input, btn, bounds);
 }
-NK_API int
-nk_widget_has_mouse_click_down(struct nk_context *ctx, enum nk_buttons btn, int down)
+NK_API nk_bool
+nk_widget_has_mouse_click_down(struct nk_context *ctx, enum nk_buttons btn, nk_bool down)
 {
     struct nk_rect c, v;
     struct nk_rect bounds;
@@ -184,11 +184,8 @@ nk_widget_fitting(struct nk_rect *bounds, struct nk_context *ctx,
     struct nk_vec2 item_padding)
 {
     /* update the bounds to stand without padding  */
-    struct nk_window *win;
-    struct nk_style *style;
-    struct nk_panel *layout;
     enum nk_widget_layout_states state;
-    struct nk_vec2 panel_padding;
+    NK_UNUSED(item_padding);
 
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -196,20 +193,7 @@ nk_widget_fitting(struct nk_rect *bounds, struct nk_context *ctx,
     if (!ctx || !ctx->current || !ctx->current->layout)
         return NK_WIDGET_INVALID;
 
-    win = ctx->current;
-    style = &ctx->style;
-    layout = win->layout;
     state = nk_widget(bounds, ctx);
-
-    panel_padding = nk_panel_get_padding(style, layout->type);
-    if (layout->row.index == 1) {
-        bounds->w += panel_padding.x;
-        bounds->x -= panel_padding.x;
-    } else bounds->x -= item_padding.x;
-
-    if (layout->row.index == layout->row.columns)
-        bounds->w += panel_padding.x;
-    else bounds->w += item_padding.x;
     return state;
 }
 NK_API void

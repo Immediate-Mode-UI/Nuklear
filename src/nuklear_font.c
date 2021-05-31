@@ -189,8 +189,10 @@ nk_font_bake_pack(struct nk_font_baker *baker,
     }
     /* setup font baker from temporary memory */
     for (config_iter = config_list; config_iter; config_iter = config_iter->next) {
+        struct stbtt_fontinfo *font_info = &baker->build[i++].info;
         it = config_iter;
-        do {if (!stbtt_InitFont(&baker->build[i++].info, (const unsigned char*)it->ttf_blob, 0))
+        font_info->userdata = alloc;
+        do {if (!stbtt_InitFont(font_info, (const unsigned char*)it->ttf_blob, 0))
             return nk_false;
         } while ((it = it->n) != config_iter);
     }
@@ -331,8 +333,10 @@ nk_font_bake(struct nk_font_baker *baker, void *image_memory, int width, int hei
                 dst_font->ascent = ((float)unscaled_ascent * font_scale);
                 dst_font->descent = ((float)unscaled_descent * font_scale);
                 dst_font->glyph_offset = glyph_n;
-                // Need to zero this, or it will carry over from a previous
-                // bake, and cause a segfault when accessing glyphs[].
+                /*
+                    Need to zero this, or it will carry over from a previous
+                    bake, and cause a segfault when accessing glyphs[].
+                */
                 dst_font->glyph_count = 0;
             }
 
