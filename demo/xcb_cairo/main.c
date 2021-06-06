@@ -37,10 +37,10 @@ static void die(const char *fmt, ...)
  * ===============================================================*/
 /* This are some code examples to provide a small overview of what can be
  * done with this library. To try out an example uncomment the defines */
-#define INCLUDE_ALL
-/*#define INCLUDE_STYLE */
+/*#define INCLUDE_ALL*/
+#define INCLUDE_STYLE 
 /*#define INCLUDE_CALCULATOR */
-/*#define INCLUDE_OVERVIEW */
+#define INCLUDE_OVERVIEW
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
@@ -79,7 +79,7 @@ main(void)
     int running = 1;
     int events;
 
-    xcb_ctx = nk_xcb_init("Nuklear XCB/Cairo", 20, 20, 800, 600);
+    xcb_ctx = nk_xcb_init("Nuklear XCB/Cairo", 20, 20, 600, 800);
     cairo_ctx = nk_cairo_init(&background, NULL, 0, nk_xcb_create_cairo_surface(xcb_ctx));
     /*cairo_ctx = nk_cairo_init(&background, "../../extra_font/DroidSans.ttf", 0, nk_xcb_create_surface(xcb_ctx));*/
     font = nk_cairo_default_font(cairo_ctx);
