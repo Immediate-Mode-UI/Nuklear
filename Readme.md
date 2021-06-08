@@ -92,7 +92,7 @@ nk_end(&ctx);
 ![example](https://cloud.githubusercontent.com/assets/8057201/10187981/584ecd68-675c-11e5-897c-822ef534a876.png)
 
 ## Bindings
-There are a number of nuklear bindings for different languges created by other authors.
+There are a number of nuklear bindings for different languages created by other authors.
 I cannot attest for their quality since I am not necessarily proficient in any of these
 languages. Furthermore there are no guarantee that all bindings will always be kept up to date:
 
