@@ -17426,7 +17426,7 @@ nk_font_atlas_bake(struct nk_font_atlas *atlas, int *width, int *height,
     tmp = atlas->temporary.alloc(atlas->temporary.userdata,0, tmp_size);
     NK_ASSERT(tmp);
     if (!tmp) goto failed;
-    memset(tmp,0,tmp_size);
+    NK_MEMSET(tmp,0,tmp_size);
 
     /* allocate glyph memory for all fonts */
     baker = nk_font_baker(tmp, atlas->glyph_count, atlas->font_num, &atlas->temporary);
@@ -29173,6 +29173,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2021/03/17 (4.07.1) - Replace usage of memset in nk_font_atlas_bake with NK_MEMSET
 /// - 2021/03/17 (4.07.0) - Fix nk_property hover bug
 /// - 2021/03/15 (4.06.4) - Change nk_propertyi back to int
 /// - 2021/03/15 (4.06.3) - Update documentation for functions that now return nk_bool
