@@ -8,6 +8,7 @@
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2021/09/08 (4.08.1) - Use compiler builtins for NK_OFFSETOF when possible
 /// - 2021/08/17 (4.08.0) - Implemented 9-slice scaling support for widget styles
 /// - 2021/08/16 (4.07.5) - Replace usage of memset in nk_font_atlas_bake with NK_MEMSET
 /// - 2021/08/15 (4.07.4) - Fix conversion and sign conversion warnings
