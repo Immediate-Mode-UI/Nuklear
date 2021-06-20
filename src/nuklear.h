@@ -5194,6 +5194,7 @@ struct nk_property_state {
 struct nk_window {
     unsigned int seq;
     nk_hash name;
+    nk_size name_len;
     char name_string[NK_WINDOW_MAX_NAME];
     nk_flags flags;
 

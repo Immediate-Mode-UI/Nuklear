@@ -5415,6 +5415,7 @@ struct nk_property_state {
 struct nk_window {
     unsigned int seq;
     nk_hash name;
+    nk_size name_len;
     char name_string[NK_WINDOW_MAX_NAME];
     nk_flags flags;
 
@@ -19940,7 +19941,7 @@ nk_find_window(struct nk_context *ctx, nk_hash hash, struct nk_slice name)
     while (iter) {
         NK_ASSERT(iter != iter->next);
         if (iter->name == hash) {
-            if (!nk_stricmp(nk_slicez(iter->name_string), name))
+            if (!nk_stricmp(nk_slice(iter->name_string, iter->name_len), name))
                 return iter;
         }
         iter = iter->next;
@@ -20050,7 +20051,6 @@ nk_begin_titled(struct nk_context *ctx, struct nk_slice name, struct nk_slice ti
     win = nk_find_window(ctx, name_hash, name);
     if (!win) {
         /* create new window */
-        nk_size name_length = name.len;
         win = (struct nk_window*)nk_create_window(ctx);
         NK_ASSERT(win);
         if (!win) return 0;
@@ -20063,9 +20063,8 @@ nk_begin_titled(struct nk_context *ctx, struct nk_slice name, struct nk_slice ti
         win->flags = flags;
         win->bounds = bounds;
         win->name = name_hash;
-        name_length = NK_MIN(name_length, NK_WINDOW_MAX_NAME-1);
-        NK_MEMCPY(win->name_string, name.ptr, name.len);
-        win->name_string[name_length] = 0;
+        win->name_len = NK_MIN(name.len, NK_WINDOW_MAX_NAME);
+        NK_MEMCPY(win->name_string, name.ptr, win->name_len);
         win->popup.win = 0;
         if (!ctx->active)
             ctx->active = win;
