@@ -5680,12 +5680,10 @@ struct nk_context {
 #define NK_ALIGN_PTR_BACK(x, mask)\
     (NK_UINT_TO_PTR((NK_PTR_TO_UINT((nk_byte*)(x)) & ~(mask-1))))
 
+#if defined(__GNUC__) || defined(__clang__)
+#define NK_OFFSETOF(st,m) (__builtin_offsetof(st,m))
+#else
 #define NK_OFFSETOF(st,m) ((nk_ptr)&(((st*)0)->m))
-#define NK_CONTAINER_OF(ptr,type,member)\
-    (type*)((void*)((char*)(1 ? (ptr): &((type*)0)->member) - NK_OFFSETOF(type, member)))
-
-#ifdef __cplusplus
-}
 #endif
 
 #ifdef __cplusplus
@@ -5695,11 +5693,17 @@ template<typename T> struct nk_helper<T,0>{enum {value = nk_alignof<T>::value};}
 template<typename T> struct nk_alignof{struct Big {T x; char c;}; enum {
     diff = sizeof(Big) - sizeof(T), value = nk_helper<Big, diff>::value};};
 #define NK_ALIGNOF(t) (nk_alignof<t>::value)
-#elif defined(_MSC_VER)
-#define NK_ALIGNOF(t) (__alignof(t))
 #else
-#define NK_ALIGNOF(t) ((char*)(&((struct {char c; t _h;}*)0)->_h) - (char*)0)
+#define NK_ALIGNOF(t) NK_OFFSETOF(struct {char c; t _h;}, _h)
 #endif
+
+#define NK_CONTAINER_OF(ptr,type,member)\
+    (type*)((void*)((char*)(1 ? (ptr): &((type*)0)->member) - NK_OFFSETOF(type, member)))
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* NK_NUKLEAR_H_ */
 
@@ -29173,6 +29177,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2021/03/17 (4.07.1) - Use compiler builtins for NK_OFFSETOF when possible
 /// - 2021/03/17 (4.07.0) - Fix nk_property hover bug
 /// - 2021/03/15 (4.06.4) - Change nk_propertyi back to int
 /// - 2021/03/15 (4.06.3) - Update documentation for functions that now return nk_bool
