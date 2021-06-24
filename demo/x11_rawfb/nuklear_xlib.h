@@ -255,9 +255,9 @@ nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt, struct r
         /* Window resize handler */
         void *fb;
         unsigned int width, height;
+        rawfb_pl pl;
         XWindowAttributes attr;
         XGetWindowAttributes(dpy, win, &attr);
-	rawfb_pl pl;
 
         width = (unsigned int)attr.width;
         height = (unsigned int)attr.height;

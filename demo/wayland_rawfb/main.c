@@ -397,7 +397,7 @@ int main ()
         started = timestamp(); 
       
         // GUI 
-        if (nk_begin(&(nk_wayland_ctx.ctx), "Demo", nk_rect(50, 50, 200, 200),
+        if (nk_begin(&(nk_wayland_ctx.ctx), nk_slicez("Demo"), nk_rect(50, 50, 200, 200),
             NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|
             NK_WINDOW_CLOSABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE)) {
             enum {EASY, HARD};
@@ -405,18 +405,18 @@ int main ()
             static int property = 20;
 
             nk_layout_row_static(&(nk_wayland_ctx.ctx), 30, 80, 1);
-            if (nk_button_label(&(nk_wayland_ctx.ctx), "button")){
+            if (nk_button_label(&(nk_wayland_ctx.ctx), nk_slicez("button"))){
                 printf("button pressed\n");
             }
             nk_layout_row_dynamic(&(nk_wayland_ctx.ctx), 30, 2);
-            if (nk_option_label(&(nk_wayland_ctx.ctx), "easy", op == EASY)) op = EASY;
-            if (nk_option_label(&(nk_wayland_ctx.ctx), "hard", op == HARD)) op = HARD;
+            if (nk_option_label(&(nk_wayland_ctx.ctx), nk_slicez("easy"), op == EASY)) op = EASY;
+            if (nk_option_label(&(nk_wayland_ctx.ctx), nk_slicez("hard"), op == HARD)) op = HARD;
             nk_layout_row_dynamic(&(nk_wayland_ctx.ctx), 25, 1);
-            nk_property_int(&(nk_wayland_ctx.ctx), "Compression:", 0, &property, 100, 10, 1);
+            nk_property_int(&(nk_wayland_ctx.ctx), nk_slicez("Compression:"), 0, &property, 100, 10, 1);
         }
         nk_end(&(nk_wayland_ctx.ctx));
         
-        if (nk_window_is_closed(&(nk_wayland_ctx.ctx), "Demo")) break;
+        if (nk_window_is_closed(&(nk_wayland_ctx.ctx), nk_slicez("Demo"))) break;
 
         // -------------- EXAMPLES ---------------- 
         //#ifdef INCLUDE_CALCULATOR

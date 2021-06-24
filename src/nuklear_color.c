@@ -7,17 +7,17 @@
  *
  * ===============================================================*/
 NK_INTERN int
-nk_parse_hex(const char *p, int length)
+nk_parse_hex(struct nk_slice hex)
 {
-    int i = 0;
-    int len = 0;
-    while (len < length) {
+    nk_size i = 0;
+    nk_size len = 0;
+    while (len < hex.len) {
         i <<= 4;
-        if (p[len] >= 'a' && p[len] <= 'f')
-            i += ((p[len] - 'a') + 10);
-        else if (p[len] >= 'A' && p[len] <= 'F')
-            i += ((p[len] - 'A') + 10);
-        else i += (p[len] - '0');
+        if (hex.ptr[len] >= 'a' && hex.ptr[len] <= 'f')
+            i += ((hex.ptr[len] - 'a') + 10);
+        else if (hex.ptr[len] >= 'A' && hex.ptr[len] <= 'F')
+            i += ((hex.ptr[len] - 'A') + 10);
+        else i += (hex.ptr[len] - '0');
         len++;
     }
     return i;
@@ -33,27 +33,45 @@ nk_rgba(int r, int g, int b, int a)
     return ret;
 }
 NK_API struct nk_color
-nk_rgb_hex(const char *rgb)
+nk_rgb_hex(struct nk_slice hex)
 {
-    struct nk_color col;
-    const char *c = rgb;
-    if (*c == '#') c++;
-    col.r = (nk_byte)nk_parse_hex(c, 2);
-    col.g = (nk_byte)nk_parse_hex(c+2, 2);
-    col.b = (nk_byte)nk_parse_hex(c+4, 2);
+    struct nk_color col = {0};
+    NK_ASSERT(hex.ptr);
+    NK_ASSERT(hex.len);
+    if (!hex.ptr || !hex.len)
+        return col;
+    if (hex.ptr[0] == '#')
+        hex = nk_substr(hex, 1, hex.len);
+
+    NK_ASSERT(hex.len >= 6);
+    if (hex.len < 6)
+        return col;
+
+    col.r = (nk_byte)nk_parse_hex(nk_substr(hex, 0, 2));
+    col.g = (nk_byte)nk_parse_hex(nk_substr(hex, 2, 4));
+    col.b = (nk_byte)nk_parse_hex(nk_substr(hex, 4, 6));
     col.a = 255;
     return col;
 }
 NK_API struct nk_color
-nk_rgba_hex(const char *rgb)
+nk_rgba_hex(struct nk_slice hex)
 {
-    struct nk_color col;
-    const char *c = rgb;
-    if (*c == '#') c++;
-    col.r = (nk_byte)nk_parse_hex(c, 2);
-    col.g = (nk_byte)nk_parse_hex(c+2, 2);
-    col.b = (nk_byte)nk_parse_hex(c+4, 2);
-    col.a = (nk_byte)nk_parse_hex(c+6, 2);
+    struct nk_color col = {0};
+    NK_ASSERT(hex.ptr);
+    NK_ASSERT(hex.len);
+    if (!hex.ptr || !hex.len)
+        return col;
+    if (hex.ptr[0] == '#')
+        hex = nk_substr(hex, 1, hex.len);
+
+    NK_ASSERT(hex.len >= 8);
+    if (hex.len < 8)
+        return col;
+
+    col.r = (nk_byte)nk_parse_hex(nk_substr(hex, 0, 2));
+    col.g = (nk_byte)nk_parse_hex(nk_substr(hex, 2, 4));
+    col.b = (nk_byte)nk_parse_hex(nk_substr(hex, 4, 6));
+    col.a = (nk_byte)nk_parse_hex(nk_substr(hex, 6, 8));
     return col;
 }
 NK_API void

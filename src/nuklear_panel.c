@@ -23,12 +23,12 @@ nk_free_panel(struct nk_context *ctx, struct nk_panel *pan)
     nk_free_page_element(ctx, pe);
 }
 NK_LIB nk_bool
-nk_panel_has_header(nk_flags flags, const char *title)
+nk_panel_has_header(nk_flags flags, struct nk_slice title)
 {
     nk_bool active = 0;
     active = (flags & (NK_WINDOW_CLOSABLE|NK_WINDOW_MINIMIZABLE));
     active = active || (flags & NK_WINDOW_TITLE);
-    active = active && !(flags & NK_WINDOW_HIDDEN) && title;
+    active = active && !(flags & NK_WINDOW_HIDDEN) && title.ptr;
     return active;
 }
 NK_LIB struct nk_vec2
@@ -84,7 +84,7 @@ nk_panel_is_nonblock(enum nk_panel_type type)
     return (type & NK_PANEL_SET_NONBLOCK)?1:0;
 }
 NK_LIB nk_bool
-nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type panel_type)
+nk_panel_begin(struct nk_context *ctx, struct nk_slice title, enum nk_panel_type panel_type)
 {
     struct nk_input *in;
     struct nk_window *win;
@@ -271,9 +271,8 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         }}
 
         {/* window header title */
-        int text_len = nk_strlen(title);
         struct nk_rect label = {0,0,0,0};
-        float t = font->width(font->userdata, font->height, title, text_len);
+        float t = font->width(font->userdata, font->height, title);
         text.padding = nk_vec2(0,0);
 
         label.x = header.x + style->window.header.padding.x;
@@ -282,7 +281,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         label.h = font->height + 2 * style->window.header.label_padding.y;
         label.w = t + 2 * style->window.header.spacing.x;
         label.w = NK_CLAMP(0, label.w, header.x + header.w - label.x);
-        nk_widget_text(out, label,(const char*)title, text_len, &text, NK_TEXT_LEFT, font);}
+        nk_widget_text(out, label, title, &text, NK_TEXT_LEFT, font);}
     }
 
     /* draw window background */

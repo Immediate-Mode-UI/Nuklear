@@ -8,7 +8,7 @@
  * ===============================================================*/
 NK_API nk_bool
 nk_group_scrolled_offset_begin(struct nk_context *ctx,
-    nk_uint *x_offset, nk_uint *y_offset, const char *title, nk_flags flags)
+    nk_uint *x_offset, nk_uint *y_offset, struct nk_slice title, nk_flags flags)
 {
     struct nk_rect bounds;
     struct nk_window panel;
@@ -33,7 +33,7 @@ nk_group_scrolled_offset_begin(struct nk_context *ctx,
     panel.buffer = win->buffer;
     panel.layout = (struct nk_panel*)nk_create_panel(ctx);
     ctx->current = &panel;
-    nk_panel_begin(ctx, (flags & NK_WINDOW_TITLE) ? title: 0, NK_PANEL_GROUP);
+    nk_panel_begin(ctx, (flags & NK_WINDOW_TITLE) ? title : nk_slicez(""), NK_PANEL_GROUP);
 
     win->buffer = panel.buffer;
     win->buffer.clip = panel.layout->clip;
@@ -119,31 +119,29 @@ nk_group_scrolled_end(struct nk_context *ctx)
 }
 NK_API nk_bool
 nk_group_scrolled_begin(struct nk_context *ctx,
-    struct nk_scroll *scroll, const char *title, nk_flags flags)
+    struct nk_scroll *scroll, struct nk_slice title, nk_flags flags)
 {
     return nk_group_scrolled_offset_begin(ctx, &scroll->x, &scroll->y, title, flags);
 }
 NK_API nk_bool
-nk_group_begin_titled(struct nk_context *ctx, const char *id,
-    const char *title, nk_flags flags)
+nk_group_begin_titled(struct nk_context *ctx, struct nk_slice id,
+    struct nk_slice title, nk_flags flags)
 {
-    int id_len;
     nk_hash id_hash;
     struct nk_window *win;
     nk_uint *x_offset;
     nk_uint *y_offset;
 
     NK_ASSERT(ctx);
-    NK_ASSERT(id);
+    NK_ASSERT(id.ptr);
     NK_ASSERT(ctx->current);
     NK_ASSERT(ctx->current->layout);
-    if (!ctx || !ctx->current || !ctx->current->layout || !id)
+    if (!ctx || !ctx->current || !ctx->current->layout || !id.ptr)
         return 0;
 
     /* find persistent group scrollbar value */
     win = ctx->current;
-    id_len = (int)nk_strlen(id);
-    id_hash = nk_murmur_hash(id, (int)id_len, NK_PANEL_GROUP);
+    id_hash = nk_murmur_hash(id, NK_PANEL_GROUP);
     x_offset = nk_find_value(win, id_hash);
     if (!x_offset) {
         x_offset = nk_add_value(ctx, win, id_hash, 0);
@@ -157,7 +155,7 @@ nk_group_begin_titled(struct nk_context *ctx, const char *id,
     return nk_group_scrolled_offset_begin(ctx, x_offset, y_offset, title, flags);
 }
 NK_API nk_bool
-nk_group_begin(struct nk_context *ctx, const char *title, nk_flags flags)
+nk_group_begin(struct nk_context *ctx, struct nk_slice title, nk_flags flags)
 {
     return nk_group_begin_titled(ctx, title, title, flags);
 }
@@ -167,25 +165,23 @@ nk_group_end(struct nk_context *ctx)
     nk_group_scrolled_end(ctx);
 }
 NK_API void
-nk_group_get_scroll(struct nk_context *ctx, const char *id, nk_uint *x_offset, nk_uint *y_offset)
+nk_group_get_scroll(struct nk_context *ctx, struct nk_slice id, nk_uint *x_offset, nk_uint *y_offset)
 {
-    int id_len;
     nk_hash id_hash;
     struct nk_window *win;
     nk_uint *x_offset_ptr;
     nk_uint *y_offset_ptr;
 
     NK_ASSERT(ctx);
-    NK_ASSERT(id);
+    NK_ASSERT(id.ptr);
     NK_ASSERT(ctx->current);
     NK_ASSERT(ctx->current->layout);
-    if (!ctx || !ctx->current || !ctx->current->layout || !id)
+    if (!ctx || !ctx->current || !ctx->current->layout || !id.ptr)
         return;
 
     /* find persistent group scrollbar value */
     win = ctx->current;
-    id_len = (int)nk_strlen(id);
-    id_hash = nk_murmur_hash(id, (int)id_len, NK_PANEL_GROUP);
+    id_hash = nk_murmur_hash(id, NK_PANEL_GROUP);
     x_offset_ptr = nk_find_value(win, id_hash);
     if (!x_offset_ptr) {
         x_offset_ptr = nk_add_value(ctx, win, id_hash, 0);
@@ -202,25 +198,23 @@ nk_group_get_scroll(struct nk_context *ctx, const char *id, nk_uint *x_offset, n
       *y_offset = *y_offset_ptr;
 }
 NK_API void
-nk_group_set_scroll(struct nk_context *ctx, const char *id, nk_uint x_offset, nk_uint y_offset)
+nk_group_set_scroll(struct nk_context *ctx, struct nk_slice id, nk_uint x_offset, nk_uint y_offset)
 {
-    int id_len;
     nk_hash id_hash;
     struct nk_window *win;
     nk_uint *x_offset_ptr;
     nk_uint *y_offset_ptr;
 
     NK_ASSERT(ctx);
-    NK_ASSERT(id);
+    NK_ASSERT(id.ptr);
     NK_ASSERT(ctx->current);
     NK_ASSERT(ctx->current->layout);
-    if (!ctx || !ctx->current || !ctx->current->layout || !id)
+    if (!ctx || !ctx->current || !ctx->current->layout || !id.ptr)
         return;
 
     /* find persistent group scrollbar value */
     win = ctx->current;
-    id_len = (int)nk_strlen(id);
-    id_hash = nk_murmur_hash(id, (int)id_len, NK_PANEL_GROUP);
+    id_hash = nk_murmur_hash(id, NK_PANEL_GROUP);
     x_offset_ptr = nk_find_value(win, id_hash);
     if (!x_offset_ptr) {
         x_offset_ptr = nk_add_value(ctx, win, id_hash, 0);

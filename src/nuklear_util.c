@@ -6,8 +6,8 @@
  *                              UTIL
  *
  * ===============================================================*/
-NK_INTERN int nk_str_match_here(const char *regexp, const char *text);
-NK_INTERN int nk_str_match_star(int c, const char *regexp, const char *text);
+NK_INTERN int nk_str_match_here(struct nk_slice regexp, struct nk_slice text);
+NK_INTERN int nk_str_match_star(int c, struct nk_slice regexp, struct nk_slice text);
 NK_LIB nk_bool nk_is_lower(int c) {return (c >= 'a' && c <= 'z') || (c >= 0xE0 && c <= 0xFF);}
 NK_LIB nk_bool nk_is_upper(int c){return (c >= 'A' && c <= 'Z') || (c >= 0xC0 && c <= 0xDF);}
 NK_LIB int nk_to_upper(int c) {return (c >= 'a' && c <= 'z') ? (c - ('a' - 'A')) : c;}
@@ -132,6 +132,27 @@ nk_zero(void *ptr, nk_size size)
     NK_ASSERT(ptr);
     NK_MEMSET(ptr, 0, size);
 }
+NK_API struct nk_slice
+nk_slice(const char *ptr, nk_size len)
+{
+    struct nk_slice res;
+    res.ptr = ptr;
+    res.len = len;
+    return res;
+}
+NK_API struct nk_slice
+nk_slicez(const char *ptr)
+{
+    return nk_slice(ptr, nk_strlen(ptr));
+}
+NK_API struct nk_slice
+nk_substr(struct nk_slice str, nk_size start, nk_size end)
+{
+    NK_ASSERT(str.ptr);
+    NK_ASSERT(start <= end);
+    NK_ASSERT(end <= str.len);
+    return nk_slice(str.ptr+start, end-start);
+}
 NK_API int
 nk_strlen(const char *str)
 {
@@ -141,72 +162,74 @@ nk_strlen(const char *str)
     return siz;
 }
 NK_API int
-nk_strtoi(const char *str, const char **endptr)
+nk_strtoi(struct nk_slice str, struct nk_slice *endptr)
 {
     int neg = 1;
-    const char *p = str;
+    const char *p = str.ptr;
+    const char *e = str.ptr + str.len;
     int value = 0;
 
-    NK_ASSERT(str);
-    if (!str) return 0;
+    NK_ASSERT(p);
+    if (!p) return 0;
 
     /* skip whitespace */
-    while (*p == ' ') p++;
-    if (*p == '-') {
+    while (p != e && *p == ' ') p++;
+    if (p != e && *p == '-') {
         neg = -1;
         p++;
     }
-    while (*p && *p >= '0' && *p <= '9') {
+    while (p != e && *p >= '0' && *p <= '9') {
         value = value * 10 + (int) (*p - '0');
         p++;
     }
     if (endptr)
-        *endptr = p;
+        *endptr = nk_substr(str, p - str.ptr, str.len);
     return neg*value;
 }
 NK_API double
-nk_strtod(const char *str, const char **endptr)
+nk_strtod(struct nk_slice str, struct nk_slice *endptr)
 {
     double m;
     double neg = 1.0;
-    const char *p = str;
+    const char *p = str.ptr;
+    const char *e = str.ptr + str.len;
     double value = 0;
     double number = 0;
 
-    NK_ASSERT(str);
-    if (!str) return 0;
+    NK_ASSERT(p);
+    if (!p) return 0;
 
     /* skip whitespace */
-    while (*p == ' ') p++;
+    while (p != e && *p == ' ') p++;
     if (*p == '-') {
         neg = -1.0;
         p++;
     }
 
-    while (*p && *p != '.' && *p != 'e') {
+    while (p != e && *p != '.' && *p != 'e') {
         value = value * 10.0 + (double) (*p - '0');
         p++;
     }
 
-    if (*p == '.') {
+    if (p != e && *p == '.') {
         p++;
         for(m = 0.1; *p && *p != 'e'; p++ ) {
             value = value + (double) (*p - '0') * m;
             m *= 0.1;
         }
     }
-    if (*p == 'e') {
+    if (p != e && *p == 'e') {
         int i, pow, div;
         p++;
-        if (*p == '-') {
+        if (p != e && *p == '-') {
             div = nk_true;
             p++;
-        } else if (*p == '+') {
+        } else if (p != e && *p == '+') {
             div = nk_false;
             p++;
         } else div = nk_false;
 
-        for (pow = 0; *p; p++)
+        for (pow = 0; p != e; p++)
             pow = pow * 10 + (int) (*p - '0');
 
         for (m = 1.0, i = 0; i < pow; i++)
@@ -218,11 +241,11 @@ nk_strtod(const char *str, const char **endptr)
     }
     number = value * neg;
     if (endptr)
-        *endptr = p;
+        *endptr = nk_substr(str, p - str.ptr, str.len);
     return number;
 }
 NK_API float
-nk_strtof(const char *str, const char **endptr)
+nk_strtof(struct nk_slice str, struct nk_slice *endptr)
 {
     float float_value;
     double double_value;
@@ -231,12 +254,13 @@ nk_strtof(const char *str, const char **endptr)
     return float_value;
 }
 NK_API int
-nk_stricmp(const char *s1, const char *s2)
+nk_stricmp(struct nk_slice s1, struct nk_slice s2)
 {
     nk_int c1,c2,d;
-    do {
-        c1 = *s1++;
-        c2 = *s2++;
+    nk_size i;
+    for (i = 0; i < s1.len && i < s2.len; i++) {
+        c1 = s1.ptr[i];
+        c2 = s2.ptr[i];
         d = c1 - c2;
         while (d) {
             if (c1 <= 'Z' && c1 >= 'A') {
@@ -249,8 +273,8 @@ nk_stricmp(const char *s1, const char *s2)
             }
             return ((d >= 0) << 1) - 1;
         }
-    } while (c1);
-    return 0;
+    }
+    return s1.len < s2.len ? -1 : s1.len == s2.len ? 0 : 1;
 }
 NK_API int
 nk_stricmpn(const char *s1, const char *s2, int n)
@@ -278,29 +302,33 @@ nk_stricmpn(const char *s1, const char *s2, int n)
     return 0;
 }
 NK_INTERN int
-nk_str_match_here(const char *regexp, const char *text)
+nk_str_match_here(struct nk_slice regexp, struct nk_slice text)
 {
-    if (regexp[0] == '\0')
+    if (regexp.len == 0)
         return 1;
-    if (regexp[1] == '*')
-        return nk_str_match_star(regexp[0], regexp+2, text);
-    if (regexp[0] == '$' && regexp[1] == '\0')
-        return *text == '\0';
-    if (*text!='\0' && (regexp[0]=='.' || regexp[0]==*text))
-        return nk_str_match_here(regexp+1, text+1);
+    if (regexp.len >= 2 && regexp.ptr[1] == '*')
+        return nk_str_match_star(regexp.ptr[0], nk_substr(regexp, 2, regexp.len), text);
+    if (regexp.len == 1 && regexp.ptr[0] == '$')
+        return text.len == 0;
+    if (text.len != 0 && (regexp.ptr[0] == '.' || regexp.ptr[0] == text.ptr[0])) {
+        regexp = nk_substr(regexp, 1, regexp.len);
+        text = nk_substr(text, 1, text.len);
+        return nk_str_match_here(regexp, text);
+    }
     return 0;
 }
 NK_INTERN int
-nk_str_match_star(int c, const char *regexp, const char *text)
+nk_str_match_star(int c, struct nk_slice regexp, struct nk_slice text)
 {
-    do {/* a '* matches zero or more instances */
-        if (nk_str_match_here(regexp, text))
+    nk_size i = 0;
+    do { /* a '* matches zero or more instances */
+        if (nk_str_match_here(regexp, nk_substr(text, i, text.len)))
             return 1;
-    } while (*text != '\0' && (*text++ == c || c == '.'));
+    } while (i < text.len && (text.ptr[i++] == c || c == '.'));
     return 0;
 }
 NK_API int
-nk_strfilter(const char *text, const char *regexp)
+nk_strfilter(struct nk_slice text, struct nk_slice regexp)
 {
     /*
     c    matches any literal character c
@@ -308,17 +336,18 @@ nk_strfilter(const char *text, const char *regexp)
     ^    matches the beginning of the input string
     $    matches the end of the input string
     *    matches zero or more occurrences of the previous character*/
-    if (regexp[0] == '^')
-        return nk_str_match_here(regexp+1, text);
-    do {    /* must look even if string is empty */
+    if (regexp.len != 0 && regexp.ptr[0] == '^') {
+        regexp = nk_substr(regexp, 1, regexp.len);
+        return nk_str_match_here(regexp, text);
+    }
+    for (; text.len != 0; text.ptr += 1, text.len -= 1) { /* must look even if string is empty */
         if (nk_str_match_here(regexp, text))
             return 1;
-    } while (*text++ != '\0');
+    }
     return 0;
 }
 NK_API int
-nk_strmatch_fuzzy_text(const char *str, int str_len,
-    const char *pattern, int *out_score)
+nk_strmatch_fuzzy_string(struct nk_slice str, struct nk_slice pattern, int *out_score)
 {
     /* Returns true if each character in pattern is found sequentially within str
      * if found then out_score is also set. Score value has no intrinsic meaning.
@@ -339,8 +368,9 @@ nk_strmatch_fuzzy_text(const char *str, int str_len,
 
     /* loop variables */
     int score = 0;
-    char const * pattern_iter = pattern;
-    int str_iter = 0;
+    char const * pattern_iter = pattern.ptr;
+    char const * pattern_end = pattern.ptr + pattern.len;
+    nk_size str_iter = 0;
     int prev_matched = nk_false;
     int prev_lower = nk_false;
     /* true so if first letter match gets separator bonus*/
@@ -351,20 +381,20 @@ nk_strmatch_fuzzy_text(const char *str, int str_len,
     int best_letter_score = 0;
 
     /* loop over strings */
-    NK_ASSERT(str);
-    NK_ASSERT(pattern);
-    if (!str || !str_len || !pattern) return 0;
-    while (str_iter < str_len)
+    NK_ASSERT(str.ptr);
+    NK_ASSERT(pattern.ptr);
+    if (!str.ptr || !str.len || !pattern.ptr) return 0;
+    while (str_iter < str.len)
     {
-        const char pattern_letter = *pattern_iter;
-        const char str_letter = str[str_iter];
+        const char pattern_letter = pattern_iter == pattern_end ? '\0' : *pattern_iter;
+        const char str_letter = str.ptr[str_iter];
 
-        int next_match = *pattern_iter != '\0' &&
+        int next_match = pattern_iter != pattern_end &&
             nk_to_lower(pattern_letter) == nk_to_lower(str_letter);
         int rematch = best_letter && nk_to_upper(*best_letter) == nk_to_upper(str_letter);
 
         int advanced = next_match && best_letter;
-        int pattern_repeat = best_letter && *pattern_iter != '\0';
+        int pattern_repeat = best_letter && pattern_iter != pattern_end;
         pattern_repeat = pattern_repeat &&
             nk_to_lower(*best_letter) == nk_to_lower(pattern_letter);
 
@@ -378,8 +408,8 @@ nk_strmatch_fuzzy_text(const char *str, int str_len,
         {
             int new_score = 0;
             /* Apply penalty for each letter before the first pattern match */
-            if (pattern_iter == pattern) {
-                int count = (int)(&str[str_iter] - str);
+            if (pattern_iter == pattern.ptr) {
+                int count = (int)(&str.ptr[str_iter] - str.ptr);
                 int penalty = NK_LEADING_LETTER_PENALTY * count;
                 if (penalty < NK_MAX_LEADING_LETTER_PENALTY)
                     penalty = NK_MAX_LEADING_LETTER_PENALTY;
@@ -409,7 +439,7 @@ nk_strmatch_fuzzy_text(const char *str, int str_len,
                 if (best_letter != 0)
                     score += NK_UNMATCHED_LETTER_PENALTY;
 
-                best_letter = &str[str_iter];
+                best_letter = &str.ptr[str_iter];
                 best_letter_score = new_score;
             }
             prev_matched = nk_true;
@@ -430,17 +460,12 @@ nk_strmatch_fuzzy_text(const char *str, int str_len,
         score += best_letter_score;
 
     /* did not match full pattern */
-    if (*pattern_iter != '\0')
+    if (pattern_iter != pattern_end)
         return nk_false;
 
     if (out_score)
         *out_score = score;
     return nk_true;
-}
-NK_API int
-nk_strmatch_fuzzy_string(char const *str, char const *pattern, int *out_score)
-{
-    return nk_strmatch_fuzzy_text(str, nk_strlen(str), pattern, out_score);
 }
 NK_LIB int
 nk_string_float_limit(char *string, int prec)
@@ -605,7 +630,7 @@ nk_vsnprintf(char *buf, int buf_size, const char *fmt, va_list args)
     int width = NK_DEFAULT;
     nk_flags flag = 0;
 
-    int len = 0;
+    nk_size len = 0;
     int result = -1;
     const char *iter = fmt;
 
@@ -919,18 +944,18 @@ nk_strfmt(char *buf, int buf_size, const char *fmt, va_list args)
 }
 #endif
 NK_API nk_hash
-nk_murmur_hash(const void * key, int len, nk_hash seed)
+nk_murmur_hash(struct nk_slice key, nk_hash seed)
 {
     /* 32-Bit MurmurHash3: https://code.google.com/p/smhasher/wiki/MurmurHash3*/
     #define NK_ROTL(x,r) ((x) << (r) | ((x) >> (32 - r)))
 
     nk_uint h1 = seed;
     nk_uint k1;
-    const nk_byte *data = (const nk_byte*)key;
+    const nk_byte *data = (const nk_byte*)key.ptr;
     const nk_byte *keyptr = data;
     nk_byte *k1ptr;
     const int bsize = sizeof(k1);
-    const int nblocks = len/4;
+    const int nblocks = key.len/4;
 
     const nk_uint c1 = 0xcc9e2d51;
     const nk_uint c2 = 0x1b873593;
@@ -938,7 +963,7 @@ nk_murmur_hash(const void * key, int len, nk_hash seed)
     int i;
 
     /* body */
-    if (!key) return 0;
+    if (!key.ptr) return 0;
     for (i = 0; i < nblocks; ++i, keyptr += bsize) {
         k1ptr = (nk_byte*)&k1;
         k1ptr[0] = keyptr[0];
@@ -958,7 +983,7 @@ nk_murmur_hash(const void * key, int len, nk_hash seed)
     /* tail */
     tail = (const nk_byte*)(data + nblocks*4);
     k1 = 0;
-    switch (len & 3) {
+    switch (key.len & 3) {
         case 3: k1 ^= (nk_uint)(tail[2] << 16); /* fallthrough */
         case 2: k1 ^= (nk_uint)(tail[1] << 8u); /* fallthrough */
         case 1: k1 ^= tail[0];
@@ -971,7 +996,7 @@ nk_murmur_hash(const void * key, int len, nk_hash seed)
     }
 
     /* finalization */
-    h1 ^= (nk_uint)len;
+    h1 ^= (nk_uint)key.len;
     /* fmix32 */
     h1 ^= h1 >> 16;
     h1 *= 0x85ebca6b;
@@ -984,7 +1009,7 @@ nk_murmur_hash(const void * key, int len, nk_hash seed)
 }
 #ifdef NK_INCLUDE_STANDARD_IO
 NK_LIB char*
-nk_file_load(const char* path, nk_size* siz, struct nk_allocator *alloc)
+nk_file_load(const char *path, nk_size* siz, struct nk_allocator *alloc)
 {
     char *buf;
     FILE *fd;
@@ -1018,8 +1043,8 @@ nk_file_load(const char* path, nk_size* siz, struct nk_allocator *alloc)
 }
 #endif
 NK_LIB int
-nk_text_clamp(const struct nk_user_font *font, const char *text,
-    int text_len, float space, int *glyphs, float *text_width,
+nk_text_clamp(const struct nk_user_font *font, struct nk_slice text,
+    float space, int *glyphs, float *text_width,
     nk_rune *sep_list, int sep_count)
 {
     int i = 0;
@@ -1027,19 +1052,19 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
     float last_width = 0;
     nk_rune unicode = 0;
     float width = 0;
-    int len = 0;
+    nk_size len = 0;
     int g = 0;
     float s;
 
-    int sep_len = 0;
+    nk_size sep_len = 0;
     int sep_g = 0;
     float sep_width = 0;
     sep_count = NK_MAX(sep_count,0);
 
-    glyph_len = nk_utf_decode(text, &unicode, text_len);
-    while (glyph_len && (width < space) && (len < text_len)) {
+    glyph_len = nk_utf_decode(text, &unicode);
+    while (glyph_len && (width < space) && (len < text.len)) {
         len += glyph_len;
-        s = font->width(font->userdata, font->height, text, len);
+        s = font->width(font->userdata, font->height, nk_substr(text, 0, len));
         for (i = 0; i < sep_count; ++i) {
             if (unicode != sep_list[i]) continue;
             sep_width = last_width = width;
@@ -1052,10 +1077,10 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
             sep_g = g+1;
         }
         width = s;
-        glyph_len = nk_utf_decode(&text[len], &unicode, text_len - len);
+        glyph_len = nk_utf_decode(nk_substr(text, len, text.len), &unicode);
         g++;
     }
-    if (len >= text_len) {
+    if (len >= text.len) {
         *glyphs = g;
         *text_width = last_width;
         return len;
@@ -1067,7 +1092,7 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
 }
 NK_LIB struct nk_vec2
 nk_text_calculate_text_bounds(const struct nk_user_font *font,
-    const char *begin, int byte_len, float row_height, const char **remaining,
+    struct nk_slice begin, float row_height, struct nk_slice *remaining,
     struct nk_vec2 *out_offset, int *glyphs, int op)
 {
     float line_height = row_height;
@@ -1077,16 +1102,16 @@ nk_text_calculate_text_bounds(const struct nk_user_font *font,
     float glyph_width;
     int glyph_len = 0;
     nk_rune unicode = 0;
-    int text_len = 0;
-    if (!begin || byte_len <= 0 || !font)
+    nk_size text_len = 0;
+    if (!begin.ptr || begin.len <= 0 || !font)
         return nk_vec2(0,row_height);
 
-    glyph_len = nk_utf_decode(begin, &unicode, byte_len);
+    glyph_len = nk_utf_decode(begin, &unicode);
     if (!glyph_len) return text_size;
-    glyph_width = font->width(font->userdata, font->height, begin, glyph_len);
+    glyph_width = font->width(font->userdata, font->height, nk_substr(begin, 0, glyph_len));
 
     *glyphs = 0;
-    while ((text_len < byte_len) && glyph_len) {
+    while ((text_len < begin.len) && glyph_len) {
         if (unicode == '\n') {
             text_size.x = NK_MAX(text_size.x, line_width);
             text_size.y += line_height;
@@ -1096,22 +1121,22 @@ nk_text_calculate_text_bounds(const struct nk_user_font *font,
                 break;
 
             text_len++;
-            glyph_len = nk_utf_decode(begin + text_len, &unicode, byte_len-text_len);
+            glyph_len = nk_utf_decode(nk_substr(begin, text_len, begin.len), &unicode);
             continue;
         }
 
         if (unicode == '\r') {
             text_len++;
             *glyphs+=1;
-            glyph_len = nk_utf_decode(begin + text_len, &unicode, byte_len-text_len);
+            glyph_len = nk_utf_decode(nk_substr(begin, text_len, begin.len), &unicode);
             continue;
         }
 
         *glyphs = *glyphs + 1;
         text_len += glyph_len;
         line_width += (float)glyph_width;
-        glyph_len = nk_utf_decode(begin + text_len, &unicode, byte_len-text_len);
-        glyph_width = font->width(font->userdata, font->height, begin+text_len, glyph_len);
+        glyph_len = nk_utf_decode(nk_substr(begin, text_len, begin.len), &unicode);
+        glyph_width = font->width(font->userdata, font->height, nk_substr(begin, text_len, text_len+glyph_len));
         continue;
     }
 
@@ -1122,7 +1147,7 @@ nk_text_calculate_text_bounds(const struct nk_user_font *font,
     if (line_width > 0 || text_size.y == 0.0f)
         text_size.y += line_height;
     if (remaining)
-        *remaining = begin+text_len;
+        *remaining = nk_substr(begin, text_len, begin.len);
     return text_size;
 }
 

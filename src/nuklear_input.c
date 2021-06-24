@@ -103,7 +103,7 @@ nk_input_glyph(struct nk_context *ctx, const nk_glyph glyph)
     if (!ctx) return;
     in = &ctx->input;
 
-    len = nk_utf_decode(glyph, &unicode, NK_UTF_SIZE);
+    len = nk_utf_decode(nk_slice(glyph, NK_UTF_SIZE), &unicode);
     if (len && ((in->keyboard.text_len + len) < NK_INPUT_MAX)) {
         nk_utf_encode(unicode, &in->keyboard.text[in->keyboard.text_len],
             NK_INPUT_MAX - in->keyboard.text_len);

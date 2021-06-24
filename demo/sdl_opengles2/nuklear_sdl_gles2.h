@@ -291,20 +291,20 @@ static void
 nk_sdl_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
 {
     const char *text = SDL_GetClipboardText();
-    if (text) nk_textedit_paste(edit, text, nk_strlen(text));
+    if (text) nk_textedit_paste(edit, nk_slicez(text));
     (void)usr;
 }
 
 static void
-nk_sdl_clipboard_copy(nk_handle usr, const char *text, int len)
+nk_sdl_clipboard_copy(nk_handle usr, struct nk_slice text)
 {
     char *str = 0;
     (void)usr;
-    if (!len) return;
-    str = (char*)malloc((size_t)len+1);
+    if (!text.len) return;
+    str = (char*)malloc(text.len+1);
     if (!str) return;
-    memcpy(str, text, (size_t)len);
-    str[len] = '\0';
+    memcpy(str, text.ptr, text.len);
+    str[text.len] = '\0';
     SDL_SetClipboardText(str);
     free(str);
 }

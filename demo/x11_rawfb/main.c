@@ -207,7 +207,7 @@ main(void)
         nk_input_end(&rawfb->ctx);
 
         /* GUI */
-        if (nk_begin(&rawfb->ctx, "Demo", nk_rect(50, 50, 200, 200),
+        if (nk_begin(&rawfb->ctx, nk_slicez("Demo"), nk_rect(50, 50, 200, 200),
             NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|
             NK_WINDOW_CLOSABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE)) {
             enum {EASY, HARD};
@@ -215,16 +215,16 @@ main(void)
             static int property = 20;
 
             nk_layout_row_static(&rawfb->ctx, 30, 80, 1);
-            if (nk_button_label(&rawfb->ctx, "button"))
+            if (nk_button_label(&rawfb->ctx, nk_slicez("button")))
                 fprintf(stdout, "button pressed\n");
             nk_layout_row_dynamic(&rawfb->ctx, 30, 2);
-            if (nk_option_label(&rawfb->ctx, "easy", op == EASY)) op = EASY;
-            if (nk_option_label(&rawfb->ctx, "hard", op == HARD)) op = HARD;
+            if (nk_option_label(&rawfb->ctx, nk_slicez("easy"), op == EASY)) op = EASY;
+            if (nk_option_label(&rawfb->ctx, nk_slicez("hard"), op == HARD)) op = HARD;
             nk_layout_row_dynamic(&rawfb->ctx, 25, 1);
-            nk_property_int(&rawfb->ctx, "Compression:", 0, &property, 100, 10, 1);
+            nk_property_int(&rawfb->ctx, nk_slicez("Compression:"), 0, &property, 100, 10, 1);
         }
         nk_end(&rawfb->ctx);
-        if (nk_window_is_closed(&rawfb->ctx, "Demo")) break;
+        if (nk_window_is_closed(&rawfb->ctx, nk_slicez("Demo"))) break;
 
         /* -------------- EXAMPLES ---------------- */
         #ifdef INCLUDE_CALCULATOR

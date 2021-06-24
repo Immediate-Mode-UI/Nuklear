@@ -71,21 +71,21 @@ nk_filter_binary(const struct nk_text_edit *box, nk_rune unicode)
 NK_LIB void
 nk_edit_draw_text(struct nk_command_buffer *out,
     const struct nk_style_edit *style, float pos_x, float pos_y,
-    float x_offset, const char *text, int byte_len, float row_height,
+    float x_offset, struct nk_slice text, float row_height,
     const struct nk_user_font *font, struct nk_color background,
     struct nk_color foreground, nk_bool is_selected)
 {
     NK_ASSERT(out);
     NK_ASSERT(font);
     NK_ASSERT(style);
-    if (!text || !byte_len || !out || !style) return;
+    if (!text.ptr || !text.len || !out || !style) return;
 
     {int glyph_len = 0;
     nk_rune unicode = 0;
-    int text_len = 0;
+    nk_size text_len = 0;
     float line_width = 0;
     float glyph_width;
-    const char *line = text;
+    const char *line = text.ptr;
     float line_offset = 0;
     int line_count = 0;
 
@@ -94,9 +94,9 @@ nk_edit_draw_text(struct nk_command_buffer *out,
     txt.background = background;
     txt.text = foreground;
 
-    glyph_len = nk_utf_decode(text+text_len, &unicode, byte_len-text_len);
+    glyph_len = nk_utf_decode(nk_slice(text.ptr+text_len, text.len-text_len), &unicode);
     if (!glyph_len) return;
-    while ((text_len < byte_len) && glyph_len)
+    while ((text_len < text.len) && glyph_len)
     {
         if (unicode == '\n') {
             /* new line separator so draw previous line */
@@ -110,26 +110,26 @@ nk_edit_draw_text(struct nk_command_buffer *out,
 
             if (is_selected) /* selection needs to draw different background color */
                 nk_fill_rect(out, label, 0, background);
-            nk_widget_text(out, label, line, (int)((text + text_len) - line),
+            nk_widget_text(out, label, nk_slice(line, (text.ptr + text_len) - line),
                 &txt, NK_TEXT_CENTERED, font);
 
             text_len++;
             line_count++;
             line_width = 0;
-            line = text + text_len;
+            line = text.ptr + text_len;
             line_offset += row_height;
-            glyph_len = nk_utf_decode(text + text_len, &unicode, (int)(byte_len-text_len));
+            glyph_len = nk_utf_decode(nk_slice(text.ptr + text_len, text.len-text_len), &unicode); 
             continue;
         }
         if (unicode == '\r') {
             text_len++;
-            glyph_len = nk_utf_decode(text + text_len, &unicode, byte_len-text_len);
+            glyph_len = nk_utf_decode(nk_slice(text.ptr + text_len, text.len-text_len), &unicode);
             continue;
         }
-        glyph_width = font->width(font->userdata, font->height, text+text_len, glyph_len);
+        glyph_width = font->width(font->userdata, font->height, nk_slice(text.ptr+text_len, glyph_len));
         line_width += (float)glyph_width;
         text_len += glyph_len;
-        glyph_len = nk_utf_decode(text + text_len, &unicode, byte_len-text_len);
+        glyph_len = nk_utf_decode(nk_slice(text.ptr + text_len, text.len-text_len), &unicode);
         continue;
     }
     if (line_width > 0) {
@@ -144,7 +144,7 @@ nk_edit_draw_text(struct nk_command_buffer *out,
 
         if (is_selected)
             nk_fill_rect(out, label, 0, background);
-        nk_widget_text(out, label, line, (int)((text + text_len) - line),
+        nk_widget_text(out, label, nk_slice(line, (text.ptr + text_len) - line),
             &txt, NK_TEXT_LEFT, font);
     }}
 }
@@ -256,7 +256,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         /* text input */
         edit->filter = filter;
         if (in->keyboard.text_len) {
-            nk_textedit_text(edit, in->keyboard.text, in->keyboard.text_len);
+            nk_textedit_text(edit, nk_slice(in->keyboard.text, in->keyboard.text_len));
             cursor_follow = nk_true;
             in->keyboard.text_len = 0;
         }
@@ -265,10 +265,10 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         if (nk_input_is_key_pressed(in, NK_KEY_ENTER)) {
             cursor_follow = nk_true;
             if (flags & NK_EDIT_CTRL_ENTER_NEWLINE && shift_mod)
-                nk_textedit_text(edit, "\n", 1);
+                nk_textedit_text(edit, nk_slicez("\n"));
             else if (flags & NK_EDIT_SIG_ENTER)
                 ret |= NK_EDIT_COMMITED;
-            else nk_textedit_text(edit, "\n", 1);
+            else nk_textedit_text(edit, nk_slicez("\n"));
         }
 
         /* cut & copy handler */
@@ -276,7 +276,6 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         int cut = nk_input_is_key_pressed(in, NK_KEY_CUT);
         if ((copy || cut) && (flags & NK_EDIT_CLIPBOARD))
         {
-            int glyph_len;
             nk_rune unicode;
             const char *text;
             int b = edit->select_start;
@@ -284,9 +283,9 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
 
             int begin = NK_MIN(b, e);
             int end = NK_MAX(b, e);
-            text = nk_str_at_const(&edit->string, begin, &unicode, &glyph_len);
+            text = nk_str_at_const(&edit->string, begin, &unicode).ptr;
             if (edit->clip.copy)
-                edit->clip.copy(edit->clip.userdata, text, end - begin);
+                edit->clip.copy(edit->clip.userdata, nk_slice(text, end - begin));
             if (cut && !(flags & NK_EDIT_READ_ONLY)){
                 nk_textedit_cut(edit);
                 cursor_follow = nk_true;
@@ -303,7 +302,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         /* tab handler */
         {int tab = nk_input_is_key_pressed(in, NK_KEY_TAB);
         if (tab && (flags & NK_EDIT_ALLOW_TAB)) {
-            nk_textedit_text(edit, "    ", 4);
+            nk_textedit_text(edit, nk_slicez("    "));
             cursor_follow = nk_true;
         }}
     }
@@ -317,8 +316,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         *state |= NK_WIDGET_STATE_HOVERED;
 
     /* DRAW EDIT */
-    {const char *text = nk_str_get_const(&edit->string);
-    int len = nk_str_len_char(&edit->string);
+    {struct nk_slice text = nk_str_get_const(&edit->string);
 
     {/* select background colors/images  */
     const struct nk_style_item *background;
@@ -355,22 +353,22 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
 
         /* calculate total line count + total space + cursor/selection position */
         float line_width = 0.0f;
-        if (text && len)
+        if (text.ptr && text.len)
         {
             /* utf8 encoding */
             float glyph_width;
             int glyph_len = 0;
             nk_rune unicode = 0;
-            int text_len = 0;
+            nk_size text_len = 0;
             int glyphs = 0;
             int row_begin = 0;
 
-            glyph_len = nk_utf_decode(text, &unicode, len);
-            glyph_width = font->width(font->userdata, font->height, text, glyph_len);
+            glyph_len = nk_utf_decode(text, &unicode);
+            glyph_width = font->width(font->userdata, font->height, nk_substr(text, 0, glyph_len));
             line_width = 0;
 
             /* iterate all lines */
-            while ((text_len < len) && glyph_len)
+            while ((text_len < text.len) && glyph_len)
             {
                 /* set cursor 2D position and line */
                 if (!cursor_ptr && glyphs == edit->cursor)
@@ -378,15 +376,15 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                     int glyph_offset;
                     struct nk_vec2 out_offset;
                     struct nk_vec2 row_size;
-                    const char *remaining;
+                    struct nk_slice remaining;
 
                     /* calculate 2d position */
                     cursor_pos.y = (float)(total_lines-1) * row_height;
-                    row_size = nk_text_calculate_text_bounds(font, text+row_begin,
-                                text_len-row_begin, row_height, &remaining,
+                    row_size = nk_text_calculate_text_bounds(font, nk_substr(text, row_begin,
+                                text_len), row_height, &remaining,
                                 &out_offset, &glyph_offset, NK_STOP_ON_NEW_LINE);
                     cursor_pos.x = row_size.x;
-                    cursor_ptr = text + text_len;
+                    cursor_ptr = text.ptr + text_len;
                 }
 
                 /* set start selection 2D position and line */
@@ -396,15 +394,15 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                     int glyph_offset;
                     struct nk_vec2 out_offset;
                     struct nk_vec2 row_size;
-                    const char *remaining;
+                    struct nk_slice remaining;
 
                     /* calculate 2d position */
                     selection_offset_start.y = (float)(NK_MAX(total_lines-1,0)) * row_height;
-                    row_size = nk_text_calculate_text_bounds(font, text+row_begin,
-                                text_len-row_begin, row_height, &remaining,
+                    row_size = nk_text_calculate_text_bounds(font, nk_substr(text, row_begin,
+                                text_len), row_height, &remaining,
                                 &out_offset, &glyph_offset, NK_STOP_ON_NEW_LINE);
                     selection_offset_start.x = row_size.x;
-                    select_begin_ptr = text + text_len;
+                    select_begin_ptr = text.ptr + text_len;
                 }
 
                 /* set end selection 2D position and line */
@@ -414,15 +412,15 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                     int glyph_offset;
                     struct nk_vec2 out_offset;
                     struct nk_vec2 row_size;
-                    const char *remaining;
+                    struct nk_slice remaining;
 
                     /* calculate 2d position */
                     selection_offset_end.y = (float)(total_lines-1) * row_height;
-                    row_size = nk_text_calculate_text_bounds(font, text+row_begin,
-                                text_len-row_begin, row_height, &remaining,
+                    row_size = nk_text_calculate_text_bounds(font, nk_substr(text, row_begin,
+                                text_len), row_height, &remaining,
                                 &out_offset, &glyph_offset, NK_STOP_ON_NEW_LINE);
                     selection_offset_end.x = row_size.x;
-                    select_end_ptr = text + text_len;
+                    select_end_ptr = text.ptr + text_len;
                 }
                 if (unicode == '\n') {
                     text_size.x = NK_MAX(text_size.x, line_width);
@@ -431,8 +429,8 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                     text_len++;
                     glyphs++;
                     row_begin = text_len;
-                    glyph_len = nk_utf_decode(text + text_len, &unicode, len-text_len);
-                    glyph_width = font->width(font->userdata, font->height, text+text_len, glyph_len);
+                    glyph_len = nk_utf_decode(nk_substr(text, text_len, text.len), &unicode);
+                    glyph_width = font->width(font->userdata, font->height, nk_substr(text, text_len, text_len+glyph_len));
                     continue;
                 }
 
@@ -440,9 +438,9 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                 text_len += glyph_len;
                 line_width += (float)glyph_width;
 
-                glyph_len = nk_utf_decode(text + text_len, &unicode, len-text_len);
+                glyph_len = nk_utf_decode(nk_substr(text, text_len, text.len), &unicode);
                 glyph_width = font->width(font->userdata, font->height,
-                    text+text_len, glyph_len);
+                    nk_substr(text, text_len, text_len+glyph_len));
                 continue;
             }
             text_size.y = (float)total_lines * row_height;
@@ -540,48 +538,47 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
 
         if (edit->select_start == edit->select_end) {
             /* no selection so just draw the complete text */
-            const char *begin = nk_str_get_const(&edit->string);
-            int l = nk_str_len_char(&edit->string);
+            struct nk_slice begin = nk_str_get_const(&edit->string);
             nk_edit_draw_text(out, style, area.x - edit->scrollbar.x,
-                area.y - edit->scrollbar.y, 0, begin, l, row_height, font,
+                area.y - edit->scrollbar.y, 0, begin, row_height, font,
                 background_color, text_color, nk_false);
         } else {
             /* edit has selection so draw 1-3 text chunks */
             if (edit->select_start != edit->select_end && selection_begin > 0){
                 /* draw unselected text before selection */
-                const char *begin = nk_str_get_const(&edit->string);
+                const char *begin = nk_str_get_const(&edit->string).ptr;
                 NK_ASSERT(select_begin_ptr);
                 nk_edit_draw_text(out, style, area.x - edit->scrollbar.x,
-                    area.y - edit->scrollbar.y, 0, begin, (int)(select_begin_ptr - begin),
+                    area.y - edit->scrollbar.y, 0, nk_slice(begin, select_begin_ptr - begin),
                     row_height, font, background_color, text_color, nk_false);
             }
             if (edit->select_start != edit->select_end) {
                 /* draw selected text */
                 NK_ASSERT(select_begin_ptr);
                 if (!select_end_ptr) {
-                    const char *begin = nk_str_get_const(&edit->string);
-                    select_end_ptr = begin + nk_str_len_char(&edit->string);
+                    struct nk_slice begin = nk_str_get_const(&edit->string);
+                    select_end_ptr = begin.ptr + begin.len;
                 }
                 nk_edit_draw_text(out, style,
                     area.x - edit->scrollbar.x,
                     area.y + selection_offset_start.y - edit->scrollbar.y,
                     selection_offset_start.x,
-                    select_begin_ptr, (int)(select_end_ptr - select_begin_ptr),
+                    nk_slice(select_begin_ptr, select_end_ptr - select_begin_ptr),
                     row_height, font, sel_background_color, sel_text_color, nk_true);
             }
             if ((edit->select_start != edit->select_end &&
                 selection_end < edit->string.len))
             {
                 /* draw unselected text after selected text */
+                struct nk_slice text = nk_str_get_const(&edit->string);
                 const char *begin = select_end_ptr;
-                const char *end = nk_str_get_const(&edit->string) +
-                                    nk_str_len_char(&edit->string);
+                const char *end = text.ptr + text.len;
                 NK_ASSERT(select_end_ptr);
                 nk_edit_draw_text(out, style,
                     area.x - edit->scrollbar.x,
                     area.y + selection_offset_end.y - edit->scrollbar.y,
                     selection_offset_end.x,
-                    begin, (int)(end - begin), row_height, font,
+                    nk_slice(begin, end - begin), row_height, font,
                     background_color, text_color, nk_true);
             }
         }
@@ -607,24 +604,23 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
 
                 nk_rune unicode;
                 NK_ASSERT(cursor_ptr);
-                glyph_len = nk_utf_decode(cursor_ptr, &unicode, 4);
+                glyph_len = nk_utf_decode(nk_slice(cursor_ptr, 4), &unicode);
 
                 label.x = area.x + cursor_pos.x - edit->scrollbar.x;
                 label.y = area.y + cursor_pos.y - edit->scrollbar.y;
-                label.w = font->width(font->userdata, font->height, cursor_ptr, glyph_len);
+                label.w = font->width(font->userdata, font->height, nk_slice(cursor_ptr, glyph_len));
                 label.h = row_height;
 
                 txt.padding = nk_vec2(0,0);
                 txt.background = cursor_color;;
                 txt.text = cursor_text_color;
                 nk_fill_rect(out, label, 0, cursor_color);
-                nk_widget_text(out, label, cursor_ptr, glyph_len, &txt, NK_TEXT_LEFT, font);
+                nk_widget_text(out, label, nk_slice(cursor_ptr, glyph_len), &txt, NK_TEXT_LEFT, font);
             }
         }}
     } else {
         /* not active so just draw text */
-        int l = nk_str_len_char(&edit->string);
-        const char *begin = nk_str_get_const(&edit->string);
+        struct nk_slice begin = nk_str_get_const(&edit->string);
 
         const struct nk_style_item *background;
         struct nk_color background_color;
@@ -644,7 +640,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
             background_color = nk_rgba(0,0,0,0);
         else background_color = background->data.color;
         nk_edit_draw_text(out, style, area.x - edit->scrollbar.x,
-            area.y - edit->scrollbar.y, 0, begin, l, row_height, font,
+            area.y - edit->scrollbar.y, 0, begin, row_height, font,
             background_color, text_color, nk_false);
     }
     nk_push_scissor(out, old_clip);}
@@ -703,7 +699,7 @@ nk_edit_string(struct nk_context *ctx, nk_flags flags,
 
     if (win->edit.active && hash == win->edit.name) {
         if (flags & NK_EDIT_NO_CURSOR)
-            edit->cursor = nk_utf_len(memory, *len);
+            edit->cursor = nk_utf_len(nk_slice(memory, *len));
         else edit->cursor = win->edit.cursor;
         if (!(flags & NK_EDIT_SELECTABLE)) {
             edit->select_start = win->edit.cursor;
@@ -722,7 +718,7 @@ nk_edit_string(struct nk_context *ctx, nk_flags flags,
     *len = NK_MIN(*len, max-1);
     nk_str_init_fixed(&edit->string, memory, (nk_size)max);
     edit->string.buffer.allocated = (nk_size)*len;
-    edit->string.len = nk_utf_len(memory, *len);
+    edit->string.len = nk_utf_len(nk_slice(memory, *len));
     state = nk_edit_buffer(ctx, flags, edit, filter);
     *len = (int)edit->string.buffer.allocated;
 

@@ -399,7 +399,7 @@ file_browser_run(struct file_browser *browser, struct nk_context *ctx)
     struct media *media = browser->media;
     struct nk_rect total_space;
 
-    if (nk_begin(ctx, "File Browser", nk_rect(50, 50, 800, 600),
+    if (nk_begin(ctx, nk_slicez("File Browser"), nk_rect(50, 50, 800, 600),
         NK_WINDOW_BORDER|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_MOVABLE))
     {
         static float ratio[] = {0.25f, NK_UNDEFINED};
@@ -415,7 +415,7 @@ file_browser_run(struct file_browser *browser, struct nk_context *ctx)
             while (*d++) {
                 if (*d == '/') {
                     *d = '\0';
-                    if (nk_button_label(ctx, begin)) {
+                    if (nk_button_label(ctx, nk_slicez(begin))) {
                         *d++ = '/'; *d = '\0';
                         file_browser_reload_directory_content(browser, browser->directory);
                         break;
@@ -431,24 +431,24 @@ file_browser_run(struct file_browser *browser, struct nk_context *ctx)
         /* window layout */
         total_space = nk_window_get_content_region(ctx);
         nk_layout_row(ctx, NK_DYNAMIC, total_space.h, 2, ratio);
-        nk_group_begin(ctx, "Special", NK_WINDOW_NO_SCROLLBAR);
+        nk_group_begin(ctx, nk_slicez("Special"), NK_WINDOW_NO_SCROLLBAR);
         {
             struct nk_image home = media->icons.home;
             struct nk_image desktop = media->icons.desktop;
             struct nk_image computer = media->icons.computer;
 
             nk_layout_row_dynamic(ctx, 40, 1);
-            if (nk_button_image_label(ctx, home, "home", NK_TEXT_CENTERED))
+            if (nk_button_image_label(ctx, home, nk_slicez("home"), NK_TEXT_CENTERED))
                 file_browser_reload_directory_content(browser, browser->home);
-            if (nk_button_image_label(ctx,desktop,"desktop",NK_TEXT_CENTERED))
+            if (nk_button_image_label(ctx,desktop,nk_slicez("desktop"),NK_TEXT_CENTERED))
                 file_browser_reload_directory_content(browser, browser->desktop);
-            if (nk_button_image_label(ctx,computer,"computer",NK_TEXT_CENTERED))
+            if (nk_button_image_label(ctx,computer,nk_slicez("computer"),NK_TEXT_CENTERED))
                 file_browser_reload_directory_content(browser, "/");
             nk_group_end(ctx);
         }
 
         /* output directory content window */
-        nk_group_begin(ctx, "Content", 0);
+        nk_group_begin(ctx, nk_slicez("Content"), 0);
         {
             int index = -1;
             size_t i = 0, j = 0, k = 0;
@@ -484,10 +484,10 @@ file_browser_run(struct file_browser *browser, struct nk_context *ctx)
                 for (; k < count && k < n; k++) {
                     /* draw one row of labels */
                     if (k < browser->dir_count) {
-                        nk_label(ctx, browser->directories[k], NK_TEXT_CENTERED);
+                        nk_label(ctx, nk_slicez(browser->directories[k]), NK_TEXT_CENTERED);
                     } else {
                         size_t t = k-browser->dir_count;
-                        nk_label(ctx,browser->files[t],NK_TEXT_CENTERED);
+                        nk_label(ctx, nk_slicez(browser->files[t]), NK_TEXT_CENTERED);
                     }
                 }}
             }

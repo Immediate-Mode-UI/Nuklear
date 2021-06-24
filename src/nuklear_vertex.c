@@ -1127,7 +1127,7 @@ nk_draw_list_add_image(struct nk_draw_list *list, struct nk_image texture,
 }
 NK_API void
 nk_draw_list_add_text(struct nk_draw_list *list, const struct nk_user_font *font,
-    struct nk_rect rect, const char *text, int len, float font_height,
+    struct nk_rect rect, struct nk_slice text, float font_height,
     struct nk_color fg)
 {
     float x = 0;
@@ -1139,24 +1139,24 @@ nk_draw_list_add_text(struct nk_draw_list *list, const struct nk_user_font *font
     struct nk_user_font_glyph g;
 
     NK_ASSERT(list);
-    if (!list || !len || !text) return;
+    if (!list || !text.len || !text.ptr) return;
     if (!NK_INTERSECT(rect.x, rect.y, rect.w, rect.h,
         list->clip_rect.x, list->clip_rect.y, list->clip_rect.w, list->clip_rect.h)) return;
 
     nk_draw_list_push_image(list, font->texture);
     x = rect.x;
-    glyph_len = nk_utf_decode(text, &unicode, len);
+    glyph_len = nk_utf_decode(text, &unicode);
     if (!glyph_len) return;
 
     /* draw every glyph image */
     fg.a = (nk_byte)((float)fg.a * list->config.global_alpha);
-    while (text_len < len && glyph_len) {
+    while (text_len < text.len && glyph_len) {
         float gx, gy, gh, gw;
         float char_width = 0;
         if (unicode == NK_UTF_INVALID) break;
 
         /* query currently drawn glyph information */
-        next_glyph_len = nk_utf_decode(text + text_len + glyph_len, &next, (int)len - text_len);
+        next_glyph_len = nk_utf_decode(nk_substr(text, text_len + glyph_len, text.len), &next);
         font->query(font->userdata, font_height, &g, unicode,
                     (next == NK_UTF_INVALID) ? '\0' : next);
 
@@ -1299,7 +1299,7 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
         case NK_COMMAND_TEXT: {
             const struct nk_command_text *t = (const struct nk_command_text*)cmd;
             nk_draw_list_add_text(&ctx->draw_list, t->font, nk_rect(t->x, t->y, t->w, t->h),
-                t->string, t->length, t->height, t->foreground);
+                nk_slice(t->string, t->length), t->height, t->foreground);
         } break;
         case NK_COMMAND_IMAGE: {
             const struct nk_command_image *i = (const struct nk_command_image*)cmd;

@@ -423,6 +423,10 @@ nk_xsurf_draw_text(XSurface *surf, short x, short y, unsigned short w, unsigned 
     int tx, ty;
     unsigned long bg = nk_color_from_byte(&cbg.r);
     unsigned long fg = nk_color_from_byte(&cfg.r);
+#ifdef NK_XLIB_USE_XFT
+    XRenderColor xrc;
+    XftColor color;
+#endif
 
     XSetForeground(surf->dpy, surf->gc, bg);
     XFillRectangle(surf->dpy, surf->drawable, surf->gc, (int)x, (int)y, (unsigned)w, (unsigned)h);
@@ -431,8 +435,6 @@ nk_xsurf_draw_text(XSurface *surf, short x, short y, unsigned short w, unsigned 
     tx = (int)x;
     ty = (int)y + font->ascent;
 #ifdef NK_XLIB_USE_XFT
-    XRenderColor xrc;
-    XftColor color;
     xrc.red = cfg.r * 257;
     xrc.green = cfg.g * 257;
     xrc.blue = cfg.b * 257;
@@ -636,26 +638,27 @@ nk_xfont_create(Display *dpy, const char *name)
 }
 
 NK_INTERN float
-nk_xfont_get_text_width(nk_handle handle, float height, const char *text, int len)
+nk_xfont_get_text_width(nk_handle handle, float height, struct nk_slice text)
 {
     XFont *font = (XFont*)handle.ptr;
+#ifdef NK_XLIB_USE_XFT
+    XGlyphInfo g;
+#else
+    XRectangle r;
+#endif
 
-	if(!font || !text)
+	if(!font || !text.ptr)
 		return 0;
 
 #ifdef NK_XLIB_USE_XFT
-    XGlyphInfo g;
-
-    XftTextExtentsUtf8(xlib.dpy, font->ft, (FcChar8*)text, len, &g);
+    XftTextExtentsUtf8(xlib.dpy, font->ft, (FcChar8*)text.ptr, text.len, &g);
     return g.xOff;
 #else
-    XRectangle r;
-
     if(font->set) {
-        XmbTextExtents(font->set, (const char*)text, len, NULL, &r);
+        XmbTextExtents(font->set, text.ptr, text.len, NULL, &r);
         return (float)r.width;
     } else{
-        int w = XTextWidth(font->xfont, (const char*)text, len);
+        int w = XTextWidth(font->xfont, text.ptr, text.len);
         return (float)w;
     }
 #endif
@@ -927,7 +930,7 @@ nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt)
             XGetWindowProperty(dpy, win, XA_PRIMARY, (int)pos, 1024, False,
                 AnyPropertyType, &actual_type, &actual_format, &len, &remain, &data);
             if (len && data)
-                nk_textedit_text(xlib.clipboard_target, (char*)data, (int)len);
+                nk_textedit_text(xlib.clipboard_target, nk_slice((char*)data, len));
             if (data != 0) XFree(data);
             pos += (len * (unsigned long)actual_format) / 32;
         } while (remain != 0);}

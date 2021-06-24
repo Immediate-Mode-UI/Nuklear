@@ -373,8 +373,8 @@ canvas_begin(struct nk_context *ctx, struct nk_canvas *canvas, nk_flags flags,
 
     /* create/update window and set position + size */
     flags = flags & ~NK_WINDOW_DYNAMIC;
-    nk_window_set_bounds(ctx, "Window", nk_rect(x, y, width, height));
-    nk_begin(ctx, "Window", nk_rect(x, y, width, height), NK_WINDOW_NO_SCROLLBAR|flags);
+    nk_window_set_bounds(ctx, nk_slicez("Window"), nk_rect(x, y, width, height));
+    nk_begin(ctx, nk_slicez("Window"), nk_rect(x, y, width, height), NK_WINDOW_NO_SCROLLBAR|flags);
 
     /* allocate the complete window space for drawing */
     {struct nk_rect total_space;
@@ -453,7 +453,7 @@ int main(int argc, char *argv[])
         {
             nk_fill_rect(canvas.painter, nk_rect(15,15,210,210), 5, nk_rgb(247, 230, 154));
             nk_fill_rect(canvas.painter, nk_rect(20,20,200,200), 5, nk_rgb(188, 174, 118));
-            nk_draw_text(canvas.painter, nk_rect(30, 30, 150, 20), "Text to draw", 12, &font->handle, nk_rgb(188,174,118), nk_rgb(0,0,0));
+            nk_draw_text(canvas.painter, nk_rect(30, 30, 150, 20), nk_slicez("Text to draw"), &font->handle, nk_rgb(188,174,118), nk_rgb(0,0,0));
             nk_fill_rect(canvas.painter, nk_rect(250,20,100,100), 0, nk_rgb(0,0,255));
             nk_fill_circle(canvas.painter, nk_rect(20,250,100,100), nk_rgb(255,0,0));
             nk_fill_triangle(canvas.painter, 250, 250, 350, 250, 300, 350, nk_rgb(0,255,0));

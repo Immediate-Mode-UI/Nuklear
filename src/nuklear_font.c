@@ -443,7 +443,7 @@ nk_font_bake_convert(void *out_memory, int img_width, int img_height,
  *
  * --------------------------------------------------------------*/
 NK_INTERN float
-nk_font_text_width(nk_handle handle, float height, const char *text, int len)
+nk_font_text_width(nk_handle handle, float height, struct nk_slice text)
 {
     nk_rune unicode;
     int text_len  = 0;
@@ -454,13 +454,13 @@ nk_font_text_width(nk_handle handle, float height, const char *text, int len)
     struct nk_font *font = (struct nk_font*)handle.ptr;
     NK_ASSERT(font);
     NK_ASSERT(font->glyphs);
-    if (!font || !text || !len)
+    if (!font || !text.ptr || !text.len)
         return 0;
 
     scale = height/font->info.height;
-    glyph_len = text_len = nk_utf_decode(text, &unicode, (int)len);
+    glyph_len = text_len = nk_utf_decode(text, &unicode);
     if (!glyph_len) return 0;
-    while (text_len <= (int)len && glyph_len) {
+    while (text_len <= text.len && glyph_len) {
         const struct nk_font_glyph *g;
         if (unicode == NK_UTF_INVALID) break;
 
@@ -469,7 +469,7 @@ nk_font_text_width(nk_handle handle, float height, const char *text, int len)
         text_width += g->xadvance * scale;
 
         /* offset next glyph */
-        glyph_len = nk_utf_decode(text + text_len, &unicode, (int)len - text_len);
+        glyph_len = nk_utf_decode(nk_substr(text, text_len, text.len), &unicode);
         text_len += glyph_len;
     }
     return text_width;
@@ -1105,7 +1105,7 @@ nk_font_atlas_add_compressed(struct nk_font_atlas *atlas,
 }
 NK_API struct nk_font*
 nk_font_atlas_add_compressed_base85(struct nk_font_atlas *atlas,
-    const char *data_base85, float height, const struct nk_font_config *config)
+    struct nk_slice data_base85, float height, const struct nk_font_config *config)
 {
     int compressed_size;
     void *compressed_data;
@@ -1117,16 +1117,16 @@ nk_font_atlas_add_compressed_base85(struct nk_font_atlas *atlas,
     NK_ASSERT(atlas->permanent.alloc);
     NK_ASSERT(atlas->permanent.free);
 
-    NK_ASSERT(data_base85);
-    if (!atlas || !data_base85 || !atlas->temporary.alloc || !atlas->temporary.free ||
+    NK_ASSERT(data_base85.ptr);
+    if (!atlas || !data_base85.ptr || !atlas->temporary.alloc || !atlas->temporary.free ||
         !atlas->permanent.alloc || !atlas->permanent.free)
         return 0;
 
-    compressed_size = (((int)nk_strlen(data_base85) + 4) / 5) * 4;
+    compressed_size = (((int)data_base85.len + 4) / 5) * 4;
     compressed_data = atlas->temporary.alloc(atlas->temporary.userdata,0, (nk_size)compressed_size);
     NK_ASSERT(compressed_data);
     if (!compressed_data) return 0;
-    nk_decode_85((unsigned char*)compressed_data, (const unsigned char*)data_base85);
+    nk_decode_85((unsigned char*)compressed_data, (const unsigned char*)data_base85.ptr);
     font = nk_font_atlas_add_compressed(atlas, compressed_data,
                     (nk_size)compressed_size, height, config);
     atlas->temporary.free(atlas->temporary.userdata, compressed_data);
@@ -1144,7 +1144,7 @@ nk_font_atlas_add_default(struct nk_font_atlas *atlas,
     NK_ASSERT(atlas->permanent.alloc);
     NK_ASSERT(atlas->permanent.free);
     return nk_font_atlas_add_compressed_base85(atlas,
-        nk_proggy_clean_ttf_compressed_data_base85, pixel_height, config);
+        nk_slicez(nk_proggy_clean_ttf_compressed_data_base85), pixel_height, config);
 }
 #endif
 NK_API const void*

@@ -685,7 +685,7 @@ static void nk_wayland_font_query_font_glyph(nk_handle handle, const float heigh
     glyph->uv[1] = nk_vec2(g->u1, g->v1);
 }
 
-void nk_wayland_draw_text(const struct nk_wayland *win, const struct nk_user_font *font, const struct nk_rect rect, const char *text, const int len, const float font_height, const struct nk_color fg)
+void nk_wayland_draw_text(const struct nk_wayland *win, const struct nk_user_font *font, const struct nk_rect rect, struct nk_slice text, const float font_height, const struct nk_color fg)
 {
     float x = 0;
     int text_len = 0;
@@ -694,21 +694,21 @@ void nk_wayland_draw_text(const struct nk_wayland *win, const struct nk_user_fon
     int glyph_len = 0;
     int next_glyph_len = 0;
     struct nk_user_font_glyph g;
-    if (!len || !text) return;
+    if (!text.ptr || !text.len) return;
 
     x = 0;
-    glyph_len = nk_utf_decode(text, &unicode, len);
+    glyph_len = nk_utf_decode(text, &unicode);
     if (!glyph_len) return;
 
     // draw every glyph image 
-    while (text_len < len && glyph_len) {
+    while (text_len < text.len && glyph_len) {
         struct nk_rect src_rect;
         struct nk_rect dst_rect;
         float char_width = 0;
         if (unicode == NK_UTF_INVALID) break;
 
         // query currently drawn glyph information 
-        next_glyph_len = nk_utf_decode(text + text_len + glyph_len, &next, (int)len - text_len);
+        next_glyph_len = nk_utf_decode(nk_substr(text, text_len + glyph_len, text.len), &next);
         nk_wayland_font_query_font_glyph(font->userdata, font_height, &g, unicode,
                     (next == NK_UTF_INVALID) ? '\0' : next);
 
@@ -821,7 +821,7 @@ static void nk_wayland_render(struct nk_wayland *win, const struct nk_color clea
         
         case NK_COMMAND_TEXT:
             tx = (const struct nk_command_text*)cmd;
-            nk_wayland_draw_text(win, tx->font, nk_rect(tx->x, tx->y, tx->w, tx->h), tx->string, tx->length, tx->height, tx->foreground);
+            nk_wayland_draw_text(win, tx->font, nk_rect(tx->x, tx->y, tx->w, tx->h), nk_slice(tx->string, tx->length), tx->height, tx->foreground);
             break;
         
         case NK_COMMAND_CURVE:

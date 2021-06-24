@@ -734,7 +734,7 @@ int main(int argc, char *argv[])
 
         /* GUI */
         {struct nk_panel layout, tab;
-        if (nk_begin(&ctx, "Demo", nk_rect(50, 50, 300, 400),
+        if (nk_begin(&ctx, nk_slicez("Demo"), nk_rect(50, 50, 300, 400),
             NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE))
         {
             int i;
@@ -745,20 +745,20 @@ int main(int argc, char *argv[])
             static int current_weapon = 0;
             static char field_buffer[64];
             static float pos;
-            static const char *weapons[] = {"Fist","Pistol","Shotgun","Plasma","BFG"};
+            struct nk_slice weapons[] = {nk_slicez("Fist"),nk_slicez("Pistol"),nk_slicez("Shotgun"),nk_slicez("Plasma"),nk_slicez("BFG")};
             const float step = (2*3.141592654f) / 32;
 
             nk_layout_row_static(&ctx, 30, 120, 1);
-            if (nk_button_label(&ctx, "button"))
+            if (nk_button_label(&ctx, nk_slicez("button")))
                 fprintf(stdout, "button pressed\n");
 
             nk_layout_row_dynamic(&ctx, 20, 1);
-            nk_label(&ctx, "Label", NK_TEXT_LEFT);
+            nk_label(&ctx, nk_slicez("Label"), NK_TEXT_LEFT);
             nk_layout_row_dynamic(&ctx, 30, 2);
-            nk_check_label(&ctx, "inactive", 0);
-            nk_check_label(&ctx, "active", 1);
-            nk_option_label(&ctx, "active", 1);
-            nk_option_label(&ctx, "inactive", 0);
+            nk_check_label(&ctx, nk_slicez("inactive"), 0);
+            nk_check_label(&ctx, nk_slicez("active"), 1);
+            nk_option_label(&ctx, nk_slicez("active"), 1);
+            nk_option_label(&ctx, nk_slicez("inactive"), 0);
 
             nk_layout_row_dynamic(&ctx, 30, 1);
             nk_slider_int(&ctx, 0, &slider, 16, 1);
@@ -767,7 +767,7 @@ int main(int argc, char *argv[])
 
             nk_layout_row_dynamic(&ctx, 25, 1);
             nk_edit_string(&ctx, NK_EDIT_FIELD, field_buffer, &field_len, 64, nk_filter_default);
-            nk_property_float(&ctx, "#X:", -1024.0f, &pos, 1024.0f, 1, 1);
+            nk_property_float(&ctx, nk_slicez("#X:"), -1024.0f, &pos, 1024.0f, 1, 1);
             current_weapon = nk_combo(&ctx, weapons, LEN(weapons), current_weapon, 25, nk_vec2(nk_widget_width(&ctx),200));
 
             nk_layout_row_dynamic(&ctx, 100, 1);
@@ -784,20 +784,20 @@ int main(int argc, char *argv[])
             nk_chart_end(&ctx);
 
             nk_layout_row_dynamic(&ctx, 250, 1);
-            if (nk_group_begin(&ctx, "Standard", NK_WINDOW_BORDER|NK_WINDOW_BORDER))
+            if (nk_group_begin(&ctx, nk_slicez("Standard"), NK_WINDOW_BORDER|NK_WINDOW_BORDER))
             {
-                if (nk_tree_push(&ctx, NK_TREE_NODE, "Window", NK_MAXIMIZED)) {
+                if (nk_tree_push(&ctx, NK_TREE_NODE, nk_slicez("Window"), NK_MAXIMIZED)) {
                     static int selected[8];
-                    if (nk_tree_push(&ctx, NK_TREE_NODE, "Next", NK_MAXIMIZED)) {
+                    if (nk_tree_push(&ctx, NK_TREE_NODE, nk_slicez("Next"), NK_MAXIMIZED)) {
                         nk_layout_row_dynamic(&ctx, 20, 1);
                         for (i = 0; i < 4; ++i)
-                            nk_selectable_label(&ctx, (selected[i]) ? "Selected": "Unselected", NK_TEXT_LEFT, &selected[i]);
+                            nk_selectable_label(&ctx, (selected[i]) ? nk_slicez("Selected"): nk_slicez("Unselected"), NK_TEXT_LEFT, &selected[i]);
                         nk_tree_pop(&ctx);
                     }
-                    if (nk_tree_push(&ctx, NK_TREE_NODE, "Previous", NK_MAXIMIZED)) {
+                    if (nk_tree_push(&ctx, NK_TREE_NODE, nk_slicez("Previous"), NK_MAXIMIZED)) {
                         nk_layout_row_dynamic(&ctx, 20, 1);
                         for (i = 4; i < 8; ++i)
-                            nk_selectable_label(&ctx, (selected[i]) ? "Selected": "Unselected", NK_TEXT_LEFT, &selected[i]);
+                            nk_selectable_label(&ctx, (selected[i]) ? nk_slicez("Selected"): nk_slicez("Unselected"), NK_TEXT_LEFT, &selected[i]);
                         nk_tree_pop(&ctx);
                     }
                     nk_tree_pop(&ctx);

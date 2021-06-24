@@ -159,7 +159,7 @@ node_editor(struct nk_context *ctx)
         nodeEditor.initialized = 1;
     }
 
-    if (nk_begin(ctx, "NodeEdit", nk_rect(0, 0, 800, 600),
+    if (nk_begin(ctx, nk_slicez("NodeEdit"), nk_rect(0, 0, 800, 600),
         NK_WINDOW_BORDER|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_MOVABLE|NK_WINDOW_CLOSABLE))
     {
         /* allocate complete window space */
@@ -189,7 +189,7 @@ node_editor(struct nk_context *ctx)
                     it->bounds.y - nodedit->scrolling.y, it->bounds.w, it->bounds.h));
 
                 /* execute node window */
-                if (nk_group_begin(ctx, it->name, NK_WINDOW_MOVABLE|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BORDER|NK_WINDOW_TITLE))
+                if (nk_group_begin(ctx, nk_slicez(it->name), NK_WINDOW_MOVABLE|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BORDER|NK_WINDOW_TITLE))
                 {
                     /* always have last selected node on top */
 
@@ -205,10 +205,10 @@ node_editor(struct nk_context *ctx)
                     /* ================= NODE CONTENT =====================*/
                     nk_layout_row_dynamic(ctx, 25, 1);
                     nk_button_color(ctx, it->color);
-                    it->color.r = (nk_byte)nk_propertyi(ctx, "#R:", 0, it->color.r, 255, 1,1);
-                    it->color.g = (nk_byte)nk_propertyi(ctx, "#G:", 0, it->color.g, 255, 1,1);
-                    it->color.b = (nk_byte)nk_propertyi(ctx, "#B:", 0, it->color.b, 255, 1,1);
-                    it->color.a = (nk_byte)nk_propertyi(ctx, "#A:", 0, it->color.a, 255, 1,1);
+                    it->color.r = (nk_byte)nk_propertyi(ctx, nk_slicez("#R:"), 0, it->color.r, 255, 1,1);
+                    it->color.g = (nk_byte)nk_propertyi(ctx, nk_slicez("#G:"), 0, it->color.g, 255, 1,1);
+                    it->color.b = (nk_byte)nk_propertyi(ctx, nk_slicez("#B:"), 0, it->color.b, 255, 1,1);
+                    it->color.a = (nk_byte)nk_propertyi(ctx, nk_slicez("#A:"), 0, it->color.a, 255, 1,1);
                     /* ====================================================*/
                     nk_group_end(ctx);
                 }
@@ -320,10 +320,10 @@ node_editor(struct nk_context *ctx)
             if (nk_contextual_begin(ctx, 0, nk_vec2(100, 220), nk_window_get_bounds(ctx))) {
                 const char *grid_option[] = {"Show Grid", "Hide Grid"};
                 nk_layout_row_dynamic(ctx, 25, 1);
-                if (nk_contextual_item_label(ctx, "New", NK_TEXT_CENTERED))
+                if (nk_contextual_item_label(ctx, nk_slicez("New"), NK_TEXT_CENTERED))
                     node_editor_add(nodedit, "New", nk_rect(400, 260, 180, 220),
                             nk_rgb(255, 255, 255), 1, 2);
-                if (nk_contextual_item_label(ctx, grid_option[nodedit->show_grid],NK_TEXT_CENTERED))
+                if (nk_contextual_item_label(ctx, nk_slicez(grid_option[nodedit->show_grid]),NK_TEXT_CENTERED))
                     nodedit->show_grid = !nodedit->show_grid;
                 nk_contextual_end(ctx);
             }
@@ -338,6 +338,6 @@ node_editor(struct nk_context *ctx)
         }
     }
     nk_end(ctx);
-    return !nk_window_is_closed(ctx, "NodeEdit");
+    return !nk_window_is_closed(ctx, nk_slicez("NodeEdit"));
 }
 

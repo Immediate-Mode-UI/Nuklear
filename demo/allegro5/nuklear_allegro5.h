@@ -96,19 +96,21 @@ NK_API void nk_allegro5_del_image(struct nk_image* image)
 }
 
 static float
-nk_allegro5_font_get_text_width(nk_handle handle, float height, const char *text, int len)
+nk_allegro5_font_get_text_width(nk_handle handle, float height, struct nk_slice text)
 {
     NkAllegro5Font *font = (NkAllegro5Font*)handle.ptr;
-    if (!font || !text) {
+    (void)height;
+
+    if (!font || !text.ptr || !text.len) {
         return 0;
     }
     /* We must copy into a new buffer with exact length null-terminated
        as nuklear uses variable size buffers and al_get_text_width doesn't
        accept a length, it infers length from null-termination
        (which is unsafe API design by allegro devs!) */
-    char strcpy[len+1];
-    strncpy((char*)&strcpy, text, len);
-    strcpy[len] = '\0';
+    char strcpy[text.len+1];
+    strncpy((char*)&strcpy, text.ptr, text.len);
+    strcpy[text.len] = '\0';
     return al_get_text_width(font->font, strcpy);
 }
 
@@ -442,21 +444,21 @@ NK_INTERN void
 nk_allegro5_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
 {
     char *text = al_get_clipboard_text(allegro5.dsp);
-    if (text) nk_textedit_paste(edit, text, nk_strlen(text));
+    if (text) nk_textedit_paste(edit, nk_slicez(text));
     (void)usr;
     al_free(text);
 }
 
 NK_INTERN void
-nk_allegro5_clipboard_copy(nk_handle usr, const char *text, int len)
+nk_allegro5_clipboard_copy(nk_handle usr, struct nk_slice text)
 {
     char *str = 0;
     (void)usr;
-    if (!len) return;
-    str = (char*)malloc((size_t)len+1);
+    if (!text.len) return;
+    str = (char*)malloc((size_t)text.len+1);
     if (!str) return;
-    memcpy(str, text, (size_t)len);
-    str[len] = '\0';
+    memcpy(str, text.ptr, (size_t)text.len);
+    str[text.len] = '\0';
     al_set_clipboard_text(allegro5.dsp, str);
     free(str);
 }

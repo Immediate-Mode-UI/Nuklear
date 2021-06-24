@@ -8,18 +8,17 @@
  * ===============================================================*/
 NK_API nk_bool
 nk_popup_begin(struct nk_context *ctx, enum nk_popup_type type,
-    const char *title, nk_flags flags, struct nk_rect rect)
+    struct nk_slice title, nk_flags flags, struct nk_rect rect)
 {
     struct nk_window *popup;
     struct nk_window *win;
     struct nk_panel *panel;
 
-    int title_len;
     nk_hash title_hash;
     nk_size allocated;
 
     NK_ASSERT(ctx);
-    NK_ASSERT(title);
+    NK_ASSERT(title.ptr);
     NK_ASSERT(ctx->current);
     NK_ASSERT(ctx->current->layout);
     if (!ctx || !ctx->current || !ctx->current->layout)
@@ -29,8 +28,7 @@ nk_popup_begin(struct nk_context *ctx, enum nk_popup_type type,
     panel = win->layout;
     NK_ASSERT(!(panel->type & NK_PANEL_SET_POPUP) && "popups are not allowed to have popups");
     (void)panel;
-    title_len = (int)nk_strlen(title);
-    title_hash = nk_murmur_hash(title, (int)title_len, NK_PANEL_POPUP);
+    title_hash = nk_murmur_hash(title, NK_PANEL_POPUP);
 
     popup = win->popup.win;
     if (!popup) {
@@ -170,7 +168,7 @@ nk_nonblock_begin(struct nk_context *ctx,
     nk_push_scissor(&popup->buffer, nk_null_rect);
     ctx->current = popup;
 
-    nk_panel_begin(ctx, 0, panel_type);
+    nk_panel_begin(ctx, nk_slicez(""), panel_type);
     win->buffer = popup->buffer;
     popup->layout->parent = win->layout;
     popup->layout->offset_x = &popup->scrollbar.x;

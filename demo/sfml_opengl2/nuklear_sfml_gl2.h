@@ -193,16 +193,16 @@ nk_sfml_clipboard_paste(nk_handle usr, struct nk_text_edit* edit)
 }
 
 static void
-nk_sfml_clipboard_copy(nk_handle usr, const char* text, int len)
+nk_sfml_clipboard_copy(nk_handle usr, struct nk_slice text)
 {
 #if 0
     char* str = 0;
     (void)usr;
-    if(!len) return;
-    str = (char*)malloc((size_t)len+1);
+    if(!text.len) return;
+    str = (char*)malloc((size_t)text.len+1);
     if(!str) return;
-    memcpy(str, text, (size_t)len);
-    str[len] = '\0';
+    memcpy(str, text.ptr, (size_t)text.len);
+    str[text.len] = '\0';
 
     /* Not Implemented in SFML */
     sf::Clipboard clipboard(sfml.window);
