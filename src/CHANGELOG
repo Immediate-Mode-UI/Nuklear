@@ -8,6 +8,7 @@
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2021/08/08 (4.07.3) - Fix crash when baking merged fonts
 /// - 2021/08/08 (4.07.2) - Fix Multiline Edit wrong offset
 /// - 2021/03/17 (4.07.1) - Fix warning about unused parameter
 /// - 2021/03/17 (4.07.0) - Fix nk_property hover bug

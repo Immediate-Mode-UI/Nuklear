@@ -16432,11 +16432,13 @@ nk_font_bake_pack(struct nk_font_baker *baker,
     }
     /* setup font baker from temporary memory */
     for (config_iter = config_list; config_iter; config_iter = config_iter->next) {
-        struct stbtt_fontinfo *font_info = &baker->build[i++].info;
         it = config_iter;
-        font_info->userdata = alloc;
-        do {if (!stbtt_InitFont(font_info, (const unsigned char*)it->ttf_blob, 0))
-            return nk_false;
+        do {
+            struct stbtt_fontinfo *font_info = &baker->build[i++].info;
+            font_info->userdata = alloc;
+
+            if (!stbtt_InitFont(font_info, (const unsigned char*)it->ttf_blob, 0))
+                return nk_false;
         } while ((it = it->n) != config_iter);
     }
     *height = 0;
@@ -29175,6 +29177,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2021/08/08 (4.07.3) - Fix crash when baking merged fonts
 /// - 2021/08/08 (4.07.2) - Fix Multiline Edit wrong offset
 /// - 2021/03/17 (4.07.1) - Fix warning about unused parameter
 /// - 2021/03/17 (4.07.0) - Fix nk_property hover bug
