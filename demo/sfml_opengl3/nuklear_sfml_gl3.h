@@ -244,7 +244,7 @@ nk_sfml_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_
                 {NK_VERTEX_LAYOUT_END}
             };
 
-            NK_MEMSET(&config, 0, sizeof(config));
+            memset(&config, 0, sizeof(config));
             config.vertex_layout = vertex_layout;
             config.vertex_size = sizeof(struct nk_sfml_vertex);
             config.vertex_alignment = NK_ALIGNOF(struct nk_sfml_vertex);
