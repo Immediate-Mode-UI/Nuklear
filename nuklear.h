@@ -21311,6 +21311,8 @@ nk_layout_row_calculate_usable_space(const struct nk_style *style, enum nk_panel
 
     struct nk_vec2 spacing;
 
+    NK_UNUSED(type);
+
     spacing = style->window.spacing;
 
     /* calculate the usable panel space */
@@ -29173,6 +29175,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2021/03/17 (4.07.1) - Fix warning about unused parameter
 /// - 2021/03/17 (4.07.0) - Fix nk_property hover bug
 /// - 2021/03/15 (4.06.4) - Change nk_propertyi back to int
 /// - 2021/03/15 (4.06.3) - Update documentation for functions that now return nk_bool
