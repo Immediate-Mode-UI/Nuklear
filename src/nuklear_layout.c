@@ -49,6 +49,8 @@ nk_layout_row_calculate_usable_space(const struct nk_style *style, enum nk_panel
 
     struct nk_vec2 spacing;
 
+    NK_UNUSED(type);
+
     spacing = style->window.spacing;
 
     /* calculate the usable panel space */
