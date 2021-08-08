@@ -23482,7 +23482,7 @@ nk_sub9slice_ptr(void *ptr, nk_ushort w, nk_ushort h, struct nk_rect rgn, nk_ush
 {
     struct nk_9slice s;
     nk_zero(&s, sizeof(s));
-    struct nk_image *i = (struct nk_image*)&s;
+    struct nk_image *i = &s.img;
     i->handle.ptr = ptr;
     i->w = w; i->h = h;
     i->region[0] = (nk_ushort)rgn.x;
@@ -23497,7 +23497,7 @@ nk_sub9slice_id(int id, nk_ushort w, nk_ushort h, struct nk_rect rgn, nk_ushort 
 {
     struct nk_9slice s;
     nk_zero(&s, sizeof(s));
-    struct nk_image *i = (struct nk_image*)&s;
+    struct nk_image *i = &s.img;
     i->handle.id = id;
     i->w = w; i->h = h;
     i->region[0] = (nk_ushort)rgn.x;
@@ -23512,7 +23512,7 @@ nk_sub9slice_handle(nk_handle handle, nk_ushort w, nk_ushort h, struct nk_rect r
 {
     struct nk_9slice s;
     nk_zero(&s, sizeof(s));
-    struct nk_image *i = (struct nk_image*)&s;
+    struct nk_image *i = &s.img;
     i->handle = handle;
     i->w = w; i->h = h;
     i->region[0] = (nk_ushort)rgn.x;
@@ -23527,7 +23527,7 @@ nk_9slice_handle(nk_handle handle, nk_ushort l, nk_ushort t, nk_ushort r, nk_ush
 {
     struct nk_9slice s;
     nk_zero(&s, sizeof(s));
-    struct nk_image *i = (struct nk_image*)&s;
+    struct nk_image *i = &s.img;
     i->handle = handle;
     i->w = 0; i->h = 0;
     i->region[0] = 0;
@@ -23542,7 +23542,7 @@ nk_9slice_ptr(void *ptr, nk_ushort l, nk_ushort t, nk_ushort r, nk_ushort b)
 {
     struct nk_9slice s;
     nk_zero(&s, sizeof(s));
-    struct nk_image *i = (struct nk_image*)&s;
+    struct nk_image *i = &s.img;
     NK_ASSERT(ptr);
     i->handle.ptr = ptr;
     i->w = 0; i->h = 0;
@@ -23558,7 +23558,7 @@ nk_9slice_id(int id, nk_ushort l, nk_ushort t, nk_ushort r, nk_ushort b)
 {
     struct nk_9slice s;
     nk_zero(&s, sizeof(s));
-    struct nk_image *i = (struct nk_image*)&s;
+    struct nk_image *i = &s.img;
     i->handle.id = id;
     i->w = 0; i->h = 0;
     i->region[0] = 0;
@@ -29523,8 +29523,8 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2021/08/08 (4.08.0) - Implemented 9-slice scaling support for widget styles
 /// - 2021/03/17 (4.07.1) - Fix warning about unused parameter
-/// - 2021/06/01 (4.08.0) - Implemented 9-slice scaling support for widget styles
 /// - 2021/03/17 (4.07.0) - Fix nk_property hover bug
 /// - 2021/03/15 (4.06.4) - Change nk_propertyi back to int
 /// - 2021/03/15 (4.06.3) - Update documentation for functions that now return nk_bool
