@@ -222,9 +222,9 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
                 text.background = nk_rgba(0,0,0,0);
                 nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
                 break;
-            case NK_STYLE_ITEM_9SLICE:
+            case NK_STYLE_ITEM_NINE_SLICE:
                 text.background = nk_rgba(0, 0, 0, 0);
-                nk_draw_9slice(&win->buffer, header, &background->data.slice, nk_white);
+                nk_draw_nine_slice(&win->buffer, header, &background->data.slice, nk_white);
                 break;
             case NK_STYLE_ITEM_COLOR:
                 text.background = background->data.color;
@@ -305,8 +305,8 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
             case NK_STYLE_ITEM_IMAGE:
                 nk_draw_image(out, body, &style->window.fixed_background.data.image, nk_white);
                 break;
-            case NK_STYLE_ITEM_9SLICE:
-                nk_draw_9slice(out, body, &style->window.fixed_background.data.slice, nk_white);
+            case NK_STYLE_ITEM_NINE_SLICE:
+                nk_draw_nine_slice(out, body, &style->window.fixed_background.data.slice, nk_white);
                 break;
             case NK_STYLE_ITEM_COLOR:
                 nk_fill_rect(out, body, 0, style->window.fixed_background.data.color);

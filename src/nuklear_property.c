@@ -91,9 +91,9 @@ nk_draw_property(struct nk_command_buffer *out, const struct nk_style_property *
             text.background = nk_rgba(0, 0, 0, 0);
             nk_draw_image(out, *bounds, &background->data.image, nk_white);
             break;
-        case NK_STYLE_ITEM_9SLICE:
+        case NK_STYLE_ITEM_NINE_SLICE:
             text.background = nk_rgba(0, 0, 0, 0);
-            nk_draw_9slice(out, *bounds, &background->data.slice, nk_white);
+            nk_draw_nine_slice(out, *bounds, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
             text.background = background->data.color;

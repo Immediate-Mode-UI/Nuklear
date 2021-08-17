@@ -61,8 +61,8 @@ nk_chart_begin_colored(struct nk_context *ctx, enum nk_chart_type type,
         case NK_STYLE_ITEM_IMAGE:
             nk_draw_image(&win->buffer, bounds, &background->data.image, nk_white);
             break;
-        case NK_STYLE_ITEM_9SLICE:
-            nk_draw_9slice(&win->buffer, bounds, &background->data.slice, nk_white);
+        case NK_STYLE_ITEM_NINE_SLICE:
+            nk_draw_nine_slice(&win->buffer, bounds, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
             nk_fill_rect(&win->buffer, bounds, style->rounding, style->border_color);

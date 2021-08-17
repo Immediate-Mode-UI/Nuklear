@@ -415,8 +415,8 @@ nk_draw_image(struct nk_command_buffer *b, struct nk_rect r,
     cmd->col = col;
 }
 NK_API void
-nk_draw_9slice(struct nk_command_buffer *b, struct nk_rect r,
-    const struct nk_9slice *slc, struct nk_color col)
+nk_draw_nine_slice(struct nk_command_buffer *b, struct nk_rect r,
+    const struct nk_nine_slice *slc, struct nk_color col)
 {
     const struct nk_image *slcimg = (const struct nk_image*)slc;
     nk_ushort rgnX, rgnY, rgnW, rgnH;

@@ -64,8 +64,8 @@ nk_draw_progress(struct nk_command_buffer *out, nk_flags state,
         case NK_STYLE_ITEM_IMAGE:
             nk_draw_image(out, *bounds, &background->data.image, nk_white);
             break;
-        case NK_STYLE_ITEM_9SLICE:
-            nk_draw_9slice(out, *bounds, &background->data.slice, nk_white);
+        case NK_STYLE_ITEM_NINE_SLICE:
+            nk_draw_nine_slice(out, *bounds, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
             nk_fill_rect(out, *bounds, style->rounding, background->data.color);
@@ -78,8 +78,8 @@ nk_draw_progress(struct nk_command_buffer *out, nk_flags state,
         case NK_STYLE_ITEM_IMAGE:
             nk_draw_image(out, *scursor, &cursor->data.image, nk_white);
             break;
-        case NK_STYLE_ITEM_9SLICE:
-            nk_draw_9slice(out, *scursor, &cursor->data.slice, nk_white);
+        case NK_STYLE_ITEM_NINE_SLICE:
+            nk_draw_nine_slice(out, *scursor, &cursor->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
             nk_fill_rect(out, *scursor, style->rounding, cursor->data.color);
