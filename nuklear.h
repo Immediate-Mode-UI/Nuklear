@@ -9220,6 +9220,7 @@ NK_API void
 nk_draw_nine_slice(struct nk_command_buffer *b, struct nk_rect r,
     const struct nk_nine_slice *slc, struct nk_color col)
 {
+    struct nk_image img;
     const struct nk_image *slcimg = (const struct nk_image*)slc;
     nk_ushort rgnX, rgnY, rgnW, rgnH;
     rgnX = slcimg->region[0];
@@ -9228,8 +9229,14 @@ nk_draw_nine_slice(struct nk_command_buffer *b, struct nk_rect r,
     rgnH = slcimg->region[3];
 
     /* top-left */
-    struct nk_image img = {slcimg->handle, slcimg->w, slcimg->h,
-        {rgnX, rgnY, slc->l, slc->t}};
+    img.handle = slcimg->handle;
+    img.w = slcimg->w;
+    img.h = slcimg->h;
+    img.region[0] = rgnX;
+    img.region[1] = rgnY;
+    img.region[2] = slc->l;
+    img.region[3] = slc->t;
+
     nk_draw_image(b,
         nk_rect(r.x, r.y, (float)slc->l, (float)slc->t),
         &img, col);
@@ -23487,8 +23494,8 @@ NK_API struct nk_nine_slice
 nk_sub9slice_ptr(void *ptr, nk_ushort w, nk_ushort h, struct nk_rect rgn, nk_ushort l, nk_ushort t, nk_ushort r, nk_ushort b)
 {
     struct nk_nine_slice s;
-    nk_zero(&s, sizeof(s));
     struct nk_image *i = &s.img;
+    nk_zero(&s, sizeof(s));
     i->handle.ptr = ptr;
     i->w = w; i->h = h;
     i->region[0] = (nk_ushort)rgn.x;
@@ -23502,8 +23509,8 @@ NK_API struct nk_nine_slice
 nk_sub9slice_id(int id, nk_ushort w, nk_ushort h, struct nk_rect rgn, nk_ushort l, nk_ushort t, nk_ushort r, nk_ushort b)
 {
     struct nk_nine_slice s;
-    nk_zero(&s, sizeof(s));
     struct nk_image *i = &s.img;
+    nk_zero(&s, sizeof(s));
     i->handle.id = id;
     i->w = w; i->h = h;
     i->region[0] = (nk_ushort)rgn.x;
@@ -23517,8 +23524,8 @@ NK_API struct nk_nine_slice
 nk_sub9slice_handle(nk_handle handle, nk_ushort w, nk_ushort h, struct nk_rect rgn, nk_ushort l, nk_ushort t, nk_ushort r, nk_ushort b)
 {
     struct nk_nine_slice s;
-    nk_zero(&s, sizeof(s));
     struct nk_image *i = &s.img;
+    nk_zero(&s, sizeof(s));
     i->handle = handle;
     i->w = w; i->h = h;
     i->region[0] = (nk_ushort)rgn.x;
@@ -23532,8 +23539,8 @@ NK_API struct nk_nine_slice
 nk_nine_slice_handle(nk_handle handle, nk_ushort l, nk_ushort t, nk_ushort r, nk_ushort b)
 {
     struct nk_nine_slice s;
-    nk_zero(&s, sizeof(s));
     struct nk_image *i = &s.img;
+    nk_zero(&s, sizeof(s));
     i->handle = handle;
     i->w = 0; i->h = 0;
     i->region[0] = 0;
@@ -23547,8 +23554,8 @@ NK_API struct nk_nine_slice
 nk_nine_slice_ptr(void *ptr, nk_ushort l, nk_ushort t, nk_ushort r, nk_ushort b)
 {
     struct nk_nine_slice s;
-    nk_zero(&s, sizeof(s));
     struct nk_image *i = &s.img;
+    nk_zero(&s, sizeof(s));
     NK_ASSERT(ptr);
     i->handle.ptr = ptr;
     i->w = 0; i->h = 0;
@@ -23563,8 +23570,8 @@ NK_API struct nk_nine_slice
 nk_nine_slice_id(int id, nk_ushort l, nk_ushort t, nk_ushort r, nk_ushort b)
 {
     struct nk_nine_slice s;
-    nk_zero(&s, sizeof(s));
     struct nk_image *i = &s.img;
+    nk_zero(&s, sizeof(s));
     i->handle.id = id;
     i->w = 0; i->h = 0;
     i->region[0] = 0;
@@ -29529,6 +29536,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2021/09/08 (4.08.2) - Fix warnings in C89 builds
 /// - 2021/09/08 (4.08.1) - Use compiler builtins for NK_OFFSETOF when possible
 /// - 2021/08/17 (4.08.0) - Implemented 9-slice scaling support for widget styles
 /// - 2021/08/16 (4.07.5) - Replace usage of memset in nk_font_atlas_bake with NK_MEMSET

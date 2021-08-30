@@ -418,6 +418,7 @@ NK_API void
 nk_draw_nine_slice(struct nk_command_buffer *b, struct nk_rect r,
     const struct nk_nine_slice *slc, struct nk_color col)
 {
+    struct nk_image img;
     const struct nk_image *slcimg = (const struct nk_image*)slc;
     nk_ushort rgnX, rgnY, rgnW, rgnH;
     rgnX = slcimg->region[0];
@@ -426,8 +427,14 @@ nk_draw_nine_slice(struct nk_command_buffer *b, struct nk_rect r,
     rgnH = slcimg->region[3];
 
     /* top-left */
-    struct nk_image img = {slcimg->handle, slcimg->w, slcimg->h,
-        {rgnX, rgnY, slc->l, slc->t}};
+    img.handle = slcimg->handle;
+    img.w = slcimg->w;
+    img.h = slcimg->h;
+    img.region[0] = rgnX;
+    img.region[1] = rgnY;
+    img.region[2] = slc->l;
+    img.region[3] = slc->t;
+
     nk_draw_image(b,
         nk_rect(r.x, r.y, (float)slc->l, (float)slc->t),
         &img, col);
