@@ -8,6 +8,7 @@
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2021/09/15 (4.08.3) - Fix "Templates cannot be declared to have 'C' Linkage"
 /// - 2021/09/08 (4.08.2) - Fix warnings in C89 builds
 /// - 2021/09/08 (4.08.1) - Use compiler builtins for NK_OFFSETOF when possible
 /// - 2021/08/17 (4.08.0) - Implemented 9-slice scaling support for widget styles

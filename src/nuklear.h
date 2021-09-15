@@ -5483,6 +5483,10 @@ struct nk_context {
 #endif
 
 #ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
 template<typename T> struct nk_alignof;
 template<typename T, int size_diff> struct nk_helper{enum {value = size_diff};};
 template<typename T> struct nk_helper<T,0>{enum {value = nk_alignof<T>::value};};
@@ -5496,9 +5500,6 @@ template<typename T> struct nk_alignof{struct Big {T x; char c;}; enum {
 #define NK_CONTAINER_OF(ptr,type,member)\
     (type*)((void*)((char*)(1 ? (ptr): &((type*)0)->member) - NK_OFFSETOF(type, member)))
 
-#ifdef __cplusplus
-}
-#endif
 
 
 #endif /* NK_NUKLEAR_H_ */
