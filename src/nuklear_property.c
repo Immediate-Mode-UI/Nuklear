@@ -122,7 +122,7 @@ nk_do_property(nk_flags *ws,
         nk_filter_float
     };
     nk_bool active, old;
-    int num_len, name_len;
+    int num_len = 0, name_len;
     char string[NK_MAX_NUMBER_BUFFER];
     float size;
 
