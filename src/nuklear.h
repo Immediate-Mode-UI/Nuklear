@@ -4788,6 +4788,7 @@ struct nk_style_progress {
     float cursor_border;
     float cursor_rounding;
     struct nk_vec2 padding;
+    struct nk_vec2 padding_outer;
 
     /* optional user callbacks */
     nk_handle userdata;

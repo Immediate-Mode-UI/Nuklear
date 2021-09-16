@@ -96,25 +96,33 @@ nk_do_progress(nk_flags *state,
     float prog_scale;
     nk_size prog_value;
     struct nk_rect cursor;
+    struct nk_rect outer;
 
     NK_ASSERT(style);
     NK_ASSERT(out);
     if (!out || !style) return 0;
 
+    /* calculate progressbar outer rect */
+    outer.w = NK_MAX(bounds.w, 2 * (style->padding_outer.x + style->border ) );
+    outer.h = NK_MAX(bounds.h, 2 * (style->padding_outer.y + style->border ) );
+    outer = nk_pad_rect(bounds, nk_vec2(style->padding_outer.x + style->border, 
+                                        style->padding_outer.y + style->border));
+
     /* calculate progressbar cursor */
-    cursor.w = NK_MAX(bounds.w, 2 * style->padding.x + 2 * style->border);
-    cursor.h = NK_MAX(bounds.h, 2 * style->padding.y + 2 * style->border);
-    cursor = nk_pad_rect(bounds, nk_vec2(style->padding.x + style->border, style->padding.y + style->border));
+    cursor.w = NK_MAX(bounds.w, 2 * (style->padding.x + style->padding_outer.x + style->border ) );
+    cursor.h = NK_MAX(bounds.h, 2 * (style->padding.y + style->padding_outer.y + style->border ) );
+    cursor = nk_pad_rect(bounds, nk_vec2(style->padding.x + style->padding_outer.x + style->border, 
+                                         style->padding.y + style->padding_outer.y + style->border));
     prog_scale = (float)value / (float)max;
 
     /* update progressbar */
     prog_value = NK_MIN(value, max);
-    prog_value = nk_progress_behavior(state, in, bounds, cursor,max, prog_value, modifiable);
+    prog_value = nk_progress_behavior(state, in, outer, cursor,max, prog_value, modifiable);
     cursor.w = cursor.w * prog_scale;
 
     /* draw progressbar */
     if (style->draw_begin) style->draw_begin(out, style->userdata);
-    nk_draw_progress(out, *state, style, &bounds, &cursor, value, max);
+    nk_draw_progress(out, *state, style, &outer, &cursor, value, max);
     if (style->draw_end) style->draw_end(out, style->userdata);
     return prog_value;
 }
