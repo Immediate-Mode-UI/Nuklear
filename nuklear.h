@@ -5697,7 +5697,7 @@ struct nk_context {
 #define NK_ALIGN_PTR_BACK(x, mask)\
     (NK_UINT_TO_PTR((NK_PTR_TO_UINT((nk_byte*)(x)) & ~(mask-1))))
 
-#if defined(__GNUC__) || defined(__clang__)
+#if (defined(__GNUC__) && __GNUC__ >= 4) || defined(__clang__)
 #define NK_OFFSETOF(st,m) (__builtin_offsetof(st,m))
 #else
 #define NK_OFFSETOF(st,m) ((nk_ptr)&(((st*)0)->m))
@@ -29537,6 +29537,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2021/09/22 (4.08.5) - GCC __builtin_offsetof only exists in version 4 and later
 /// - 2021/09/15 (4.08.4) - Fix "'num_len' may be used uninitialized" in nk_do_property
 /// - 2021/09/15 (4.08.3) - Fix "Templates cannot be declared to have 'C' Linkage"
 /// - 2021/09/08 (4.08.2) - Fix warnings in C89 builds

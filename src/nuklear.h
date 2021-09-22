@@ -5476,7 +5476,7 @@ struct nk_context {
 #define NK_ALIGN_PTR_BACK(x, mask)\
     (NK_UINT_TO_PTR((NK_PTR_TO_UINT((nk_byte*)(x)) & ~(mask-1))))
 
-#if defined(__GNUC__) || defined(__clang__)
+#if (defined(__GNUC__) && __GNUC__ >= 4) || defined(__clang__)
 #define NK_OFFSETOF(st,m) (__builtin_offsetof(st,m))
 #else
 #define NK_OFFSETOF(st,m) ((nk_ptr)&(((st*)0)->m))
