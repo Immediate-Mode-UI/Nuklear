@@ -44,25 +44,29 @@
 
 struct media {
     GLint skin;
-    struct nk_image menu;
-    struct nk_image check;
-    struct nk_image check_cursor;
-    struct nk_image option;
-    struct nk_image option_cursor;
-    struct nk_image header;
-    struct nk_image window;
-    struct nk_image scrollbar_inc_button;
-    struct nk_image scrollbar_inc_button_hover;
-    struct nk_image scrollbar_dec_button;
-    struct nk_image scrollbar_dec_button_hover;
-    struct nk_image button;
-    struct nk_image button_hover;
-    struct nk_image button_active;
-    struct nk_image tab_minimize;
-    struct nk_image tab_maximize;
-    struct nk_image slider;
-    struct nk_image slider_hover;
-    struct nk_image slider_active;
+    struct nk_nine_slice menu;
+    struct nk_nine_slice check;
+    struct nk_nine_slice check_cursor;
+    struct nk_nine_slice option;
+    struct nk_nine_slice option_cursor;
+    struct nk_nine_slice header;
+    struct nk_nine_slice window;
+    struct nk_nine_slice scrollbar;
+    struct nk_nine_slice scrollbar_cursor;
+    struct nk_nine_slice scrollbar_cursor_hover;
+    struct nk_nine_slice scrollbar_cursor_active;
+    struct nk_nine_slice scrollbar_inc_button;
+    struct nk_nine_slice scrollbar_inc_button_hover;
+    struct nk_nine_slice scrollbar_dec_button;
+    struct nk_nine_slice scrollbar_dec_button_hover;
+    struct nk_nine_slice button;
+    struct nk_nine_slice button_hover;
+    struct nk_nine_slice button_active;
+    struct nk_nine_slice tab_minimize;
+    struct nk_nine_slice tab_maximize;
+    struct nk_nine_slice slider;
+    struct nk_nine_slice slider_hover;
+    struct nk_nine_slice slider_active;
 };
 
 
@@ -369,6 +373,7 @@ int main(int argc, char *argv[])
     glfwSetScrollCallback(win, scroll_input);
     glfwGetWindowSize(win, &width, &height);
     glfwGetFramebufferSize(win, &display_width, &display_height);
+    glfwSwapInterval(1);
 
     /* OpenGL */
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -394,28 +399,33 @@ int main(int argc, char *argv[])
     {   /* skin */
         glEnable(GL_TEXTURE_2D);
         media.skin = image_load("../skins/gwen.png");
-        media.check = nk_subimage_id(media.skin, 512,512, nk_rect(464,32,15,15));
-        media.check_cursor = nk_subimage_id(media.skin, 512,512, nk_rect(450,34,11,11));
-        media.option = nk_subimage_id(media.skin, 512,512, nk_rect(464,64,15,15));
-        media.option_cursor = nk_subimage_id(media.skin, 512,512, nk_rect(451,67,9,9));
-        media.header = nk_subimage_id(media.skin, 512,512, nk_rect(128,0,127,24));
-        media.window = nk_subimage_id(media.skin, 512,512, nk_rect(128,23,127,104));
-        media.scrollbar_inc_button = nk_subimage_id(media.skin, 512,512, nk_rect(464,256,15,15));
-        media.scrollbar_inc_button_hover = nk_subimage_id(media.skin, 512,512, nk_rect(464,320,15,15));
-        media.scrollbar_dec_button = nk_subimage_id(media.skin, 512,512, nk_rect(464,224,15,15));
-        media.scrollbar_dec_button_hover = nk_subimage_id(media.skin, 512,512, nk_rect(464,288,15,15));
-        media.button = nk_subimage_id(media.skin, 512,512, nk_rect(384,336,127,31));
-        media.button_hover = nk_subimage_id(media.skin, 512,512, nk_rect(384,368,127,31));
-        media.button_active = nk_subimage_id(media.skin, 512,512, nk_rect(384,400,127,31));
-        media.tab_minimize = nk_subimage_id(media.skin, 512,512, nk_rect(451, 99, 9, 9));
-        media.tab_maximize = nk_subimage_id(media.skin, 512,512, nk_rect(467,99,9,9));
-        media.slider = nk_subimage_id(media.skin, 512,512, nk_rect(418,33,11,14));
-        media.slider_hover = nk_subimage_id(media.skin, 512,512, nk_rect(418,49,11,14));
-        media.slider_active = nk_subimage_id(media.skin, 512,512, nk_rect(418,64,11,14));
+        media.check = nk_sub9slice_id(media.skin, 512, 512, nk_rect(464, 32, 15, 15), 4, 4, 4, 4);
+
+        media.check_cursor = nk_sub9slice_id(media.skin, 512, 512, nk_rect(450, 34, 11, 11), 4, 4, 4, 4);
+        media.option = nk_sub9slice_id(media.skin, 512, 512, nk_rect(464, 64, 15, 15), 4, 4, 4, 4);
+        media.option_cursor = nk_sub9slice_id(media.skin, 512, 512, nk_rect(451, 67, 9, 9), 4, 4, 4, 4);
+        media.header = nk_sub9slice_id(media.skin, 512, 512, nk_rect(128, 0, 127, 24), 4, 4, 4, 4);
+        media.window = nk_sub9slice_id(media.skin, 512, 512, nk_rect(128, 23, 127, 104), 4, 4, 4, 4);
+        media.scrollbar = nk_sub9slice_id(media.skin, 512, 512, nk_rect(448, 208, 15, 127), 4, 4, 4, 4);
+        media.scrollbar_cursor = nk_sub9slice_id(media.skin, 512, 512, nk_rect(400, 208, 15, 127), 4, 4, 4, 4);
+        media.scrollbar_cursor_hover = nk_sub9slice_id(media.skin, 512, 512, nk_rect(416, 208, 15, 127), 4, 4, 4, 4);
+        media.scrollbar_cursor_active = nk_sub9slice_id(media.skin, 512, 512, nk_rect(432, 208, 15, 127), 4, 4, 4, 4);
+        media.scrollbar_inc_button = nk_sub9slice_id(media.skin, 512, 512, nk_rect(464, 256, 15, 15), 4, 4, 4, 4);
+        media.scrollbar_inc_button_hover = nk_sub9slice_id(media.skin, 512, 512, nk_rect(464, 320, 15, 15), 4, 4, 4, 4);
+        media.scrollbar_dec_button = nk_sub9slice_id(media.skin, 512, 512, nk_rect(464, 224, 15, 15), 4, 4, 4, 4);
+        media.scrollbar_dec_button_hover = nk_sub9slice_id(media.skin, 512, 512, nk_rect(464, 288, 15, 15), 4, 4, 4, 4);
+        media.button = nk_sub9slice_id(media.skin, 512, 512, nk_rect(384, 336, 127, 31), 4, 4, 4, 4);
+        media.button_hover = nk_sub9slice_id(media.skin, 512, 512, nk_rect(384, 368, 127, 31), 4, 4, 4, 4);
+        media.button_active = nk_sub9slice_id(media.skin, 512, 512, nk_rect(384, 400, 127, 31), 4, 4, 4, 4);
+        media.tab_minimize = nk_sub9slice_id(media.skin, 512, 512, nk_rect(451, 99, 9, 9), 4, 4, 4, 4);
+        media.tab_maximize = nk_sub9slice_id(media.skin, 512, 512, nk_rect(467, 99, 9, 9), 4, 4, 4, 4);
+        media.slider = nk_sub9slice_id(media.skin, 512, 512, nk_rect(418, 33, 11, 14), 4, 4, 4, 4);
+        media.slider_hover = nk_sub9slice_id(media.skin, 512, 512, nk_rect(418, 49, 11, 14), 4, 4, 4, 4);
+        media.slider_active = nk_sub9slice_id(media.skin, 512, 512, nk_rect(418, 64, 11, 14), 4, 4, 4, 4);
 
         /* window */
         ctx.style.window.background = nk_rgb(204,204,204);
-        ctx.style.window.fixed_background = nk_style_item_image(media.window);
+        ctx.style.window.fixed_background = nk_style_item_nine_slice(media.window);
         ctx.style.window.border_color = nk_rgb(67,67,67);
         ctx.style.window.combo_border_color = nk_rgb(67,67,67);
         ctx.style.window.contextual_border_color = nk_rgb(67,67,67);
@@ -428,34 +438,35 @@ int main(int argc, char *argv[])
         ctx.style.window.border = 3;
 
         /* window header */
-        ctx.style.window.header.normal = nk_style_item_image(media.header);
-        ctx.style.window.header.hover = nk_style_item_image(media.header);
-        ctx.style.window.header.active = nk_style_item_image(media.header);
+        ctx.style.window.header.normal = nk_style_item_nine_slice(media.header);
+        ctx.style.window.header.hover = nk_style_item_nine_slice(media.header);
+        ctx.style.window.header.active = nk_style_item_nine_slice(media.header);
         ctx.style.window.header.label_normal = nk_rgb(95,95,95);
         ctx.style.window.header.label_hover = nk_rgb(95,95,95);
         ctx.style.window.header.label_active = nk_rgb(95,95,95);
 
         /* scrollbar */
-        ctx.style.scrollv.normal          = nk_style_item_color(nk_rgb(184,184,184));
-        ctx.style.scrollv.hover           = nk_style_item_color(nk_rgb(184,184,184));
-        ctx.style.scrollv.active          = nk_style_item_color(nk_rgb(184,184,184));
-        ctx.style.scrollv.cursor_normal   = nk_style_item_color(nk_rgb(220,220,220));
-        ctx.style.scrollv.cursor_hover    = nk_style_item_color(nk_rgb(235,235,235));
-        ctx.style.scrollv.cursor_active   = nk_style_item_color(nk_rgb(99,202,255));
+        ctx.style.scrollv.normal          = nk_style_item_nine_slice(media.scrollbar);
+        ctx.style.scrollv.hover           = nk_style_item_nine_slice(media.scrollbar);
+        ctx.style.scrollv.active          = nk_style_item_nine_slice(media.scrollbar);
+        ctx.style.scrollv.cursor_normal   = nk_style_item_nine_slice(media.scrollbar_cursor);
+        ctx.style.scrollv.cursor_hover    = nk_style_item_nine_slice(media.scrollbar_cursor_hover);
+        ctx.style.scrollv.cursor_active   = nk_style_item_nine_slice(media.scrollbar_cursor_active);
         ctx.style.scrollv.dec_symbol      = NK_SYMBOL_NONE;
         ctx.style.scrollv.inc_symbol      = NK_SYMBOL_NONE;
         ctx.style.scrollv.show_buttons    = nk_true;
         ctx.style.scrollv.border_color    = nk_rgb(81,81,81);
         ctx.style.scrollv.cursor_border_color = nk_rgb(81,81,81);
-        ctx.style.scrollv.border          = 1;
+        ctx.style.scrollv.border          = 0;
         ctx.style.scrollv.rounding        = 0;
-        ctx.style.scrollv.border_cursor   = 1;
-        ctx.style.scrollv.rounding_cursor = 2;
+        ctx.style.scrollv.border_cursor   = 0;
+        ctx.style.scrollv.rounding_cursor = 0;
+
 
         /* scrollbar buttons */
-        ctx.style.scrollv.inc_button.normal          = nk_style_item_image(media.scrollbar_inc_button);
-        ctx.style.scrollv.inc_button.hover           = nk_style_item_image(media.scrollbar_inc_button_hover);
-        ctx.style.scrollv.inc_button.active          = nk_style_item_image(media.scrollbar_inc_button_hover);
+        ctx.style.scrollv.inc_button.normal          = nk_style_item_nine_slice(media.scrollbar_inc_button);
+        ctx.style.scrollv.inc_button.hover           = nk_style_item_nine_slice(media.scrollbar_inc_button_hover);
+        ctx.style.scrollv.inc_button.active          = nk_style_item_nine_slice(media.scrollbar_inc_button_hover);
         ctx.style.scrollv.inc_button.border_color    = nk_rgba(0,0,0,0);
         ctx.style.scrollv.inc_button.text_background = nk_rgba(0,0,0,0);
         ctx.style.scrollv.inc_button.text_normal     = nk_rgba(0,0,0,0);
@@ -463,9 +474,9 @@ int main(int argc, char *argv[])
         ctx.style.scrollv.inc_button.text_active     = nk_rgba(0,0,0,0);
         ctx.style.scrollv.inc_button.border          = 0.0f;
 
-        ctx.style.scrollv.dec_button.normal          = nk_style_item_image(media.scrollbar_dec_button);
-        ctx.style.scrollv.dec_button.hover           = nk_style_item_image(media.scrollbar_dec_button_hover);
-        ctx.style.scrollv.dec_button.active          = nk_style_item_image(media.scrollbar_dec_button_hover);
+        ctx.style.scrollv.dec_button.normal          = nk_style_item_nine_slice(media.scrollbar_dec_button);
+        ctx.style.scrollv.dec_button.hover           = nk_style_item_nine_slice(media.scrollbar_dec_button_hover);
+        ctx.style.scrollv.dec_button.active          = nk_style_item_nine_slice(media.scrollbar_dec_button_hover);
         ctx.style.scrollv.dec_button.border_color    = nk_rgba(0,0,0,0);
         ctx.style.scrollv.dec_button.text_background = nk_rgba(0,0,0,0);
         ctx.style.scrollv.dec_button.text_normal     = nk_rgba(0,0,0,0);
@@ -476,11 +487,11 @@ int main(int argc, char *argv[])
         /* checkbox toggle */
         {struct nk_style_toggle *toggle;
         toggle = &ctx.style.checkbox;
-        toggle->normal          = nk_style_item_image(media.check);
-        toggle->hover           = nk_style_item_image(media.check);
-        toggle->active          = nk_style_item_image(media.check);
-        toggle->cursor_normal   = nk_style_item_image(media.check_cursor);
-        toggle->cursor_hover    = nk_style_item_image(media.check_cursor);
+        toggle->normal          = nk_style_item_nine_slice(media.check);
+        toggle->hover           = nk_style_item_nine_slice(media.check);
+        toggle->active          = nk_style_item_nine_slice(media.check);
+        toggle->cursor_normal   = nk_style_item_nine_slice(media.check_cursor);
+        toggle->cursor_hover    = nk_style_item_nine_slice(media.check_cursor);
         toggle->text_normal     = nk_rgb(95,95,95);
         toggle->text_hover      = nk_rgb(95,95,95);
         toggle->text_active     = nk_rgb(95,95,95);}
@@ -488,19 +499,19 @@ int main(int argc, char *argv[])
         /* option toggle */
         {struct nk_style_toggle *toggle;
         toggle = &ctx.style.option;
-        toggle->normal          = nk_style_item_image(media.option);
-        toggle->hover           = nk_style_item_image(media.option);
-        toggle->active          = nk_style_item_image(media.option);
-        toggle->cursor_normal   = nk_style_item_image(media.option_cursor);
-        toggle->cursor_hover    = nk_style_item_image(media.option_cursor);
+        toggle->normal          = nk_style_item_nine_slice(media.option);
+        toggle->hover           = nk_style_item_nine_slice(media.option);
+        toggle->active          = nk_style_item_nine_slice(media.option);
+        toggle->cursor_normal   = nk_style_item_nine_slice(media.option_cursor);
+        toggle->cursor_hover    = nk_style_item_nine_slice(media.option_cursor);
         toggle->text_normal     = nk_rgb(95,95,95);
         toggle->text_hover      = nk_rgb(95,95,95);
         toggle->text_active     = nk_rgb(95,95,95);}
 
         /* default button */
-        ctx.style.button.normal = nk_style_item_image(media.button);
-        ctx.style.button.hover = nk_style_item_image(media.button_hover);
-        ctx.style.button.active = nk_style_item_image(media.button_active);
+        ctx.style.button.normal = nk_style_item_nine_slice(media.button);
+        ctx.style.button.hover = nk_style_item_nine_slice(media.button_hover);
+        ctx.style.button.active = nk_style_item_nine_slice(media.button_active);
         ctx.style.button.border_color = nk_rgba(0,0,0,0);
         ctx.style.button.text_background = nk_rgba(0,0,0,0);
         ctx.style.button.text_normal = nk_rgb(95,95,95);
@@ -532,33 +543,33 @@ int main(int argc, char *argv[])
 
         /* tree */
         ctx.style.tab.text = nk_rgb(95,95,95);
-        ctx.style.tab.tab_minimize_button.normal = nk_style_item_image(media.tab_minimize);
-        ctx.style.tab.tab_minimize_button.hover = nk_style_item_image(media.tab_minimize);
-        ctx.style.tab.tab_minimize_button.active = nk_style_item_image(media.tab_minimize);
+        ctx.style.tab.tab_minimize_button.normal = nk_style_item_nine_slice(media.tab_minimize);
+        ctx.style.tab.tab_minimize_button.hover = nk_style_item_nine_slice(media.tab_minimize);
+        ctx.style.tab.tab_minimize_button.active = nk_style_item_nine_slice(media.tab_minimize);
         ctx.style.tab.tab_minimize_button.text_background = nk_rgba(0,0,0,0);
         ctx.style.tab.tab_minimize_button.text_normal = nk_rgba(0,0,0,0);
         ctx.style.tab.tab_minimize_button.text_hover = nk_rgba(0,0,0,0);
         ctx.style.tab.tab_minimize_button.text_active = nk_rgba(0,0,0,0);
 
-        ctx.style.tab.tab_maximize_button.normal = nk_style_item_image(media.tab_maximize);
-        ctx.style.tab.tab_maximize_button.hover = nk_style_item_image(media.tab_maximize);
-        ctx.style.tab.tab_maximize_button.active = nk_style_item_image(media.tab_maximize);
+        ctx.style.tab.tab_maximize_button.normal = nk_style_item_nine_slice(media.tab_maximize);
+        ctx.style.tab.tab_maximize_button.hover = nk_style_item_nine_slice(media.tab_maximize);
+        ctx.style.tab.tab_maximize_button.active = nk_style_item_nine_slice(media.tab_maximize);
         ctx.style.tab.tab_maximize_button.text_background = nk_rgba(0,0,0,0);
         ctx.style.tab.tab_maximize_button.text_normal = nk_rgba(0,0,0,0);
         ctx.style.tab.tab_maximize_button.text_hover = nk_rgba(0,0,0,0);
         ctx.style.tab.tab_maximize_button.text_active = nk_rgba(0,0,0,0);
 
-        ctx.style.tab.node_minimize_button.normal = nk_style_item_image(media.tab_minimize);
-        ctx.style.tab.node_minimize_button.hover = nk_style_item_image(media.tab_minimize);
-        ctx.style.tab.node_minimize_button.active = nk_style_item_image(media.tab_minimize);
+        ctx.style.tab.node_minimize_button.normal = nk_style_item_nine_slice(media.tab_minimize);
+        ctx.style.tab.node_minimize_button.hover = nk_style_item_nine_slice(media.tab_minimize);
+        ctx.style.tab.node_minimize_button.active = nk_style_item_nine_slice(media.tab_minimize);
         ctx.style.tab.node_minimize_button.text_background = nk_rgba(0,0,0,0);
         ctx.style.tab.node_minimize_button.text_normal = nk_rgba(0,0,0,0);
         ctx.style.tab.node_minimize_button.text_hover = nk_rgba(0,0,0,0);
         ctx.style.tab.node_minimize_button.text_active = nk_rgba(0,0,0,0);
 
-        ctx.style.tab.node_maximize_button.normal = nk_style_item_image(media.tab_maximize);
-        ctx.style.tab.node_maximize_button.hover = nk_style_item_image(media.tab_maximize);
-        ctx.style.tab.node_maximize_button.active = nk_style_item_image(media.tab_maximize);
+        ctx.style.tab.node_maximize_button.normal = nk_style_item_nine_slice(media.tab_maximize);
+        ctx.style.tab.node_maximize_button.hover = nk_style_item_nine_slice(media.tab_maximize);
+        ctx.style.tab.node_maximize_button.active = nk_style_item_nine_slice(media.tab_maximize);
         ctx.style.tab.node_maximize_button.text_background = nk_rgba(0,0,0,0);
         ctx.style.tab.node_maximize_button.text_normal = nk_rgba(0,0,0,0);
         ctx.style.tab.node_maximize_button.text_hover = nk_rgba(0,0,0,0);
@@ -586,9 +597,9 @@ int main(int argc, char *argv[])
         ctx.style.slider.bar_hover       = nk_rgb(156,156,156);
         ctx.style.slider.bar_active      = nk_rgb(156,156,156);
         ctx.style.slider.bar_filled      = nk_rgb(156,156,156);
-        ctx.style.slider.cursor_normal   = nk_style_item_image(media.slider);
-        ctx.style.slider.cursor_hover    = nk_style_item_image(media.slider_hover);
-        ctx.style.slider.cursor_active   = nk_style_item_image(media.slider_active);
+        ctx.style.slider.cursor_normal   = nk_style_item_nine_slice(media.slider);
+        ctx.style.slider.cursor_hover    = nk_style_item_nine_slice(media.slider_hover);
+        ctx.style.slider.cursor_active   = nk_style_item_nine_slice(media.slider_active);
         ctx.style.slider.cursor_size     = nk_vec2(16.5f,21);
         ctx.style.slider.bar_height      = 1;
 
@@ -735,7 +746,7 @@ int main(int argc, char *argv[])
         /* GUI */
         {struct nk_panel layout, tab;
         if (nk_begin(&ctx, "Demo", nk_rect(50, 50, 300, 400),
-            NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE))
+            NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE|NK_WINDOW_SCALABLE))
         {
             int i;
             float id;
@@ -748,7 +759,7 @@ int main(int argc, char *argv[])
             static const char *weapons[] = {"Fist","Pistol","Shotgun","Plasma","BFG"};
             const float step = (2*3.141592654f) / 32;
 
-            nk_layout_row_static(&ctx, 30, 120, 1);
+            nk_layout_row_dynamic(&ctx, 70, 1);
             if (nk_button_label(&ctx, "button"))
                 fprintf(stdout, "button pressed\n");
 
