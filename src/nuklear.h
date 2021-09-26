@@ -3012,6 +3012,8 @@ NK_API nk_size nk_prog(struct nk_context*, nk_size cur, nk_size max, nk_bool mod
  * ============================================================================= */
 NK_API struct nk_colorf nk_color_picker(struct nk_context*, struct nk_colorf, enum nk_color_format);
 NK_API nk_bool nk_color_pick(struct nk_context*, struct nk_colorf*, enum nk_color_format);
+NK_API struct nk_color nk_col_picker(struct nk_context*, struct nk_color, enum nk_color_format);
+NK_API nk_bool nk_col_pick(struct nk_context*, struct nk_color*, enum nk_color_format);
 /* =============================================================================
  *
  *                                  PROPERTIES
