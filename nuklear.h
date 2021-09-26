@@ -22128,8 +22128,10 @@ nk_layout_peek(struct nk_rect *bounds, struct nk_context *ctx)
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
     NK_ASSERT(ctx->current->layout);
-    if (!ctx || !ctx->current || !ctx->current->layout)
+    if (!ctx || !ctx->current || !ctx->current->layout) {
+        *bounds = nk_rect(0,0,0,0);
         return;
+    }
 
     win = ctx->current;
     layout = win->layout;
@@ -29537,6 +29539,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2021/09/22 (4.08.6) - Fix "may be used uninitialized" warnings in nk_widget
 /// - 2021/09/22 (4.08.5) - GCC __builtin_offsetof only exists in version 4 and later
 /// - 2021/09/15 (4.08.4) - Fix "'num_len' may be used uninitialized" in nk_do_property
 /// - 2021/09/15 (4.08.3) - Fix "Templates cannot be declared to have 'C' Linkage"

@@ -8,6 +8,7 @@
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2021/09/22 (4.08.6) - Fix "may be used uninitialized" warnings in nk_widget
 /// - 2021/09/22 (4.08.5) - GCC __builtin_offsetof only exists in version 4 and later
 /// - 2021/09/15 (4.08.4) - Fix "'num_len' may be used uninitialized" in nk_do_property
 /// - 2021/09/15 (4.08.3) - Fix "Templates cannot be declared to have 'C' Linkage"
