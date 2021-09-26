@@ -314,8 +314,8 @@ extern "C" {
     #define NK_PRINTF_FORMAT_STRING
   #endif
   #if defined(__GNUC__)
-    #define NK_PRINTF_VARARG_FUNC(fmtargnumber) __attribute__((format(__printf__, fmtargnumber, fmtargnumber+1)))
-    #define NK_PRINTF_VALIST_FUNC(fmtargnumber) __attribute__((format(__printf__, fmtargnumber, 0)))
+    #define NK_PRINTF_VARARG_FUNC(fmtargnumber) __attribute__((format(printf, fmtargnumber, fmtargnumber+1)))
+    #define NK_PRINTF_VALIST_FUNC(fmtargnumber) __attribute__((format(printf, fmtargnumber, 0)))
   #else
     #define NK_PRINTF_VARARG_FUNC(fmtargnumber)
     #define NK_PRINTF_VALIST_FUNC(fmtargnumber)
