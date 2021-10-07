@@ -1309,6 +1309,11 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
             const struct nk_command_custom *c = (const struct nk_command_custom*)cmd;
             c->callback(&ctx->draw_list, c->x, c->y, c->w, c->h, c->callback_data);
         } break;
+        case NK_COMMAND_POLYLINE_FLOAT: {
+            const struct nk_command_polyline_float* p = (const struct nk_command_polyline_float*)cmd;
+            nk_draw_list_stroke_poly_line(&ctx->draw_list,
+                p->points, p->point_count, p->color, NK_STROKE_OPEN, p->line_thickness, (&ctx->draw_list)->config.line_AA);
+        } break;
         default: break;
         }
     }
