@@ -4203,7 +4203,8 @@ enum nk_command_type {
     NK_COMMAND_POLYLINE,
     NK_COMMAND_TEXT,
     NK_COMMAND_IMAGE,
-    NK_COMMAND_CUSTOM
+    NK_COMMAND_CUSTOM,
+    NK_COMMAND_STROKE_BUFFER
 };
 
 /* command base and header of every command inside the buffer */
@@ -4345,6 +4346,16 @@ struct nk_command_image {
     struct nk_color col;
 };
 
+struct nk_command_stroke_buffer {
+    struct nk_command header;
+    void *vertexs;
+    int vertex_size;
+    int vertex_count;
+    void *indexs;
+    int index_size;
+    int index_count;
+};
+
 typedef void (*nk_command_custom_callback)(void *canvas, short x,short y,
     unsigned short w, unsigned short h, nk_handle callback_data);
 struct nk_command_custom {
@@ -4389,6 +4400,8 @@ NK_API void nk_stroke_arc(struct nk_command_buffer*, float cx, float cy, float r
 NK_API void nk_stroke_triangle(struct nk_command_buffer*, float, float, float, float, float, float, float line_thichness, struct nk_color);
 NK_API void nk_stroke_polyline(struct nk_command_buffer*, float *points, int point_count, float line_thickness, struct nk_color col);
 NK_API void nk_stroke_polygon(struct nk_command_buffer*, float*, int point_count, float line_thickness, struct nk_color);
+NK_API void nk_stroke_buffer(struct nk_command_buffer*, void*, int vertex_size, int vertex_count, void*, int index_size, int index_count);
+
 
 /* filled shades */
 NK_API void nk_fill_rect(struct nk_command_buffer*, struct nk_rect, float rounding, struct nk_color);

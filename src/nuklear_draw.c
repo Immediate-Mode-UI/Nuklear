@@ -392,6 +392,26 @@ nk_stroke_polyline(struct nk_command_buffer *b, float *points, int point_count,
     }
 }
 NK_API void
+nk_stroke_buffer(struct nk_command_buffer *b, void *vertex_buffer,
+    int vertex_size, int vertex_count,
+    void *index_buffer, int index_size, int index_count) {
+
+    nk_size size = 0;
+    struct nk_command_stroke_buffer *cmd;
+
+    NK_ASSERT(b);
+    if (!b || !vertex_buffer || !index_buffer || vertex_count <= 0 || vertex_size <= 0 || index_count <= 0 || index_size <= 0) return;
+    size = (sizeof(*cmd));
+    cmd = (struct nk_command_stroke_buffer*) nk_command_buffer_push(b, NK_COMMAND_STROKE_BUFFER, size);
+    if (!cmd) return;
+    cmd->indexs = index_buffer;
+    cmd->vertexs = vertex_buffer;
+    cmd->vertex_size = vertex_size;
+    cmd->vertex_count = vertex_count;
+    cmd->index_size = index_size;
+    cmd->index_count = index_count;
+}
+NK_API void
 nk_draw_image(struct nk_command_buffer *b, struct nk_rect r,
     const struct nk_image *img, struct nk_color col)
 {
