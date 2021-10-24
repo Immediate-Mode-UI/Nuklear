@@ -1949,7 +1949,7 @@ NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show
 ///         //
 ///         // two rows with auto generated height composed of two widgets with window ratio 0.25 and 0.75
 ///         const float ratio[] = {0.25, 0.75};
-///         nk_layout_row(ctx, NK_DYNAMIC, 30, 2, ratio);
+///         nk_layout_row(ctx, NK_DYNAMIC, 0, 2, ratio);
 ///         nk_widget(...);
 ///         nk_widget(...);
 ///         nk_widget(...);
@@ -2020,6 +2020,7 @@ NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show
 ///         nk_widget(...);
 ///         nk_layout_space_push(ctx, nk_rect(0.7,0.6,0.1,0.1));
 ///         nk_widget(...);
+///         nk_layout_space_end(ctx);
 ///     }
 ///     nk_end(...);
 ///     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
