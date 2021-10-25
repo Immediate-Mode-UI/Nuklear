@@ -2301,6 +2301,32 @@ NK_API void nk_layout_space_end(struct nk_context*);
 /// Returns `nk_rect` holding the total space allocated
 */
 NK_API struct nk_rect nk_layout_space_bounds(struct nk_context*);
+/*/// #### nk_layout_subspace_remaining
+/// Utility function to calculate remaining space for `nk_layout_space`
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// struct nk_rect nk_layout_subspace_remaining(struct nk_context*);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct after call `nk_layout_space_begin`
+///
+/// Returns `nk_rect` holding the remaining space
+*/
+NK_API struct nk_rect nk_layout_subspace_remaining(struct nk_context*);
+/*/// #### nk_layout_subspace_bounds
+/// Utility function to calculate the bounds of the subspace allocated for `nk_layout_space`
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// struct nk_rect nk_layout_subspace_bounds(struct nk_context*);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct after call `nk_layout_space_begin`
+///
+/// Returns `nk_rect` holding the bounds of the subspace allocated
+*/
+NK_API struct nk_rect nk_layout_subspace_bounds(struct nk_context*);
 /*/// #### nk_layout_space_to_screen
 /// Converts vector from nk_layout_space coordinate space into screen space
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c

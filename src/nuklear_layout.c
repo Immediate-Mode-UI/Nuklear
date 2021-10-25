@@ -446,6 +446,129 @@ nk_layout_space_end(struct nk_context *ctx)
     layout->row.item_offset = 0;
     nk_zero(&layout->row.item, sizeof(layout->row.item));
 }
+NK_LIB struct nk_panel*
+nk_layout_subspace_get_parent_layout(struct nk_context *ctx)
+{
+    struct nk_window *win;
+    struct nk_panel *layout;
+
+    NK_ASSERT(ctx);
+    NK_ASSERT(ctx->current);
+    NK_ASSERT(ctx->current->layout);
+    if (!ctx || !ctx->current || !ctx->current->layout)
+        return NULL;
+
+    win = ctx->current;
+    layout = win->layout;
+
+    while (layout) {
+        if (layout->row.type == NK_LAYOUT_DYNAMIC_FREE)
+            break;
+
+        if (layout->row.type == NK_LAYOUT_STATIC_FREE)
+            break;
+
+        layout = layout->parent;
+    }
+    return layout;
+}
+NK_API struct nk_rect
+nk_layout_subspace_bounds(struct nk_context *ctx)
+{
+    struct nk_rect ret;
+    struct nk_panel *parent_layout;
+
+    ret.x = 0;
+    ret.y = 0;
+    ret.w = 0;
+    ret.h = 0;
+
+    NK_ASSERT(ctx);
+    if (!ctx)
+        return ret;
+
+    parent_layout = nk_layout_subspace_get_parent_layout(ctx);
+    if (!parent_layout) /* not between nk_layout_space_begin() and nk_layout_space_end() */
+        return ret;
+
+    if (parent_layout->row.type == NK_LAYOUT_DYNAMIC_FREE) {
+        if  (parent_layout->row.item.x == 0.0f && parent_layout->row.item.w == 0.0f &&
+             parent_layout->row.item.y == 0.0f && parent_layout->row.item.h == 0.0f )
+            return ret;
+
+        struct nk_rect rect_bounds;
+        rect_bounds.x = parent_layout->clip.x;
+        rect_bounds.y = parent_layout->clip.y;
+        rect_bounds.w = parent_layout->clip.w;
+        rect_bounds.h = parent_layout->row.height;
+
+        struct nk_rect rect_relative;
+        rect_relative.x = parent_layout->row.item.x;
+        rect_relative.y = parent_layout->row.item.y;
+        rect_relative.w = parent_layout->row.item.w;
+        rect_relative.h = parent_layout->row.item.h;
+
+        ret.x = rect_bounds.x + (rect_bounds.w * rect_relative.x);
+        ret.y = rect_bounds.y + (rect_bounds.h * rect_relative.y);
+        ret.w = rect_bounds.w * rect_relative.w;
+        ret.h = rect_bounds.h * rect_relative.h;
+        return ret;
+    }
+    else if (parent_layout->row.type == NK_LAYOUT_STATIC_FREE) {
+        ret = parent_layout->row.item;
+        ret.y += parent_layout->at_y;
+        return ret;
+    } else return ret;
+}
+NK_API struct nk_rect
+nk_layout_subspace_remaining(struct nk_context *ctx)
+{
+    struct nk_rect ret;
+    struct nk_window *win;
+    struct nk_panel *layout;
+    struct nk_panel *parent_layout;
+    NK_ASSERT(ctx);
+    NK_ASSERT(ctx->current);
+    NK_ASSERT(ctx->current->layout);
+
+    ret.x = 0;
+    ret.y = 0;
+    ret.w = 0;
+    ret.h = 0;
+
+    if (!ctx || !ctx->current || !ctx->current->layout)
+        return ret;
+
+    win = ctx->current;
+    layout = win->layout;
+
+    parent_layout = nk_layout_subspace_get_parent_layout(ctx);
+    if (!parent_layout) /* not between nk_layout_space_begin() and nk_layout_space_end() */
+        return ret;
+
+    if (parent_layout->row.type == NK_LAYOUT_DYNAMIC_FREE) {
+        struct nk_rect bounds;
+        bounds = nk_layout_subspace_bounds(ctx);
+        ret.x = bounds.x;
+        ret.y = bounds.y + layout->at_y;
+        ret.w = bounds.w;
+        ret.h = bounds.h - layout->at_y;
+
+        /* required for special case */
+        if (ret.h < 0)
+            ret.h *= -1;
+
+        return ret;
+    }
+    else if (parent_layout->row.type == NK_LAYOUT_STATIC_FREE) {
+        ret.x = parent_layout->row.item.x;
+        ret.y = layout->at_y + parent_layout->at_y;
+        ret.w = parent_layout->row.item.w;
+        ret.h = parent_layout->row.item.h - (layout->at_y - parent_layout->row.item.y);
+
+        return ret;
+    } else return ret;
+}
 NK_API void
 nk_layout_space_push(struct nk_context *ctx, struct nk_rect rect)
 {
