@@ -8,6 +8,19 @@
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2021/10/16 (4.09.0) - Added nk_spacer() widget
+/// - 2021/09/22 (4.08.6) - Fix "may be used uninitialized" warnings in nk_widget
+/// - 2021/09/22 (4.08.5) - GCC __builtin_offsetof only exists in version 4 and later
+/// - 2021/09/15 (4.08.4) - Fix "'num_len' may be used uninitialized" in nk_do_property
+/// - 2021/09/15 (4.08.3) - Fix "Templates cannot be declared to have 'C' Linkage"
+/// - 2021/09/08 (4.08.2) - Fix warnings in C89 builds
+/// - 2021/09/08 (4.08.1) - Use compiler builtins for NK_OFFSETOF when possible
+/// - 2021/08/17 (4.08.0) - Implemented 9-slice scaling support for widget styles
+/// - 2021/08/16 (4.07.5) - Replace usage of memset in nk_font_atlas_bake with NK_MEMSET
+/// - 2021/08/15 (4.07.4) - Fix conversion and sign conversion warnings
+/// - 2021/08/08 (4.07.3) - Fix crash when baking merged fonts
+/// - 2021/08/08 (4.07.2) - Fix Multiline Edit wrong offset
+/// - 2021/03/17 (4.07.1) - Fix warning about unused parameter
 /// - 2021/03/17 (4.07.0) - Fix nk_property hover bug
 /// - 2021/03/15 (4.06.4) - Change nk_propertyi back to int
 /// - 2021/03/15 (4.06.3) - Update documentation for functions that now return nk_bool
