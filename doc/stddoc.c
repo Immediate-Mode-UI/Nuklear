@@ -71,7 +71,7 @@ int main() {
 /// 1. Numbered
 /// 1. List!
 /// 
-/// Symbol substitutions: a 45-degree turn; som x -> y arrows; some whoa ==> fancy <==> arrows.
+/// Symbol substitutions: a 45-degree turn; some x -> y arrows; some whoa ==> fancy <==> arrows.
 /// 
 /// Is this a definition list?
 /// :   Looks like one to me

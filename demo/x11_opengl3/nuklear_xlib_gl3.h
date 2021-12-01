@@ -265,7 +265,7 @@ nk_load_opengl(struct opengl_info *gl)
     glGetIntegerv(GL_MAJOR_VERSION, &gl->major_version);
     glGetIntegerv(GL_MINOR_VERSION, &gl->minor_version);
     if (gl->major_version < 2) {
-        fprintf(stderr, "[GL]: Graphics card does not fullfill minimum OpenGL 2.0 support\n");
+        fprintf(stderr, "[GL]: Graphics card does not fulfill minimum OpenGL 2.0 support\n");
         return 0;
     }
     gl->version = (float)gl->major_version + (float)gl->minor_version * 0.1f;
