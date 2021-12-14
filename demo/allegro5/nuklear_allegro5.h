@@ -98,7 +98,7 @@ NK_API void nk_allegro5_del_image(struct nk_image* image)
 static float
 nk_allegro5_font_get_text_width(nk_handle handle, float height, const char *text, int len)
 {
-    (void)height;
+    NK_UNUSED(height);
     NkAllegro5Font *font = (NkAllegro5Font*)handle.ptr;
     if (!font || !text) {
         return 0;
