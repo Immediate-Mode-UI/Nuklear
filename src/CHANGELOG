@@ -65,7 +65,7 @@
 /// - 2018/01/31 (3.00.5) - Fixed overcalculation of cursor data in font baking process.
 /// - 2018/01/31 (3.00.4) - Removed name collision with stb_truetype.
 /// - 2018/01/28 (3.00.3) - Fixed panel window border drawing bug.
-/// - 2018/01/12 (3.00.2) - Added `nk_group_begin_titled` for separed group identifier and title.
+/// - 2018/01/12 (3.00.2) - Added `nk_group_begin_titled` for separated group identifier and title.
 /// - 2018/01/07 (3.00.1) - Started to change documentation style.
 /// - 2018/01/05 (3.00.0) - BREAKING CHANGE: The previous color picker API was broken
 ///                        because of conversions between float and byte color representation.
@@ -76,13 +76,13 @@
 /// - 2017/12/23 (2.00.7) - Fixed small warning.
 /// - 2017/12/23 (2.00.7) - Fixed `nk_edit_buffer` behavior if activated to allow input.
 /// - 2017/12/23 (2.00.7) - Fixed modifyable progressbar dragging visuals and input behavior.
-/// - 2017/12/04 (2.00.6) - Added formated string tooltip widget.
+/// - 2017/12/04 (2.00.6) - Added formatted string tooltip widget.
 /// - 2017/11/18 (2.00.5) - Fixed window becoming hidden with flag `NK_WINDOW_NO_INPUT`.
 /// - 2017/11/15 (2.00.4) - Fixed font merging.
 /// - 2017/11/07 (2.00.3) - Fixed window size and position modifier functions.
 /// - 2017/09/14 (2.00.2) - Fixed `nk_edit_buffer` and `nk_edit_focus` behavior.
 /// - 2017/09/14 (2.00.1) - Fixed window closing behavior.
-/// - 2017/09/14 (2.00.0) - BREAKING CHANGE: Modifing window position and size funtions now
+/// - 2017/09/14 (2.00.0) - BREAKING CHANGE: Modifying window position and size functions now
 ///                        require the name of the window and must happen outside the window
 ///                        building process (between function call nk_begin and nk_end).
 /// - 2017/09/11 (1.40.9) - Fixed window background flag if background window is declared last.
@@ -109,7 +109,7 @@
 /// - 2017/06/08 (1.39.0) - Added function to retrieve window space without calling a `nk_layout_xxx` function.
 /// - 2017/06/06 (1.38.5) - Fixed `nk_convert` return flag for command buffer.
 /// - 2017/05/23 (1.38.4) - Fixed activation behavior for widgets partially clipped.
-/// - 2017/05/10 (1.38.3) - Fixed wrong min window size mouse scaling over boundries.
+/// - 2017/05/10 (1.38.3) - Fixed wrong min window size mouse scaling over boundaries.
 /// - 2017/05/09 (1.38.2) - Fixed vertical scrollbar drawing with not enough space.
 /// - 2017/05/09 (1.38.1) - Fixed scaler dragging behavior if window size hits minimum size.
 /// - 2017/05/06 (1.38.0) - Added platform double-click support.
@@ -126,7 +126,7 @@
 /// - 2017/03/04 (1.34.2) - Fixed text edit filtering.
 /// - 2017/03/04 (1.34.1) - Fixed group closable flag.
 /// - 2017/02/25 (1.34.0) - Added custom draw command for better language binding support.
-/// - 2017/01/24 (1.33.0) - Added programatic way of remove edit focus.
+/// - 2017/01/24 (1.33.0) - Added programmatic way to remove edit focus.
 /// - 2017/01/24 (1.32.3) - Fixed wrong define for basic type definitions for windows.
 /// - 2017/01/21 (1.32.2) - Fixed input capture from hidden or closed windows.
 /// - 2017/01/21 (1.32.1) - Fixed slider behavior and drawing.
@@ -171,7 +171,7 @@
 ///                        text in every edit widget if one of them is scrolled.
 /// - 2016/09/28 (1.22.3) - Fixed small bug in edit widgets if not active. The wrong
 ///                        text length is passed. It should have been in bytes but
-///                        was passed as glyphes.
+///                        was passed as glyphs.
 /// - 2016/09/20 (1.22.2) - Fixed color button size calculation.
 /// - 2016/09/20 (1.22.1) - Fixed some `nk_vsnprintf` behavior bugs and removed `<stdio.h>`
 ///                        again from `NK_INCLUDE_STANDARD_VARARGS`.
@@ -251,13 +251,13 @@
 /// - 2016/08/16 (1.09.5) - Fixed ROM mode for deeper levels of popup windows parents.
 /// - 2016/08/15 (1.09.4) - Editbox are now still active if enter was pressed with flag
 ///                        `NK_EDIT_SIG_ENTER`. Main reasoning is to be able to keep
-///                        typing after commiting.
+///                        typing after committing.
 /// - 2016/08/15 (1.09.4) - Removed redundant code.
 /// - 2016/08/15 (1.09.4) - Fixed negative numbers in `nk_strtoi` and remove unused variable.
 /// - 2016/08/15 (1.09.3) - Fixed `NK_WINDOW_BACKGROUND` flag behavior to select a background
 ///                        window only as selected by hovering and not by clicking.
 /// - 2016/08/14 (1.09.2) - Fixed a bug in font atlas which caused wrong loading
-///                        of glyphes for font with multiple ranges.
+///                        of glyphs for font with multiple ranges.
 /// - 2016/08/12 (1.09.1) - Added additional function to check if window is currently
 ///                        hidden and therefore not visible.
 /// - 2016/08/12 (1.09.1) - nk_window_is_closed now queries the correct flag `NK_WINDOW_CLOSED`
@@ -273,8 +273,8 @@
 ///                        precision.
 /// - 2016/08/08 (1.07.2) - Fixed compiling error without define `NK_INCLUDE_FIXED_TYPE`.
 /// - 2016/08/08 (1.07.1) - Fixed possible floating point error inside `nk_widget` leading
-///                        to wrong wiget width calculation which results in widgets falsly
-///                        becomming tagged as not inside window and cannot be accessed.
+///                        to wrong wiget width calculation which results in widgets falsely
+///                        becoming tagged as not inside window and cannot be accessed.
 /// - 2016/08/08 (1.07.0) - Nuklear now differentiates between hiding a window (NK_WINDOW_HIDDEN) and
 ///                        closing a window (NK_WINDOW_CLOSED). A window can be hidden/shown
 ///                        by using `nk_window_show` and closed by either clicking the close
@@ -321,6 +321,6 @@
 /// - 2016/07/15 (1.01.0) - Removed internal font baking API and simplified
 ///                        font atlas memory management by converting pointer
 ///                        arrays for fonts and font configurations to lists.
-/// - 2016/07/15 (1.00.0) - Changed button API to use context dependend button
+/// - 2016/07/15 (1.00.0) - Changed button API to use context dependent button
 ///                        behavior instead of passing it for every function call.
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

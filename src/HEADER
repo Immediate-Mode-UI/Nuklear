@@ -76,7 +76,7 @@
 /// and does not contain the actual implementation. <br /><br />
 ///
 /// The implementation mode requires to define  the preprocessor macro
-/// NK_IMPLEMENTATION in *one* .c/.cpp file before #includeing this file, e.g.:
+/// NK_IMPLEMENTATION in *one* .c/.cpp file before #including this file, e.g.:
 ///
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~C
 ///     #define NK_IMPLEMENTATION
