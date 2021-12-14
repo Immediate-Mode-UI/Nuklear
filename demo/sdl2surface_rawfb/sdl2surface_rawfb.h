@@ -65,54 +65,18 @@ struct sdlsurface_context {
 #endif
 
 static unsigned int
-nk_sdlsurface_color2int(const struct nk_color c, SDL_PixelFormatEnum pl)
+nk_sdlsurface_color2int(const struct nk_color c, const SDL_PixelFormat *format)
 {
-    unsigned int res = 0;
-
-    switch (pl) {
-    case SDL_PIXELFORMAT_RGBA8888:
-    res |= c.r << 24;
-    res |= c.g << 16;
-    res |= c.b << 8;
-    res |= c.a;
-    break;
-    case SDL_PIXELFORMAT_ARGB8888:
-    res |= c.a << 24;
-    res |= c.r << 16;
-    res |= c.g << 8;
-    res |= c.b;
-    break;
-
-    default:
-    perror("nk_sdlsurface_color2int(): Unsupported pixel layout.\n");
-    break;
-    }
-    return (res);
+    return SDL_MapRGBA(format, c.r, c.g, c.b, c.a);
 }
 
 static struct nk_color
-nk_sdlsurface_int2color(const unsigned int i, SDL_PixelFormatEnum pl)
+nk_sdlsurface_int2color(const unsigned int i, const SDL_PixelFormat *format)
 {
     struct nk_color col = {0,0,0,0};
 
-    switch (pl) {
-    case SDL_PIXELFORMAT_RGBA8888:
-    col.r = (i >> 24) & 0xff;
-    col.g = (i >> 16) & 0xff;
-    col.b = (i >> 8) & 0xff;
-    col.a = i & 0xff;
-    break;
-    case SDL_PIXELFORMAT_ARGB8888:
-    col.a = (i >> 24) & 0xff;
-    col.r = (i >> 16) & 0xff;
-    col.g = (i >> 8) & 0xff;
-    col.b = i & 0xff;
-    break;
+    SDL_GetRGBA(i, format, &col.r, &col.g, &col.b, &col.a);
 
-    default:
-    perror("nk_sdlsurface_int2color(): Unsupported pixel layout.\n");
-    break;
-    }
     return col;
 }
 
@@ -120,16 +84,22 @@ static void
 nk_sdlsurface_ctx_setpixel(const struct sdlsurface_context *sdlsurface,
     const short x0, const short y0, const struct nk_color col)
 {
-    unsigned int c = nk_sdlsurface_color2int(col, sdlsurface->fb->format->format);
+    unsigned int c = nk_sdlsurface_color2int(col, sdlsurface->fb->format);
     unsigned char *pixels = sdlsurface->fb->pixels;
-    unsigned int *ptr;
 
     pixels += y0 * sdlsurface->fb->pitch;
-    ptr = (unsigned int *)pixels + x0;
 
     if (y0 < sdlsurface->scissors.h && y0 >= sdlsurface->scissors.y &&
-        x0 >= sdlsurface->scissors.x && x0 < sdlsurface->scissors.w)
-        *ptr = c;
+        x0 >= sdlsurface->scissors.x && x0 < sdlsurface->scissors.w) {
+
+        if (sdlsurface->fb->format->BytesPerPixel == 4) {
+            *((Uint32 *)pixels + x0) = c;
+        } else if (sdlsurface->fb->format->BytesPerPixel == 2) {
+            *((Uint16 *)pixels + x0) = c;
+        } else {
+            *((Uint8 *)pixels + x0) = c;
+        }
+    }
 }
 
 static void
@@ -140,40 +110,49 @@ nk_sdlsurface_line_horizontal(const struct sdlsurface_context *sdlsurface,
      * It does not check for scissors or image borders.
      * The caller has to make sure it does no exceed bounds. */
     unsigned int i, n;
-    unsigned int c[16];
+    unsigned char c[16 * 4];
     unsigned char *pixels = sdlsurface->fb->pixels;
-    unsigned int *ptr;
+    unsigned int bpp = sdlsurface->fb->format->BytesPerPixel;
 
-    pixels += y * sdlsurface->fb->pitch;
-    ptr = (unsigned int *)pixels + x0;
+    pixels += (y * sdlsurface->fb->pitch) + (x0 * bpp);
 
-    n = x1 - x0;
-    for (i = 0; i < sizeof(c) / sizeof(c[0]); i++)
-        c[i] = nk_sdlsurface_color2int(col, sdlsurface->fb->format->format);
+    n = (x1 - x0) * bpp;
+    if (bpp == 4) {
+        for (i = 0; i < sizeof(c) / bpp; i++)
+            ((Uint32 *)c)[i] = nk_sdlsurface_color2int(col, sdlsurface->fb->format);
+    } else if (bpp == 2) {
+        for (i = 0; i < sizeof(c) / bpp; i++)
+            ((Uint16 *)c)[i] = nk_sdlsurface_color2int(col, sdlsurface->fb->format);
+    } else {
+        for (i = 0; i < sizeof(c) / bpp; i++)
+            ((Uint8 *)c)[i] = nk_sdlsurface_color2int(col, sdlsurface->fb->format);
+    }
 
-    while (n > 16) {
-        memcpy((void *)ptr, c, sizeof(c));
-        n -= 16; ptr += 16;
+    while (n > sizeof(c)) {
+        memcpy(pixels, c, sizeof(c));
+        n -= sizeof(c); pixels += sizeof(c);
     } for (i = 0; i < n; i++)
-        ptr[i] = c[i];
+        pixels[i] = c[i];
 }
 
 static void
 nk_sdlsurface_img_setpixel(const struct SDL_Surface *img,
     const int x0, const int y0, const struct nk_color col)
 {
-    unsigned int c = nk_sdlsurface_color2int(col, img->format->format);
+    unsigned int c = nk_sdlsurface_color2int(col, img->format);
     unsigned char *ptr;
-    unsigned int *pixel;
     NK_ASSERT(img);
     if (y0 < img->h && y0 >= 0 && x0 >= 0 && x0 < img->w) {
         ptr = (unsigned char *)img->pixels + (img->pitch * y0);
-    pixel = (unsigned int *)ptr;
 
         if (img->format == NK_FONT_ATLAS_ALPHA8) {
             ptr[x0] = col.a;
+        } else if (img->format->BytesPerPixel == 4) {
+            ((Uint32 *)ptr)[x0] = c;
+        } else if (img->format->BytesPerPixel == 2) {
+            ((Uint16 *)ptr)[x0] = c;
         } else {
-        pixel[x0] = c;
+            ((Uint8 *)ptr)[x0] = c;
         }
     }
 }
@@ -191,9 +170,15 @@ nk_sdlsurface_img_getpixel(const struct SDL_Surface *img, const int x0, const in
         if (img->format == NK_FONT_ATLAS_ALPHA8) {
             col.a = ptr[x0];
             col.b = col.g = col.r = 0xff;
+        } else if (img->format->BytesPerPixel == 4) {
+            pixel = ((Uint32 *)ptr)[x0];
+            col = nk_sdlsurface_int2color(pixel, img->format);
+        } else if (img->format->BytesPerPixel == 2) {
+            pixel = ((Uint16 *)ptr)[x0];
+            col = nk_sdlsurface_int2color(pixel, img->format);
         } else {
-        pixel = ((unsigned int *)ptr)[x0];
-        col = nk_sdlsurface_int2color(pixel, img->format->format);
+            pixel = ((Uint8 *)ptr)[x0];
+            col = nk_sdlsurface_int2color(pixel, img->format);
         }
     } return col;
 }
@@ -837,7 +822,7 @@ nk_sdlsurface_init(SDL_Surface *fb, float fontSize)
     return NULL;
     }
 
-    sdlsurface->font_tex = SDL_CreateRGBSurfaceWithFormat(0, texw, texh, 32, fb->format->format);
+    sdlsurface->font_tex = SDL_CreateRGBSurface(0, texw, texh, 32, 0xff, 0xff00, 0xff0000, 0xff000000);
 
     memcpy(sdlsurface->font_tex->pixels, tex, texw * texh * 4);
 
@@ -846,20 +831,6 @@ nk_sdlsurface_init(SDL_Surface *fb, float fontSize)
         nk_style_set_font(&sdlsurface->ctx, &sdlsurface->atlas.default_font->handle);
     nk_style_load_all_cursors(&sdlsurface->ctx, sdlsurface->atlas.cursors);
     nk_sdlsurface_scissor(sdlsurface, 0, 0, sdlsurface->fb->w, sdlsurface->fb->h);
-
-    if (fb->format->format == SDL_PIXELFORMAT_RGBA8888)
-    {
-        uint32_t *fontPixels = (uint32_t *)sdlsurface->font_tex->pixels;
-        int i;
-        assert(sdlsurface->font_tex->pitch == sdlsurface->font_tex->w * 4);
-        for (i = 0; i < sdlsurface->font_tex->w * sdlsurface->font_tex->h; i++)
-        {
-            uint32_t col = fontPixels[i];
-            fontPixels[i] &= 0xFFFF00;
-            fontPixels[i] |= ((col & 0xFF000000) >> 24);
-            fontPixels[i] |= ((col & 0xFF) << 24);
-        }
-    }
 
     return sdlsurface;
 }
