@@ -8,8 +8,4 @@ docs/src
 *.tmp
 *.swo
 *.swp
-<<<<<<< HEAD
 /private/
-=======
-nuklear_docking.c
->>>>>>> 0af85aa... Fix minimum window width when scaling
