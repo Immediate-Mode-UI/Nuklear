@@ -186,7 +186,7 @@ Reviewing changes to `src/*` and `nuklear.h`:
   * Indentation.
   * Curly bracket (`{}`) placement.
 * Ensure that the contributor has bumped the appropriate version in
-  [package.json](https://github.com/Immediate-Mode-UI/Nuklear/blob/master/package.json)
+  [clib.json](https://github.com/Immediate-Mode-UI/Nuklear/blob/master/clib.json)
   and added their changes to the
   [CHANGELOG](https://github.com/Immediate-Mode-UI/Nuklear/blob/master/src/CHANGELOG).
 * Have at least one other person review the changes before merging.
