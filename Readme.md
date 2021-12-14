@@ -185,7 +185,7 @@ Reviewing changes to `src/*` and `nuklear.h`:
   * Variable/function name casing.
   * Indentation.
   * Curly bracket (`{}`) placement.
-* Ensure that the contributer has bumped the appropriate version in
+* Ensure that the contributor has bumped the appropriate version in
   [clib.json](https://github.com/Immediate-Mode-UI/Nuklear/blob/master/clib.json)
   and added their changes to the
   [CHANGELOG](https://github.com/Immediate-Mode-UI/Nuklear/blob/master/src/CHANGELOG).
