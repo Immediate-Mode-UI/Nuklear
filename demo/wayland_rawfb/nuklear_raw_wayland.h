@@ -110,7 +110,7 @@ static void nk_wayland_ctx_setpixel(const struct nk_wayland* win,
     const short x0, const short y0, const struct nk_color col)
 {
     uint32_t c = nk_color_to_xrgb8888(col);
-    uint32_t *pixels = win->data;
+    uint32_t *pixels = (uint32_t *)win->data;
     unsigned int *ptr;
 
     pixels += (y0 * win->width);
@@ -252,7 +252,7 @@ static void nk_wayland_img_setpixel(const struct wayland_img *img, const int x0,
     unsigned int *pixel;
     NK_ASSERT(img);
     if (y0 < img->h && y0 >= 0 && x0 >= 0 && x0 < img->w) {
-        ptr = img->pixels + (img->pitch * y0);
+        ptr = (unsigned char *)img->pixels + (img->pitch * y0);
 	pixel = (unsigned int *)ptr;
 
         if (img->format == NK_FONT_ATLAS_ALPHA8) {
@@ -267,10 +267,9 @@ static struct nk_color nk_wayland_getpixel(const struct nk_wayland* win, const i
 {
     struct nk_color col = {0, 0, 0, 0};
     uint32_t *ptr;
-    unsigned int pixel;
 
     if (y0 < win->height && y0 >= 0 && x0 >= 0 && x0 < win->width) {
-        ptr = win->data + (y0 * win->width);
+        ptr = (uint32_t *)win->data + (y0 * win->width);
 
         col = nk_wayland_int2color(*ptr, PIXEL_LAYOUT_XRGB_8888);
     } 
@@ -285,7 +284,7 @@ static struct nk_color nk_wayland_img_getpixel(const struct wayland_img *img, co
     unsigned int pixel;
     NK_ASSERT(img);
     if (y0 < img->h && y0 >= 0 && x0 >= 0 && x0 < img->w) {
-        ptr = img->pixels + (img->pitch * y0);
+        ptr = (unsigned char *)img->pixels + (img->pitch * y0);
 
         if (img->format == NK_FONT_ATLAS_ALPHA8) {
             col.a = ptr[x0];
@@ -364,6 +363,8 @@ static void nk_wayland_stroke_line(const struct nk_wayland* win, short x0, short
 {
     short tmp;
     int dy, dx, stepx, stepy;
+
+    NK_UNUSED(line_thickness);
 
     dy = y1 - y0;
     dx = x1 - x0;
@@ -493,6 +494,8 @@ static void nk_wayland_stroke_arc(const struct nk_wayland* win,
     const int b2 = (h * h) / 4;
     const int fa2 = 4 * a2, fb2 = 4 * b2;
     int x, y, sigma;
+
+    NK_UNUSED(line_thickness);
 
     if (s != 0 && s != 90 && s != 180 && s != 270) return;
     if (w < 1 || h < 1) return;

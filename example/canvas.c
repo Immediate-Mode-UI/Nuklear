@@ -65,6 +65,8 @@ struct device {
     GLuint font_tex;
 };
 
+/* function icon_load () is not used to build this file but might still be useful :) */
+/*
 static void
 die(const char *fmt, ...)
 {
@@ -76,8 +78,6 @@ die(const char *fmt, ...)
     exit(EXIT_FAILURE);
 }
 
-/* function icon_load () is not used to build this file but might still be useful :) */
-/*
 static struct nk_image	
 icon_load(const char *filename)	
 {	
@@ -403,6 +403,9 @@ int main(int argc, char *argv[])
     struct device device;
     struct nk_font_atlas atlas;
     struct nk_context ctx;
+
+    NK_UNUSED(argc);
+    NK_UNUSED(argv);
 
     /* GLFW */
     glfwSetErrorCallback(error_callback);

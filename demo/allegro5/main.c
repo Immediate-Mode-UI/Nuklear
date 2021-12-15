@@ -47,9 +47,6 @@
  *                          DEMO
  *
  * ===============================================================*/
-static void error_callback(int e, const char *d)
-{printf("Error %d: %s\n", e, d);}
-
 int main(void)
 {
     /* Platform */

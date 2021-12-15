@@ -2,7 +2,6 @@
 #include <SDL_mouse.h>
 #include <SDL_keyboard.h>
 
-
 #ifndef MIN
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #endif
@@ -26,6 +25,7 @@
 static int translate_sdl_key(struct SDL_Keysym const *k)
 {
     /*keyboard handling left as an exercise for the reader */
+    NK_UNUSED(k);
 
     return NK_KEY_NONE;
 }
@@ -50,7 +50,7 @@ static int sdl_button_to_nk(int button)
     }
 }
 
-
+#if 0
 static void
 grid_demo(struct nk_context *ctx)
 {
@@ -85,7 +85,7 @@ grid_demo(struct nk_context *ctx)
     }
     nk_end(ctx);
 }
-
+#endif
 
 
 int main(int argc, char **argv)
@@ -93,20 +93,28 @@ int main(int argc, char **argv)
     struct nk_color clear = {0,100,0,255};
     struct nk_vec2 vec;
     struct nk_rect bounds = {40,40,0,0};
+    struct sdlsurface_context *context;
+
+    SDL_DisplayMode dm;
+    SDL_Window *window;
+    SDL_Renderer *renderer;
+    SDL_Texture *tex;
+    SDL_Surface *surface;
+
+    NK_UNUSED(argc);
+    NK_UNUSED(argv);
 
     SDL_Init(SDL_INIT_VIDEO);
     printf("sdl init called...\n");
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 
-    SDL_DisplayMode dm;
-
     SDL_GetDesktopDisplayMode(0, &dm);
 
     printf("desktop display mode %d %d\n", dm.w, dm.h);
 
 
-    SDL_Window *window = SDL_CreateWindow("Puzzle", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w-200,dm.h-200, SDL_WINDOW_OPENGL);
+    window = SDL_CreateWindow("Puzzle", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w-200,dm.h-200, SDL_WINDOW_OPENGL);
     if (!window)
     {
         printf("can't open window!\n");
@@ -114,18 +122,18 @@ int main(int argc, char **argv)
     }
 
 
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
+    renderer = SDL_CreateRenderer(window, -1, 0);
 
-    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, dm.w-200, dm.h-200, 32, SDL_PIXELFORMAT_ARGB8888);
+    surface = SDL_CreateRGBSurfaceWithFormat(0, dm.w-200, dm.h-200, 32, SDL_PIXELFORMAT_ARGB8888);
 
 
-    struct sdlsurface_context *context = nk_sdlsurface_init(surface, 13.0f);
+    context = nk_sdlsurface_init(surface, 13.0f);
 
 
     while(1)
     {
-        nk_input_begin(&(context->ctx));
         SDL_Event event;
+        nk_input_begin(&(context->ctx));
         while (SDL_PollEvent(&event))
         {
             switch(event.type)
@@ -184,7 +192,7 @@ int main(int argc, char **argv)
 
 
 
-        SDL_Texture *tex = SDL_CreateTextureFromSurface(renderer, surface);
+        tex = SDL_CreateTextureFromSurface(renderer, surface);
         SDL_RenderCopy(renderer, tex, NULL, NULL);
         SDL_RenderPresent(renderer);
         SDL_DestroyTexture(tex);

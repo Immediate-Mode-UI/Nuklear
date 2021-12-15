@@ -3,7 +3,7 @@ CC = g++
 BIN = demo
 
 # Flags
-CFLAGS += -s -O2
+CFLAGS += -s -Wall -Wextra -pedantic -O2
 
 SRC = main.cpp
 OBJ = $(SRC:.cpp=.o)

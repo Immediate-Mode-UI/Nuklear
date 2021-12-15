@@ -81,6 +81,9 @@ int main(int argc, char *argv[])
     struct nk_context *ctx;
     struct nk_colorf bg;
 
+    NK_UNUSED(argc);
+    NK_UNUSED(argv);
+
     /* SDL setup */
     SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "0");
     SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS);
