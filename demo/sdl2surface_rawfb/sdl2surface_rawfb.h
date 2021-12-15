@@ -129,7 +129,7 @@ nk_sdlsurface_line_horizontal(const struct sdlsurface_context *sdlsurface,
     }
 
     while (n > sizeof(c)) {
-        memcpy(pixels, c, sizeof(c));
+        memcpy((void*)pixels, c, sizeof(c));
         n -= sizeof(c); pixels += sizeof(c);
     } for (i = 0; i < n; i++)
         pixels[i] = c[i];
