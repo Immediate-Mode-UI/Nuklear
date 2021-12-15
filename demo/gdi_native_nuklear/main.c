@@ -84,10 +84,10 @@ int drawCallback(struct nk_context* ctx)
     return 1;
 }
 
-/* Main entry point - wWinMain used for UNICODE
- * (You can also use _tWinMain(...) to automaticaly use the ASCII or WIDE char entry point base on your build)  
+/* Main entry point - WinMain used for ANSI
+ * (You can also use _tWinMain(...) to automaticaly use the ANSI or UNICODE char entry point base on your build)
  */
-INT WINAPI wWinMain(HINSTANCE _In_ hInstance, HINSTANCE _In_opt_ hPrevInstance, PWSTR _In_ cmdArgs, INT _In_ cmdShow)
+INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdArgs, INT cmdShow)
 {
     /* Call this first to setup all required prerequisites */
     nkgdi_window_init();

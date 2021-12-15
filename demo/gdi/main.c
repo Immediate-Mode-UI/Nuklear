@@ -74,7 +74,7 @@ WindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     if (nk_gdi_handle_event(wnd, msg, wparam, lparam))
         return 0;
 
-    return DefWindowProcW(wnd, msg, wparam, lparam);
+    return DefWindowProc(wnd, msg, wparam, lparam);
 }
 
 int main(void)
@@ -82,7 +82,7 @@ int main(void)
     GdiFont* font;
     struct nk_context *ctx;
 
-    WNDCLASSW wc;
+    WNDCLASS wc;
     ATOM atom;
     RECT rect = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
     DWORD style = WS_OVERLAPPEDWINDOW;
@@ -96,14 +96,14 @@ int main(void)
     memset(&wc, 0, sizeof(wc));
     wc.style = CS_DBLCLKS;
     wc.lpfnWndProc = WindowProc;
-    wc.hInstance = GetModuleHandleW(0);
+    wc.hInstance = GetModuleHandle(0);
     wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.lpszClassName = L"NuklearWindowClass";
-    atom = RegisterClassW(&wc);
+    wc.lpszClassName = TEXT("NuklearWindowClass");
+    atom = RegisterClass(&wc);
 
     AdjustWindowRectEx(&rect, style, FALSE, exstyle);
-    wnd = CreateWindowExW(exstyle, wc.lpszClassName, L"Nuklear GDI Demo",
+    wnd = CreateWindowEx(exstyle, wc.lpszClassName, TEXT("Nuklear GDI Demo"),
         style | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT,
         rect.right - rect.left, rect.bottom - rect.top,
         NULL, NULL, wc.hInstance, NULL);
@@ -133,20 +133,20 @@ int main(void)
         MSG msg;
         nk_input_begin(ctx);
         if (needs_refresh == 0) {
-            if (GetMessageW(&msg, NULL, 0, 0) <= 0)
+            if (GetMessage(&msg, NULL, 0, 0) <= 0)
                 running = 0;
             else {
                 TranslateMessage(&msg);
-                DispatchMessageW(&msg);
+                DispatchMessage(&msg);
             }
             needs_refresh = 1;
         } else needs_refresh = 0;
 
-        while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
+        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
             if (msg.message == WM_QUIT)
                 running = 0;
             TranslateMessage(&msg);
-            DispatchMessageW(&msg);
+            DispatchMessage(&msg);
             needs_refresh = 1;
         }
         nk_input_end(ctx);
@@ -192,7 +192,7 @@ int main(void)
 
     nk_gdifont_del(font);
     ReleaseDC(wnd, dc);
-    UnregisterClassW(wc.lpszClassName, wc.hInstance);
+    UnregisterClass(wc.lpszClassName, wc.hInstance);
     return 0;
 }
 

@@ -196,7 +196,7 @@ nk_gdi_fill_rect(HDC dc, short x, short y, unsigned short w,
         RECT rect;
         SetRect(&rect, x, y, x + w, y + h);
         SetBkColor(dc, color);
-        ExtTextOutW(dc, 0, 0, ETO_OPAQUE, &rect, NULL, 0, NULL);
+        ExtTextOut(dc, 0, 0, ETO_OPAQUE, &rect, NULL, 0, NULL);
     } else {
         HPEN pen = NULL, old_pen = NULL;
         HBRUSH brush = NULL, old_brush = NULL;
@@ -551,7 +551,7 @@ nk_gdi_clear(HDC dc, struct nk_color col)
     SetRect(&rect, 0, 0, gdi.width, gdi.height);
     SetBkColor(dc, color);
 
-    ExtTextOutW(dc, 0, 0, ETO_OPAQUE, &rect, NULL, 0, NULL);
+    ExtTextOut(dc, 0, 0, ETO_OPAQUE, &rect, NULL, 0, NULL);
 }
 
 static void
@@ -564,14 +564,14 @@ nk_gdi_blit(HDC dc)
 GdiFont*
 nk_gdifont_create(const char *name, int size)
 {
-    TEXTMETRICW metric;
+    TEXTMETRIC metric;
     GdiFont *font = (GdiFont*)calloc(1, sizeof(GdiFont));
     if (!font)
         return NULL;
     font->dc = CreateCompatibleDC(0);
     font->handle = CreateFontA(size, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, name);
     SelectObject(font->dc, font->handle);
-    GetTextMetricsW(font->dc, &metric);
+    GetTextMetrics(font->dc, &metric);
     font->height = metric.tmHeight;
     return font;
 }
