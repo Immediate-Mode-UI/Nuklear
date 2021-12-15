@@ -14,7 +14,7 @@ nk_draw_selectable(struct nk_command_buffer *out,
     const char *string, int len, nk_flags align, const struct nk_user_font *font)
 {
     const struct nk_style_item *background;
-    struct nk_text text{};
+    struct nk_text text = {};
     text.padding = style->padding;
 
     /* select correct colors/images */
