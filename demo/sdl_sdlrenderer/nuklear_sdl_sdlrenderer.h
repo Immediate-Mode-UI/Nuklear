@@ -73,6 +73,8 @@ nk_sdl_render(enum nk_anti_aliasing AA)
     struct nk_sdl_device *dev = &sdl.ogl;
 
     {
+        SDL_Rect saved_clip;
+        SDL_bool clipping_enabled;
         int vs = sizeof(struct nk_sdl_vertex);
         size_t vp = offsetof(struct nk_sdl_vertex, position);
         size_t vt = offsetof(struct nk_sdl_vertex, uv);
@@ -110,9 +112,8 @@ nk_sdl_render(enum nk_anti_aliasing AA)
 
         /* iterate over and execute each draw command */
         offset = (const nk_draw_index*)nk_buffer_memory_const(&ebuf);
-
-        SDL_Rect saved_clip;
-        SDL_bool clipping_enabled = SDL_RenderIsClipEnabled(sdl.renderer);
+        
+        clipping_enabled = SDL_RenderIsClipEnabled(sdl.renderer);
         SDL_RenderGetClipRect(sdl.renderer, &saved_clip);
 
         nk_draw_foreach(cmd, &sdl.ctx, &dev->cmds)
@@ -128,18 +129,19 @@ nk_sdl_render(enum nk_anti_aliasing AA)
                 SDL_RenderSetClipRect(sdl.renderer, &r);
             }
 
-            const void *vertices = nk_buffer_memory_const(&vbuf);
+            {
+                const void *vertices = nk_buffer_memory_const(&vbuf);
 
-            int ret = SDL_RenderGeometryRaw(sdl.renderer,
-                    (SDL_Texture *)cmd->texture.ptr,
-                    (const void*)((const nk_byte*)vertices + vp), vs,
-                    (const void*)((const nk_byte*)vertices + vc), vs,
-                    (const void*)((const nk_byte*)vertices + vt), vs,
-                    (vbuf.needed / vs),
-                    (void *) offset, cmd->elem_count, 2);
+                SDL_RenderGeometryRaw(sdl.renderer,
+                        (SDL_Texture *)cmd->texture.ptr,
+                        (const void*)((const nk_byte*)vertices + vp), vs,
+                        (const void*)((const nk_byte*)vertices + vc), vs,
+                        (const void*)((const nk_byte*)vertices + vt), vs,
+                        (vbuf.needed / vs),
+                        (void *) offset, cmd->elem_count, 2);
 
-            offset += cmd->elem_count;
-
+                offset += cmd->elem_count;
+            }
         }
 
         SDL_RenderSetClipRect(sdl.renderer, &saved_clip);
@@ -317,7 +319,7 @@ void nk_sdl_shutdown(void)
     nk_font_atlas_clear(&sdl.atlas);
     nk_free(&sdl.ctx);
     SDL_DestroyTexture(dev->font_tex);
-    //glDeleteTextures(1, &dev->font_tex);
+    /* glDeleteTextures(1, &dev->font_tex); */
     nk_buffer_free(&dev->cmds);
     memset(&sdl, 0, sizeof(sdl));
 }

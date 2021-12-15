@@ -2,7 +2,7 @@
 BIN = demo
 
 # Flags
-CFLAGS += -std=c99 -pedantic -O0
+CFLAGS += -std=c89 -pedantic -O0
 CFLAGS += `sdl2-config --cflags`
 
 SRC = main.c

@@ -71,6 +71,7 @@ main(int argc, char *argv[])
     SDL_Window *win;
     SDL_Renderer *renderer;
     int running = 1;
+    int flags = 0;
 
     /* GUI */
     struct nk_context *ctx;
@@ -89,7 +90,6 @@ main(int argc, char *argv[])
         exit(-1);
     }
 
-    int flags = 0;
     flags |= SDL_RENDERER_ACCELERATED;
     flags |= SDL_RENDERER_PRESENTVSYNC;
 
