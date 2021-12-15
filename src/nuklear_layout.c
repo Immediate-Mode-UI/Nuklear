@@ -44,8 +44,6 @@ NK_LIB float
 nk_layout_row_calculate_usable_space(const struct nk_style *style, enum nk_panel_type type,
     float total_space, int columns)
 {
-    type;
-
     float panel_spacing;
     float panel_space;
 

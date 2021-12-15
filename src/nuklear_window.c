@@ -45,13 +45,14 @@ nk_free_window(struct nk_context *ctx, struct nk_window *win)
 NK_LIB struct nk_window*
 nk_find_window(struct nk_context *ctx, nk_hash hash, const char *name)
 {
+    int max_len;
     struct nk_window *iter;
     iter = ctx->begin;
     while (iter) {
         NK_ASSERT(iter != iter->next);
         if (iter->name == hash) {
 			if (!name) return iter;
-            int max_len = nk_strlen(iter->name_string);
+            max_len = nk_strlen(iter->name_string);
             if (!nk_stricmpn(iter->name_string, name, max_len))
                 return iter;
         }
@@ -334,7 +335,7 @@ nk_add_window(struct nk_context *ctx, nk_hash id, const char *title,
 
         win->flags = flags;
         win->bounds = bounds;
-        win->name = id;				//0 means use "hash" only
+        win->name = id;				/* 0 means use "hash" only */
         win->name_string[0] = 0;
         win->popup.win = 0;
         if (!ctx->active)
