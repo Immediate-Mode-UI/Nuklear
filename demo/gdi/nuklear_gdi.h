@@ -151,22 +151,16 @@ nk_gdi_stroke_line(HDC dc, short x0, short y0, short x1,
     short y1, unsigned int line_thickness, struct nk_color col)
 {
     COLORREF color = convert_color(col);
+    HPEN pen = NULL, old_pen = NULL;
 
-    HPEN pen = NULL;
-    if (line_thickness == 1) {
-        SetDCPenColor(dc, color);
-    } else {
-        pen = CreatePen(PS_SOLID, line_thickness, color);
-        SelectObject(dc, pen);
-    }
+    pen = CreatePen(PS_SOLID, line_thickness, color);
+    old_pen = SelectObject(dc, pen);
 
     MoveToEx(dc, x0, y0, NULL);
     LineTo(dc, x1, y1);
 
-    if (pen) {
-        SelectObject(dc, GetStockObject(DC_PEN));
-        DeleteObject(pen);
-    }
+    SelectObject(dc, old_pen);
+    DeleteObject(pen);
 }
 
 static void
@@ -175,14 +169,10 @@ nk_gdi_stroke_rect(HDC dc, short x, short y, unsigned short w,
 {
     COLORREF color = convert_color(col);
     HGDIOBJ br;
-    HPEN pen = NULL;
+    HPEN pen = NULL, old_pen = NULL;
 
-    if (line_thickness == 1) {
-        SetDCPenColor(dc, color);
-    } else {
-        pen = CreatePen(PS_SOLID, line_thickness, color);
-        SelectObject(dc, pen);
-    }
+    pen = CreatePen(PS_SOLID, line_thickness, color);
+    old_pen = SelectObject(dc, pen);
 
     br = SelectObject(dc, GetStockObject(NULL_BRUSH));
     if (r == 0) {
@@ -192,10 +182,8 @@ nk_gdi_stroke_rect(HDC dc, short x, short y, unsigned short w,
     }
     SelectObject(dc, br);
 
-    if (pen) { 
-        SelectObject(dc, GetStockObject(DC_PEN));
-        DeleteObject(pen);
-    }
+    SelectObject(dc, old_pen);
+    DeleteObject(pen);
 }
 
 static void
@@ -210,9 +198,22 @@ nk_gdi_fill_rect(HDC dc, short x, short y, unsigned short w,
         SetBkColor(dc, color);
         ExtTextOutW(dc, 0, 0, ETO_OPAQUE, &rect, NULL, 0, NULL);
     } else {
-        SetDCPenColor(dc, color);
-        SetDCBrushColor(dc, color);
+        HPEN pen = NULL, old_pen = NULL;
+        HBRUSH brush = NULL, old_brush = NULL;
+
+        brush = CreateSolidBrush(color);
+        old_brush = SelectObject(dc, brush);
+
+        pen = CreatePen(PS_SOLID, 1, color);
+        old_pen = SelectObject(dc, pen);
+
         RoundRect(dc, x, y, x + w, y + h, r, r);
+
+        SelectObject(dc, old_pen);
+        DeleteObject(pen);
+
+        SelectObject(dc, old_brush);
+        DeleteObject(brush);
     }
 }
 static void
@@ -284,14 +285,26 @@ nk_gdi_fill_triangle(HDC dc, short x0, short y0, short x1,
 {
     COLORREF color = convert_color(col);
     POINT points[3];
+    HPEN pen = NULL, old_pen = NULL;
+    HBRUSH brush = NULL, old_brush = NULL;
 
     SetPoint(&points[0], x0, y0);
     SetPoint(&points[1], x1, y1);
     SetPoint(&points[2], x2, y2);
 
-    SetDCPenColor(dc, color);
-    SetDCBrushColor(dc, color);
+    brush = CreateSolidBrush(color);
+    old_brush = SelectObject(dc, brush);
+
+    pen = CreatePen(PS_SOLID, 1, color);
+    old_pen = SelectObject(dc, pen);
+
     Polygon(dc, points, 3);
+
+    SelectObject(dc, old_pen);
+    DeleteObject(pen);
+
+    SelectObject(dc, old_brush);
+    DeleteObject(brush);
 }
 
 static void
@@ -300,26 +313,20 @@ nk_gdi_stroke_triangle(HDC dc, short x0, short y0, short x1,
 {
     COLORREF color = convert_color(col);
     POINT points[4];
-    HPEN pen = NULL;
+    HPEN pen = NULL, old_pen = NULL;
 
     SetPoint(&points[0], x0, y0);
     SetPoint(&points[1], x1, y1);
     SetPoint(&points[2], x2, y2);
     SetPoint(&points[3], x0, y0);
 
-    if (line_thickness == 1) {
-        SetDCPenColor(dc, color);
-    } else {
-        pen = CreatePen(PS_SOLID, line_thickness, color);
-        SelectObject(dc, pen);
-    }
+    pen = CreatePen(PS_SOLID, line_thickness, color);
+    old_pen = SelectObject(dc, pen);
 
     Polyline(dc, points, 4);
 
-    if (pen) {
-        SelectObject(dc, GetStockObject(DC_PEN));
-        DeleteObject(pen);
-    }
+    SelectObject(dc, old_pen);
+    DeleteObject(pen);
 }
 
 static void
@@ -329,13 +336,26 @@ nk_gdi_fill_polygon(HDC dc, const struct nk_vec2i *pnts, int count, struct nk_co
     #define MAX_POINTS 64
     POINT points[MAX_POINTS];
     COLORREF color = convert_color(col);
-    SetDCBrushColor(dc, color);
-    SetDCPenColor(dc, color);
+    HPEN pen = NULL, old_pen = NULL;
+    HBRUSH brush = NULL, old_brush = NULL;
+
+    brush = CreateSolidBrush(color);
+    old_brush = SelectObject(dc, brush);
+
+    pen = CreatePen(PS_SOLID, 1, color);
+    old_pen = SelectObject(dc, pen);
+
     for (i = 0; i < count && i < MAX_POINTS; ++i) {
         points[i].x = pnts[i].x;
         points[i].y = pnts[i].y;
     }
     Polygon(dc, points, i);
+
+    SelectObject(dc, old_pen);
+    DeleteObject(pen);
+
+    SelectObject(dc, old_brush);
+    DeleteObject(brush);
     #undef MAX_POINTS
 }
 
@@ -344,13 +364,10 @@ nk_gdi_stroke_polygon(HDC dc, const struct nk_vec2i *pnts, int count,
     unsigned short line_thickness, struct nk_color col)
 {
     COLORREF color = convert_color(col);
-    HPEN pen = NULL;
-    if (line_thickness == 1) {
-        SetDCPenColor(dc, color);
-    } else {
-        pen = CreatePen(PS_SOLID, line_thickness, color);
-        SelectObject(dc, pen);
-    }
+    HPEN pen = NULL, old_pen = NULL;
+
+    pen = CreatePen(PS_SOLID, line_thickness, color);
+    old_pen = SelectObject(dc, pen);
 
     if (count > 0) {
         int i;
@@ -360,10 +377,8 @@ nk_gdi_stroke_polygon(HDC dc, const struct nk_vec2i *pnts, int count,
         LineTo(dc, pnts[0].x, pnts[0].y);
     }
 
-    if (pen) {
-        SelectObject(dc, GetStockObject(DC_PEN));
-        DeleteObject(pen);
-    }
+    SelectObject(dc, old_pen);
+    DeleteObject(pen);
 }
 
 static void
@@ -371,13 +386,10 @@ nk_gdi_stroke_polyline(HDC dc, const struct nk_vec2i *pnts,
     int count, unsigned short line_thickness, struct nk_color col)
 {
     COLORREF color = convert_color(col);
-    HPEN pen = NULL;
-    if (line_thickness == 1) {
-        SetDCPenColor(dc, color);
-    } else {
-        pen = CreatePen(PS_SOLID, line_thickness, color);
-        SelectObject(dc, pen);
-    }
+    HPEN pen = NULL, old_pen = NULL;
+
+    pen = CreatePen(PS_SOLID, line_thickness, color);
+    old_pen = SelectObject(dc, pen);
 
     if (count > 0) {
         int i;
@@ -386,34 +398,26 @@ nk_gdi_stroke_polyline(HDC dc, const struct nk_vec2i *pnts,
             LineTo(dc, pnts[i].x, pnts[i].y);
     }
 
-    if (pen) {
-        SelectObject(dc, GetStockObject(DC_PEN));
-        DeleteObject(pen);
-    }
+    SelectObject(dc, old_pen);
+    DeleteObject(pen);
 }
 
 static void
 nk_gdi_stroke_arc(HDC dc, short cx, short cy, unsigned short r, float amin, float adelta, unsigned short line_thickness, struct nk_color col)
 {
     COLORREF color = convert_color(col);
+    HPEN pen = NULL, old_pen = NULL;
 
-    /* setup pen */
-    HPEN pen = NULL;
-    if (line_thickness == 1)
-        SetDCPenColor(dc, color);
-    else
-    {
-        /* the flat endcap makes thick arcs look better */
-        DWORD pen_style = PS_SOLID | PS_ENDCAP_FLAT | PS_GEOMETRIC;
+    /* the flat endcap makes thick arcs look better */
+    DWORD pen_style = PS_SOLID | PS_ENDCAP_FLAT | PS_GEOMETRIC;
 
-        LOGBRUSH brush;
-        brush.lbStyle = BS_SOLID;
-        brush.lbColor = color;
-        brush.lbHatch = 0;
+    LOGBRUSH brush;
+    brush.lbStyle = BS_SOLID;
+    brush.lbColor = color;
+    brush.lbHatch = 0;
 
-        pen = ExtCreatePen(pen_style, line_thickness, &brush, 0, NULL);
-        SelectObject(dc, pen);
-    }
+    pen = ExtCreatePen(pen_style, line_thickness, &brush, 0, NULL);
+    old_pen = SelectObject(dc, pen);
 
     /* calculate arc and draw */
     int start_x = cx + (int) ((float)r*nk_cos(amin+adelta)),
@@ -426,26 +430,35 @@ nk_gdi_stroke_arc(HDC dc, short cx, short cy, unsigned short r, float amin, floa
     Pie(dc, cx-r, cy-r, cx+r, cy+r, start_x, start_y, end_x, end_y);
     SelectObject(dc, br);
 
-    if (pen)
-    {
-        SelectObject(dc, GetStockObject(DC_PEN));
-        DeleteObject(pen);
-    }
+    SelectObject(dc, old_pen);
+    DeleteObject(pen);
 }
 
 static void
 nk_gdi_fill_arc(HDC dc, short cx, short cy, unsigned short r, float amin, float adelta, struct nk_color col)
 {
     COLORREF color = convert_color(col);
-    SetDCBrushColor(dc, color);
-    SetDCPenColor(dc, color);
+    HPEN pen = NULL, old_pen = NULL;
+    HBRUSH brush = NULL, old_brush = NULL;
 
     int start_x = cx + (int) ((float)r*nk_cos(amin+adelta)),
         start_y = cy + (int) ((float)r*nk_sin(amin+adelta)),
         end_x = cx + (int) ((float)r*nk_cos(amin)),
         end_y = cy + (int) ((float)r*nk_sin(amin));
 
+    brush = CreateSolidBrush(color);
+    old_brush = SelectObject(dc, brush);
+
+    pen = CreatePen(PS_SOLID, 1, color);
+    old_pen = SelectObject(dc, pen);
+
     Pie(dc, cx-r, cy-r, cx+r, cy+r, start_x, start_y, end_x, end_y);
+
+    SelectObject(dc, old_pen);
+    DeleteObject(pen);
+
+    SelectObject(dc, old_brush);
+    DeleteObject(brush);
 }
 
 static void
@@ -453,9 +466,22 @@ nk_gdi_fill_circle(HDC dc, short x, short y, unsigned short w,
     unsigned short h, struct nk_color col)
 {
     COLORREF color = convert_color(col);
-    SetDCBrushColor(dc, color);
-    SetDCPenColor(dc, color);
+    HPEN pen = NULL, old_pen = NULL;
+    HBRUSH brush = NULL, old_brush = NULL;
+
+    brush = CreateSolidBrush(color);
+    old_brush = SelectObject(dc, brush);
+
+    pen = CreatePen(PS_SOLID, 1, color);
+    old_pen = SelectObject(dc, pen);
+
     Ellipse(dc, x, y, x + w, y + h);
+
+    SelectObject(dc, old_pen);
+    DeleteObject(pen);
+
+    SelectObject(dc, old_brush);
+    DeleteObject(brush);
 }
 
 static void
@@ -463,23 +489,15 @@ nk_gdi_stroke_circle(HDC dc, short x, short y, unsigned short w,
     unsigned short h, unsigned short line_thickness, struct nk_color col)
 {
     COLORREF color = convert_color(col);
-    HPEN pen = NULL;
-    if (line_thickness == 1) {
-        SetDCPenColor(dc, color);
-    } else {
-        pen = CreatePen(PS_SOLID, line_thickness, color);
-        SelectObject(dc, pen);
-    }
-    
-    HGDIOBJ br = SelectObject(dc, GetStockObject(NULL_BRUSH));
-    SetDCBrushColor(dc, OPAQUE);
-    Ellipse(dc, x, y, x + w, y + h);
-    SelectObject(dc, br);
+    HPEN pen = NULL, old_pen = NULL;
 
-    if (pen) {
-        SelectObject(dc, GetStockObject(DC_PEN));
-        DeleteObject(pen);
-    }
+    pen = CreatePen(PS_SOLID, line_thickness, color);
+    old_pen = SelectObject(dc, pen);
+
+    Ellipse(dc, x, y, x + w, y + h);
+
+    SelectObject(dc, old_pen);
+    DeleteObject(pen);
 }
 
 static void
@@ -489,27 +507,20 @@ nk_gdi_stroke_curve(HDC dc, struct nk_vec2i p1,
 {
     COLORREF color = convert_color(col);
     POINT p[4];
-    HPEN pen = NULL;
+    HPEN pen = NULL, old_pen = NULL;
 
     SetPoint(&p[0], p1.x, p1.y);
     SetPoint(&p[1], p2.x, p2.y);
     SetPoint(&p[2], p3.x, p3.y);
     SetPoint(&p[3], p4.x, p4.y);
 
-    if (line_thickness == 1) {
-        SetDCPenColor(dc, color);
-    } else {
-        pen = CreatePen(PS_SOLID, line_thickness, color);
-        SelectObject(dc, pen);
-    }
+    pen = CreatePen(PS_SOLID, line_thickness, color);
+    old_pen = SelectObject(dc, pen);
 
-    SetDCBrushColor(dc, OPAQUE);
     PolyBezier(dc, p, 4);
 
-    if (pen) {
-        SelectObject(dc, GetStockObject(DC_PEN));
-        DeleteObject(pen);
-    }
+    SelectObject(dc, old_pen);
+    DeleteObject(pen);
 }
 
 static void
@@ -890,8 +901,6 @@ nk_gdi_render(struct nk_color clear)
     const struct nk_command *cmd;
 
     HDC memory_dc = gdi.memory_dc;
-    SelectObject(memory_dc, GetStockObject(DC_PEN));
-    SelectObject(memory_dc, GetStockObject(DC_BRUSH));
     nk_gdi_clear(memory_dc, clear);
 
     nk_foreach(cmd, &gdi.ctx)
