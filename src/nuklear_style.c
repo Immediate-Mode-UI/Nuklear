@@ -55,6 +55,14 @@ nk_style_get_color_by_name(enum nk_style_colors c)
     return nk_color_names[c];
 }
 NK_API struct nk_style_item
+nk_style_item_color(struct nk_color col)
+{
+    struct nk_style_item i;
+    i.type = NK_STYLE_ITEM_COLOR;
+    i.data.color = col;
+    return i;
+}
+NK_API struct nk_style_item
 nk_style_item_image(struct nk_image img)
 {
     struct nk_style_item i;
@@ -63,11 +71,11 @@ nk_style_item_image(struct nk_image img)
     return i;
 }
 NK_API struct nk_style_item
-nk_style_item_color(struct nk_color col)
+nk_style_item_nine_slice(struct nk_nine_slice slice)
 {
     struct nk_style_item i;
-    i.type = NK_STYLE_ITEM_COLOR;
-    i.data.color = col;
+    i.type = NK_STYLE_ITEM_NINE_SLICE;
+    i.data.slice = slice;
     return i;
 }
 NK_API struct nk_style_item
@@ -635,7 +643,7 @@ nk_style_set_font(struct nk_context *ctx, const struct nk_user_font *font)
     if (ctx->current)
         nk_layout_reset_min_row_height(ctx);
 }
-NK_API int
+NK_API nk_bool
 nk_style_push_font(struct nk_context *ctx, const struct nk_user_font *font)
 {
     struct nk_config_stack_user_font *font_stack;
@@ -655,7 +663,7 @@ nk_style_push_font(struct nk_context *ctx, const struct nk_user_font *font)
     ctx->style.font = font;
     return 1;
 }
-NK_API int
+NK_API nk_bool
 nk_style_pop_font(struct nk_context *ctx)
 {
     struct nk_config_stack_user_font *font_stack;
@@ -705,19 +713,19 @@ nk_style_pop_##type(struct nk_context *ctx)\
     *element->address = element->old_value;\
     return 1;\
 }
-NK_API int NK_STYLE_PUSH_IMPLEMENATION(struct nk, style_item, style_items)
-NK_API int NK_STYLE_PUSH_IMPLEMENATION(nk,float, floats)
-NK_API int NK_STYLE_PUSH_IMPLEMENATION(struct nk, vec2, vectors)
-NK_API int NK_STYLE_PUSH_IMPLEMENATION(nk,flags, flags)
-NK_API int NK_STYLE_PUSH_IMPLEMENATION(struct nk,color, colors)
+NK_API nk_bool NK_STYLE_PUSH_IMPLEMENATION(struct nk, style_item, style_items)
+NK_API nk_bool NK_STYLE_PUSH_IMPLEMENATION(nk,float, floats)
+NK_API nk_bool NK_STYLE_PUSH_IMPLEMENATION(struct nk, vec2, vectors)
+NK_API nk_bool NK_STYLE_PUSH_IMPLEMENATION(nk,flags, flags)
+NK_API nk_bool NK_STYLE_PUSH_IMPLEMENATION(struct nk,color, colors)
 
-NK_API int NK_STYLE_POP_IMPLEMENATION(style_item, style_items)
-NK_API int NK_STYLE_POP_IMPLEMENATION(float,floats)
-NK_API int NK_STYLE_POP_IMPLEMENATION(vec2, vectors)
-NK_API int NK_STYLE_POP_IMPLEMENATION(flags,flags)
-NK_API int NK_STYLE_POP_IMPLEMENATION(color,colors)
+NK_API nk_bool NK_STYLE_POP_IMPLEMENATION(style_item, style_items)
+NK_API nk_bool NK_STYLE_POP_IMPLEMENATION(float,floats)
+NK_API nk_bool NK_STYLE_POP_IMPLEMENATION(vec2, vectors)
+NK_API nk_bool NK_STYLE_POP_IMPLEMENATION(flags,flags)
+NK_API nk_bool NK_STYLE_POP_IMPLEMENATION(color,colors)
 
-NK_API int
+NK_API nk_bool
 nk_style_set_cursor(struct nk_context *ctx, enum nk_style_cursor c)
 {
     struct nk_style *style;

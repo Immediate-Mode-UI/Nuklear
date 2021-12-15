@@ -204,11 +204,15 @@ nk_d3d9_get_projection_matrix(int width, int height, float *result)
     const float T = 0.5f;
     const float B = (float)height + 0.5f;
     float matrix[4][4] = {
-        {    2.0f / (R - L),              0.0f, 0.0f, 0.0f },
-        {              0.0f,    2.0f / (T - B), 0.0f, 0.0f },
-        {              0.0f,              0.0f, 0.0f, 0.0f },
-        { (R + L) / (L - R), (T + B) / (B - T), 0.0f, 1.0f },
+        { 0.0f, 0.0f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 0.0f, 1.0f },
     };
+    matrix[0][0] = 2.0f / (R - L);
+    matrix[1][1] = 2.0f / (T - B);
+    matrix[3][0] = (R + L) / (L - R);
+    matrix[3][1] = (T + B) / (B - T);
     memcpy(result, matrix, sizeof(matrix));
 }
 
@@ -426,30 +430,35 @@ nk_d3d9_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 static void
 nk_d3d9_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
 {
+    HGLOBAL mem;
+    SIZE_T size;
+    LPCWSTR wstr;
+    int utf8size;
+
     (void)usr;
     if (!IsClipboardFormatAvailable(CF_UNICODETEXT) && OpenClipboard(NULL)) {
         return;
     }
 
-    HGLOBAL mem = GetClipboardData(CF_UNICODETEXT);
+    mem = GetClipboardData(CF_UNICODETEXT);
     if (!mem) {
         CloseClipboard();
         return;
     }
 
-    SIZE_T size = GlobalSize(mem) - 1;
+    size = GlobalSize(mem) - 1;
     if (!size) {
         CloseClipboard();
         return;
     }
 
-    LPCWSTR wstr = (LPCWSTR)GlobalLock(mem);
+    wstr = (LPCWSTR)GlobalLock(mem);
     if (!wstr) {
         CloseClipboard();
         return;
     }
 
-    int utf8size = WideCharToMultiByte(CP_UTF8, 0, wstr, (int)size / sizeof(wchar_t), NULL, 0, NULL, NULL);
+    utf8size = WideCharToMultiByte(CP_UTF8, 0, wstr, (int)size / sizeof(wchar_t), NULL, 0, NULL, NULL);
     if (utf8size) {
         char *utf8 = (char *)malloc(utf8size);
         if (utf8) {
@@ -466,12 +475,14 @@ nk_d3d9_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
 static void
 nk_d3d9_clipboard_copy(nk_handle usr, const char *text, int len)
 {
+    int wsize;
+
     (void)usr;
     if (!OpenClipboard(NULL)) {
         return;
     }
 
-    int wsize = MultiByteToWideChar(CP_UTF8, 0, text, len, NULL, 0);
+    wsize = MultiByteToWideChar(CP_UTF8, 0, text, len, NULL, 0);
     if (wsize) {
         HGLOBAL mem = GlobalAlloc(GMEM_MOVEABLE, (wsize + 1) * sizeof(wchar_t));
         if (mem) {

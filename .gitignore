@@ -6,3 +6,6 @@ docs/xml
 docs/build
 docs/src
 *.tmp
+*.swo
+*.swp
+/private/

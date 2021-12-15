@@ -85,10 +85,15 @@ nk_d3d11_render(ID3D11DeviceContext *context, enum nk_anti_aliasing AA)
     const float blend_factor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
     const UINT stride = sizeof(struct nk_d3d11_vertex);
     const UINT offset = 0;
+#ifdef NK_UINT_DRAW_INDEX
+    DXGI_FORMAT index_buffer_format = DXGI_FORMAT_R32_UINT;
+#else
+    DXGI_FORMAT index_buffer_format = DXGI_FORMAT_R16_UINT;
+#endif
 
     ID3D11DeviceContext_IASetInputLayout(context, d3d11.input_layout);
     ID3D11DeviceContext_IASetVertexBuffers(context, 0, 1, &d3d11.vertex_buffer, &stride, &offset);
-    ID3D11DeviceContext_IASetIndexBuffer(context, d3d11.index_buffer, DXGI_FORMAT_R16_UINT, 0);
+    ID3D11DeviceContext_IASetIndexBuffer(context, d3d11.index_buffer, index_buffer_format, 0);
     ID3D11DeviceContext_IASetPrimitiveTopology(context, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     ID3D11DeviceContext_VSSetShader(context, d3d11.vertex_shader, NULL, 0);
@@ -174,11 +179,15 @@ nk_d3d11_get_projection_matrix(int width, int height, float *result)
     const float B = (float)height;
     float matrix[4][4] =
     {
-        {    2.0f / (R - L),              0.0f, 0.0f, 0.0f },
-        {              0.0f,    2.0f / (T - B), 0.0f, 0.0f },
-        {              0.0f,              0.0f, 0.5f, 0.0f },
-        { (R + L) / (L - R), (T + B) / (B - T), 0.5f, 1.0f },
+        { 0.0f, 0.0f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 0.5f, 0.0f },
+        { 0.0f, 0.0f, 0.5f, 1.0f },
     };
+    matrix[0][0] = 2.0f / (R - L);
+    matrix[1][1] = 2.0f / (T - B);
+    matrix[3][0] = (R + L) / (L - R);
+    matrix[3][1] = (T + B) / (B - T);
     memcpy(result, matrix, sizeof(matrix));
 }
 

@@ -6,9 +6,9 @@
  *                          COMBO
  *
  * ===============================================================*/
-NK_INTERN int
+NK_INTERN nk_bool
 nk_combo_begin(struct nk_context *ctx, struct nk_window *win,
-    struct nk_vec2 size, int is_clicked, struct nk_rect header)
+    struct nk_vec2 size, nk_bool is_clicked, struct nk_rect header)
 {
     struct nk_window *popup;
     int is_open = 0;
@@ -40,7 +40,7 @@ nk_combo_begin(struct nk_context *ctx, struct nk_window *win,
     win->popup.name = hash;
     return 1;
 }
-NK_API int
+NK_API nk_bool
 nk_combo_begin_text(struct nk_context *ctx, const char *selected, int len,
     struct nk_vec2 size)
 {
@@ -82,13 +82,21 @@ nk_combo_begin_text(struct nk_context *ctx, const char *selected, int len,
         background = &style->combo.normal;
         text.text = style->combo.label_normal;
     }
-    if (background->type == NK_STYLE_ITEM_IMAGE) {
-        text.background = nk_rgba(0,0,0,0);
-        nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
-    } else {
-        text.background = background->data.color;
-        nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-        nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_NINE_SLICE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_nine_slice(&win->buffer, header, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            text.background = background->data.color;
+            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
+            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            break;
     }
     {
         /* print currently selected text item */
@@ -102,7 +110,7 @@ nk_combo_begin_text(struct nk_context *ctx, const char *selected, int len,
             sym = style->combo.sym_hover;
         else if (is_clicked)
             sym = style->combo.sym_active;
-        else 
+        else
             sym = style->combo.sym_normal;
 
         /* represents whether or not the combo's button symbol should be drawn */
@@ -138,12 +146,12 @@ nk_combo_begin_text(struct nk_context *ctx, const char *selected, int len,
     }
     return nk_combo_begin(ctx, win, size, is_clicked, header);
 }
-NK_API int
+NK_API nk_bool
 nk_combo_begin_label(struct nk_context *ctx, const char *selected, struct nk_vec2 size)
 {
     return nk_combo_begin_text(ctx, selected, nk_strlen(selected), size);
 }
-NK_API int
+NK_API nk_bool
 nk_combo_begin_color(struct nk_context *ctx, struct nk_color color, struct nk_vec2 size)
 {
     struct nk_window *win;
@@ -178,11 +186,17 @@ nk_combo_begin_color(struct nk_context *ctx, struct nk_color color, struct nk_ve
         background = &style->combo.hover;
     else background = &style->combo.normal;
 
-    if (background->type == NK_STYLE_ITEM_IMAGE) {
-        nk_draw_image(&win->buffer, header, &background->data.image,nk_white);
-    } else {
-        nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-        nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_NINE_SLICE:
+            nk_draw_nine_slice(&win->buffer, header, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
+            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            break;
     }
     {
         struct nk_rect content;
@@ -228,7 +242,7 @@ nk_combo_begin_color(struct nk_context *ctx, struct nk_color color, struct nk_ve
     }
     return nk_combo_begin(ctx, win, size, is_clicked, header);
 }
-NK_API int
+NK_API nk_bool
 nk_combo_begin_symbol(struct nk_context *ctx, enum nk_symbol_type symbol, struct nk_vec2 size)
 {
     struct nk_window *win;
@@ -270,13 +284,20 @@ nk_combo_begin_symbol(struct nk_context *ctx, enum nk_symbol_type symbol, struct
         symbol_color = style->combo.symbol_hover;
     }
 
-    if (background->type == NK_STYLE_ITEM_IMAGE) {
-        sym_background = nk_rgba(0,0,0,0);
-        nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
-    } else {
-        sym_background = background->data.color;
-        nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-        nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            sym_background = nk_rgba(0, 0, 0, 0);
+            nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_NINE_SLICE:
+            sym_background = nk_rgba(0, 0, 0, 0);
+            nk_draw_nine_slice(&win->buffer, header, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            sym_background = background->data.color;
+            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
+            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            break;
     }
     {
         struct nk_rect bounds = {0,0,0,0};
@@ -315,7 +336,7 @@ nk_combo_begin_symbol(struct nk_context *ctx, enum nk_symbol_type symbol, struct
     }
     return nk_combo_begin(ctx, win, size, is_clicked, header);
 }
-NK_API int
+NK_API nk_bool
 nk_combo_begin_symbol_text(struct nk_context *ctx, const char *selected, int len,
     enum nk_symbol_type symbol, struct nk_vec2 size)
 {
@@ -359,13 +380,21 @@ nk_combo_begin_symbol_text(struct nk_context *ctx, const char *selected, int len
         symbol_color = style->combo.symbol_normal;
         text.text = style->combo.label_normal;
     }
-    if (background->type == NK_STYLE_ITEM_IMAGE) {
-        text.background = nk_rgba(0,0,0,0);
-        nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
-    } else {
-        text.background = background->data.color;
-        nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-        nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_NINE_SLICE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_nine_slice(&win->buffer, header, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            text.background = background->data.color;
+            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
+            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            break;
     }
     {
         struct nk_rect content;
@@ -411,7 +440,7 @@ nk_combo_begin_symbol_text(struct nk_context *ctx, const char *selected, int len
     }
     return nk_combo_begin(ctx, win, size, is_clicked, header);
 }
-NK_API int
+NK_API nk_bool
 nk_combo_begin_image(struct nk_context *ctx, struct nk_image img, struct nk_vec2 size)
 {
     struct nk_window *win;
@@ -446,11 +475,17 @@ nk_combo_begin_image(struct nk_context *ctx, struct nk_image img, struct nk_vec2
         background = &style->combo.hover;
     else background = &style->combo.normal;
 
-    if (background->type == NK_STYLE_ITEM_IMAGE) {
-        nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
-    } else {
-        nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-        nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+    switch (background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_NINE_SLICE:
+            nk_draw_nine_slice(&win->buffer, header, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
+            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            break;
     }
     {
         struct nk_rect bounds = {0,0,0,0};
@@ -496,7 +531,7 @@ nk_combo_begin_image(struct nk_context *ctx, struct nk_image img, struct nk_vec2
     }
     return nk_combo_begin(ctx, win, size, is_clicked, header);
 }
-NK_API int
+NK_API nk_bool
 nk_combo_begin_image_text(struct nk_context *ctx, const char *selected, int len,
     struct nk_image img, struct nk_vec2 size)
 {
@@ -536,13 +571,21 @@ nk_combo_begin_image_text(struct nk_context *ctx, const char *selected, int len,
         background = &style->combo.normal;
         text.text = style->combo.label_normal;
     }
-    if (background->type == NK_STYLE_ITEM_IMAGE) {
-        text.background = nk_rgba(0,0,0,0);
-        nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
-    } else {
-        text.background = background->data.color;
-        nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-        nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_NINE_SLICE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_nine_slice(&win->buffer, header, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            text.background = background->data.color;
+            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
+            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            break;
     }
     {
         struct nk_rect content;
@@ -595,47 +638,47 @@ nk_combo_begin_image_text(struct nk_context *ctx, const char *selected, int len,
     }
     return nk_combo_begin(ctx, win, size, is_clicked, header);
 }
-NK_API int
+NK_API nk_bool
 nk_combo_begin_symbol_label(struct nk_context *ctx,
     const char *selected, enum nk_symbol_type type, struct nk_vec2 size)
 {
     return nk_combo_begin_symbol_text(ctx, selected, nk_strlen(selected), type, size);
 }
-NK_API int
+NK_API nk_bool
 nk_combo_begin_image_label(struct nk_context *ctx,
     const char *selected, struct nk_image img, struct nk_vec2 size)
 {
     return nk_combo_begin_image_text(ctx, selected, nk_strlen(selected), img, size);
 }
-NK_API int
+NK_API nk_bool
 nk_combo_item_text(struct nk_context *ctx, const char *text, int len,nk_flags align)
 {
     return nk_contextual_item_text(ctx, text, len, align);
 }
-NK_API int
+NK_API nk_bool
 nk_combo_item_label(struct nk_context *ctx, const char *label, nk_flags align)
 {
     return nk_contextual_item_label(ctx, label, align);
 }
-NK_API int
+NK_API nk_bool
 nk_combo_item_image_text(struct nk_context *ctx, struct nk_image img, const char *text,
     int len, nk_flags alignment)
 {
     return nk_contextual_item_image_text(ctx, img, text, len, alignment);
 }
-NK_API int
+NK_API nk_bool
 nk_combo_item_image_label(struct nk_context *ctx, struct nk_image img,
     const char *text, nk_flags alignment)
 {
     return nk_contextual_item_image_label(ctx, img, text, alignment);
 }
-NK_API int
+NK_API nk_bool
 nk_combo_item_symbol_text(struct nk_context *ctx, enum nk_symbol_type sym,
     const char *text, int len, nk_flags alignment)
 {
     return nk_contextual_item_symbol_text(ctx, sym, text, len, alignment);
 }
-NK_API int
+NK_API nk_bool
 nk_combo_item_symbol_label(struct nk_context *ctx, enum nk_symbol_type sym,
     const char *label, nk_flags alignment)
 {
@@ -781,7 +824,7 @@ nk_combobox_string(struct nk_context *ctx, const char *items_separated_by_zeros,
 }
 NK_API void
 nk_combobox_separator(struct nk_context *ctx, const char *items_separated_by_separator,
-    int separator,int *selected, int count, int item_height, struct nk_vec2 size)
+    int separator, int *selected, int count, int item_height, struct nk_vec2 size)
 {
     *selected = nk_combo_separator(ctx, items_separated_by_separator, separator,
                                     *selected, count, item_height, size);

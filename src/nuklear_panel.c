@@ -22,10 +22,10 @@ nk_free_panel(struct nk_context *ctx, struct nk_panel *pan)
     struct nk_page_element *pe = NK_CONTAINER_OF(pd, struct nk_page_element, data);
     nk_free_page_element(ctx, pe);
 }
-NK_LIB int
+NK_LIB nk_bool
 nk_panel_has_header(nk_flags flags, const char *title)
 {
-    int active = 0;
+    nk_bool active = 0;
     active = (flags & (NK_WINDOW_CLOSABLE|NK_WINDOW_MINIMIZABLE));
     active = active || (flags & NK_WINDOW_TITLE);
     active = active && !(flags & NK_WINDOW_HIDDEN) && title;
@@ -73,17 +73,17 @@ nk_panel_get_border_color(const struct nk_style *style, enum nk_panel_type type)
     case NK_PANEL_MENU: return style->window.menu_border_color;
     case NK_PANEL_TOOLTIP: return style->window.menu_border_color;}
 }
-NK_LIB int
+NK_LIB nk_bool
 nk_panel_is_sub(enum nk_panel_type type)
 {
     return (type & NK_PANEL_SET_SUB)?1:0;
 }
-NK_LIB int
+NK_LIB nk_bool
 nk_panel_is_nonblock(enum nk_panel_type type)
 {
     return (type & NK_PANEL_SET_NONBLOCK)?1:0;
 }
-NK_LIB int
+NK_LIB nk_bool
 nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type panel_type)
 {
     struct nk_input *in;
@@ -122,8 +122,8 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
 
     /* window movement */
     if ((win->flags & NK_WINDOW_MOVABLE) && !(win->flags & NK_WINDOW_ROM)) {
-        int left_mouse_down;
-        int left_mouse_clicked;
+        nk_bool left_mouse_down;
+        unsigned int left_mouse_clicked;
         int left_mouse_click_in_cursor;
 
         /* calculate draggable window space */
@@ -138,7 +138,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
 
         /* window movement by dragging */
         left_mouse_down = in->mouse.buttons[NK_BUTTON_LEFT].down;
-        left_mouse_clicked = (int)in->mouse.buttons[NK_BUTTON_LEFT].clicked;
+        left_mouse_clicked = in->mouse.buttons[NK_BUTTON_LEFT].clicked;
         left_mouse_click_in_cursor = nk_input_has_mouse_click_down_in_rect(in,
             NK_BUTTON_LEFT, header, nk_true);
         if (left_mouse_down && left_mouse_click_in_cursor && !left_mouse_clicked) {
@@ -216,12 +216,20 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
 
         /* draw header background */
         header.h += 1.0f;
-        if (background->type == NK_STYLE_ITEM_IMAGE) {
-            text.background = nk_rgba(0,0,0,0);
-            nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
-        } else {
-            text.background = background->data.color;
-            nk_fill_rect(out, header, 0, background->data.color);
+
+        switch(background->type) {
+            case NK_STYLE_ITEM_IMAGE:
+                text.background = nk_rgba(0,0,0,0);
+                nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
+                break;
+            case NK_STYLE_ITEM_NINE_SLICE:
+                text.background = nk_rgba(0, 0, 0, 0);
+                nk_draw_nine_slice(&win->buffer, header, &background->data.slice, nk_white);
+                break;
+            case NK_STYLE_ITEM_COLOR:
+                text.background = background->data.color;
+                nk_fill_rect(out, header, 0, background->data.color);
+                break;
         }
 
         /* window close button */
@@ -282,7 +290,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         label.h = font->height + 2 * style->window.header.label_padding.y;
         label.w = t + 2 * style->window.header.spacing.x;
         label.w = NK_CLAMP(0, label.w, header.x + header.w - label.x);
-        nk_widget_text(out, label,(const char*)title, text_len, &text, NK_TEXT_LEFT, font);}
+        nk_widget_text(out, label, (const char*)title, text_len, &text, NK_TEXT_LEFT, font);}
     }
 
     /* draw window background */
@@ -292,9 +300,18 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         body.w = win->bounds.w;
         body.y = (win->bounds.y + layout->header_height);
         body.h = (win->bounds.h - layout->header_height);
-        if (style->window.fixed_background.type == NK_STYLE_ITEM_IMAGE)
-            nk_draw_image(out, body, &style->window.fixed_background.data.image, nk_white);
-        else nk_fill_rect(out, body, 0, style->window.fixed_background.data.color);
+
+        switch(style->window.fixed_background.type) {
+            case NK_STYLE_ITEM_IMAGE:
+                nk_draw_image(out, body, &style->window.fixed_background.data.image, nk_white);
+                break;
+            case NK_STYLE_ITEM_NINE_SLICE:
+                nk_draw_nine_slice(out, body, &style->window.fixed_background.data.slice, nk_white);
+                break;
+            case NK_STYLE_ITEM_COLOR:
+                nk_fill_rect(out, body, 0, style->window.fixed_background.data.color);
+                break;
+        }
     }
 
     /* set clipping rectangle */

@@ -190,8 +190,12 @@ nk_font_bake_pack(struct nk_font_baker *baker,
     /* setup font baker from temporary memory */
     for (config_iter = config_list; config_iter; config_iter = config_iter->next) {
         it = config_iter;
-        do {if (!stbtt_InitFont(&baker->build[i++].info, (const unsigned char*)it->ttf_blob, 0))
-            return nk_false;
+        do {
+            struct stbtt_fontinfo *font_info = &baker->build[i++].info;
+            font_info->userdata = alloc;
+
+            if (!stbtt_InitFont(font_info, (const unsigned char*)it->ttf_blob, 0))
+                return nk_false;
         } while ((it = it->n) != config_iter);
     }
     *height = 0;
@@ -331,8 +335,10 @@ nk_font_bake(struct nk_font_baker *baker, void *image_memory, int width, int hei
                 dst_font->ascent = ((float)unscaled_ascent * font_scale);
                 dst_font->descent = ((float)unscaled_descent * font_scale);
                 dst_font->glyph_offset = glyph_n;
-                // Need to zero this, or it will carry over from a previous
-                // bake, and cause a segfault when accessing glyphs[].
+                /*
+                    Need to zero this, or it will carry over from a previous
+                    bake, and cause a segfault when accessing glyphs[].
+                */
                 dst_font->glyph_count = 0;
             }
 
@@ -1179,7 +1185,7 @@ nk_font_atlas_bake(struct nk_font_atlas *atlas, int *width, int *height,
     tmp = atlas->temporary.alloc(atlas->temporary.userdata,0, tmp_size);
     NK_ASSERT(tmp);
     if (!tmp) goto failed;
-    memset(tmp,0,tmp_size);
+    NK_MEMSET(tmp,0,tmp_size);
 
     /* allocate glyph memory for all fonts */
     baker = nk_font_baker(tmp, atlas->glyph_count, atlas->font_num, &atlas->temporary);
