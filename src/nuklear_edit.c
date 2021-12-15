@@ -6,21 +6,21 @@
  *                          FILTER
  *
  * ===============================================================*/
-NK_API int
+NK_API nk_bool
 nk_filter_default(const struct nk_text_edit *box, nk_rune unicode)
 {
     NK_UNUSED(unicode);
     NK_UNUSED(box);
     return nk_true;
 }
-NK_API int
+NK_API nk_bool
 nk_filter_ascii(const struct nk_text_edit *box, nk_rune unicode)
 {
     NK_UNUSED(box);
     if (unicode > 128) return nk_false;
     else return nk_true;
 }
-NK_API int
+NK_API nk_bool
 nk_filter_float(const struct nk_text_edit *box, nk_rune unicode)
 {
     NK_UNUSED(box);
@@ -28,7 +28,7 @@ nk_filter_float(const struct nk_text_edit *box, nk_rune unicode)
         return nk_false;
     else return nk_true;
 }
-NK_API int
+NK_API nk_bool
 nk_filter_decimal(const struct nk_text_edit *box, nk_rune unicode)
 {
     NK_UNUSED(box);
@@ -36,7 +36,7 @@ nk_filter_decimal(const struct nk_text_edit *box, nk_rune unicode)
         return nk_false;
     else return nk_true;
 }
-NK_API int
+NK_API nk_bool
 nk_filter_hex(const struct nk_text_edit *box, nk_rune unicode)
 {
     NK_UNUSED(box);
@@ -46,7 +46,7 @@ nk_filter_hex(const struct nk_text_edit *box, nk_rune unicode)
         return nk_false;
     else return nk_true;
 }
-NK_API int
+NK_API nk_bool
 nk_filter_oct(const struct nk_text_edit *box, nk_rune unicode)
 {
     NK_UNUSED(box);
@@ -54,7 +54,7 @@ nk_filter_oct(const struct nk_text_edit *box, nk_rune unicode)
         return nk_false;
     else return nk_true;
 }
-NK_API int
+NK_API nk_bool
 nk_filter_binary(const struct nk_text_edit *box, nk_rune unicode)
 {
     NK_UNUSED(box);
@@ -73,7 +73,7 @@ nk_edit_draw_text(struct nk_command_buffer *out,
     const struct nk_style_edit *style, float pos_x, float pos_y,
     float x_offset, const char *text, int byte_len, float row_height,
     const struct nk_user_font *font, struct nk_color background,
-    struct nk_color foreground, int is_selected)
+    struct nk_color foreground, nk_bool is_selected)
 {
     NK_ASSERT(out);
     NK_ASSERT(font);
@@ -329,10 +329,19 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
     else background = &style->normal;
 
     /* draw background frame */
-    if (background->type == NK_STYLE_ITEM_COLOR) {
-        nk_fill_rect(out, bounds, style->rounding, background->data.color);
-        nk_stroke_rect(out, bounds, style->rounding, style->border, style->border_color);
-    } else nk_draw_image(out, bounds, &background->data.image, nk_white);}
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            nk_draw_image(out, bounds, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_NINE_SLICE:
+            nk_draw_nine_slice(out, bounds, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            nk_fill_rect(out, bounds, style->rounding, background->data.color);
+            nk_stroke_rect(out, bounds, style->rounding, style->border, style->border_color);
+            break;
+    }}
+
 
     area.w = NK_MAX(0, area.w - style->cursor_size);
     if (edit->active)
@@ -471,7 +480,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                     /* vertical scroll */
                     if (cursor_pos.y < edit->scrollbar.y)
                         edit->scrollbar.y = NK_MAX(0.0f, cursor_pos.y - row_height);
-                    if (cursor_pos.y >= edit->scrollbar.y + area.h)
+                    if (cursor_pos.y >= edit->scrollbar.y + row_height)
                         edit->scrollbar.y = edit->scrollbar.y + row_height;
                 } else edit->scrollbar.y = 0;
             }
@@ -535,7 +544,8 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         }
         if (background->type == NK_STYLE_ITEM_IMAGE)
             background_color = nk_rgba(0,0,0,0);
-        else background_color = background->data.color;
+        else
+            background_color = background->data.color;
 
 
         if (edit->select_start == edit->select_end) {
@@ -642,7 +652,8 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         }
         if (background->type == NK_STYLE_ITEM_IMAGE)
             background_color = nk_rgba(0,0,0,0);
-        else background_color = background->data.color;
+        else
+            background_color = background->data.color;
         nk_edit_draw_text(out, style, area.x - edit->scrollbar.x,
             area.y - edit->scrollbar.y, 0, begin, l, row_height, font,
             background_color, text_color, nk_false);

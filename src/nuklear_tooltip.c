@@ -6,7 +6,7 @@
  *                              TOOLTIP
  *
  * ===============================================================*/
-NK_API int
+NK_API nk_bool
 nk_tooltip_begin(struct nk_context *ctx, float width)
 {
     int x,y,w,h;

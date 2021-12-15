@@ -49,14 +49,19 @@ nk_tree_state_base(struct nk_context *ctx, enum nk_tree_type type,
     widget_state = nk_widget(&header, ctx);
     if (type == NK_TREE_TAB) {
         const struct nk_style_item *background = &style->tab.background;
-        if (background->type == NK_STYLE_ITEM_IMAGE) {
-            nk_draw_image(out, header, &background->data.image, nk_white);
-            text.background = nk_rgba(0,0,0,0);
-        } else {
-            text.background = background->data.color;
-            nk_fill_rect(out, header, 0, style->tab.border_color);
-            nk_fill_rect(out, nk_shrink_rect(header, style->tab.border),
-                style->tab.rounding, background->data.color);
+
+        switch(background->type) {
+            case NK_STYLE_ITEM_IMAGE:
+                nk_draw_image(out, header, &background->data.image, nk_white);
+                break;
+            case NK_STYLE_ITEM_NINE_SLICE:
+                nk_draw_nine_slice(out, header, &background->data.slice, nk_white);
+                break;
+            case NK_STYLE_ITEM_COLOR:
+                nk_fill_rect(out, header, 0, style->tab.border_color);
+                nk_fill_rect(out, nk_shrink_rect(header, style->tab.border),
+                    style->tab.rounding, background->data.color);
+                break;
         }
     } else text.background = style->window.background;
 
@@ -134,7 +139,8 @@ nk_tree_base_with_hash(struct nk_context *ctx, enum nk_tree_type type,
     }
     return nk_tree_state_base(ctx, type, img, title, (enum nk_collapse_states*)state);
 }
-NK_INTERN int
+
+NK_INTERN nk_bool
 nk_tree_base(struct nk_context *ctx, enum nk_tree_type type,
     struct nk_image *img, const char *title, enum nk_collapse_states initial_state,
     const char *hash, int len, int line)
@@ -150,13 +156,14 @@ nk_tree_base(struct nk_context *ctx, enum nk_tree_type type,
 
     return nk_tree_base_with_hash(ctx, type, img, title, initial_state, tree_hash);
 }
-NK_API int
+
+NK_API nk_bool
 nk_tree_state_push(struct nk_context *ctx, enum nk_tree_type type,
     const char *title, enum nk_collapse_states *state)
 {
     return nk_tree_state_base(ctx, type, 0, title, state);
 }
-NK_API int
+NK_API nk_bool
 nk_tree_state_image_push(struct nk_context *ctx, enum nk_tree_type type,
     struct nk_image img, const char *title, enum nk_collapse_states *state)
 {
@@ -181,21 +188,23 @@ nk_tree_state_pop(struct nk_context *ctx)
     NK_ASSERT(layout->row.tree_depth);
     layout->row.tree_depth--;
 }
-NK_API int
+NK_API nk_bool
 nk_tree_push_hashed(struct nk_context *ctx, enum nk_tree_type type,
     const char *title, enum nk_collapse_states initial_state,
     const char *hash, int len, int line)
 {
     return nk_tree_base(ctx, type, 0, title, initial_state, hash, len, line);
 }
-NK_API int
+
+NK_API nk_bool
 nk_tree_push_from_hash(struct nk_context *ctx, enum nk_tree_type type,
     const char *title, enum nk_collapse_states initial_state,
     nk_hash hash)
 {
     return nk_tree_base_with_hash(ctx, type, 0, title, initial_state, hash);
 }
-NK_API int
+
+NK_API nk_bool
 nk_tree_image_push_hashed(struct nk_context *ctx, enum nk_tree_type type,
     struct nk_image img, const char *title, enum nk_collapse_states initial_state,
     const char *hash, int len,int seed)
@@ -210,7 +219,7 @@ nk_tree_pop(struct nk_context *ctx)
 NK_INTERN int
 nk_tree_element_image_push_hashed_base(struct nk_context *ctx, enum nk_tree_type type,
     struct nk_image *img, const char *title, int title_len,
-    enum nk_collapse_states *state, int *selected)
+    enum nk_collapse_states *state, nk_bool *selected)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -255,12 +264,19 @@ nk_tree_element_image_push_hashed_base(struct nk_context *ctx, enum nk_tree_type
     widget_state = nk_widget(&header, ctx);
     if (type == NK_TREE_TAB) {
         const struct nk_style_item *background = &style->tab.background;
-        if (background->type == NK_STYLE_ITEM_IMAGE) {
-            nk_draw_image(out, header, &background->data.image, nk_white);
-        } else {
-            nk_fill_rect(out, header, 0, style->tab.border_color);
-            nk_fill_rect(out, nk_shrink_rect(header, style->tab.border),
-                style->tab.rounding, background->data.color);
+
+        switch (background->type) {
+            case NK_STYLE_ITEM_IMAGE:
+                nk_draw_image(out, header, &background->data.image, nk_white);
+                break;
+            case NK_STYLE_ITEM_NINE_SLICE:
+                nk_draw_nine_slice(out, header, &background->data.slice, nk_white);
+                break;
+            case NK_STYLE_ITEM_COLOR:
+                nk_fill_rect(out, header, 0, style->tab.border_color);
+                nk_fill_rect(out, nk_shrink_rect(header, style->tab.border),
+                    style->tab.rounding, background->data.color);
+                break;
         }
     }
 
@@ -322,7 +338,7 @@ nk_tree_element_image_push_hashed_base(struct nk_context *ctx, enum nk_tree_type
 NK_INTERN int
 nk_tree_element_base(struct nk_context *ctx, enum nk_tree_type type,
     struct nk_image *img, const char *title, enum nk_collapse_states initial_state,
-    int *selected, const char *hash, int len, int line)
+    nk_bool *selected, const char *hash, int len, int line)
 {
     struct nk_window *win = ctx->current;
     int title_len = 0;
@@ -341,17 +357,17 @@ nk_tree_element_base(struct nk_context *ctx, enum nk_tree_type type,
     } return nk_tree_element_image_push_hashed_base(ctx, type, img, title,
         nk_strlen(title), (enum nk_collapse_states*)state, selected);
 }
-NK_API int
+NK_API nk_bool
 nk_tree_element_push_hashed(struct nk_context *ctx, enum nk_tree_type type,
     const char *title, enum nk_collapse_states initial_state,
-    int *selected, const char *hash, int len, int seed)
+    nk_bool *selected, const char *hash, int len, int seed)
 {
     return nk_tree_element_base(ctx, type, 0, title, initial_state, selected, hash, len, seed);
 }
-NK_API int
+NK_API nk_bool
 nk_tree_element_image_push_hashed(struct nk_context *ctx, enum nk_tree_type type,
     struct nk_image img, const char *title, enum nk_collapse_states initial_state,
-    int *selected, const char *hash, int len,int seed)
+    nk_bool *selected, const char *hash, int len,int seed)
 {
     return nk_tree_element_base(ctx, type, &img, title, initial_state, selected, hash, len, seed);
 }

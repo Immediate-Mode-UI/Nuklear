@@ -65,7 +65,7 @@ nk_widget_height(struct nk_context *ctx)
     nk_layout_peek(&bounds, ctx);
     return bounds.h;
 }
-NK_API int
+NK_API nk_bool
 nk_widget_is_hovered(struct nk_context *ctx)
 {
     struct nk_rect c, v;
@@ -87,7 +87,7 @@ nk_widget_is_hovered(struct nk_context *ctx)
         return 0;
     return nk_input_is_mouse_hovering_rect(&ctx->input, bounds);
 }
-NK_API int
+NK_API nk_bool
 nk_widget_is_mouse_clicked(struct nk_context *ctx, enum nk_buttons btn)
 {
     struct nk_rect c, v;
@@ -109,8 +109,8 @@ nk_widget_is_mouse_clicked(struct nk_context *ctx, enum nk_buttons btn)
         return 0;
     return nk_input_mouse_clicked(&ctx->input, btn, bounds);
 }
-NK_API int
-nk_widget_has_mouse_click_down(struct nk_context *ctx, enum nk_buttons btn, int down)
+NK_API nk_bool
+nk_widget_has_mouse_click_down(struct nk_context *ctx, enum nk_buttons btn, nk_bool down)
 {
     struct nk_rect c, v;
     struct nk_rect bounds;

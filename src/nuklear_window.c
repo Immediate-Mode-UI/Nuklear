@@ -585,7 +585,7 @@ nk_window_get_scroll(struct nk_context *ctx, nk_uint *offset_x, nk_uint *offset_
     if (offset_y)
       *offset_y = win->scrollbar.y;
 }
-NK_API int
+NK_API nk_bool
 nk_window_has_focus(const struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
@@ -594,7 +594,7 @@ nk_window_has_focus(const struct nk_context *ctx)
     if (!ctx || !ctx->current) return 0;
     return ctx->current == ctx->active;
 }
-NK_API int
+NK_API nk_bool
 nk_window_is_hovered(struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
@@ -604,7 +604,7 @@ nk_window_is_hovered(struct nk_context *ctx)
         return 0;
     return nk_input_is_mouse_hovering_rect(&ctx->input, ctx->current->bounds);
 }
-NK_API int
+NK_API nk_bool
 nk_window_is_any_hovered(struct nk_context *ctx)
 {
     struct nk_window *iter;
@@ -631,14 +631,14 @@ nk_window_is_any_hovered(struct nk_context *ctx)
     }
     return 0;
 }
-NK_API int
+NK_API nk_bool
 nk_item_is_any_active(struct nk_context *ctx)
 {
     int any_hovered = nk_window_is_any_hovered(ctx);
     int any_active = (ctx->last_widget_state & NK_WIDGET_STATE_MODIFIED);
     return any_hovered || any_active;
 }
-NK_API int
+NK_API nk_bool
 nk_window_is_collapsed(struct nk_context *ctx, const char *name)
 {
     int title_len;
@@ -653,7 +653,7 @@ nk_window_is_collapsed(struct nk_context *ctx, const char *name)
     if (!win) return 0;
     return win->flags & NK_WINDOW_MINIMIZED;
 }
-NK_API int
+NK_API nk_bool
 nk_window_is_closed(struct nk_context *ctx, const char *name)
 {
     int title_len;
@@ -668,7 +668,7 @@ nk_window_is_closed(struct nk_context *ctx, const char *name)
     if (!win) return 1;
     return (win->flags & NK_WINDOW_CLOSED);
 }
-NK_API int
+NK_API nk_bool
 nk_window_is_hidden(struct nk_context *ctx, const char *name)
 {
     int title_len;
@@ -683,7 +683,7 @@ nk_window_is_hidden(struct nk_context *ctx, const char *name)
     if (!win) return 1;
     return (win->flags & NK_WINDOW_HIDDEN);
 }
-NK_API int
+NK_API nk_bool
 nk_window_is_active(struct nk_context *ctx, const char *name)
 {
     int title_len;

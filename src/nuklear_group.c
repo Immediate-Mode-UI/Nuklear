@@ -6,7 +6,7 @@
  *                          GROUP
  *
  * ===============================================================*/
-NK_API int
+NK_API nk_bool
 nk_group_scrolled_offset_begin(struct nk_context *ctx,
     nk_uint *x_offset, nk_uint *y_offset, const char *title, nk_flags flags)
 {
@@ -117,13 +117,13 @@ nk_group_scrolled_end(struct nk_context *ctx)
     g->bounds = pan.bounds;
     return;
 }
-NK_API int
+NK_API nk_bool
 nk_group_scrolled_begin(struct nk_context *ctx,
     struct nk_scroll *scroll, const char *title, nk_flags flags)
 {
     return nk_group_scrolled_offset_begin(ctx, &scroll->x, &scroll->y, title, flags);
 }
-NK_API int
+NK_API nk_bool
 nk_group_begin_titled(struct nk_context *ctx, const char *id,
     const char *title, nk_flags flags)
 {
@@ -156,7 +156,7 @@ nk_group_begin_titled(struct nk_context *ctx, const char *id,
     } else y_offset = nk_find_value(win, id_hash+1);
     return nk_group_scrolled_offset_begin(ctx, x_offset, y_offset, title, flags);
 }
-NK_API int
+NK_API nk_bool
 nk_group_begin(struct nk_context *ctx, const char *title, nk_flags flags)
 {
     return nk_group_begin_titled(ctx, title, title, flags);
