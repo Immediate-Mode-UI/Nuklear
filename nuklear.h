@@ -20534,13 +20534,14 @@ nk_free_window(struct nk_context *ctx, struct nk_window *win)
 NK_LIB struct nk_window*
 nk_find_window(struct nk_context *ctx, nk_hash hash, const char *name)
 {
+    int max_len;
     struct nk_window *iter;
     iter = ctx->begin;
     while (iter) {
         NK_ASSERT(iter != iter->next);
         if (iter->name == hash) {
 			if (!name) return iter;
-            int max_len = nk_strlen(iter->name_string);
+            max_len = nk_strlen(iter->name_string);
             if (!nk_stricmpn(iter->name_string, name, max_len))
                 return iter;
         }
@@ -20823,7 +20824,7 @@ nk_add_window(struct nk_context *ctx, nk_hash id, const char *title,
 
         win->flags = flags;
         win->bounds = bounds;
-        win->name = id;				//0 means use "hash" only
+        win->name = id;				/* 0 means use "hash" only */
         win->name_string[0] = 0;
         win->popup.win = 0;
         if (!ctx->active)
@@ -22152,8 +22153,6 @@ NK_LIB float
 nk_layout_row_calculate_usable_space(const struct nk_style *style, enum nk_panel_type type,
     float total_space, int columns)
 {
-    type;
-
     float panel_spacing;
     float panel_space;
 
@@ -25361,7 +25360,7 @@ nk_draw_selectable(struct nk_command_buffer *out,
     const char *string, int len, nk_flags align, const struct nk_user_font *font)
 {
     const struct nk_style_item *background;
-    struct nk_text text = {};
+    struct nk_text text = {0};
     text.padding = style->padding;
 
     /* select correct colors/images */
