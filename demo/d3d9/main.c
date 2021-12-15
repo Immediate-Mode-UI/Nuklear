@@ -82,10 +82,11 @@ WindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             if (width != 0 && height != 0 &&
                 (width != present.BackBufferWidth || height != present.BackBufferHeight))
             {
+                HRESULT hr;
                 nk_d3d9_release();
                 present.BackBufferWidth = width;
                 present.BackBufferHeight = height;
-                HRESULT hr = IDirect3DDevice9_Reset(device, &present);
+                hr = IDirect3DDevice9_Reset(device, &present);
                 NK_ASSERT(SUCCEEDED(hr));
                 nk_d3d9_resize(width, height);
             }

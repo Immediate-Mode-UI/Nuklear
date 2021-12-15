@@ -420,6 +420,10 @@ NK_INTERN void
 nk_xsurf_draw_text(XSurface *surf, short x, short y, unsigned short w, unsigned short h,
     const char *text, int len, XFont *font, struct nk_color cbg, struct nk_color cfg)
 {
+#ifdef NK_XLIB_USE_XFT
+    XRenderColor xrc;
+    XftColor color;
+#endif
     int tx, ty;
     unsigned long bg = nk_color_from_byte(&cbg.r);
     unsigned long fg = nk_color_from_byte(&cfg.r);
@@ -431,8 +435,6 @@ nk_xsurf_draw_text(XSurface *surf, short x, short y, unsigned short w, unsigned 
     tx = (int)x;
     ty = (int)y + font->ascent;
 #ifdef NK_XLIB_USE_XFT
-    XRenderColor xrc;
-    XftColor color;
     xrc.red = cfg.r * 257;
     xrc.green = cfg.g * 257;
     xrc.blue = cfg.b * 257;
@@ -640,16 +642,19 @@ nk_xfont_get_text_width(nk_handle handle, float height, const char *text, int le
 {
     XFont *font = (XFont*)handle.ptr;
 
-	if(!font || !text)
-		return 0;
-
 #ifdef NK_XLIB_USE_XFT
     XGlyphInfo g;
+
+	if(!font || !text)
+		return 0;
 
     XftTextExtentsUtf8(xlib.dpy, font->ft, (FcChar8*)text, len, &g);
     return g.xOff;
 #else
     XRectangle r;
+
+	if(!font || !text)
+		return 0;
 
     if(font->set) {
         XmbTextExtents(font->set, (const char*)text, len, NULL, &r);

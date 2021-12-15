@@ -328,9 +328,9 @@ nk_gflw3_scroll_callback(GLFWwindow *win, double xoff, double yoff)
 NK_API void
 nk_glfw3_mouse_button_callback(GLFWwindow* win, int button, int action, int mods)
 {
+    struct nk_glfw* glfw = glfwGetWindowUserPointer(win);
     double x, y;
     if (button != GLFW_MOUSE_BUTTON_LEFT) return;
-    struct nk_glfw* glfw = glfwGetWindowUserPointer(win);
     glfwGetCursorPos(win, &x, &y);
     if (action == GLFW_PRESS)  {
         double dt = glfwGetTime() - glfw->last_button_click;
@@ -354,13 +354,13 @@ nk_glfw3_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
 NK_INTERN void
 nk_glfw3_clipboard_copy(nk_handle usr, const char *text, int len)
 {
+    struct nk_glfw* glfw = usr.ptr;
     char *str = 0;
     if (!len) return;
     str = (char*)malloc((size_t)len+1);
     if (!str) return;
     memcpy(str, text, (size_t)len);
     str[len] = '\0';
-    struct nk_glfw* glfw = usr.ptr;
     glfwSetClipboardString(glfw->win, str);
     free(str);
 }
