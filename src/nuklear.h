@@ -219,6 +219,11 @@ NK_STATIC_ASSERT(sizeof(nk_bool) == sizeof(bool));
 NK_STATIC_ASSERT(sizeof(nk_bool) >= 2);
 #endif
 
+/* Sub-pixel API can be enabled by defining following macro.
+ * This will allow drawing in subpixel precision,
+ * but will increase memory footprint. */
+/* #define NK_ENABLE_SUBPIXEL_API */
+
 /* ============================================================================
  *
  *                                  API
@@ -264,6 +269,16 @@ struct nk_nine_slice {struct nk_image img; nk_ushort l, t, r, b;};
 struct nk_cursor {struct nk_image img; struct nk_vec2 size, offset;};
 struct nk_scroll {nk_uint x, y;};
 
+#ifdef NK_ENABLE_SUBPIXEL_API
+typedef float nk_scalar_cmd;
+typedef float nk_unsigned_scalar_cmd;
+typedef struct nk_vec2 nk_vec2_cmd;
+#else
+typedef short nk_scalar_cmd;
+typedef unsigned short nk_unsigned_scalar_cmd;
+typedef struct nk_vec2i nk_vec2_cmd;
+#endif
+
 enum nk_heading         {NK_UP, NK_RIGHT, NK_DOWN, NK_LEFT};
 enum nk_button_behavior {NK_BUTTON_DEFAULT, NK_BUTTON_REPEATER};
 enum nk_modify          {NK_FIXED = nk_false, NK_MODIFIABLE = nk_true};
@@ -275,7 +290,7 @@ enum nk_chart_event     {NK_CHART_HOVERING = 0x01, NK_CHART_CLICKED = 0x02};
 enum nk_color_format    {NK_RGB, NK_RGBA};
 enum nk_popup_type      {NK_POPUP_STATIC, NK_POPUP_DYNAMIC};
 enum nk_layout_format   {NK_DYNAMIC, NK_STATIC};
-enum nk_tree_type       {NK_TREE_NODE, NK_TREE_TAB};
+enum nk_tree_type       {NK_TREE_NODE, NK_TREE_TAB, NK_TREE_CHILD};
 
 typedef void*(*nk_plugin_alloc)(nk_handle, void *old, nk_size);
 typedef void (*nk_plugin_free)(nk_handle, void *old);
@@ -1273,10 +1288,10 @@ enum nk_panel_flags {
 /// __bounds__  | Initial position and window size. However if you do not define `NK_WINDOW_SCALABLE` or `NK_WINDOW_MOVABLE` you can set window position and size every frame
 /// __flags__   | Window flags defined in the nk_panel_flags section with a number of different window behaviors
 ///
-/// Returns `true(1)` if the window can be filled up with widgets from this point
-/// until `nk_end` or `false(0)` otherwise for example if minimized
+/// Returns a non-zero window pointer if the window can be filled up with widgets from this point
+/// until `nk_end` or `nullptr(0)` otherwise for example if minimized
 */
-NK_API nk_bool nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
+NK_API struct nk_window* nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
 /*/// #### nk_begin_titled
 /// Extended window start with separated title and identifier to allow multiple
 /// windows with same title but not name
@@ -1293,10 +1308,53 @@ NK_API nk_bool nk_begin(struct nk_context *ctx, const char *title, struct nk_rec
 /// __bounds__  | Initial position and window size. However if you do not define `NK_WINDOW_SCALABLE` or `NK_WINDOW_MOVABLE` you can set window position and size every frame
 /// __flags__   | Window flags defined in the nk_panel_flags section with a number of different window behaviors
 ///
-/// Returns `true(1)` if the window can be filled up with widgets from this point
-/// until `nk_end` or `false(0)` otherwise for example if minimized
+/// Returns a non-zero window pointer if the window can be filled up with widgets from this point
+/// until `nk_end` or `nullptr(0)` otherwise for example if minimized
 */
-NK_API nk_bool nk_begin_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags);
+NK_API struct nk_window *nk_begin_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags);
+/*/// #### nk_add_window
+/// Adds a new window; needs to be called every frame for every
+/// window (unless hidden) or otherwise the window gets removed
+/// it always returns a window pointer, even if the window is hidden or removed
+/// this function allows the application to query state and perform the necessary updates
+/// to get the same functionality as nk_begin, you should query the following states:
+///	- NK_WINDOW_CLOSED
+/// - NK_WINDOW_HIDDEN
+/// - NK_WINDOW_MINIMIZED
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// int nk_add_window(struct nk_context *ctx, nk_hash id, const char *title, struct nk_rect bounds, nk_flags flags);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct
+/// __id__      | The id of the window; unique and needs to be persistent over frames to identify the window
+/// __title__   | Window title. 
+/// __bounds__  | Initial position and window size. However if you do not define `NK_WINDOW_SCALABLE` or `NK_WINDOW_MOVABLE` you can set window position and size every frame
+/// __flags__   | Window flags defined in the nk_panel_flags section with a number of different window behaviors
+///
+/// Returns a non-zero window pointer if the window can be created
+/// call nk_window_has_contents(ctx, window) to see if window can be filled up with widgets from this point
+*/
+NK_API struct nk_window* nk_add_window(struct nk_context *ctx, nk_hash id, const char *title, struct nk_rect bounds, nk_flags flags);
+/*/// #### nk_window_has_contents
+/// Checks if the window is ready to be filled up
+/// generally used after nk_add_window(_titled)
+/// to check if window can be filled up with widgets from this point
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// int nk_window_has_contents(struct nk_window *window);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter      | Description
+/// ---------------|-----------------------------------------------------------
+/// __nk_window__  | The window to check
+///
+/// Returns true(1) if the window's contents are visible
+/// false(0) otherwise
+*/
+NK_API nk_bool nk_window_has_contents(struct nk_window *window);
 /*/// #### nk_end
 /// Needs to be called at the end of the window building process to process scaling, scrollbars and general cleanup.
 /// All widget calls after this functions will result in asserts or no state changes
@@ -2642,8 +2700,9 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
 /// #### nk_tree_type
 /// Flag            | Description
 /// ----------------|----------------------------------------
-/// NK_TREE_NODE    | Highlighted tree header to mark a collapsible UI section
-/// NK_TREE_TAB     | Non-highlighted tree header closer to tree representations
+/// NK_TREE_NODE    | Highlighted tree header to mark a collapsable UI section
+/// NK_TREE_TAB     | Non-highighted tree header closer to tree representations
+/// NK_TREE_CHILD   | A node without a dropdown
 */
 /*/// #### nk_tree_push
 /// Starts a collapsible UI section with internal state management
@@ -2703,7 +2762,25 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
 ///
 /// Returns `true(1)` if visible and fillable with widgets or `false(0)` otherwise
 */
-NK_API nk_bool nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states initial_state, const char *hash, int len,int seed);
+NK_API nk_bool nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states initial_state, const char *hash, int len, int seed);
+/*/// #### nk_tree_push_from_hash
+/// Start a collapsable UI section with internal state management with full
+/// control over internal unique ID used to store state
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// int nk_tree_push_from_hash(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states initial_state, nk_hash hash);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct
+/// __type__    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+/// __title__   | Label printed in the tree header
+/// __state__   | Initial tree state value out of nk_collapse_states
+/// __hash__    | Hash that is used to identify this tree
+///
+/// Returns `true(1)` if visible and fillable with widgets or `false(0)` otherwise
+*/
+NK_API nk_bool nk_tree_push_from_hash(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states initial_state, nk_hash hash);
 /*/// #### nk_tree_image_push
 /// Start a collapsible UI section with image and label header
 /// !!! WARNING
@@ -3226,6 +3303,7 @@ NK_API double nk_propertyd(struct nk_context*, const char *name, double min, dou
  *
  * ============================================================================= */
 enum nk_edit_flags {
+
     NK_EDIT_DEFAULT                 = 0,
     NK_EDIT_READ_ONLY               = NK_FLAG(0),
     NK_EDIT_AUTO_SELECT             = NK_FLAG(1),
@@ -3238,9 +3316,8 @@ enum nk_edit_flags {
     NK_EDIT_NO_HORIZONTAL_SCROLL    = NK_FLAG(8),
     NK_EDIT_ALWAYS_INSERT_MODE      = NK_FLAG(9),
     NK_EDIT_MULTILINE               = NK_FLAG(10),
-    NK_EDIT_GOTO_END_ON_ACTIVATE    = NK_FLAG(11)
-};
-enum nk_edit_types {
+    NK_EDIT_GOTO_END_ON_ACTIVATE    = NK_FLAG(11),
+
     NK_EDIT_SIMPLE  = NK_EDIT_ALWAYS_INSERT_MODE,
     NK_EDIT_FIELD   = NK_EDIT_SIMPLE|NK_EDIT_SELECTABLE|NK_EDIT_CLIPBOARD,
     NK_EDIT_BOX     = NK_EDIT_ALWAYS_INSERT_MODE| NK_EDIT_SELECTABLE| NK_EDIT_MULTILINE|NK_EDIT_ALLOW_TAB|NK_EDIT_CLIPBOARD,
@@ -3287,14 +3364,14 @@ NK_API void nk_popup_set_scroll(struct nk_context*, nk_uint offset_x, nk_uint of
  *                                  COMBOBOX
  *
  * ============================================================================= */
-NK_API int nk_combo(struct nk_context*, const char **items, int count, int selected, int item_height, struct nk_vec2 size);
+NK_API int nk_combo(struct nk_context*, const char * const *items, int count, int selected, int item_height, struct nk_vec2 size);
 NK_API int nk_combo_separator(struct nk_context*, const char *items_separated_by_separator, int separator, int selected, int count, int item_height, struct nk_vec2 size);
 NK_API int nk_combo_string(struct nk_context*, const char *items_separated_by_zeros, int selected, int count, int item_height, struct nk_vec2 size);
-NK_API int nk_combo_callback(struct nk_context*, void(*item_getter)(void*, int, const char**), void *userdata, int selected, int count, int item_height, struct nk_vec2 size);
-NK_API void nk_combobox(struct nk_context*, const char **items, int count, int *selected, int item_height, struct nk_vec2 size);
+NK_API int nk_combo_callback(struct nk_context*, void(*item_getter)(void*, int, const char* const *), void *userdata, int selected, int count, int item_height, struct nk_vec2 size);
+NK_API void nk_combobox(struct nk_context*, const char * const *items, int count, int *selected, int item_height, struct nk_vec2 size);
 NK_API void nk_combobox_string(struct nk_context*, const char *items_separated_by_zeros, int *selected, int count, int item_height, struct nk_vec2 size);
 NK_API void nk_combobox_separator(struct nk_context*, const char *items_separated_by_separator, int separator, int *selected, int count, int item_height, struct nk_vec2 size);
-NK_API void nk_combobox_callback(struct nk_context*, void(*item_getter)(void*, int, const char**), void*, int *selected, int count, int item_height, struct nk_vec2 size);
+NK_API void nk_combobox_callback(struct nk_context*, void(*item_getter)(void*, int, const char* const *), void*, int *selected, int count, int item_height, struct nk_vec2 size);
 /* =============================================================================
  *
  *                                  ABSTRACT COMBOBOX
@@ -4232,48 +4309,48 @@ struct nk_command {
 
 struct nk_command_scissor {
     struct nk_command header;
-    short x, y;
-    unsigned short w, h;
+    nk_scalar_cmd x, y;
+    nk_unsigned_scalar_cmd w, h;
 };
 
 struct nk_command_line {
     struct nk_command header;
-    unsigned short line_thickness;
-    struct nk_vec2i begin;
-    struct nk_vec2i end;
+    nk_unsigned_scalar_cmd line_thickness;
+    nk_vec2_cmd begin;
+    nk_vec2_cmd end;
     struct nk_color color;
 };
 
 struct nk_command_curve {
     struct nk_command header;
-    unsigned short line_thickness;
-    struct nk_vec2i begin;
-    struct nk_vec2i end;
-    struct nk_vec2i ctrl[2];
+    nk_unsigned_scalar_cmd line_thickness;
+    nk_vec2_cmd begin;
+    nk_vec2_cmd end;
+    nk_vec2_cmd ctrl[2];
     struct nk_color color;
 };
 
 struct nk_command_rect {
     struct nk_command header;
-    unsigned short rounding;
-    unsigned short line_thickness;
-    short x, y;
-    unsigned short w, h;
+    nk_unsigned_scalar_cmd rounding;
+    nk_unsigned_scalar_cmd line_thickness;
+    nk_scalar_cmd x, y;
+    nk_unsigned_scalar_cmd w, h;
     struct nk_color color;
 };
 
 struct nk_command_rect_filled {
     struct nk_command header;
-    unsigned short rounding;
-    short x, y;
-    unsigned short w, h;
+    nk_unsigned_scalar_cmd rounding;
+    nk_scalar_cmd x, y;
+    nk_unsigned_scalar_cmd w, h;
     struct nk_color color;
 };
 
 struct nk_command_rect_multi_color {
     struct nk_command header;
-    short x, y;
-    unsigned short w, h;
+    nk_scalar_cmd x, y;
+    nk_unsigned_scalar_cmd w, h;
     struct nk_color left;
     struct nk_color top;
     struct nk_color bottom;
@@ -4282,49 +4359,49 @@ struct nk_command_rect_multi_color {
 
 struct nk_command_triangle {
     struct nk_command header;
-    unsigned short line_thickness;
-    struct nk_vec2i a;
-    struct nk_vec2i b;
-    struct nk_vec2i c;
+    nk_unsigned_scalar_cmd line_thickness;
+    nk_vec2_cmd a;
+    nk_vec2_cmd b;
+    nk_vec2_cmd c;
     struct nk_color color;
 };
 
 struct nk_command_triangle_filled {
     struct nk_command header;
-    struct nk_vec2i a;
-    struct nk_vec2i b;
-    struct nk_vec2i c;
+    nk_vec2_cmd a;
+    nk_vec2_cmd b;
+    nk_vec2_cmd c;
     struct nk_color color;
 };
 
 struct nk_command_circle {
     struct nk_command header;
-    short x, y;
-    unsigned short line_thickness;
-    unsigned short w, h;
+    nk_scalar_cmd x, y;
+    nk_unsigned_scalar_cmd line_thickness;
+    nk_unsigned_scalar_cmd w, h;
     struct nk_color color;
 };
 
 struct nk_command_circle_filled {
     struct nk_command header;
-    short x, y;
-    unsigned short w, h;
+    nk_scalar_cmd x, y;
+    nk_unsigned_scalar_cmd w, h;
     struct nk_color color;
 };
 
 struct nk_command_arc {
     struct nk_command header;
-    short cx, cy;
-    unsigned short r;
-    unsigned short line_thickness;
+    nk_scalar_cmd cx, cy;
+    nk_unsigned_scalar_cmd r;
+    nk_unsigned_scalar_cmd line_thickness;
     float a[2];
     struct nk_color color;
 };
 
 struct nk_command_arc_filled {
     struct nk_command header;
-    short cx, cy;
-    unsigned short r;
+    nk_scalar_cmd cx, cy;
+    nk_unsigned_scalar_cmd r;
     float a[2];
     struct nk_color color;
 };
@@ -4332,30 +4409,30 @@ struct nk_command_arc_filled {
 struct nk_command_polygon {
     struct nk_command header;
     struct nk_color color;
-    unsigned short line_thickness;
+    nk_unsigned_scalar_cmd line_thickness;
     unsigned short point_count;
-    struct nk_vec2i points[1];
+    nk_vec2_cmd points[1];
 };
 
 struct nk_command_polygon_filled {
     struct nk_command header;
     struct nk_color color;
     unsigned short point_count;
-    struct nk_vec2i points[1];
+    nk_vec2_cmd points[1];
 };
 
 struct nk_command_polyline {
     struct nk_command header;
     struct nk_color color;
-    unsigned short line_thickness;
+    nk_unsigned_scalar_cmd line_thickness;
     unsigned short point_count;
-    struct nk_vec2i points[1];
+    nk_vec2_cmd points[1];
 };
 
 struct nk_command_image {
     struct nk_command header;
-    short x, y;
-    unsigned short w, h;
+    nk_scalar_cmd x, y;
+    nk_unsigned_scalar_cmd w, h;
     struct nk_image img;
     struct nk_color col;
 };
@@ -4375,8 +4452,8 @@ struct nk_command_text {
     const struct nk_user_font *font;
     struct nk_color background;
     struct nk_color foreground;
-    short x, y;
-    unsigned short w, h;
+    nk_scalar_cmd x, y;
+    nk_unsigned_scalar_cmd w, h;
     float height;
     int length;
     char string[1];
@@ -4420,6 +4497,29 @@ NK_API void nk_draw_text(struct nk_command_buffer*, struct nk_rect, const char *
 NK_API void nk_push_scissor(struct nk_command_buffer*, struct nk_rect);
 NK_API void nk_push_custom(struct nk_command_buffer*, struct nk_rect, nk_command_custom_callback, nk_handle usr);
 
+/* subpixel APIs */
+#ifdef NK_ENABLE_SUBPIXEL_API
+NK_API void nk_stroke_line_subpixel(struct nk_command_buffer *b, float x0, float y0, float x1, float y1, float line_thickness, struct nk_color);
+NK_API void nk_stroke_curve_subpixel(struct nk_command_buffer*, float, float, float, float, float, float, float, float, float line_thickness, struct nk_color);
+NK_API void nk_stroke_rect_subpixel(struct nk_command_buffer*, struct nk_rect, float rounding, float line_thickness, struct nk_color);
+NK_API void nk_stroke_circle_subpixel(struct nk_command_buffer*, struct nk_rect, float line_thickness, struct nk_color);
+NK_API void nk_stroke_arc_subpixel(struct nk_command_buffer*, float cx, float cy, float radius, float a_min, float a_max, float line_thickness, struct nk_color);
+NK_API void nk_stroke_triangle_subpixel(struct nk_command_buffer*, float, float, float, float, float, float, float line_thichness, struct nk_color);
+NK_API void nk_stroke_polyline_subpixel(struct nk_command_buffer*, float *points, int point_count, float line_thickness, struct nk_color col);
+NK_API void nk_stroke_polygon_subpixel(struct nk_command_buffer*, float*, int point_count, float line_thickness, struct nk_color);
+
+NK_API void nk_fill_rect_subpixel(struct nk_command_buffer*, struct nk_rect, float rounding, struct nk_color);
+NK_API void nk_fill_rect_multi_color_subpixel(struct nk_command_buffer*, struct nk_rect, struct nk_color left, struct nk_color top, struct nk_color right, struct nk_color bottom);
+NK_API void nk_fill_circle_subpixel(struct nk_command_buffer*, struct nk_rect, struct nk_color);
+NK_API void nk_fill_arc_subpixel(struct nk_command_buffer*, float cx, float cy, float radius, float a_min, float a_max, struct nk_color);
+NK_API void nk_fill_triangle_subpixel(struct nk_command_buffer*, float x0, float y0, float x1, float y1, float x2, float y2, struct nk_color);
+NK_API void nk_fill_polygon_subpixel(struct nk_command_buffer*, float*, int point_count, struct nk_color);
+
+NK_API void nk_draw_image_subpixel(struct nk_command_buffer*, struct nk_rect, const struct nk_image*, struct nk_color);
+NK_API void nk_draw_text_subpixel(struct nk_command_buffer*, struct nk_rect, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color);
+NK_API void nk_push_scissor_subpixel(struct nk_command_buffer*, struct nk_rect);
+#endif
+
 /* ===============================================================
  *
  *                          INPUT
@@ -4439,6 +4539,7 @@ struct nk_mouse {
     unsigned char grab;
     unsigned char grabbed;
     unsigned char ungrab;
+    unsigned char clicked;
 };
 
 struct nk_key {
@@ -4963,8 +5064,10 @@ struct nk_style_tab {
     struct nk_style_button tab_minimize_button;
     struct nk_style_button node_maximize_button;
     struct nk_style_button node_minimize_button;
+    struct nk_style_button child_button;
     enum nk_symbol_type sym_minimize;
     enum nk_symbol_type sym_maximize;
+    enum nk_symbol_type sym_child;
 
     /* properties */
     float border;
@@ -5082,6 +5185,7 @@ NK_API struct nk_style_item nk_style_item_hide(void);
 #endif
 
 enum nk_panel_type {
+
     NK_PANEL_NONE       = 0,
     NK_PANEL_WINDOW     = NK_FLAG(0),
     NK_PANEL_GROUP      = NK_FLAG(1),
@@ -5089,9 +5193,8 @@ enum nk_panel_type {
     NK_PANEL_CONTEXTUAL = NK_FLAG(4),
     NK_PANEL_COMBO      = NK_FLAG(5),
     NK_PANEL_MENU       = NK_FLAG(6),
-    NK_PANEL_TOOLTIP    = NK_FLAG(7)
-};
-enum nk_panel_set {
+    NK_PANEL_TOOLTIP    = NK_FLAG(7),
+
     NK_PANEL_SET_NONBLOCK = NK_PANEL_CONTEXTUAL|NK_PANEL_COMBO|NK_PANEL_MENU|NK_PANEL_TOOLTIP,
     NK_PANEL_SET_POPUP = NK_PANEL_SET_NONBLOCK|NK_PANEL_POPUP,
     NK_PANEL_SET_SUB = NK_PANEL_SET_POPUP|NK_PANEL_GROUP
@@ -5187,7 +5290,7 @@ enum nk_window_flags {
     /* special window type growing up in height while being filled to a certain maximum height */
     NK_WINDOW_ROM           = NK_FLAG(12),
     /* sets window widgets into a read only mode and does not allow input changes */
-    NK_WINDOW_NOT_INTERACTIVE = NK_WINDOW_ROM|NK_WINDOW_NO_INPUT,
+    NK_WINDOW_NOT_INTERACTIVE = NK_WINDOW_ROM | (int) NK_WINDOW_NO_INPUT,
     /* prevents all interaction caused by input to either window or widgets inside */
     NK_WINDOW_HIDDEN        = NK_FLAG(13),
     /* Hides window and stops any window interaction and drawing */
@@ -5514,7 +5617,5 @@ template<typename T> struct nk_alignof{struct Big {T x; char c;}; enum {
 
 #define NK_CONTAINER_OF(ptr,type,member)\
     (type*)((void*)((char*)(1 ? (ptr): &((type*)0)->member) - NK_OFFSETOF(type, member)))
-
-
 
 #endif /* NK_NUKLEAR_H_ */

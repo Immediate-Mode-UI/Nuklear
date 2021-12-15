@@ -17,6 +17,7 @@
  *
  * ===============================================================
  */
+
 #define STBTT_MAX_OVERSAMPLE   8
 #include "stb_truetype.h"
 
@@ -815,7 +816,7 @@ nk_decompress(unsigned char *output, unsigned char *i, unsigned int length)
                     return 0;
                 return olen;
             } else {
-                NK_ASSERT(0); /* NOTREACHED */
+                NK_ERROR("Invalid decompression data"); /* NOTREACHED */
                 return 0;
             }
         }

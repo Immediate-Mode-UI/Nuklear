@@ -14,7 +14,7 @@ nk_tree_state_base(struct nk_context *ctx, enum nk_tree_type type,
     struct nk_panel *layout;
     const struct nk_style *style;
     struct nk_command_buffer *out;
-    const struct nk_input *in;
+    struct nk_input *in;
     const struct nk_style_button *button;
     enum nk_symbol_type symbol;
     float row_height;
@@ -72,7 +72,11 @@ nk_tree_state_base(struct nk_context *ctx, enum nk_tree_type type,
         *state = (*state == NK_MAXIMIZED) ? NK_MINIMIZED : NK_MAXIMIZED;
 
     /* select correct button style */
-    if (*state == NK_MAXIMIZED) {
+
+    if (type == NK_TREE_CHILD) {
+        symbol = style->tab.sym_child;
+        button = &style->tab.child_button;
+    } else if (*state == NK_MAXIMIZED) {
         symbol = style->tab.sym_maximize;
         if (type == NK_TREE_TAB)
             button = &style->tab.tab_maximize_button;
@@ -120,27 +124,39 @@ nk_tree_state_base(struct nk_context *ctx, enum nk_tree_type type,
     } else return nk_false;
 }
 NK_INTERN int
-nk_tree_base(struct nk_context *ctx, enum nk_tree_type type,
-    struct nk_image *img, const char *title, enum nk_collapse_states initial_state,
-    const char *hash, int len, int line)
+nk_tree_base_with_hash(struct nk_context *ctx, enum nk_tree_type type,
+                       struct nk_image *img, const char *title, enum nk_collapse_states initial_state,
+                       nk_hash hash)
 {
     struct nk_window *win = ctx->current;
-    int title_len = 0;
-    nk_hash tree_hash = 0;
     nk_uint *state = 0;
 
     /* retrieve tree state from internal widget state tables */
-    if (!hash) {
-        title_len = (int)nk_strlen(title);
-        tree_hash = nk_murmur_hash(title, (int)title_len, (nk_hash)line);
-    } else tree_hash = nk_murmur_hash(hash, len, (nk_hash)line);
-    state = nk_find_value(win, tree_hash);
+    state = nk_find_value(win, hash);
     if (!state) {
-        state = nk_add_value(ctx, win, tree_hash, 0);
+        state = nk_add_value(ctx, win, hash, 0);
         *state = initial_state;
     }
     return nk_tree_state_base(ctx, type, img, title, (enum nk_collapse_states*)state);
 }
+
+NK_INTERN nk_bool
+nk_tree_base(struct nk_context *ctx, enum nk_tree_type type,
+    struct nk_image *img, const char *title, enum nk_collapse_states initial_state,
+    const char *hash, int len, int line)
+{
+    /* make hash from name */
+
+    nk_hash tree_hash;
+
+    if (!hash) {
+        int title_len = (int)nk_strlen(title);
+        tree_hash = nk_murmur_hash(title, (int)title_len, (nk_hash)line);
+    } else tree_hash = nk_murmur_hash(hash, len, (nk_hash)line);
+
+    return nk_tree_base_with_hash(ctx, type, img, title, initial_state, tree_hash);
+}
+
 NK_API nk_bool
 nk_tree_state_push(struct nk_context *ctx, enum nk_tree_type type,
     const char *title, enum nk_collapse_states *state)
@@ -179,6 +195,15 @@ nk_tree_push_hashed(struct nk_context *ctx, enum nk_tree_type type,
 {
     return nk_tree_base(ctx, type, 0, title, initial_state, hash, len, line);
 }
+
+NK_API nk_bool
+nk_tree_push_from_hash(struct nk_context *ctx, enum nk_tree_type type,
+    const char *title, enum nk_collapse_states initial_state,
+    nk_hash hash)
+{
+    return nk_tree_base_with_hash(ctx, type, 0, title, initial_state, hash);
+}
+
 NK_API nk_bool
 nk_tree_image_push_hashed(struct nk_context *ctx, enum nk_tree_type type,
     struct nk_image img, const char *title, enum nk_collapse_states initial_state,
@@ -200,7 +225,7 @@ nk_tree_element_image_push_hashed_base(struct nk_context *ctx, enum nk_tree_type
     struct nk_panel *layout;
     const struct nk_style *style;
     struct nk_command_buffer *out;
-    const struct nk_input *in;
+    struct nk_input *in;
     const struct nk_style_button *button;
     enum nk_symbol_type symbol;
     float row_height;
@@ -259,7 +284,11 @@ nk_tree_element_image_push_hashed_base(struct nk_context *ctx, enum nk_tree_type
     in = (in && widget_state == NK_WIDGET_VALID) ? &ctx->input : 0;
 
     /* select correct button style */
-    if (*state == NK_MAXIMIZED) {
+
+    if (type == NK_TREE_CHILD) {
+        symbol = style->tab.sym_child;
+        button = &style->tab.child_button;
+    } else if (*state == NK_MAXIMIZED) {
         symbol = style->tab.sym_maximize;
         if (type == NK_TREE_TAB)
             button = &style->tab.tab_maximize_button;
@@ -347,4 +376,3 @@ nk_tree_element_pop(struct nk_context *ctx)
 {
     nk_tree_state_pop(ctx);
 }
-

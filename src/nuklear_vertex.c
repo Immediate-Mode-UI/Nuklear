@@ -224,17 +224,23 @@ nk_draw_list_alloc_vertices(struct nk_draw_list *list, nk_size count)
     if (!vtx) return 0;
     list->vertex_count += (unsigned int)count;
 
-    /* This assert triggers because your are drawing a lot of stuff and nuklear
-     * defined `nk_draw_index` as `nk_ushort` to safe space be default.
-     *
-     * So you reached the maximum number of indices or rather vertexes.
-     * To solve this issue please change typedef `nk_draw_index` to `nk_uint`
-     * and don't forget to specify the new element size in your drawing
-     * backend (OpenGL, DirectX, ...). For example in OpenGL for `glDrawElements`
-     * instead of specifying `GL_UNSIGNED_SHORT` you have to define `GL_UNSIGNED_INT`.
-     * Sorry for the inconvenience. */
-    if(sizeof(nk_draw_index)==2) NK_ASSERT((list->vertex_count < NK_USHORT_MAX &&
+    #ifndef NK_UINT_DRAW_INDEX
+
+        /* This assert triggers because your are drawing a lot of stuff and nuklear
+         * defined `nk_draw_index` as `nk_ushort` to safe space be default.
+         *
+         * So you reached the maximum number of indices or rather vertexes.
+         * To solve this issue please change typedef `nk_draw_index` to `nk_uint`
+         * and don't forget to specify the new element size in your drawing
+         * backend (OpenGL, DirectX, ...). For example in OpenGL for `glDrawElements`
+         * instead of specifying `GL_UNSIGNED_SHORT` you have to define `GL_UNSIGNED_INT`.
+         * Sorry for the inconvenience. */
+
+        NK_ASSERT((list->vertex_count < NK_USHORT_MAX &&
         "To many vertices for 16-bit vertex indices. Please read comment above on how to solve this problem"));
+
+    #endif
+
     return vtx;
 }
 NK_INTERN nk_draw_index*
@@ -278,7 +284,7 @@ nk_draw_vertex_color(void *attr, const float *vals,
     val[3] = NK_SATURATE(vals[3]);
 
     switch (format) {
-    default: NK_ASSERT(0 && "Invalid vertex layout color format"); break;
+    default: NK_ERROR("Invalid vertex layout color format"); break;
     case NK_FORMAT_R8G8B8A8:
     case NK_FORMAT_R8G8B8: {
         struct nk_color col = nk_rgba_fv(val);
@@ -348,7 +354,7 @@ nk_draw_vertex_element(void *dst, const float *values, int value_count,
     if (format >= NK_FORMAT_COLOR_BEGIN && format <= NK_FORMAT_COLOR_END) return;
     for (value_index = 0; value_index < value_count; ++value_index) {
         switch (format) {
-        default: NK_ASSERT(0 && "invalid vertex layout format"); break;
+        default: NK_ERROR("invalid vertex layout format"); break;
         case NK_FORMAT_SCHAR: {
             char value = (char)NK_CLAMP((float)NK_SCHAR_MIN, values[value_index], (float)NK_SCHAR_MAX);
             NK_MEMCPY(attribute, &value, sizeof(value));
@@ -401,7 +407,7 @@ nk_draw_vertex(void *dst, const struct nk_convert_config *config,
         void *address = (void*)((char*)dst + elem_iter->offset);
         switch (elem_iter->attribute) {
         case NK_VERTEX_ATTRIBUTE_COUNT:
-        default: NK_ASSERT(0 && "wrong element attribute"); break;
+        default: NK_ERROR("wrong element attribute"); break;
         case NK_VERTEX_POSITION: nk_draw_vertex_element(address, &pos.x, 2, elem_iter->format); break;
         case NK_VERTEX_TEXCOORD: nk_draw_vertex_element(address, &uv.x, 2, elem_iter->format); break;
         case NK_VERTEX_COLOR: nk_draw_vertex_color(address, &color.r, elem_iter->format); break;

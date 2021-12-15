@@ -11,7 +11,7 @@ nk_tooltip_begin(struct nk_context *ctx, float width)
 {
     int x,y,w,h;
     struct nk_window *win;
-    const struct nk_input *in;
+    struct nk_input *in;
     struct nk_rect bounds;
     int ret;
 
