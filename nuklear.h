@@ -19798,7 +19798,10 @@ nk_panel_end(struct nk_context *ctx)
         {
             /* horizontal scrollbar */
             nk_flags state = 0;
-            scroll.x = layout->bounds.x;
+            if(layout->flags & NK_WINDOW_SCALE_LEFT)
+                scroll.x = layout->bounds.x + scrollbar_size.x + panel_padding.x * 0.5;
+            else
+                scroll.x = layout->bounds.x;
             scroll.y = layout->bounds.y + layout->bounds.h;
             scroll.w = layout->bounds.w;
             scroll.h = scrollbar_size.y;
@@ -19875,18 +19878,24 @@ nk_panel_end(struct nk_context *ctx)
                     NK_BUTTON_LEFT, scaler, nk_true);
 
             if (left_mouse_down && left_mouse_click_in_scaler) {
-                float delta_x = in->mouse.delta.x;
-                if (layout->flags & NK_WINDOW_SCALE_LEFT) {
-                    delta_x = -delta_x;
-                    window->bounds.x += in->mouse.delta.x;
-                }
                 /* dragging in x-direction  */
-                if (window->bounds.w + delta_x >= window_size.x) {
-                    if ((delta_x < 0) || (delta_x > 0 && in->mouse.pos.x >= scaler.x)) {
-                        window->bounds.w = window->bounds.w + delta_x;
-                        scaler.x += in->mouse.delta.x;
+                if (layout->flags & NK_WINDOW_SCALE_LEFT) {
+                    if (window->bounds.w - in->mouse.delta.x >= window_size.x) {
+                        if ((in->mouse.delta.x < 0) || (in->mouse.delta.x > 0 && in->mouse.pos.x >= scaler.x)) {
+                            window->bounds.x += in->mouse.delta.x;
+                            window->bounds.w -= in->mouse.delta.x;
+                            scaler.x += in->mouse.delta.x;
+                        }
+                    }
+                }else{
+                    if (window->bounds.w + in->mouse.delta.x >= window_size.x) {
+                        if ((in->mouse.delta.x < 0) || (in->mouse.delta.x > 0 && in->mouse.pos.x >= scaler.x)) {
+                            window->bounds.w += in->mouse.delta.x;
+                            scaler.x += in->mouse.delta.x;
+                        }
                     }
                 }
+
                 /* dragging in y-direction (only possible if static window) */
                 if (!(layout->flags & NK_WINDOW_DYNAMIC)) {
                     if (window_size.y < window->bounds.h + in->mouse.delta.y) {
@@ -22163,7 +22172,7 @@ nk_layout_peek(struct nk_rect *bounds, struct nk_context *ctx)
     layout->at_y = y;
     layout->row.index = index;
 }
-NK_API void 
+NK_API void
 nk_spacer(struct nk_context *ctx )
 {
     struct nk_rect dummy_rect = {0};
@@ -29560,6 +29569,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2021/10/17 (4.09.1) - Fix scaling and horizontal scrollbar position when scaler placed left
 /// - 2021/10/16 (4.09.0) - Added nk_spacer() widget
 /// - 2021/09/22 (4.08.6) - Fix "may be used uninitialized" warnings in nk_widget
 /// - 2021/09/22 (4.08.5) - GCC __builtin_offsetof only exists in version 4 and later
