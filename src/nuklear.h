@@ -1949,7 +1949,7 @@ NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show
 ///         //
 ///         // two rows with auto generated height composed of two widgets with window ratio 0.25 and 0.75
 ///         const float ratio[] = {0.25, 0.75};
-///         nk_layout_row(ctx, NK_DYNAMIC, 30, 2, ratio);
+///         nk_layout_row(ctx, NK_DYNAMIC, 0, 2, ratio);
 ///         nk_widget(...);
 ///         nk_widget(...);
 ///         nk_widget(...);
@@ -2020,6 +2020,7 @@ NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show
 ///         nk_widget(...);
 ///         nk_layout_space_push(ctx, nk_rect(0.7,0.6,0.1,0.1));
 ///         nk_widget(...);
+///         nk_layout_space_end(ctx);
 ///     }
 ///     nk_end(...);
 ///     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2300,6 +2301,32 @@ NK_API void nk_layout_space_end(struct nk_context*);
 /// Returns `nk_rect` holding the total space allocated
 */
 NK_API struct nk_rect nk_layout_space_bounds(struct nk_context*);
+/*/// #### nk_layout_subspace_remaining
+/// Utility function to calculate remaining space for `nk_layout_space`
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// struct nk_rect nk_layout_subspace_remaining(struct nk_context*);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct after call `nk_layout_space_begin`
+///
+/// Returns `nk_rect` holding the remaining space
+*/
+NK_API struct nk_rect nk_layout_subspace_remaining(struct nk_context*);
+/*/// #### nk_layout_subspace_bounds
+/// Utility function to calculate the bounds of the subspace allocated for `nk_layout_space`
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// struct nk_rect nk_layout_subspace_bounds(struct nk_context*);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct after call `nk_layout_space_begin`
+///
+/// Returns `nk_rect` holding the bounds of the subspace allocated
+*/
+NK_API struct nk_rect nk_layout_subspace_bounds(struct nk_context*);
 /*/// #### nk_layout_space_to_screen
 /// Converts vector from nk_layout_space coordinate space into screen space
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
@@ -2953,22 +2980,34 @@ NK_API nk_bool nk_button_pop_behavior(struct nk_context*);
  *
  * ============================================================================= */
 NK_API nk_bool nk_check_label(struct nk_context*, const char*, nk_bool active);
+NK_API nk_bool nk_check_label_align(struct nk_context*, const char*, nk_bool active, nk_flags align);
 NK_API nk_bool nk_check_text(struct nk_context*, const char*, int, nk_bool active);
+NK_API nk_bool nk_check_text_align(struct nk_context*, const char*, int, nk_bool active, nk_flags align);
 NK_API unsigned nk_check_flags_label(struct nk_context*, const char*, unsigned int flags, unsigned int value);
+NK_API unsigned nk_check_flags_label_align(struct nk_context*, const char*, unsigned int flags, unsigned int value, nk_flags align);
 NK_API unsigned nk_check_flags_text(struct nk_context*, const char*, int, unsigned int flags, unsigned int value);
+NK_API unsigned nk_check_flags_text_align(struct nk_context*, const char*, int, unsigned int flags, unsigned int value, nk_flags align);
 NK_API nk_bool nk_checkbox_label(struct nk_context*, const char*, nk_bool *active);
+NK_API nk_bool nk_checkbox_label_align(struct nk_context*, const char*, nk_bool *active, nk_flags align);
 NK_API nk_bool nk_checkbox_text(struct nk_context*, const char*, int, nk_bool *active);
+NK_API nk_bool nk_checkbox_text_align(struct nk_context*, const char*, int, nk_bool *active, nk_flags align);
 NK_API nk_bool nk_checkbox_flags_label(struct nk_context*, const char*, unsigned int *flags, unsigned int value);
+NK_API nk_bool nk_checkbox_flags_label_align(struct nk_context*, const char*, unsigned int *flags, unsigned int value, nk_flags align);
 NK_API nk_bool nk_checkbox_flags_text(struct nk_context*, const char*, int, unsigned int *flags, unsigned int value);
+NK_API nk_bool nk_checkbox_flags_text_align(struct nk_context*, const char*, int, unsigned int *flags, unsigned int value, nk_flags align);
 /* =============================================================================
  *
  *                                  RADIO BUTTON
  *
  * ============================================================================= */
 NK_API nk_bool nk_radio_label(struct nk_context*, const char*, nk_bool *active);
+NK_API nk_bool nk_radio_label_align(struct nk_context*, const char*, nk_bool *active, nk_flags align);
 NK_API nk_bool nk_radio_text(struct nk_context*, const char*, int, nk_bool *active);
+NK_API nk_bool nk_radio_text_align(struct nk_context*, const char*, int, nk_bool *active, nk_flags align);
 NK_API nk_bool nk_option_label(struct nk_context*, const char*, nk_bool active);
+NK_API nk_bool nk_option_label_align(struct nk_context*, const char*, nk_bool active, nk_flags align);
 NK_API nk_bool nk_option_text(struct nk_context*, const char*, int, nk_bool active);
+NK_API nk_bool nk_option_text_align(struct nk_context*, const char*, int, nk_bool active, nk_flags align);
 /* =============================================================================
  *
  *                                  SELECTABLE
