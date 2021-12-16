@@ -306,15 +306,20 @@ nk_allegro5_render()
         case NK_COMMAND_ARC: {
             const struct nk_command_arc *a = (const struct nk_command_arc *)cmd;
             color = nk_color_to_allegro_color(a->color);
-            al_draw_arc((float)a->cx, (float)a->cy, (float)a->r, a->a[0],
+            al_draw_pieslice((float)a->cx, (float)a->cy, (float)a->r, a->a[0],
                 a->a[1], color, (float)a->line_thickness);
+        } break;
+        case NK_COMMAND_ARC_FILLED: {
+            const struct nk_command_arc_filled *a = (const struct nk_command_arc_filled *)cmd;
+            color = nk_color_to_allegro_color(a->color);
+            al_draw_filled_pieslice((float)a->cx, (float)a->cy, (float)a->r, a->a[0],
+                a->a[1], color);
         } break;
         case NK_COMMAND_IMAGE: {
             const struct nk_command_image *i = (const struct nk_command_image *)cmd;
             al_draw_bitmap_region(i->img.handle.ptr, 0, 0, i->w, i->h, i->x, i->y, 0);
         } break;
         case NK_COMMAND_RECT_MULTI_COLOR:
-        case NK_COMMAND_ARC_FILLED:
         default: break;
         }
     }
