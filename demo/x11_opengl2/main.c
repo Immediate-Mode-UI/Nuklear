@@ -40,12 +40,14 @@
 /*#define INCLUDE_ALL */
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
+/*#define INCLUDE_CANVAS */
 /*#define INCLUDE_OVERVIEW */
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
   #define INCLUDE_STYLE
   #define INCLUDE_CALCULATOR
+  #define INCLUDE_CANVAS
   #define INCLUDE_OVERVIEW
   #define INCLUDE_NODE_EDITOR
 #endif
@@ -55,6 +57,9 @@
 #endif
 #ifdef INCLUDE_CALCULATOR
   #include "../calculator.c"
+#endif
+#ifdef INCLUDE_CANVAS
+  #include "../canvas.c"
 #endif
 #ifdef INCLUDE_OVERVIEW
   #include "../overview.c"
@@ -308,6 +313,9 @@ int main(void)
         /* -------------- EXAMPLES ---------------- */
         #ifdef INCLUDE_CALCULATOR
           calculator(ctx);
+        #endif
+        #ifdef INCLUDE_CANVAS
+          canvas(ctx);
         #endif
         #ifdef INCLUDE_OVERVIEW
           overview(ctx);

@@ -38,12 +38,37 @@
  *
  * ===============================================================*/
 /* This are some code examples to provide a small overview of what can be
- * done with this library. To try out an example uncomment the include
- * and the corresponding function. */
-/*#include "../style.c"*/
-/*#include "../calculator.c"*/
-/*#include "../overview.c"*/
-/*#include "../node_editor.c"*/
+ * done with this library. To try out an example uncomment the defines */
+/*#define INCLUDE_ALL */
+/*#define INCLUDE_STYLE */
+/*#define INCLUDE_CALCULATOR */
+/*#define INCLUDE_CANVAS */
+/*#define INCLUDE_OVERVIEW */
+/*#define INCLUDE_NODE_EDITOR */
+
+#ifdef INCLUDE_ALL
+  #define INCLUDE_STYLE
+  #define INCLUDE_CALCULATOR
+  #define INCLUDE_CANVAS
+  #define INCLUDE_OVERVIEW
+  #define INCLUDE_NODE_EDITOR
+#endif
+
+#ifdef INCLUDE_STYLE
+  #include "../style.c"
+#endif
+#ifdef INCLUDE_CALCULATOR
+  #include "../calculator.c"
+#endif
+#ifdef INCLUDE_CANVAS
+  #include "../canvas.c"
+#endif
+#ifdef INCLUDE_OVERVIEW
+  #include "../overview.c"
+#endif
+#ifdef INCLUDE_NODE_EDITOR
+  #include "../node_editor.c"
+#endif
 
 /* ===============================================================
  *
@@ -112,9 +137,18 @@ MainLoop(void* loopArg){
     nk_end(ctx);
 
     /* -------------- EXAMPLES ---------------- */
-    /*calculator(ctx);*/
-    /*overview(ctx);*/
-    /*node_editor(ctx);*/
+    #ifdef INCLUDE_CALCULATOR
+      calculator(ctx);
+    #endif
+    #ifdef INCLUDE_CANVAS
+      canvas(ctx);
+    #endif
+    #ifdef INCLUDE_OVERVIEW
+      overview(ctx);
+    #endif
+    #ifdef INCLUDE_NODE_EDITOR
+      node_editor(ctx);
+    #endif
     /* ----------------------------------------- */
 
     /* Draw */
