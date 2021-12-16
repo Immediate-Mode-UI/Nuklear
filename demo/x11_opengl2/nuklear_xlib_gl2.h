@@ -100,8 +100,11 @@ nk_x11_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
     /* setup global state */
     struct nk_x11_device *dev = &x11.ogl;
     int width, height;
-
     XWindowAttributes attr;
+
+    NK_UNUSED(max_vertex_buffer);
+    NK_UNUSED(max_element_buffer);
+
     XGetWindowAttributes(x11.dpy, x11.win, &attr);
     width = attr.width;
     height = attr.height;

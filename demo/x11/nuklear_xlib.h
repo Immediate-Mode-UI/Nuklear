@@ -497,6 +497,9 @@ nk_xsurf_draw_image(XSurface *surf, short x, short y, unsigned short w, unsigned
     struct nk_image img, struct nk_color col)
 {
     XImageWithAlpha *aimage = img.handle.ptr;
+
+    NK_UNUSED(col);
+
     if (aimage){
         if (aimage->clipMask){
             XSetClipMask(surf->dpy, surf->gc, aimage->clipMask);
@@ -581,6 +584,9 @@ nk_xfont_get_text_width(nk_handle handle, float height, const char *text, int le
 {
     XFont *font = (XFont*)handle.ptr;
     XRectangle r;
+
+    NK_UNUSED(height);
+
     if(!font || !text)
         return 0;
 
@@ -686,6 +692,8 @@ NK_API int
 nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt)
 {
     struct nk_context *ctx = &xlib.ctx;
+
+    NK_UNUSED(screen);
 
     /* optional grabbing behavior */
     if (ctx->input.mouse.grab) {

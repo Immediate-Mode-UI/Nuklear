@@ -189,6 +189,9 @@ nk_sfml_clipboard_paste(nk_handle usr, struct nk_text_edit* edit)
     if(text)
         nk_textedit_paste(edit, text, nk_strlen(text));
         (void)usr;
+#else
+    NK_UNUSED(usr);
+    NK_UNUSED(edit);
 #endif
 }
 
@@ -208,6 +211,10 @@ nk_sfml_clipboard_copy(nk_handle usr, const char* text, int len)
     sf::Clipboard clipboard(sfml.window);
     clipboard.setText(str);
     free(str);
+#else
+    NK_UNUSED(usr);
+    NK_UNUSED(text);
+    NK_UNUSED(len);
 #endif
 }
 

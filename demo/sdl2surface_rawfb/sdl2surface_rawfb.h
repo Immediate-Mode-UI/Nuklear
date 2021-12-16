@@ -167,7 +167,7 @@ nk_sdlsurface_img_setpixel(const struct SDL_Surface *img,
     unsigned int *pixel;
     NK_ASSERT(img);
     if (y0 < img->h && y0 >= 0 && x0 >= 0 && x0 < img->w) {
-        ptr = img->pixels + (img->pitch * y0);
+        ptr = (unsigned char *)img->pixels + (img->pitch * y0);
     pixel = (unsigned int *)ptr;
 
         if (img->format == NK_FONT_ATLAS_ALPHA8) {
@@ -186,7 +186,7 @@ nk_sdlsurface_img_getpixel(const struct SDL_Surface *img, const int x0, const in
     unsigned int pixel;
     NK_ASSERT(img);
     if (y0 < img->h && y0 >= 0 && x0 >= 0 && x0 < img->w) {
-        ptr = img->pixels + (img->pitch * y0);
+        ptr = (unsigned char *)img->pixels + (img->pitch * y0);
 
         if (img->format == NK_FONT_ATLAS_ALPHA8) {
             col.a = ptr[x0];
@@ -234,6 +234,8 @@ nk_sdlsurface_stroke_line(const struct sdlsurface_context *sdlsurface,
 {
     short tmp;
     int dy, dx, stepx, stepy;
+
+    NK_UNUSED(line_thickness);
 
     dy = y1 - y0;
     dx = x1 - x0;
@@ -368,6 +370,8 @@ nk_sdlsurface_stroke_arc(const struct sdlsurface_context *sdlsurface,
     const int b2 = (h * h) / 4;
     const int fa2 = 4 * a2, fb2 = 4 * b2;
     int x, y, sigma;
+
+    NK_UNUSED(line_thickness);
 
     if (s != 0 && s != 90 && s != 180 && s != 270) return;
     if (w < 1 || h < 1) return;
@@ -735,6 +739,8 @@ nk_sdlsurface_stroke_circle(const struct sdlsurface_context *sdlsurface,
     const int fa2 = 4 * a2, fb2 = 4 * b2;
     int x, y, sigma;
 
+    NK_UNUSED(line_thickness);
+
     /* Convert upper left to center */
     h = (h + 1) / 2;
     w = (w + 1) / 2;
@@ -802,12 +808,12 @@ nk_sdlsurface_clear(const struct sdlsurface_context *sdlsurface, const struct nk
 struct sdlsurface_context*
 nk_sdlsurface_init(SDL_Surface *fb, float fontSize)
 {
-    SDL_assert((fb->format->format == SDL_PIXELFORMAT_ARGB8888)
-               || (fb->format->format == SDL_PIXELFORMAT_RGBA8888));
-
     const void *tex;
     int texh, texw;
     struct sdlsurface_context *sdlsurface;
+
+    assert((fb->format->format == SDL_PIXELFORMAT_ARGB8888)
+               || (fb->format->format == SDL_PIXELFORMAT_RGBA8888));
 
     sdlsurface = malloc(sizeof(struct sdlsurface_context));
     if (!sdlsurface)
@@ -843,9 +849,9 @@ nk_sdlsurface_init(SDL_Surface *fb, float fontSize)
 
     if (fb->format->format == SDL_PIXELFORMAT_RGBA8888)
     {
-        SDL_assert(sdlsurface->font_tex->pitch == sdlsurface->font_tex->w * 4);
         uint32_t *fontPixels = (uint32_t *)sdlsurface->font_tex->pixels;
         int i;
+        assert(sdlsurface->font_tex->pitch == sdlsurface->font_tex->w * 4);
         for (i = 0; i < sdlsurface->font_tex->w * sdlsurface->font_tex->h; i++)
         {
             uint32_t col = fontPixels[i];
