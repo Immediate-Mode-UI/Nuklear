@@ -22,6 +22,44 @@
 #define NK_SDLSURFACE_IMPLEMENTATION
 #include "sdl2surface_rawfb.h"
 
+/* ===============================================================
+ *
+ *                          EXAMPLE
+ *
+ * ===============================================================*/
+/* This are some code examples to provide a small overview of what can be
+ * done with this library. To try out an example uncomment the defines */
+/*#define INCLUDE_ALL */
+/*#define INCLUDE_STYLE */
+/*#define INCLUDE_CALCULATOR */
+/*#define INCLUDE_CANVAS */
+/*#define INCLUDE_OVERVIEW */
+/*#define INCLUDE_NODE_EDITOR */
+
+#ifdef INCLUDE_ALL
+  #define INCLUDE_STYLE
+  #define INCLUDE_CALCULATOR
+  #define INCLUDE_CANVAS
+  #define INCLUDE_OVERVIEW
+  #define INCLUDE_NODE_EDITOR
+#endif
+
+#ifdef INCLUDE_STYLE
+  #include "../style.c"
+#endif
+#ifdef INCLUDE_CALCULATOR
+  #include "../calculator.c"
+#endif
+#ifdef INCLUDE_CANVAS
+  #include "../canvas.c"
+#endif
+#ifdef INCLUDE_OVERVIEW
+  #include "../overview.c"
+#endif
+#ifdef INCLUDE_NODE_EDITOR
+  #include "../node_editor.c"
+#endif
+
 static int translate_sdl_key(struct SDL_Keysym const *k)
 {
     /*keyboard handling left as an exercise for the reader */
@@ -186,6 +224,21 @@ int main(int argc, char **argv)
         nk_end(&(context->ctx));
 
         /* grid_demo(&(context->ctx)); */
+
+        /* -------------- EXAMPLES ---------------- */
+        #ifdef INCLUDE_CALCULATOR
+          calculator(&(context->ctx));
+        #endif
+        #ifdef INCLUDE_CANVAS
+          canvas(&(context->ctx));
+        #endif
+        #ifdef INCLUDE_OVERVIEW
+          overview(&(context->ctx));
+        #endif
+        #ifdef INCLUDE_NODE_EDITOR
+          node_editor(&(context->ctx));
+        #endif
+        /* ----------------------------------------- */
 
         nk_sdlsurface_render(context, clear, 1);
 

@@ -28,6 +28,44 @@
 
 #define DTIME           20
 
+/* ===============================================================
+ *
+ *                          EXAMPLE
+ *
+ * ===============================================================*/
+/* This are some code examples to provide a small overview of what can be
+ * done with this library. To try out an example uncomment the defines */
+/*#define INCLUDE_ALL */
+/*#define INCLUDE_STYLE */
+/*#define INCLUDE_CALCULATOR */
+/*#define INCLUDE_CANVAS */
+/*#define INCLUDE_OVERVIEW */
+/*#define INCLUDE_NODE_EDITOR */
+
+#ifdef INCLUDE_ALL
+  #define INCLUDE_STYLE
+  #define INCLUDE_CALCULATOR
+  #define INCLUDE_CANVAS
+  #define INCLUDE_OVERVIEW
+  #define INCLUDE_NODE_EDITOR
+#endif
+
+#ifdef INCLUDE_STYLE
+  #include "../style.c"
+#endif
+#ifdef INCLUDE_CALCULATOR
+  #include "../calculator.c"
+#endif
+#ifdef INCLUDE_CANVAS
+  #include "../canvas.c"
+#endif
+#ifdef INCLUDE_OVERVIEW
+  #include "../overview.c"
+#endif
+#ifdef INCLUDE_NODE_EDITOR
+  #include "../node_editor.c"
+#endif
+
 
 //WAYLAND OUTPUT INTERFACE
 static void nk_wayland_output_cb_geometry(void *data, struct wl_output *wl_output, int x, int y, int w, int h, int subpixel, const char *make, const char *model, int transform)
@@ -504,17 +542,20 @@ int main ()
         
         if (nk_window_is_closed(&(nk_wayland_ctx.ctx), "Demo")) break;
 
-        // -------------- EXAMPLES ---------------- 
-        //#ifdef INCLUDE_CALCULATOR
-        //  calculator(&rawfb->ctx);
-        //#endif
-       // #ifdef INCLUDE_OVERVIEW
-       //   overview(&rawfb->ctx);
-       // #endif
-       // #ifdef INCLUDE_NODE_EDITOR
-       //   node_editor(&rawfb->ctx);
-        //#endif
-        // ----------------------------------------- 
+        /* -------------- EXAMPLES ---------------- */
+        #ifdef INCLUDE_CALCULATOR
+          calculator(&(nk_wayland_ctx.ctx));
+        #endif
+        #ifdef INCLUDE_CANVAS
+          canvas(&(nk_wayland_ctx.ctx));
+        #endif
+        #ifdef INCLUDE_OVERVIEW
+          overview(&(nk_wayland_ctx.ctx));
+        #endif
+        #ifdef INCLUDE_NODE_EDITOR
+          node_editor(&(nk_wayland_ctx.ctx));
+        #endif
+        /* ----------------------------------------- */
 
         // Draw framebuffer 
         nk_wayland_render(&nk_wayland_ctx, nk_rgb(30,30,30), 1);
