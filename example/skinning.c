@@ -733,7 +733,6 @@ int main(int argc, char *argv[])
         nk_input_end(&ctx);}
 
         /* GUI */
-        {struct nk_panel layout, tab;
         if (nk_begin(&ctx, "Demo", nk_rect(50, 50, 300, 400),
             NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE))
         {
@@ -805,7 +804,7 @@ int main(int argc, char *argv[])
                 nk_group_end(&ctx);
             }
         }
-        nk_end(&ctx);}
+        nk_end(&ctx);
 
         /* Draw */
         glViewport(0, 0, display_width, display_height);

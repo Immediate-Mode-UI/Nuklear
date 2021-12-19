@@ -247,22 +247,22 @@ nk_allegro5_render()
                 vertices[i*2] = p->points[i].x;
                 vertices[(i*2) + 1] = p->points[i].y;
             }
-            al_draw_polyline((const float*)&vertices, (2 * sizeof(float)),
+            al_draw_polyline(vertices, (2 * sizeof(float)),
                 (int)p->point_count, ALLEGRO_LINE_JOIN_ROUND, ALLEGRO_LINE_CAP_CLOSED,
                 color, (float)p->line_thickness, 0.0);
             free(vertices);
         } break;
         case NK_COMMAND_POLYGON_FILLED: {
-            int i;
+            int i, j = 0;
             float *vertices;
             const struct nk_command_polygon_filled *p = (const struct nk_command_polygon_filled *)cmd;
             vertices = calloc(p->point_count * 2, sizeof(float));
             color = nk_color_to_allegro_color(p->color);
-            for (i = 0; i < p->point_count; i++) {
-                vertices[i*2] = p->points[i].x;
-                vertices[(i*2) + 1] = p->points[i].y;
+            for (i = p->point_count - 1; i >= 0; i--) {
+                vertices[j++] = p->points[i].x;
+                vertices[j++] = p->points[i].y;
             }
-            al_draw_filled_polygon((const float*)&vertices, (int)p->point_count, color);
+            al_draw_filled_polygon(vertices, (int)p->point_count, color);
             free(vertices);
         } break;
         case NK_COMMAND_POLYLINE: {
@@ -275,7 +275,7 @@ nk_allegro5_render()
                 vertices[i*2] = p->points[i].x;
                 vertices[(i*2) + 1] = p->points[i].y;
             }
-            al_draw_polyline((const float*)&vertices, (2 * sizeof(float)),
+            al_draw_polyline(vertices, (2 * sizeof(float)),
                 (int)p->point_count, ALLEGRO_LINE_JOIN_ROUND, ALLEGRO_LINE_CAP_ROUND,
                 color, (float)p->line_thickness, 0.0);
             free(vertices);
@@ -306,15 +306,20 @@ nk_allegro5_render()
         case NK_COMMAND_ARC: {
             const struct nk_command_arc *a = (const struct nk_command_arc *)cmd;
             color = nk_color_to_allegro_color(a->color);
-            al_draw_arc((float)a->cx, (float)a->cy, (float)a->r, a->a[0],
+            al_draw_pieslice((float)a->cx, (float)a->cy, (float)a->r, a->a[0],
                 a->a[1], color, (float)a->line_thickness);
+        } break;
+        case NK_COMMAND_ARC_FILLED: {
+            const struct nk_command_arc_filled *a = (const struct nk_command_arc_filled *)cmd;
+            color = nk_color_to_allegro_color(a->color);
+            al_draw_filled_pieslice((float)a->cx, (float)a->cy, (float)a->r, a->a[0],
+                a->a[1], color);
         } break;
         case NK_COMMAND_IMAGE: {
             const struct nk_command_image *i = (const struct nk_command_image *)cmd;
             al_draw_bitmap_region(i->img.handle.ptr, 0, 0, i->w, i->h, i->x, i->y, 0);
         } break;
         case NK_COMMAND_RECT_MULTI_COLOR:
-        case NK_COMMAND_ARC_FILLED:
         default: break;
         }
     }

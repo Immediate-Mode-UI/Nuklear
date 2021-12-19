@@ -109,7 +109,7 @@ nk_xlib_init(Display *dpy, Visual *vis, int screen, Window root,
             break;
         }
         xlib.xsi.shmaddr = xlib.ximg->data = shmat(xlib.xsi.shmid, NULL, 0);
-        if ((size_t)xlib.xsi.shmaddr < 0) {
+        if ((intptr_t)xlib.xsi.shmaddr < 0) {
             XDestroyImage(xlib.ximg);
             xlib.fallback = True;
             break;

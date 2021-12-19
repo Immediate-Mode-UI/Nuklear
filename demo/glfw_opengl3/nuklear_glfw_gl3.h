@@ -330,6 +330,7 @@ nk_glfw3_mouse_button_callback(GLFWwindow* win, int button, int action, int mods
 {
     struct nk_glfw* glfw = glfwGetWindowUserPointer(win);
     double x, y;
+    NK_UNUSED(mods);
     if (button != GLFW_MOUSE_BUTTON_LEFT) return;
     glfwGetCursorPos(win, &x, &y);
     if (action == GLFW_PRESS)  {

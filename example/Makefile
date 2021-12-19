@@ -1,5 +1,5 @@
 # Flags
-CFLAGS += -std=c99 -pedantic -O2
+CFLAGS += -std=c99 -Wall -Wextra -pedantic -Wno-misleading-indentation -Wno-shift-negative-value -O2
 LIBS :=
 
 ifeq ($(OS),Windows_NT)
