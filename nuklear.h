@@ -29613,13 +29613,12 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 
 /// ## Changelog
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~none
-/// [date][x.yy.zz]-[description]
-/// -[date]: date on which the change has been pushed
-/// -[x.yy.zz]: Numerical version string representation. Each version number on the right
-///             resets back to zero if version on the left is incremented.
-///    - [x]: Major version with API and library breaking changes
-///    - [yy]: Minor version with non-breaking API and library changes
-///    - [zz]: Bug fix version with no direct changes to API
+/// [date] ([x.y.z]) - [description]
+/// - [date]: date on which the change has been pushed
+/// - [x.y.z]: Numerical version string representation
+///   - [x]: Major version with API and library breaking changes
+///   - [y]: Minor version with non-breaking API and library changes
+///   - [z]: Bug fix version with no direct changes to API
 ///
 /// - 2021/12/19 (4.09.2) - Update to stb_rect_pack.h v1.01 and stb_truetype.h v1.26
 /// - 2021/12/16 (4.09.1) - Fix the majority of GCC warnings
