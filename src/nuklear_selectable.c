@@ -42,12 +42,19 @@ nk_draw_selectable(struct nk_command_buffer *out,
         }
     }
     /* draw selectable background and text */
-    if (background->type == NK_STYLE_ITEM_IMAGE) {
-        nk_draw_image(out, *bounds, &background->data.image, nk_white);
-        text.background = nk_rgba(0,0,0,0);
-    } else {
-        nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-        text.background = background->data.color;
+    switch (background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_image(out, *bounds, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_NINE_SLICE:
+            text.background = nk_rgba(0, 0, 0, 0);
+            nk_draw_nine_slice(out, *bounds, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            text.background = background->data.color;
+            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
+            break;
     }
     if (icon) {
         if (img) nk_draw_image(out, *icon, img, nk_white);

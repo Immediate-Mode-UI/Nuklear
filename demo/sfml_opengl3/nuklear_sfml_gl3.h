@@ -244,7 +244,7 @@ nk_sfml_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_
                 {NK_VERTEX_LAYOUT_END}
             };
 
-            NK_MEMSET(&config, 0, sizeof(config));
+            memset(&config, 0, sizeof(config));
             config.vertex_layout = vertex_layout;
             config.vertex_size = sizeof(struct nk_sfml_vertex);
             config.vertex_alignment = NK_ALIGNOF(struct nk_sfml_vertex);
@@ -298,6 +298,9 @@ nk_sfml_clipboard_paste(nk_handle usr, struct nk_text_edit* edit)
     sf::Clipboard clipboard(sfml.window);
     const char* text = clipboard.getText();
     if(text) nk_textedit_paste(edit, text, nk_strlen(text));
+#else
+    NK_UNUSED(usr);
+    NK_UNUSED(edit);
 #endif
 }
 static void
@@ -316,6 +319,10 @@ nk_sfml_clipboard_copy(nk_handle usr, const char* text, int len)
     sf::Clipboard clipboard(sfml.window);
     clipboard.setText(str);
     free(str);
+#else
+    NK_UNUSED(usr);
+    NK_UNUSED(text);
+    NK_UNUSED(len);
 #endif
 }
 

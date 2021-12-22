@@ -262,7 +262,7 @@ nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int max_vertex_b
                 {NK_VERTEX_COLOR, NK_FORMAT_R8G8B8A8, NK_OFFSETOF(struct nk_glfw_vertex, col)},
                 {NK_VERTEX_LAYOUT_END}
             };
-            NK_MEMSET(&config, 0, sizeof(config));
+            memset(&config, 0, sizeof(config));
             config.vertex_layout = vertex_layout;
             config.vertex_size = sizeof(struct nk_glfw_vertex);
             config.vertex_alignment = NK_ALIGNOF(struct nk_glfw_vertex);
@@ -328,9 +328,10 @@ nk_gflw3_scroll_callback(GLFWwindow *win, double xoff, double yoff)
 NK_API void
 nk_glfw3_mouse_button_callback(GLFWwindow* win, int button, int action, int mods)
 {
-    double x, y;
-    if (button != GLFW_MOUSE_BUTTON_LEFT) return;
     struct nk_glfw* glfw = glfwGetWindowUserPointer(win);
+    double x, y;
+    NK_UNUSED(mods);
+    if (button != GLFW_MOUSE_BUTTON_LEFT) return;
     glfwGetCursorPos(win, &x, &y);
     if (action == GLFW_PRESS)  {
         double dt = glfwGetTime() - glfw->last_button_click;
@@ -354,13 +355,13 @@ nk_glfw3_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
 NK_INTERN void
 nk_glfw3_clipboard_copy(nk_handle usr, const char *text, int len)
 {
+    struct nk_glfw* glfw = usr.ptr;
     char *str = 0;
     if (!len) return;
     str = (char*)malloc((size_t)len+1);
     if (!str) return;
     memcpy(str, text, (size_t)len);
     str[len] = '\0';
-    struct nk_glfw* glfw = usr.ptr;
     glfwSetClipboardString(glfw->win, str);
     free(str);
 }
@@ -378,7 +379,7 @@ nk_glfw3_init(struct nk_glfw* glfw, GLFWwindow *win, enum nk_glfw_init_state ini
     nk_init_default(&glfw->ctx, 0);
     glfw->ctx.clip.copy = nk_glfw3_clipboard_copy;
     glfw->ctx.clip.paste = nk_glfw3_clipboard_paste;
-    glfw->ctx.clip.userdata = nk_handle_ptr(0);
+    glfw->ctx.clip.userdata = nk_handle_ptr(&glfw);
     glfw->last_button_click = 0;
     nk_glfw3_device_create(glfw);
 

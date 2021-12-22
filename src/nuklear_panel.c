@@ -122,8 +122,8 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
 
     /* window movement */
     if ((win->flags & NK_WINDOW_MOVABLE) && !(win->flags & NK_WINDOW_ROM)) {
-        int left_mouse_down;
-        int left_mouse_clicked;
+        nk_bool left_mouse_down;
+        unsigned int left_mouse_clicked;
         int left_mouse_click_in_cursor;
 
         /* calculate draggable window space */
@@ -138,7 +138,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
 
         /* window movement by dragging */
         left_mouse_down = in->mouse.buttons[NK_BUTTON_LEFT].down;
-        left_mouse_clicked = (int)in->mouse.buttons[NK_BUTTON_LEFT].clicked;
+        left_mouse_clicked = in->mouse.buttons[NK_BUTTON_LEFT].clicked;
         left_mouse_click_in_cursor = nk_input_has_mouse_click_down_in_rect(in,
             NK_BUTTON_LEFT, header, nk_true);
         if (left_mouse_down && left_mouse_click_in_cursor && !left_mouse_clicked) {
@@ -156,6 +156,8 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
     layout->bounds = win->bounds;
     layout->bounds.x += panel_padding.x;
     layout->bounds.w -= 2*panel_padding.x;
+    layout->bounds.y += panel_padding.y;
+    layout->bounds.h -= 2*panel_padding.y;
     if (win->flags & NK_WINDOW_BORDER) {
         layout->border = nk_panel_get_border(style, win->flags, panel_type);
         layout->bounds = nk_shrink_rect(layout->bounds, layout->border);
@@ -216,12 +218,20 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
 
         /* draw header background */
         header.h += 1.0f;
-        if (background->type == NK_STYLE_ITEM_IMAGE) {
-            text.background = nk_rgba(0,0,0,0);
-            nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
-        } else {
-            text.background = background->data.color;
-            nk_fill_rect(out, header, 0, background->data.color);
+
+        switch(background->type) {
+            case NK_STYLE_ITEM_IMAGE:
+                text.background = nk_rgba(0,0,0,0);
+                nk_draw_image(&win->buffer, header, &background->data.image, nk_white);
+                break;
+            case NK_STYLE_ITEM_NINE_SLICE:
+                text.background = nk_rgba(0, 0, 0, 0);
+                nk_draw_nine_slice(&win->buffer, header, &background->data.slice, nk_white);
+                break;
+            case NK_STYLE_ITEM_COLOR:
+                text.background = background->data.color;
+                nk_fill_rect(out, header, 0, background->data.color);
+                break;
         }
 
         /* window close button */
@@ -282,7 +292,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         label.h = font->height + 2 * style->window.header.label_padding.y;
         label.w = t + 2 * style->window.header.spacing.x;
         label.w = NK_CLAMP(0, label.w, header.x + header.w - label.x);
-        nk_widget_text(out, label,(const char*)title, text_len, &text, NK_TEXT_LEFT, font);}
+        nk_widget_text(out, label, (const char*)title, text_len, &text, NK_TEXT_LEFT, font);}
     }
 
     /* draw window background */
@@ -292,9 +302,18 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         body.w = win->bounds.w;
         body.y = (win->bounds.y + layout->header_height);
         body.h = (win->bounds.h - layout->header_height);
-        if (style->window.fixed_background.type == NK_STYLE_ITEM_IMAGE)
-            nk_draw_image(out, body, &style->window.fixed_background.data.image, nk_white);
-        else nk_fill_rect(out, body, 0, style->window.fixed_background.data.color);
+
+        switch(style->window.fixed_background.type) {
+            case NK_STYLE_ITEM_IMAGE:
+                nk_draw_image(out, body, &style->window.fixed_background.data.image, nk_white);
+                break;
+            case NK_STYLE_ITEM_NINE_SLICE:
+                nk_draw_nine_slice(out, body, &style->window.fixed_background.data.slice, nk_white);
+                break;
+            case NK_STYLE_ITEM_COLOR:
+                nk_fill_rect(out, body, 0, style->window.fixed_background.data.color);
+                break;
+        }
     }
 
     /* set clipping rectangle */

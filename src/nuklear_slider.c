@@ -91,11 +91,17 @@ nk_draw_slider(struct nk_command_buffer *out, nk_flags state,
     fill.h = bar.h;
 
     /* draw background */
-    if (background->type == NK_STYLE_ITEM_IMAGE) {
-        nk_draw_image(out, *bounds, &background->data.image, nk_white);
-    } else {
-        nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-        nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+    switch(background->type) {
+        case NK_STYLE_ITEM_IMAGE:
+            nk_draw_image(out, *bounds, &background->data.image, nk_white);
+            break;
+        case NK_STYLE_ITEM_NINE_SLICE:
+            nk_draw_nine_slice(out, *bounds, &background->data.slice, nk_white);
+            break;
+        case NK_STYLE_ITEM_COLOR:
+            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
+            nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+            break;
     }
 
     /* draw slider bar */
@@ -105,7 +111,8 @@ nk_draw_slider(struct nk_command_buffer *out, nk_flags state,
     /* draw cursor */
     if (cursor->type == NK_STYLE_ITEM_IMAGE)
         nk_draw_image(out, *visual_cursor, &cursor->data.image, nk_white);
-    else nk_fill_circle(out, *visual_cursor, cursor->data.color);
+    else
+        nk_fill_circle(out, *visual_cursor, cursor->data.color);
 }
 NK_LIB float
 nk_do_slider(nk_flags *state,

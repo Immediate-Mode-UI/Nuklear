@@ -38,12 +38,37 @@
  *
  * ===============================================================*/
 /* This are some code examples to provide a small overview of what can be
- * done with this library. To try out an example uncomment the include
- * and the corresponding function. */
-/*#include "../style.c"*/
-/*#include "../calculator.c"*/
-/*#include "../overview.c"*/
-/*#include "../node_editor.c"*/
+ * done with this library. To try out an example uncomment the defines */
+/*#define INCLUDE_ALL */
+/*#define INCLUDE_STYLE */
+/*#define INCLUDE_CALCULATOR */
+/*#define INCLUDE_CANVAS */
+/*#define INCLUDE_OVERVIEW */
+/*#define INCLUDE_NODE_EDITOR */
+
+#ifdef INCLUDE_ALL
+  #define INCLUDE_STYLE
+  #define INCLUDE_CALCULATOR
+  #define INCLUDE_CANVAS
+  #define INCLUDE_OVERVIEW
+  #define INCLUDE_NODE_EDITOR
+#endif
+
+#ifdef INCLUDE_STYLE
+  #include "../style.c"
+#endif
+#ifdef INCLUDE_CALCULATOR
+  #include "../calculator.c"
+#endif
+#ifdef INCLUDE_CANVAS
+  #include "../canvas.c"
+#endif
+#ifdef INCLUDE_OVERVIEW
+  #include "../overview.c"
+#endif
+#ifdef INCLUDE_NODE_EDITOR
+  #include "../node_editor.c"
+#endif
 
 /* ===============================================================
  *
@@ -95,24 +120,35 @@ MainLoop(void* loopArg){
         nk_layout_row_end(ctx);
         nk_menubar_end(ctx);
 
-        enum {EASY, HARD};
-        static int op = EASY;
-        static int property = 20;
-        nk_layout_row_static(ctx, 30, 80, 1);
-        if (nk_button_label(ctx, "button"))
-            fprintf(stdout, "button pressed\n");
-        nk_layout_row_dynamic(ctx, 30, 2);
-        if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
-        if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
-        nk_layout_row_dynamic(ctx, 25, 1);
-        nk_property_int(ctx, "Compression:", 0, &property, 100, 10, 1);
+        {
+            enum {EASY, HARD};
+            static int op = EASY;
+            static int property = 20;
+            nk_layout_row_static(ctx, 30, 80, 1);
+            if (nk_button_label(ctx, "button"))
+                fprintf(stdout, "button pressed\n");
+             nk_layout_row_dynamic(ctx, 30, 2);
+             if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
+             if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
+             nk_layout_row_dynamic(ctx, 25, 1);
+             nk_property_int(ctx, "Compression:", 0, &property, 100, 10, 1);
+        }
     }
     nk_end(ctx);
 
     /* -------------- EXAMPLES ---------------- */
-    /*calculator(ctx);*/
-    /*overview(ctx);*/
-    /*node_editor(ctx);*/
+    #ifdef INCLUDE_CALCULATOR
+      calculator(ctx);
+    #endif
+    #ifdef INCLUDE_CANVAS
+      canvas(ctx);
+    #endif
+    #ifdef INCLUDE_OVERVIEW
+      overview(ctx);
+    #endif
+    #ifdef INCLUDE_NODE_EDITOR
+      node_editor(ctx);
+    #endif
     /* ----------------------------------------- */
 
     /* Draw */
@@ -137,6 +173,10 @@ int main(int argc, char* argv[])
     /* GUI */
     struct nk_context *ctx;
     SDL_GLContext glContext;
+
+    NK_UNUSED(argc);
+    NK_UNUSED(argv);
+
     /* SDL setup */
     SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "0");
     /*SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS); // - do NOT init SDL on GL ES 2 */

@@ -259,7 +259,8 @@ struct nk_rect {float x,y,w,h;};
 struct nk_recti {short x,y,w,h;};
 typedef char nk_glyph[NK_UTF_SIZE];
 typedef union {void *ptr; int id;} nk_handle;
-struct nk_image {nk_handle handle;unsigned short w,h;unsigned short region[4];};
+struct nk_image {nk_handle handle; nk_ushort w, h; nk_ushort region[4];};
+struct nk_nine_slice {struct nk_image img; nk_ushort l, t, r, b;};
 struct nk_cursor {struct nk_image img; struct nk_vec2 size, offset;};
 struct nk_scroll {nk_uint x, y;};
 
@@ -490,7 +491,7 @@ NK_API void nk_set_user_data(struct nk_context*, nk_handle handle);
 ///
 /// #### Usage
 /// Input state needs to be provided to nuklear by first calling `nk_input_begin`
-/// which resets internal state like delta mouse position and button transistions.
+/// which resets internal state like delta mouse position and button transitions.
 /// After `nk_input_begin` all current input state needs to be provided. This includes
 /// mouse motion, button and key pressed and released, text input and scrolling.
 /// Both event- or state-based input handling are supported by this API
@@ -1033,7 +1034,7 @@ NK_API const struct nk_command* nk__next(struct nk_context*, const struct nk_com
 /// NK_CONVERT_INVALID_PARAM        | An invalid argument was passed in the function call
 /// NK_CONVERT_COMMAND_BUFFER_FULL  | The provided buffer for storing draw commands is full or failed to allocate more memory
 /// NK_CONVERT_VERTEX_BUFFER_FULL   | The provided buffer for storing vertices is full or failed to allocate more memory
-/// NK_CONVERT_ELEMENT_BUFFER_FULL  | The provided buffer for storing indicies is full or failed to allocate more memory
+/// NK_CONVERT_ELEMENT_BUFFER_FULL  | The provided buffer for storing indices is full or failed to allocate more memory
 */
 NK_API nk_flags nk_convert(struct nk_context*, struct nk_buffer *cmds, struct nk_buffer *vertices, struct nk_buffer *elements, const struct nk_convert_config*);
 /*/// #### nk__draw_begin
@@ -1240,8 +1241,8 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
 /// #### nk_collapse_states
 /// State           | Description
 /// ----------------|-----------------------------------------------------------
-/// __NK_MINIMIZED__| UI section is collased and not visibile until maximized
-/// __NK_MAXIMIZED__| UI section is extended and visibile until minimized
+/// __NK_MINIMIZED__| UI section is collased and not visible until maximized
+/// __NK_MAXIMIZED__| UI section is extended and visible until minimized
 /// <br /><br />
 */
 enum nk_panel_flags {
@@ -2355,6 +2356,21 @@ NK_API struct nk_rect nk_layout_space_rect_to_screen(struct nk_context*, struct 
 /// Returns transformed `nk_rect` in layout space coordinates
 */
 NK_API struct nk_rect nk_layout_space_rect_to_local(struct nk_context*, struct nk_rect);
+
+/*/// #### nk_spacer
+/// Spacer is a dummy widget that consumes space as usual but doesn't draw anything
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// void nk_spacer(struct nk_context* );
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct after call `nk_layout_space_begin`
+///
+*/
+NK_API void nk_spacer(struct nk_context* );
+
+
 /* =============================================================================
  *
  *                                  GROUP
@@ -2375,7 +2391,7 @@ NK_API struct nk_rect nk_layout_space_rect_to_local(struct nk_context*, struct n
 /// widgets inside the window if the value is not 0.
 /// Nesting groups is possible and even encouraged since many layouting schemes
 /// can only be achieved by nesting. Groups, unlike windows, need `nk_group_end`
-/// to be only called if the corosponding `nk_group_begin_xxx` call does not return 0:
+/// to be only called if the corresponding `nk_group_begin_xxx` call does not return 0:
 ///
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
 /// if (nk_group_begin_xxx(ctx, ...) {
@@ -2435,7 +2451,7 @@ NK_API struct nk_rect nk_layout_space_rect_to_local(struct nk_context*, struct n
 /// Function                        | Description
 /// --------------------------------|-------------------------------------------
 /// nk_group_begin                  | Start a new group with internal scrollbar handling
-/// nk_group_begin_titled           | Start a new group with separeted name and title and internal scrollbar handling
+/// nk_group_begin_titled           | Start a new group with separated name and title and internal scrollbar handling
 /// nk_group_end                    | Ends a group. Should only be called if nk_group_begin returned non-zero
 /// nk_group_scrolled_offset_begin  | Start a new group with manual separated handling of scrollbar x- and y-offset
 /// nk_group_scrolled_begin         | Start a new group with manual scrollbar handling
@@ -2565,13 +2581,13 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
  *
  * =============================================================================
 /// ### Tree
-/// Trees represent two different concept. First the concept of a collapsable
-/// UI section that can be either in a hidden or visibile state. They allow the UI
+/// Trees represent two different concept. First the concept of a collapsible
+/// UI section that can be either in a hidden or visible state. They allow the UI
 /// user to selectively minimize the current set of visible UI to comprehend.
 /// The second concept are tree widgets for visual UI representation of trees.<br /><br />
 ///
 /// Trees thereby can be nested for tree representations and multiple nested
-/// collapsable UI sections. All trees are started by calling of the
+/// collapsible UI sections. All trees are started by calling of the
 /// `nk_tree_xxx_push_tree` functions and ended by calling one of the
 /// `nk_tree_xxx_pop_xxx()` functions. Each starting functions takes a title label
 /// and optionally an image to be displayed and the initial collapse state from
@@ -2586,7 +2602,7 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
 ///
 /// #### Usage
 /// To create a tree you have to call one of the seven `nk_tree_xxx_push_xxx`
-/// functions to start a collapsable UI section and `nk_tree_xxx_pop` to mark the
+/// functions to start a collapsible UI section and `nk_tree_xxx_pop` to mark the
 /// end.
 /// Each starting function will either return `false(0)` if the tree is collapsed
 /// or hidden and therefore does not need to be filled with content or `true(1)`
@@ -2611,28 +2627,28 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
 /// #### Reference
 /// Function                    | Description
 /// ----------------------------|-------------------------------------------
-/// nk_tree_push                | Start a collapsable UI section with internal state management
-/// nk_tree_push_id             | Start a collapsable UI section with internal state management callable in a look
-/// nk_tree_push_hashed         | Start a collapsable UI section with internal state management with full control over internal unique ID use to store state
-/// nk_tree_image_push          | Start a collapsable UI section with image and label header
-/// nk_tree_image_push_id       | Start a collapsable UI section with image and label header and internal state management callable in a look
-/// nk_tree_image_push_hashed   | Start a collapsable UI section with image and label header and internal state management with full control over internal unique ID use to store state
-/// nk_tree_pop                 | Ends a collapsable UI section
+/// nk_tree_push                | Start a collapsible UI section with internal state management
+/// nk_tree_push_id             | Start a collapsible UI section with internal state management callable in a look
+/// nk_tree_push_hashed         | Start a collapsible UI section with internal state management with full control over internal unique ID use to store state
+/// nk_tree_image_push          | Start a collapsible UI section with image and label header
+/// nk_tree_image_push_id       | Start a collapsible UI section with image and label header and internal state management callable in a look
+/// nk_tree_image_push_hashed   | Start a collapsible UI section with image and label header and internal state management with full control over internal unique ID use to store state
+/// nk_tree_pop                 | Ends a collapsible UI section
 //
-/// nk_tree_state_push          | Start a collapsable UI section with external state management
-/// nk_tree_state_image_push    | Start a collapsable UI section with image and label header and external state management
+/// nk_tree_state_push          | Start a collapsible UI section with external state management
+/// nk_tree_state_image_push    | Start a collapsible UI section with image and label header and external state management
 /// nk_tree_state_pop           | Ends a collapsabale UI section
 ///
 /// #### nk_tree_type
 /// Flag            | Description
 /// ----------------|----------------------------------------
-/// NK_TREE_NODE    | Highlighted tree header to mark a collapsable UI section
-/// NK_TREE_TAB     | Non-highighted tree header closer to tree representations
+/// NK_TREE_NODE    | Highlighted tree header to mark a collapsible UI section
+/// NK_TREE_TAB     | Non-highlighted tree header closer to tree representations
 */
 /*/// #### nk_tree_push
-/// Starts a collapsable UI section with internal state management
+/// Starts a collapsible UI section with internal state management
 /// !!! WARNING
-///     To keep track of the runtime tree collapsable state this function uses
+///     To keep track of the runtime tree collapsible state this function uses
 ///     defines `__FILE__` and `__LINE__` to generate a unique ID. If you want
 ///     to call this function in a loop please use `nk_tree_push_id` or
 ///     `nk_tree_push_hashed` instead.
@@ -2652,7 +2668,7 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
 */
 #define nk_tree_push(ctx, type, title, state) nk_tree_push_hashed(ctx, type, title, state, NK_FILE_LINE,nk_strlen(NK_FILE_LINE),__LINE__)
 /*/// #### nk_tree_push_id
-/// Starts a collapsable UI section with internal state management callable in a look
+/// Starts a collapsible UI section with internal state management callable in a look
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
 /// #define nk_tree_push_id(ctx, type, title, state, id)
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2669,7 +2685,7 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
 */
 #define nk_tree_push_id(ctx, type, title, state, id) nk_tree_push_hashed(ctx, type, title, state, NK_FILE_LINE,nk_strlen(NK_FILE_LINE),id)
 /*/// #### nk_tree_push_hashed
-/// Start a collapsable UI section with internal state management with full
+/// Start a collapsible UI section with internal state management with full
 /// control over internal unique ID used to store state
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
 /// nk_bool nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states initial_state, const char *hash, int len,int seed);
@@ -2689,9 +2705,9 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
 */
 NK_API nk_bool nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states initial_state, const char *hash, int len,int seed);
 /*/// #### nk_tree_image_push
-/// Start a collapsable UI section with image and label header
+/// Start a collapsible UI section with image and label header
 /// !!! WARNING
-///     To keep track of the runtime tree collapsable state this function uses
+///     To keep track of the runtime tree collapsible state this function uses
 ///     defines `__FILE__` and `__LINE__` to generate a unique ID. If you want
 ///     to call this function in a loop please use `nk_tree_image_push_id` or
 ///     `nk_tree_image_push_hashed` instead.
@@ -2712,7 +2728,7 @@ NK_API nk_bool nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const 
 */
 #define nk_tree_image_push(ctx, type, img, title, state) nk_tree_image_push_hashed(ctx, type, img, title, state, NK_FILE_LINE,nk_strlen(NK_FILE_LINE),__LINE__)
 /*/// #### nk_tree_image_push_id
-/// Start a collapsable UI section with image and label header and internal state
+/// Start a collapsible UI section with image and label header and internal state
 /// management callable in a look
 ///
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
@@ -2732,7 +2748,7 @@ NK_API nk_bool nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const 
 */
 #define nk_tree_image_push_id(ctx, type, img, title, state, id) nk_tree_image_push_hashed(ctx, type, img, title, state, NK_FILE_LINE,nk_strlen(NK_FILE_LINE),id)
 /*/// #### nk_tree_image_push_hashed
-/// Start a collapsable UI section with internal state management with full
+/// Start a collapsible UI section with internal state management with full
 /// control over internal unique ID used to store state
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
 /// nk_bool nk_tree_image_push_hashed(struct nk_context*, enum nk_tree_type, struct nk_image, const char *title, enum nk_collapse_states initial_state, const char *hash, int len,int seed);
@@ -2764,7 +2780,7 @@ NK_API nk_bool nk_tree_image_push_hashed(struct nk_context*, enum nk_tree_type, 
 */
 NK_API void nk_tree_pop(struct nk_context*);
 /*/// #### nk_tree_state_push
-/// Start a collapsable UI section with external state management
+/// Start a collapsible UI section with external state management
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
 /// nk_bool nk_tree_state_push(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states *state);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2780,7 +2796,7 @@ NK_API void nk_tree_pop(struct nk_context*);
 */
 NK_API nk_bool nk_tree_state_push(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states *state);
 /*/// #### nk_tree_state_image_push
-/// Start a collapsable UI section with image and label header and external state management
+/// Start a collapsible UI section with image and label header and external state management
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
 /// nk_bool nk_tree_state_image_push(struct nk_context*, enum nk_tree_type, struct nk_image, const char *title, enum nk_collapse_states *state);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3007,10 +3023,10 @@ NK_API nk_bool nk_color_pick(struct nk_context*, struct nk_colorf*, enum nk_colo
 /// or by directly typing a number.
 ///
 /// #### Usage
-/// Each property requires a unique name for identifaction that is also used for
+/// Each property requires a unique name for identification that is also used for
 /// displaying a label. If you want to use the same name multiple times make sure
 /// add a '#' before your name. The '#' will not be shown but will generate a
-/// unique ID. Each propery also takes in a minimum and maximum value. If you want
+/// unique ID. Each property also takes in a minimum and maximum value. If you want
 /// to make use of the complete number range of a type just use the provided
 /// type limits from `limits.h`. For example `INT_MIN` and `INT_MAX` for
 /// `nk_property_int` and `nk_propertyi`. In additional each property takes in
@@ -3064,16 +3080,16 @@ NK_API nk_bool nk_color_pick(struct nk_context*, struct nk_colorf*, enum nk_colo
 /// #### Reference
 /// Function            | Description
 /// --------------------|-------------------------------------------
-/// nk_property_int     | Integer property directly modifing a passed in value
-/// nk_property_float   | Float property directly modifing a passed in value
-/// nk_property_double  | Double property directly modifing a passed in value
+/// nk_property_int     | Integer property directly modifying a passed in value
+/// nk_property_float   | Float property directly modifying a passed in value
+/// nk_property_double  | Double property directly modifying a passed in value
 /// nk_propertyi        | Integer property returning the modified int value
 /// nk_propertyf        | Float property returning the modified float value
 /// nk_propertyd        | Double property returning the modified double value
 ///
 */
 /*/// #### nk_property_int
-/// Integer property directly modifing a passed in value
+/// Integer property directly modifying a passed in value
 /// !!! WARNING
 ///     To generate a unique property ID using the same label make sure to insert
 ///     a `#` at the beginning. It will not be shown but guarantees correct behavior.
@@ -3094,7 +3110,7 @@ NK_API nk_bool nk_color_pick(struct nk_context*, struct nk_colorf*, enum nk_colo
 */
 NK_API void nk_property_int(struct nk_context*, const char *name, int min, int *val, int max, int step, float inc_per_pixel);
 /*/// #### nk_property_float
-/// Float property directly modifing a passed in value
+/// Float property directly modifying a passed in value
 /// !!! WARNING
 ///     To generate a unique property ID using the same label make sure to insert
 ///     a `#` at the beginning. It will not be shown but guarantees correct behavior.
@@ -3115,7 +3131,7 @@ NK_API void nk_property_int(struct nk_context*, const char *name, int min, int *
 */
 NK_API void nk_property_float(struct nk_context*, const char *name, float min, float *val, float max, float step, float inc_per_pixel);
 /*/// #### nk_property_double
-/// Double property directly modifing a passed in value
+/// Double property directly modifying a passed in value
 /// !!! WARNING
 ///     To generate a unique property ID using the same label make sure to insert
 ///     a `#` at the beginning. It will not be shown but guarantees correct behavior.
@@ -3136,7 +3152,7 @@ NK_API void nk_property_float(struct nk_context*, const char *name, float min, f
 */
 NK_API void nk_property_double(struct nk_context*, const char *name, double min, double *val, double max, double step, float inc_per_pixel);
 /*/// #### nk_propertyi
-/// Integer property modifing a passed in value and returning the new value
+/// Integer property modifying a passed in value and returning the new value
 /// !!! WARNING
 ///     To generate a unique property ID using the same label make sure to insert
 ///     a `#` at the beginning. It will not be shown but guarantees correct behavior.
@@ -3159,7 +3175,7 @@ NK_API void nk_property_double(struct nk_context*, const char *name, double min,
 */
 NK_API int nk_propertyi(struct nk_context*, const char *name, int min, int val, int max, int step, float inc_per_pixel);
 /*/// #### nk_propertyf
-/// Float property modifing a passed in value and returning the new value
+/// Float property modifying a passed in value and returning the new value
 /// !!! WARNING
 ///     To generate a unique property ID using the same label make sure to insert
 ///     a `#` at the beginning. It will not be shown but guarantees correct behavior.
@@ -3182,7 +3198,7 @@ NK_API int nk_propertyi(struct nk_context*, const char *name, int min, int val, 
 */
 NK_API float nk_propertyf(struct nk_context*, const char *name, float min, float val, float max, float step, float inc_per_pixel);
 /*/// #### nk_propertyd
-/// Float property modifing a passed in value and returning the new value
+/// Float property modifying a passed in value and returning the new value
 /// !!! WARNING
 ///     To generate a unique property ID using the same label make sure to insert
 ///     a `#` at the beginning. It will not be shown but guarantees correct behavior.
@@ -3493,9 +3509,21 @@ NK_API struct nk_image nk_image_handle(nk_handle);
 NK_API struct nk_image nk_image_ptr(void*);
 NK_API struct nk_image nk_image_id(int);
 NK_API nk_bool nk_image_is_subimage(const struct nk_image* img);
-NK_API struct nk_image nk_subimage_ptr(void*, unsigned short w, unsigned short h, struct nk_rect sub_region);
-NK_API struct nk_image nk_subimage_id(int, unsigned short w, unsigned short h, struct nk_rect sub_region);
-NK_API struct nk_image nk_subimage_handle(nk_handle, unsigned short w, unsigned short h, struct nk_rect sub_region);
+NK_API struct nk_image nk_subimage_ptr(void*, nk_ushort w, nk_ushort h, struct nk_rect sub_region);
+NK_API struct nk_image nk_subimage_id(int, nk_ushort w, nk_ushort h, struct nk_rect sub_region);
+NK_API struct nk_image nk_subimage_handle(nk_handle, nk_ushort w, nk_ushort h, struct nk_rect sub_region);
+/* =============================================================================
+ *
+ *                                  9-SLICE
+ *
+ * ============================================================================= */
+NK_API struct nk_nine_slice nk_nine_slice_handle(nk_handle, nk_ushort l, nk_ushort t, nk_ushort r, nk_ushort b);
+NK_API struct nk_nine_slice nk_nine_slice_ptr(void*, nk_ushort l, nk_ushort t, nk_ushort r, nk_ushort b);
+NK_API struct nk_nine_slice nk_nine_slice_id(int, nk_ushort l, nk_ushort t, nk_ushort r, nk_ushort b);
+NK_API int nk_nine_slice_is_sub9slice(const struct nk_nine_slice* img);
+NK_API struct nk_nine_slice nk_sub9slice_ptr(void*, nk_ushort w, nk_ushort h, struct nk_rect sub_region, nk_ushort l, nk_ushort t, nk_ushort r, nk_ushort b);
+NK_API struct nk_nine_slice nk_sub9slice_id(int, nk_ushort w, nk_ushort h, struct nk_rect sub_region, nk_ushort l, nk_ushort t, nk_ushort r, nk_ushort b);
+NK_API struct nk_nine_slice nk_sub9slice_handle(nk_handle, nk_ushort w, nk_ushort h, struct nk_rect sub_region, nk_ushort l, nk_ushort t, nk_ushort r, nk_ushort b);
 /* =============================================================================
  *
  *                                  MATH
@@ -3763,7 +3791,7 @@ struct nk_font_config {
     unsigned char pixel_snap;
     /* align every character to pixel boundary (if true set oversample (1,1)) */
     unsigned char oversample_v, oversample_h;
-    /* rasterize at hight quality for sub-pixel position */
+    /* rasterize at high quality for sub-pixel position */
     unsigned char padding[3];
 
     float size;
@@ -4387,6 +4415,7 @@ NK_API void nk_fill_polygon(struct nk_command_buffer*, float*, int point_count, 
 
 /* misc */
 NK_API void nk_draw_image(struct nk_command_buffer*, struct nk_rect, const struct nk_image*, struct nk_color);
+NK_API void nk_draw_nine_slice(struct nk_command_buffer*, struct nk_rect, const struct nk_nine_slice*, struct nk_color);
 NK_API void nk_draw_text(struct nk_command_buffer*, struct nk_rect, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color);
 NK_API void nk_push_scissor(struct nk_command_buffer*, struct nk_rect);
 NK_API void nk_push_custom(struct nk_command_buffer*, struct nk_rect, nk_command_custom_callback, nk_handle usr);
@@ -4604,12 +4633,14 @@ NK_API void nk_draw_list_push_userdata(struct nk_draw_list*, nk_handle userdata)
  * ===============================================================*/
 enum nk_style_item_type {
     NK_STYLE_ITEM_COLOR,
-    NK_STYLE_ITEM_IMAGE
+    NK_STYLE_ITEM_IMAGE,
+    NK_STYLE_ITEM_NINE_SLICE
 };
 
 union nk_style_item_data {
-    struct nk_image image;
     struct nk_color color;
+    struct nk_image image;
+    struct nk_nine_slice slice;
 };
 
 struct nk_style_item {
@@ -5035,8 +5066,9 @@ struct nk_style {
     struct nk_style_window window;
 };
 
-NK_API struct nk_style_item nk_style_item_image(struct nk_image img);
 NK_API struct nk_style_item nk_style_item_color(struct nk_color);
+NK_API struct nk_style_item nk_style_item_image(struct nk_image img);
+NK_API struct nk_style_item nk_style_item_nine_slice(struct nk_nine_slice slice);
 NK_API struct nk_style_item nk_style_item_hide(void);
 
 /*==============================================================
@@ -5459,9 +5491,11 @@ struct nk_context {
 #define NK_ALIGN_PTR_BACK(x, mask)\
     (NK_UINT_TO_PTR((NK_PTR_TO_UINT((nk_byte*)(x)) & ~(mask-1))))
 
+#if (defined(__GNUC__) && __GNUC__ >= 4) || defined(__clang__)
+#define NK_OFFSETOF(st,m) (__builtin_offsetof(st,m))
+#else
 #define NK_OFFSETOF(st,m) ((nk_ptr)&(((st*)0)->m))
-#define NK_CONTAINER_OF(ptr,type,member)\
-    (type*)((void*)((char*)(1 ? (ptr): &((type*)0)->member) - NK_OFFSETOF(type, member)))
+#endif
 
 #ifdef __cplusplus
 }
@@ -5474,10 +5508,13 @@ template<typename T> struct nk_helper<T,0>{enum {value = nk_alignof<T>::value};}
 template<typename T> struct nk_alignof{struct Big {T x; char c;}; enum {
     diff = sizeof(Big) - sizeof(T), value = nk_helper<Big, diff>::value};};
 #define NK_ALIGNOF(t) (nk_alignof<t>::value)
-#elif defined(_MSC_VER)
-#define NK_ALIGNOF(t) (__alignof(t))
 #else
-#define NK_ALIGNOF(t) ((char*)(&((struct {char c; t _h;}*)0)->_h) - (char*)0)
+#define NK_ALIGNOF(t) NK_OFFSETOF(struct {char c; t _h;}, _h)
 #endif
+
+#define NK_CONTAINER_OF(ptr,type,member)\
+    (type*)((void*)((char*)(1 ? (ptr): &((type*)0)->member) - NK_OFFSETOF(type, member)))
+
+
 
 #endif /* NK_NUKLEAR_H_ */

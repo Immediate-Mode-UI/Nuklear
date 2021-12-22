@@ -116,6 +116,7 @@ NK_API void
 nk_glfw3_device_create()
 {
     GLint status;
+    GLint len = 0;
     static const GLchar *vertex_shader =
         NK_SHADER_VERSION
         NK_SHADER_BINDLESS
@@ -156,7 +157,6 @@ nk_glfw3_device_create()
     glCompileShader(dev->frag_shdr);
     glGetShaderiv(dev->vert_shdr, GL_COMPILE_STATUS, &status);
 
-    GLint len = 0;
     glGetShaderiv(dev->vert_shdr, GL_INFO_LOG_LENGTH, &len);
     if (len > 1) {
         char *log = (char*)calloc((size_t)len, sizeof(char));
@@ -403,7 +403,7 @@ nk_glfw3_render(enum nk_anti_aliasing AA)
                     {NK_VERTEX_COLOR, NK_FORMAT_R8G8B8A8, NK_OFFSETOF(struct nk_glfw_vertex, col)},
                     {NK_VERTEX_LAYOUT_END}
                 };
-                NK_MEMSET(&config, 0, sizeof(config));
+                memset(&config, 0, sizeof(config));
                 config.vertex_layout = vertex_layout;
                 config.vertex_size = sizeof(struct nk_glfw_vertex);
                 config.vertex_alignment = NK_ALIGNOF(struct nk_glfw_vertex);
@@ -477,6 +477,7 @@ NK_API void
 nk_glfw3_mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
     double x, y;
+    NK_UNUSED(mods);
     if (button != GLFW_MOUSE_BUTTON_LEFT) return;
     glfwGetCursorPos(window, &x, &y);
     if (action == GLFW_PRESS)  {
@@ -608,6 +609,7 @@ nk_glfw3_new_frame(void)
         nk_input_key(ctx, NK_KEY_TEXT_WORD_RIGHT, glfwGetKey(win, GLFW_KEY_RIGHT) == GLFW_PRESS);
         nk_input_key(ctx, NK_KEY_TEXT_LINE_START, glfwGetKey(win, GLFW_KEY_B) == GLFW_PRESS);
         nk_input_key(ctx, NK_KEY_TEXT_LINE_END, glfwGetKey(win, GLFW_KEY_E) == GLFW_PRESS);
+        nk_input_key(ctx, NK_KEY_TEXT_SELECT_ALL, glfwGetKey(win, GLFW_KEY_A) == GLFW_PRESS);
     } else {
         nk_input_key(ctx, NK_KEY_LEFT, glfwGetKey(win, GLFW_KEY_LEFT) == GLFW_PRESS);
         nk_input_key(ctx, NK_KEY_RIGHT, glfwGetKey(win, GLFW_KEY_RIGHT) == GLFW_PRESS);

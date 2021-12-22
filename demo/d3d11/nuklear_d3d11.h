@@ -179,11 +179,15 @@ nk_d3d11_get_projection_matrix(int width, int height, float *result)
     const float B = (float)height;
     float matrix[4][4] =
     {
-        {    2.0f / (R - L),              0.0f, 0.0f, 0.0f },
-        {              0.0f,    2.0f / (T - B), 0.0f, 0.0f },
-        {              0.0f,              0.0f, 0.5f, 0.0f },
-        { (R + L) / (L - R), (T + B) / (B - T), 0.5f, 1.0f },
+        { 0.0f, 0.0f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 0.5f, 0.0f },
+        { 0.0f, 0.0f, 0.5f, 1.0f },
     };
+    matrix[0][0] = 2.0f / (R - L);
+    matrix[1][1] = 2.0f / (T - B);
+    matrix[3][0] = (R + L) / (L - R);
+    matrix[3][1] = (T + B) / (B - T);
     memcpy(result, matrix, sizeof(matrix));
 }
 

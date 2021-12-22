@@ -265,7 +265,7 @@ nk_load_opengl(struct opengl_info *gl)
     glGetIntegerv(GL_MAJOR_VERSION, &gl->major_version);
     glGetIntegerv(GL_MINOR_VERSION, &gl->minor_version);
     if (gl->major_version < 2) {
-        fprintf(stderr, "[GL]: Graphics card does not fullfill minimum OpenGL 2.0 support\n");
+        fprintf(stderr, "[GL]: Graphics card does not fulfill minimum OpenGL 2.0 support\n");
         return 0;
     }
     gl->version = (float)gl->major_version + (float)gl->minor_version * 0.1f;
@@ -532,7 +532,7 @@ nk_x11_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
                 {NK_VERTEX_COLOR, NK_FORMAT_R8G8B8A8, NK_OFFSETOF(struct nk_x11_vertex, col)},
                 {NK_VERTEX_LAYOUT_END}
             };
-            NK_MEMSET(&config, 0, sizeof(config));
+            memset(&config, 0, sizeof(config));
             config.vertex_layout = vertex_layout;
             config.vertex_size = sizeof(struct nk_x11_vertex);
             config.vertex_alignment = NK_ALIGNOF(struct nk_x11_vertex);

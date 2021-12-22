@@ -33,12 +33,14 @@
 /*#define INCLUDE_ALL */
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
+/*#define INCLUDE_CANVAS */
 /*#define INCLUDE_OVERVIEW */
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
   #define INCLUDE_STYLE
   #define INCLUDE_CALCULATOR
+  #define INCLUDE_CANVAS
   #define INCLUDE_OVERVIEW
   #define INCLUDE_NODE_EDITOR
 #endif
@@ -48,6 +50,9 @@
 #endif
 #ifdef INCLUDE_CALCULATOR
   #include "../calculator.c"
+#endif
+#ifdef INCLUDE_CANVAS
+  #include "../canvas.c"
 #endif
 #ifdef INCLUDE_OVERVIEW
   #include "../overview.c"
@@ -82,10 +87,11 @@ WindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             if (width != 0 && height != 0 &&
                 (width != present.BackBufferWidth || height != present.BackBufferHeight))
             {
+                HRESULT hr;
                 nk_d3d9_release();
                 present.BackBufferWidth = width;
                 present.BackBufferHeight = height;
-                HRESULT hr = IDirect3DDevice9_Reset(device, &present);
+                hr = IDirect3DDevice9_Reset(device, &present);
                 NK_ASSERT(SUCCEEDED(hr));
                 nk_d3d9_resize(width, height);
             }
@@ -267,6 +273,9 @@ int main(void)
         /* -------------- EXAMPLES ---------------- */
         #ifdef INCLUDE_CALCULATOR
           calculator(ctx);
+        #endif
+        #ifdef INCLUDE_CANVAS
+          canvas(ctx);
         #endif
         #ifdef INCLUDE_OVERVIEW
           overview(ctx);
