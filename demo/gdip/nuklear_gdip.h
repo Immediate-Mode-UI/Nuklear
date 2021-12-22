@@ -47,6 +47,8 @@ NK_API void nk_gdip_image_free(struct nk_image image);
 
 #include <stdlib.h>
 #include <malloc.h>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 /* manually declare everything GDI+ needs, because
    GDI+ headers are not usable from C */
@@ -320,6 +322,10 @@ GdipDrawArcI(GpGraphics *graphics, GpPen *pen, INT x, INT y,
     INT width, INT height, REAL startAngle, REAL sweepAngle);
 
 GpStatus WINGDIPAPI
+GdipDrawPieI(GpGraphics *graphics, GpPen *pen, INT x, INT y,
+             INT width, INT height, REAL startAngle, REAL sweepAngle);
+
+GpStatus WINGDIPAPI
 GdipFillPieI(GpGraphics *graphics, GpBrush *brush, INT x, INT y,
     INT width, INT height, REAL startAngle, REAL sweepAngle);
 
@@ -578,6 +584,21 @@ nk_gdip_stroke_curve(struct nk_vec2i p1,
     GdipSetPenWidth(gdip.pen, (REAL)line_thickness);
     GdipSetPenColor(gdip.pen, convert_color(col));
     GdipDrawBezierI(gdip.memory, gdip.pen, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, p4.x, p4.y);
+}
+
+static void
+nk_gdip_fill_arc(short cx, short cy, unsigned short r, float amin, float adelta, struct nk_color col)
+{
+    GdipSetSolidFillColor(gdip.brush, convert_color(col));
+    GdipFillPieI(gdip.memory, gdip.brush, cx - r, cy - r, r * 2, r * 2, amin * (180/M_PI), adelta * (180/M_PI));
+}
+
+static void
+nk_gdip_stroke_arc(short cx, short cy, unsigned short r, float amin, float adelta, unsigned short line_thickness, struct nk_color col)
+{
+    GdipSetPenWidth(gdip.pen, (REAL)line_thickness);
+    GdipSetPenColor(gdip.pen, convert_color(col));
+    GdipDrawPieI(gdip.memory, gdip.pen, cx - r, cy - r, r * 2, r * 2, amin * (180/M_PI), adelta * (180/M_PI));
 }
 
 static void
@@ -1165,9 +1186,15 @@ nk_gdip_prerender_gui(enum nk_anti_aliasing AA)
             const struct nk_command_image *i = (const struct nk_command_image *)cmd;
             nk_gdip_draw_image(i->x, i->y, i->w, i->h, i->img, i->col);
         } break;
+        case NK_COMMAND_ARC: {
+            const struct nk_command_arc *i = (const struct nk_command_arc *)cmd;
+            nk_gdip_stroke_arc(i->cx, i->cy, i->r, i->a[0], i->a[1], i->line_thickness, i->color);
+        } break;
+        case NK_COMMAND_ARC_FILLED: {
+            const struct nk_command_arc_filled *i = (const struct nk_command_arc_filled *)cmd;
+            nk_gdip_fill_arc(i->cx, i->cy, i->r, i->a[0], i->a[1], i->color);
+        } break;
         case NK_COMMAND_RECT_MULTI_COLOR:
-        case NK_COMMAND_ARC:
-        case NK_COMMAND_ARC_FILLED:
         default: break;
         }
     }

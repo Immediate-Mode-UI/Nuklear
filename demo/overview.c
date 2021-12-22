@@ -623,13 +623,11 @@ overview(struct nk_context *ctx)
 
             int i;
             int index = -1;
-            struct nk_rect bounds;
 
             /* line chart */
             id = 0;
             index = -1;
             nk_layout_row_dynamic(ctx, 100, 1);
-            bounds = nk_widget_bounds(ctx);
             if (nk_chart_begin(ctx, NK_CHART_LINES, 32, -1.0f, 1.0f)) {
                 for (i = 0; i < 32; ++i) {
                     nk_flags res = nk_chart_push(ctx, (float)cos(id));
@@ -651,7 +649,6 @@ overview(struct nk_context *ctx)
 
             /* column chart */
             nk_layout_row_dynamic(ctx, 100, 1);
-            bounds = nk_widget_bounds(ctx);
             if (nk_chart_begin(ctx, NK_CHART_COLUMN, 32, 0.0f, 1.0f)) {
                 for (i = 0; i < 32; ++i) {
                     nk_flags res = nk_chart_push(ctx, (float)fabs(sin(id)));
@@ -672,7 +669,6 @@ overview(struct nk_context *ctx)
 
             /* mixed chart */
             nk_layout_row_dynamic(ctx, 100, 1);
-            bounds = nk_widget_bounds(ctx);
             if (nk_chart_begin(ctx, NK_CHART_COLUMN, 32, 0.0f, 1.0f)) {
                 nk_chart_add_slot(ctx, NK_CHART_LINES, 32, -1.0f, 1.0f);
                 nk_chart_add_slot(ctx, NK_CHART_LINES, 32, -1.0f, 1.0f);
@@ -687,7 +683,6 @@ overview(struct nk_context *ctx)
 
             /* mixed colored chart */
             nk_layout_row_dynamic(ctx, 100, 1);
-            bounds = nk_widget_bounds(ctx);
             if (nk_chart_begin_colored(ctx, NK_CHART_LINES, nk_rgb(255,0,0), nk_rgb(150,0,0), 32, 0.0f, 1.0f)) {
                 nk_chart_add_slot_colored(ctx, NK_CHART_LINES, nk_rgb(0,0,255), nk_rgb(0,0,150),32, -1.0f, 1.0f);
                 nk_chart_add_slot_colored(ctx, NK_CHART_LINES, nk_rgb(0,255,0), nk_rgb(0,150,0), 32, -1.0f, 1.0f);
@@ -946,7 +941,6 @@ overview(struct nk_context *ctx)
             if (nk_tree_push(ctx, NK_TREE_NODE, "Notebook", NK_MINIMIZED))
             {
                 static int current_tab = 0;
-                struct nk_rect bounds;
                 float step = (2*3.141592654f) / 32;
                 enum chart_type {CHART_LINE, CHART_HISTO, CHART_MIXED};
                 const char *names[] = {"Lines", "Columns", "Mixed"};
@@ -982,7 +976,6 @@ overview(struct nk_context *ctx)
                     default: break;
                     case CHART_LINE:
                         nk_layout_row_dynamic(ctx, 100, 1);
-                        bounds = nk_widget_bounds(ctx);
                         if (nk_chart_begin_colored(ctx, NK_CHART_LINES, nk_rgb(255,0,0), nk_rgb(150,0,0), 32, 0.0f, 1.0f)) {
                             nk_chart_add_slot_colored(ctx, NK_CHART_LINES, nk_rgb(0,0,255), nk_rgb(0,0,150),32, -1.0f, 1.0f);
                             for (i = 0, id = 0; i < 32; ++i) {
@@ -995,7 +988,6 @@ overview(struct nk_context *ctx)
                         break;
                     case CHART_HISTO:
                         nk_layout_row_dynamic(ctx, 100, 1);
-                        bounds = nk_widget_bounds(ctx);
                         if (nk_chart_begin_colored(ctx, NK_CHART_COLUMN, nk_rgb(255,0,0), nk_rgb(150,0,0), 32, 0.0f, 1.0f)) {
                             for (i = 0, id = 0; i < 32; ++i) {
                                 nk_chart_push_slot(ctx, (float)fabs(sin(id)), 0);
@@ -1006,7 +998,6 @@ overview(struct nk_context *ctx)
                         break;
                     case CHART_MIXED:
                         nk_layout_row_dynamic(ctx, 100, 1);
-                        bounds = nk_widget_bounds(ctx);
                         if (nk_chart_begin_colored(ctx, NK_CHART_LINES, nk_rgb(255,0,0), nk_rgb(150,0,0), 32, 0.0f, 1.0f)) {
                             nk_chart_add_slot_colored(ctx, NK_CHART_LINES, nk_rgb(0,0,255), nk_rgb(0,0,150),32, -1.0f, 1.0f);
                             nk_chart_add_slot_colored(ctx, NK_CHART_COLUMN, nk_rgb(0,255,0), nk_rgb(0,150,0), 32, 0.0f, 1.0f);

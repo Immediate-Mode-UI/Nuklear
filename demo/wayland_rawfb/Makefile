@@ -2,12 +2,12 @@ WAYLAND=`pkg-config wayland-client --cflags --libs`
 WAYLAND_SCANNER=wayland-scanner
 WAYLAND_PROTOCOLS_DIR=/usr/share/wayland-protocols
 
-CFLAGS?=-std=c11 -Wall -Werror -O3 -fvisibility=hidden
+CFLAGS?=-std=c99 -Wall -Wextra -pedantic -Wno-unused-function -O3 -fvisibility=hidden
 
 .PHONY: clean
 
 demo: main.c xdg-shell.c xdg-shell.h
-	$(CC) -o demo *.c $(WAYLAND) -lrt -lm
+	$(CC) $(CFLAGS) -o demo *.c $(WAYLAND) -lrt -lm
 
 xdg-shell.c:
 	$(WAYLAND_SCANNER) code $(WAYLAND_PROTOCOLS_DIR)/stable/xdg-shell/xdg-shell.xml xdg-shell.c

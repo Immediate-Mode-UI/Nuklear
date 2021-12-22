@@ -423,10 +423,11 @@ nk_xsurf_draw_text(XSurface *surf, short x, short y, unsigned short w, unsigned 
 #ifdef NK_XLIB_USE_XFT
     XRenderColor xrc;
     XftColor color;
-#endif
-    int tx, ty;
-    unsigned long bg = nk_color_from_byte(&cbg.r);
+#else
     unsigned long fg = nk_color_from_byte(&cfg.r);
+#endif
+    unsigned long bg = nk_color_from_byte(&cbg.r);
+    int tx, ty;
 
     XSetForeground(surf->dpy, surf->gc, bg);
     XFillRectangle(surf->dpy, surf->drawable, surf->gc, (int)x, (int)y, (unsigned)w, (unsigned)h);
@@ -543,6 +544,9 @@ nk_xsurf_draw_image(XSurface *surf, short x, short y, unsigned short w, unsigned
     struct nk_image img, struct nk_color col)
 {
     XImageWithAlpha *aimage = img.handle.ptr;
+
+    NK_UNUSED(col);
+
     if (aimage){
         if (aimage->clipMask){
             XSetClipMask(surf->dpy, surf->gc, aimage->clipMask);
@@ -645,6 +649,8 @@ nk_xfont_get_text_width(nk_handle handle, float height, const char *text, int le
 #ifdef NK_XLIB_USE_XFT
     XGlyphInfo g;
 
+    NK_UNUSED(height);
+
 	if(!font || !text)
 		return 0;
 
@@ -652,6 +658,8 @@ nk_xfont_get_text_width(nk_handle handle, float height, const char *text, int le
     return g.xOff;
 #else
     XRectangle r;
+
+    NK_UNUSED(height);
 
 	if(!font || !text)
 		return 0;
@@ -769,6 +777,8 @@ NK_API int
 nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt)
 {
     struct nk_context *ctx = &xlib.ctx;
+
+    NK_UNUSED(screen);
 
     /* optional grabbing behavior */
     if (ctx->input.mouse.grab) {
