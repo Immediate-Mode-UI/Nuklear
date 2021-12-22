@@ -19547,6 +19547,8 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
     layout->bounds = win->bounds;
     layout->bounds.x += panel_padding.x;
     layout->bounds.w -= 2*panel_padding.x;
+    layout->bounds.y += panel_padding.y;
+    layout->bounds.h -= 2*panel_padding.y;
     if (win->flags & NK_WINDOW_BORDER) {
         layout->border = nk_panel_get_border(style, win->flags, panel_type);
         layout->bounds = nk_shrink_rect(layout->bounds, layout->border);
@@ -29617,15 +29619,15 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 
 /// ## Changelog
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~none
-/// [date][x.yy.zz]-[description]
-/// -[date]: date on which the change has been pushed
-/// -[x.yy.zz]: Numerical version string representation. Each version number on the right
-///             resets back to zero if version on the left is incremented.
-///    - [x]: Major version with API and library breaking changes
-///    - [yy]: Minor version with non-breaking API and library changes
-///    - [zz]: Bug fix version with no direct changes to API
+/// [date] ([x.y.z]) - [description]
+/// - [date]: date on which the change has been pushed
+/// - [x.y.z]: Version string, represented in Semantic Versioning format
+///   - [x]: Major version with API and library breaking changes
+///   - [y]: Minor version with non-breaking API and library changes
+///   - [z]: Patch version with no direct changes to the API
 ///
-/// - 2021/12/22 (4.9.3)  - Fix checking hovering when window is minimized
+/// - 2021/12/22 (4.9.4)  - Fix checking hovering when window is minimized
+/// - 2021/12/22 (4.09.3) - Fix layout bounds not accounting for padding.
 /// - 2021/12/19 (4.09.2) - Update to stb_rect_pack.h v1.01 and stb_truetype.h v1.26
 /// - 2021/12/16 (4.09.1) - Fix the majority of GCC warnings
 /// - 2021/10/16 (4.09.0) - Added nk_spacer() widget
