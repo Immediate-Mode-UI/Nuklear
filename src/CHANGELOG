@@ -7,6 +7,7 @@
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2021/12/22 (4.9.4)  - Fix checking hovering when window is minimized
 /// - 2021/12/22 (4.09.3) - Fix layout bounds not accounting for padding.
 /// - 2021/12/19 (4.09.2) - Update to stb_rect_pack.h v1.01 and stb_truetype.h v1.26
 /// - 2021/12/16 (4.09.1) - Fix the majority of GCC warnings
