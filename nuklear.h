@@ -19547,6 +19547,8 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
     layout->bounds = win->bounds;
     layout->bounds.x += panel_padding.x;
     layout->bounds.w -= 2*panel_padding.x;
+    layout->bounds.y += panel_padding.y;
+    layout->bounds.h -= 2*panel_padding.y;
     if (win->flags & NK_WINDOW_BORDER) {
         layout->border = nk_panel_get_border(style, win->flags, panel_type);
         layout->bounds = nk_shrink_rect(layout->bounds, layout->border);
@@ -22224,7 +22226,7 @@ nk_layout_peek(struct nk_rect *bounds, struct nk_context *ctx)
     layout->at_y = y;
     layout->row.index = index;
 }
-NK_API void
+NK_API void 
 nk_spacer(struct nk_context *ctx )
 {
     struct nk_rect dummy_rect = { 0, 0, 0, 0 };
@@ -29621,6 +29623,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2021/12/22 (4.09.3) - Fix layout bounds not accounting for padding.
 /// - 2021/12/19 (4.09.2) - Update to stb_rect_pack.h v1.01 and stb_truetype.h v1.26
 /// - 2021/12/16 (4.09.1) - Fix the majority of GCC warnings
 /// - 2021/10/16 (4.09.0) - Added nk_spacer() widget
