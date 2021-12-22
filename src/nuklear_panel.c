@@ -468,7 +468,8 @@ nk_panel_end(struct nk_context *ctx)
         {
             /* horizontal scrollbar */
             nk_flags state = 0;
-            if(layout->flags & NK_WINDOW_SCALE_LEFT)
+            /* can't scale otherwise (horizontal scrollbar has priority) => reposition horizontal scrollbar to avoid overlap with scaler */
+            if (layout->flags & NK_WINDOW_SCALE_LEFT)
                 scroll.x = layout->bounds.x + scrollbar_size.x + panel_padding.x * 0.5;
             else
                 scroll.x = layout->bounds.x;
