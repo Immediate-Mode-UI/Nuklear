@@ -20444,10 +20444,15 @@ nk_window_is_hovered(struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
-    if (!ctx || !ctx->current) return 0;
-    if(ctx->current->flags & NK_WINDOW_HIDDEN)
+    if (!ctx || !ctx->current || (ctx->current->flags & NK_WINDOW_HIDDEN))
         return 0;
-    return nk_input_is_mouse_hovering_rect(&ctx->input, ctx->current->bounds);
+    else {
+        struct nk_rect actual_bounds = ctx->current->bounds;
+        if (ctx->begin->flags & NK_WINDOW_MINIMIZED) {
+            actual_bounds.h = ctx->current->layout->header_height;
+        }
+        return nk_input_is_mouse_hovering_rect(&ctx->input, actual_bounds);
+    }
 }
 NK_API nk_bool
 nk_window_is_any_hovered(struct nk_context *ctx)
@@ -22230,7 +22235,6 @@ nk_spacer(struct nk_context *ctx )
     struct nk_rect dummy_rect = { 0, 0, 0, 0 };
     nk_panel_alloc_space( &dummy_rect, ctx );
 }
-
 
 
 
@@ -29621,6 +29625,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
+/// - 2021/12/22 (4.9.3)  - Fix checking hovering when window is minimized
 /// - 2021/12/19 (4.09.2) - Update to stb_rect_pack.h v1.01 and stb_truetype.h v1.26
 /// - 2021/12/16 (4.09.1) - Fix the majority of GCC warnings
 /// - 2021/10/16 (4.09.0) - Added nk_spacer() widget
