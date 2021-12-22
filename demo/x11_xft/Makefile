@@ -1,5 +1,5 @@
 # Install
-BIN = zahnrad
+BIN = demo
 
 # Flags
 CFLAGS += -std=c89 -Wall -Wextra -pedantic -Wno-unused-function -O2
@@ -16,6 +16,8 @@ SRC = ${wildcard *.c}
 OBJ = $(SRC:.c=.o)
 
 $(BIN):
-	@mkdir -p bin
-	rm -f bin/$(BIN) $(OBJS)
-	$(CC) $(SRC) $(CFLAGS) -D_POSIX_C_SOURCE=200809L -o bin/$(BIN) -lX11 ${LDFLAGS}
+	$(CC) $(SRC) $(CFLAGS) -D_POSIX_C_SOURCE=200809L -o $(BIN) -lX11 ${LDFLAGS}
+
+clean:
+	$(RM) $(BIN) $(OBJ)
+

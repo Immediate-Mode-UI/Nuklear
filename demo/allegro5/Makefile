@@ -17,6 +17,7 @@ LIBS = -lallegro -lallegro_main -lallegro_image -lallegro_font \
 #endif
 
 $(BIN):
-	@mkdir -p bin
-	rm -f bin/$(BIN) $(OBJS)
-	$(CC) $(SRC) $(CFLAGS) -o bin/$(BIN) $(LIBS)
+	$(CC) $(SRC) $(CFLAGS) -o $(BIN) $(LIBS)
+
+clean:
+	$(RM) $(BIN) $(OBJ)

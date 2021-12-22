@@ -21,6 +21,7 @@ clang: CC = clang
 clang: $(BIN)
 
 $(BIN):
-	@mkdir -p bin
-	rm -f bin/$(BIN) $(OBJS)
-	$(CC) $(SRC) $(CFLAGS) -o bin/$(BIN) -lX11 -lm -lGL -lm -lGLU
+	$(CC) $(SRC) $(CFLAGS) -o $(BIN) -lX11 -lm -lGL -lm -lGLU
+
+clean:
+	$(RM) $(BIN) $(OBJ)

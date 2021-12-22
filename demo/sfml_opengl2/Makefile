@@ -31,3 +31,6 @@ SFML_LIB = -L $(SFML_DIR)/lib
 
 $(BIN):
 	$(CC) $(SRC) $(CFLAGS) -o $(BIN) $(SFML_INC) $(SFML_LIB) $(LIBS)
+
+clean:
+	$(RM) $(BIN) $(OBJ)

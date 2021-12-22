@@ -35,3 +35,6 @@ GLAD_SRC = $(GLAD_DIR)/src/glad.c
 
 $(BIN):
 	$(CC) $(GLAD_SRC) $(SRC) $(CFLAGS) $(GLAD_INC) $(SFML_INC) $(SFML_LIB) $(SFML_EXT) -o $(BIN) $(LIBS)
+
+clean:
+	$(RM) $(BIN) $(OBJ)

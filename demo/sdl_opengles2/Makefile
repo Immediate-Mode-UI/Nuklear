@@ -14,15 +14,14 @@ else
 	LIBS = -lSDL2 -lGLESv2 -lm
 endif
 
-$(BIN): prepare
-	$(CC) $(SRC) $(CFLAGS) -o bin/$(BIN) $(LIBS)
+$(BIN):
+	$(CC) $(SRC) $(CFLAGS) -o $(BIN) $(LIBS)
 
-web: prepare
-	emcc $(SRC) -Os -s USE_SDL=2 -o bin/index.html
+web:
+	emcc $(SRC) -Os -s USE_SDL=2 -o index.html
 
-rpi: prepare
-	$(CC) $(SRC) $(CFLAGS) -o bin/$(BIN) `PKG_CONFIG_PATH=/opt/vc/lib/pkgconfig/ pkg-config --cflags --libs bcm_host brcmglesv2` `/usr/local/bin/sdl2-config --libs --cflags`
+rpi:
+	$(CC) $(SRC) $(CFLAGS) -o $(BIN) `PKG_CONFIG_PATH=/opt/vc/lib/pkgconfig/ pkg-config --cflags --libs bcm_host brcmglesv2` `/usr/local/bin/sdl2-config --libs --cflags`
 
-prepare:
-	@mkdir -p bin
-	rm -f bin/$(BIN) $(OBJS)
+clean:
+	$(RM) $(BIN) $(OBJ)

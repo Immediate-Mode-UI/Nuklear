@@ -1,6 +1,6 @@
 demo/*/*.exe
 demo/*/*.obj
-demo/*/bin/*
+demo/*/demo*
 example/bin/*
 docs/xml
 docs/build
