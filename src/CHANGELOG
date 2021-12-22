@@ -8,11 +8,9 @@
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
 ///
-/// - 2021/12/14 (5.00.0) - BREAKING CHANGE: nk_widget_text_wrap now takes an int/bool parameter
-///                        representing whether its text is to be wrapped based on just newline
-///                        characters or both newline characters and line length. This change 
-///                        was made in the service of allowing nk_text/nk_label functions to
-///                        appropriately handle newline characters.
+/// - 2021/12/22 (4.09.3) - Fix layout bounds not accounting for padding.
+/// - 2021/12/19 (4.09.2) - Update to stb_rect_pack.h v1.01 and stb_truetype.h v1.26
+/// - 2021/12/16 (4.09.1) - Fix the majority of GCC warnings
 /// - 2021/10/16 (4.09.0) - Added nk_spacer() widget
 /// - 2021/09/22 (4.08.6) - Fix "may be used uninitialized" warnings in nk_widget
 /// - 2021/09/22 (4.08.5) - GCC __builtin_offsetof only exists in version 4 and later

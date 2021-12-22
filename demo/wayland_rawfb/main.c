@@ -28,25 +28,79 @@
 
 #define DTIME           20
 
+/* ===============================================================
+ *
+ *                          EXAMPLE
+ *
+ * ===============================================================*/
+/* This are some code examples to provide a small overview of what can be
+ * done with this library. To try out an example uncomment the defines */
+/*#define INCLUDE_ALL */
+/*#define INCLUDE_STYLE */
+/*#define INCLUDE_CALCULATOR */
+/*#define INCLUDE_CANVAS */
+/*#define INCLUDE_OVERVIEW */
+/*#define INCLUDE_NODE_EDITOR */
+
+#ifdef INCLUDE_ALL
+  #define INCLUDE_STYLE
+  #define INCLUDE_CALCULATOR
+  #define INCLUDE_CANVAS
+  #define INCLUDE_OVERVIEW
+  #define INCLUDE_NODE_EDITOR
+#endif
+
+#ifdef INCLUDE_STYLE
+  #include "../style.c"
+#endif
+#ifdef INCLUDE_CALCULATOR
+  #include "../calculator.c"
+#endif
+#ifdef INCLUDE_CANVAS
+  #include "../canvas.c"
+#endif
+#ifdef INCLUDE_OVERVIEW
+  #include "../overview.c"
+#endif
+#ifdef INCLUDE_NODE_EDITOR
+  #include "../node_editor.c"
+#endif
+
 
 //WAYLAND OUTPUT INTERFACE
 static void nk_wayland_output_cb_geometry(void *data, struct wl_output *wl_output, int x, int y, int w, int h, int subpixel, const char *make, const char *model, int transform)
 {
+    NK_UNUSED(data);
+    NK_UNUSED(wl_output);
+    NK_UNUSED(subpixel);
+    NK_UNUSED(make);
+    NK_UNUSED(model);
+    NK_UNUSED(transform);
+
     printf("wl_output geometry x=%d, y=%d, w=%d, h=%d make=%s, model=%s \n", x,y,w,h, make, model);
 }
 
 static void nk_wayland_output_cb_mode(void *data, struct wl_output *wl_output, unsigned int flags, int w, int h, int refresh)
 {
+    NK_UNUSED(data);
+    NK_UNUSED(wl_output);
+    NK_UNUSED(flags);
+    NK_UNUSED(w);
+    NK_UNUSED(h);
+    NK_UNUSED(refresh);
 }
 
 static void nk_wayland_output_cb_done(void *data, struct wl_output *output)
 {
-
+    NK_UNUSED(data);
+    NK_UNUSED(output);
 }
 
 static void nk_wayland_output_cb_scale(void *data, struct wl_output *output, int scale)
 {
-
+    NK_UNUSED(data);
+    NK_UNUSED(output);
+    NK_UNUSED(scale);
 }
 
 static const struct wl_output_listener nk_wayland_output_listener =
@@ -61,15 +115,29 @@ static const struct wl_output_listener nk_wayland_output_listener =
 //WAYLAND POINTER INTERFACE (mouse/touchpad)
 static void nk_wayland_pointer_enter (void *data, struct wl_pointer *pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) 
 {
+    NK_UNUSED(data);
+    NK_UNUSED(pointer);
+    NK_UNUSED(serial);
+    NK_UNUSED(surface);
+    NK_UNUSED(surface_x);
+    NK_UNUSED(surface_y);
 }
 
 static void nk_wayland_pointer_leave (void *data, struct wl_pointer *pointer, uint32_t serial, struct wl_surface *surface) 
 {
+    NK_UNUSED(data);
+    NK_UNUSED(pointer);
+    NK_UNUSED(serial);
+    NK_UNUSED(surface);
 }
 
 static void nk_wayland_pointer_motion (void *data, struct wl_pointer *pointer, uint32_t time, wl_fixed_t x, wl_fixed_t y) 
 {
     struct nk_wayland* win = (struct nk_wayland*)data;
+
+    NK_UNUSED(pointer);
+    NK_UNUSED(time);
+
     win->mouse_pointer_x = wl_fixed_to_int(x);
     win->mouse_pointer_y = wl_fixed_to_int(y);
     
@@ -79,7 +147,11 @@ static void nk_wayland_pointer_motion (void *data, struct wl_pointer *pointer, u
 static void nk_wayland_pointer_button (void *data, struct wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state) 
 {
     struct nk_wayland* win = (struct nk_wayland*)data;
-    
+
+    NK_UNUSED(pointer);
+    NK_UNUSED(serial);
+    NK_UNUSED(time);
+
     if (button == 272){ //left mouse button
         if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
            // printf("nk_input_button x=%d, y=%d press: 1 \n", win->mouse_pointer_x, win->mouse_pointer_y);
@@ -93,6 +165,11 @@ static void nk_wayland_pointer_button (void *data, struct wl_pointer *pointer, u
 
 static void nk_wayland_pointer_axis (void *data, struct wl_pointer *pointer, uint32_t time, uint32_t axis, wl_fixed_t value) 
 {
+    NK_UNUSED(data);
+    NK_UNUSED(pointer);
+    NK_UNUSED(time);
+    NK_UNUSED(axis);
+    NK_UNUSED(value);
 }
 
 static struct wl_pointer_listener nk_wayland_pointer_listener = 
@@ -101,30 +178,60 @@ static struct wl_pointer_listener nk_wayland_pointer_listener =
     &nk_wayland_pointer_leave, 
     &nk_wayland_pointer_motion, 
     &nk_wayland_pointer_button, 
-    &nk_wayland_pointer_axis
+    &nk_wayland_pointer_axis,
+    NULL,
+    NULL,
+    NULL,
+    NULL
 };
 //-------------------------------------------------------------------- endof WAYLAND POINTER INTERFACE
 
 //WAYLAND KEYBOARD INTERFACE
 static void nk_wayland_keyboard_keymap (void *data, struct wl_keyboard *keyboard, uint32_t format, int32_t fd, uint32_t size) 
 {
+    NK_UNUSED(data);
+    NK_UNUSED(keyboard);
+    NK_UNUSED(format);
+    NK_UNUSED(fd);
+    NK_UNUSED(size);
 }
 
 static void nk_wayland_keyboard_enter (void *data, struct wl_keyboard *keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys) 
-{	
+{
+    NK_UNUSED(data);
+    NK_UNUSED(keyboard);
+    NK_UNUSED(serial);
+    NK_UNUSED(surface);
+    NK_UNUSED(keys);
 }
 
 static void nk_wayland_keyboard_leave (void *data, struct wl_keyboard *keyboard, uint32_t serial, struct wl_surface *surface) 
 {
+    NK_UNUSED(data);
+    NK_UNUSED(keyboard);
+    NK_UNUSED(serial);
+    NK_UNUSED(surface);
 }
 
 static void nk_wayland_keyboard_key (void *data, struct wl_keyboard *keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state) 
 {
+    NK_UNUSED(data);
+    NK_UNUSED(keyboard);
+    NK_UNUSED(serial);
+    NK_UNUSED(time);
+    NK_UNUSED(state);
     printf("key: %d \n", key);
 }
 
-static void nk_wayland_keyboard_modifiers (void *data, struct wl_keyboard *keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) 
+static void nk_wayland_keyboard_modifiers (void *data, struct wl_keyboard *keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group)
 {
+    NK_UNUSED(data);
+    NK_UNUSED(keyboard);
+    NK_UNUSED(serial);
+    NK_UNUSED(mods_depressed);
+    NK_UNUSED(mods_latched);
+    NK_UNUSED(mods_locked);
+    NK_UNUSED(group);
 }
 
 static struct wl_keyboard_listener nk_wayland_keyboard_listener = 
@@ -133,7 +240,8 @@ static struct wl_keyboard_listener nk_wayland_keyboard_listener =
     &nk_wayland_keyboard_enter, 
     &nk_wayland_keyboard_leave, 
     &nk_wayland_keyboard_key, 
-    &nk_wayland_keyboard_modifiers
+    &nk_wayland_keyboard_modifiers,
+    NULL
 };
 //-------------------------------------------------------------------- endof WAYLAND KEYBOARD INTERFACE
 
@@ -154,14 +262,16 @@ static void seat_capabilities (void *data, struct wl_seat *seat, uint32_t capabi
 
 static struct wl_seat_listener seat_listener =
 {
-    &seat_capabilities
+    &seat_capabilities,
+    NULL
 };
 //-------------------------------------------------------------------- endof WAYLAND SEAT INTERFACE
 
 // WAYLAND SHELL INTERFACE
 static void nk_wayland_xdg_wm_base_ping (void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial)
 {
-	xdg_wm_base_pong (xdg_wm_base, serial);
+    NK_UNUSED(data);
+    xdg_wm_base_pong (xdg_wm_base, serial);
 }
 
 static struct xdg_wm_base_listener nk_wayland_xdg_wm_base_listener =
@@ -171,6 +281,7 @@ static struct xdg_wm_base_listener nk_wayland_xdg_wm_base_listener =
 
 static void nk_wayland_xdg_surface_configure (void *data, struct xdg_surface *xdg_surface, uint32_t serial)
 {
+    NK_UNUSED(data);
     xdg_surface_ack_configure(xdg_surface, serial);
 }
 
@@ -181,10 +292,17 @@ static struct xdg_surface_listener nk_wayland_xdg_surface_listener =
 
 static void nk_wayland_xdg_toplevel_configure (void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states)
 {
+    NK_UNUSED(data);
+    NK_UNUSED(xdg_toplevel);
+    NK_UNUSED(width);
+    NK_UNUSED(height);
+    NK_UNUSED(states);
 }
 
 static void nk_wayland_xdg_toplevel_close (void *data, struct xdg_toplevel *xdg_toplevel)
 {
+    NK_UNUSED(data);
+    NK_UNUSED(xdg_toplevel);
 }
 
 static struct xdg_toplevel_listener nk_wayland_xdg_toplevel_listener =
@@ -199,7 +317,9 @@ static struct xdg_toplevel_listener nk_wayland_xdg_toplevel_listener =
 static void nk_wayland_registry_add_object (void *data, struct wl_registry *registry, uint32_t name, const char *interface, uint32_t version) 
 {
     struct nk_wayland* win = (struct nk_wayland*)data;
-    
+
+    NK_UNUSED(version);
+
     //printf("looking for %s interface \n", interface);
 	if (!strcmp(interface,"wl_compositor")) {
 		win->compositor = wl_registry_bind (registry, name, &wl_compositor_interface, 1);
@@ -222,6 +342,9 @@ static void nk_wayland_registry_add_object (void *data, struct wl_registry *regi
 
 static void nk_wayland_registry_remove_object (void *data, struct wl_registry *registry, uint32_t name) 
 {
+    NK_UNUSED(data);
+    NK_UNUSED(registry);
+    NK_UNUSED(name);
 }
 
 static struct wl_registry_listener nk_wayland_registry_listener = 
@@ -314,8 +437,10 @@ static void redraw(void *data, struct wl_callback *callback, uint32_t time)
 {
   //  printf("redrawing.. 1\n");
     struct nk_wayland* win = (struct nk_wayland*)data;
-    struct nk_color col_red = {0xFF,0x00,0x00,0xA0}; //r,g,b,a
-    struct nk_color col_green = {0x00,0xFF,0x00,0xA0}; //r,g,b,a
+
+    NK_UNUSED(callback);
+    NK_UNUSED(time);
+
     wl_callback_destroy(win->frame_callback);
     wl_surface_damage(win->surface, 0, 0, WIDTH, HEIGHT); 
     
@@ -338,7 +463,6 @@ int main ()
     long dt;
     long started;
     struct nk_wayland nk_wayland_ctx;
-    struct wl_backend *backend;
     struct wl_registry *registry;
     int running = 1;
     
@@ -418,17 +542,20 @@ int main ()
         
         if (nk_window_is_closed(&(nk_wayland_ctx.ctx), "Demo")) break;
 
-        // -------------- EXAMPLES ---------------- 
-        //#ifdef INCLUDE_CALCULATOR
-        //  calculator(&rawfb->ctx);
-        //#endif
-       // #ifdef INCLUDE_OVERVIEW
-       //   overview(&rawfb->ctx);
-       // #endif
-       // #ifdef INCLUDE_NODE_EDITOR
-       //   node_editor(&rawfb->ctx);
-        //#endif
-        // ----------------------------------------- 
+        /* -------------- EXAMPLES ---------------- */
+        #ifdef INCLUDE_CALCULATOR
+          calculator(&(nk_wayland_ctx.ctx));
+        #endif
+        #ifdef INCLUDE_CANVAS
+          canvas(&(nk_wayland_ctx.ctx));
+        #endif
+        #ifdef INCLUDE_OVERVIEW
+          overview(&(nk_wayland_ctx.ctx));
+        #endif
+        #ifdef INCLUDE_NODE_EDITOR
+          node_editor(&(nk_wayland_ctx.ctx));
+        #endif
+        /* ----------------------------------------- */
 
         // Draw framebuffer 
         nk_wayland_render(&nk_wayland_ctx, nk_rgb(30,30,30), 1);

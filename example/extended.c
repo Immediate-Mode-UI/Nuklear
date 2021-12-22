@@ -748,6 +748,9 @@ int main(int argc, char *argv[])
     struct media media;
     struct nk_context ctx;
 
+    NK_UNUSED(argc);
+    NK_UNUSED(argv);
+
     /* GLFW */
     glfwSetErrorCallback(error_callback);
     if (!glfwInit()) {
