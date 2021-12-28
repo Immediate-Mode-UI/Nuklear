@@ -163,9 +163,9 @@ NK_INTERN int
 nk_font_bake_pack(struct nk_font_baker *baker,
     nk_size *image_memory, int *width, int *height, struct nk_recti *custom,
     const struct nk_font_config *config_list, int count,
-    struct nk_allocator *alloc)
+    struct nk_allocator *alloc, nk_size max_pack_width, nk_size max_pack_height)
 {
-    NK_STORAGE const nk_size max_height = 1024 * 32;
+    NK_STORAGE nk_size max_height = 1024 * 16;
     const struct nk_font_config *config_iter, *it;
     int total_glyph_count = 0;
     int total_range_count = 0;
@@ -199,7 +199,13 @@ nk_font_bake_pack(struct nk_font_baker *baker,
         } while ((it = it->n) != config_iter);
     }
     *height = 0;
-    *width = (total_glyph_count > 1000) ? 1024 : 512;
+    *width = max_pack_width
+	? max_pack_width
+	: (total_glyph_count > 1000) ? 1024 : 512;
+    
+    if(max_pack_height)
+	max_height = max_pack_height;
+    
     stbtt_PackBegin(&baker->spc, 0, (int)*width, (int)max_height, 0, 1, alloc);
     {
         int input_i = 0;
@@ -931,6 +937,8 @@ nk_font_atlas_begin(struct nk_font_atlas *atlas)
         atlas->permanent.free(atlas->permanent.userdata, atlas->pixel);
         atlas->pixel = 0;
     }
+    atlas->max_pack_width = 0;
+    atlas->max_pack_height = 0;
 }
 NK_API struct nk_font*
 nk_font_atlas_add(struct nk_font_atlas *atlas, const struct nk_font_config *config)
@@ -1199,7 +1207,7 @@ nk_font_atlas_bake(struct nk_font_atlas *atlas, int *width, int *height,
     atlas->custom.w = (NK_CURSOR_DATA_W*2)+1;
     atlas->custom.h = NK_CURSOR_DATA_H + 1;
     if (!nk_font_bake_pack(baker, &img_size, width, height, &atlas->custom,
-        atlas->config, atlas->font_num, &atlas->temporary))
+        atlas->config, atlas->font_num, &atlas->temporary, atlas->max_pack_width, atlas->max_pack_height))
         goto failed;
 
     /* allocate memory for the baked image font atlas */
