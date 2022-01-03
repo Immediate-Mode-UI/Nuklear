@@ -164,8 +164,8 @@ int main(int argc, char **argv)
     }
     
     //This example will use a process called bliting. 
-    //This is a less effecent porocess where the cpu handles the 
-    //composition of each frame of the gui and then coppies it over to the gpu for rendering,
+    //This is a less effecent process where the cpu handles the 
+    //composition of each frame of the gui and then copies it over to the gpu for rendering,
     //so we need to create both a surface for the cpu to work in,
     //and a renderer for the gpu to use
 
@@ -179,7 +179,7 @@ int main(int argc, char **argv)
     //as well as giving it the SDL surface for it to render to
     context = nk_sdlsurface_init(surface, 13.0f);
 
-
+    //The main loop
     while(1)
     {
         //Proceed to handle events from user input devices,
@@ -219,6 +219,9 @@ int main(int argc, char **argv)
         nk_input_end(&(context->ctx));
         //Now that we have dealt with the events for this cycle
 
+        //Good ol' fastioned Nuklear code.
+        //If this brings up questions, the documentation for Nuklear would be the best place to look,
+        //as this is basically all related to making a GUI be created and managed
         bounds.w = 400;
         bounds.h = 400;
         if (nk_begin(&(context->ctx), "Test", bounds, NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE | NK_WINDOW_TITLE))
