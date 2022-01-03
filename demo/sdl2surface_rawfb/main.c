@@ -29,12 +29,13 @@
  * ===============================================================*/
 /* This are some code examples to provide a small overview of what can be
  * done with this library. To try out an example uncomment the defines */
-/*#define INCLUDE_ALL */
-/*#define INCLUDE_STYLE */
-/*#define INCLUDE_CALCULATOR */
-/*#define INCLUDE_CANVAS */
-/*#define INCLUDE_OVERVIEW */
-/*#define INCLUDE_NODE_EDITOR */
+
+//#define INCLUDE_ALL
+//#define INCLUDE_STYLE
+//#define INCLUDE_CALCULATOR
+//#define INCLUDE_CANVAS
+//#define INCLUDE_OVERVIEW
+//#define INCLUDE_NODE_EDITOR
 
 #ifdef INCLUDE_ALL
   #define INCLUDE_STYLE
