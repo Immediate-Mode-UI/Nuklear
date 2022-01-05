@@ -67,6 +67,7 @@ render backends, it focuses only on the actual UI.
 #include "nuklear.h"
 ```
 3. Take a look at one of the [backend](https://github.com/Immediate-Mode-UI/Nuklear/tree/master/demo) examples to see how you can plug Nuklear in your backend of choice. See [Getting Started]() for in depth steps and examples on setting up Nuklear with a rendering backing.
+4. You're ready to create a UI with Nuklear. Check the [wiki](https://github.com/Immediate-Mode-UI/Nuklear/wiki) for examples and documentation on components, layouts and more.
 
 
 This library is self-contained in one single header file and can be used either
