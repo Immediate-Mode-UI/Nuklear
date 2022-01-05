@@ -11,9 +11,12 @@
   <a href="https://github.com/Immediate-Mode-UI/Nuklear/actions">
     <img src="https://github.com/Immediate-Mode-UI/Nuklear/workflows/C%2FC++%20CI/badge.svg" alt="buildstatus"/>
   </a>
-<br />
   <a href="https://discord.gg/r27Ze67R">
-    Join us on discord!
+    <img alt="discord-badge" src="https://img.shields.io/discord/922234432071548968"/>
+  </a>
+<br>
+  <a href="https://discord.gg/r27Ze67R">
+    Join us on Discord!
   </a>
 </p>
 
