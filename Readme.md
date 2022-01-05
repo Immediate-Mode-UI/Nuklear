@@ -56,17 +56,17 @@ render backends, it focuses only on the actual UI.
 - No global or hidden state
 - Customizable library modules (you can compile and use only what you need)
 - Optional font baker and vertex buffer output
-- [Documentation](https://Immediate-Mode-UI.github.io/Nuklear/doc/nuklear.html)
+- [Documentation](https://github.com/Immediate-Mode-UI/Nuklear/wiki)
 
 
 ## Quick start 🚀
 1. Download the [header](https://raw.githubusercontent.com/Immediate-Mode-UI/Nuklear/master/nuklear.h) and place it in your project
-2. Include the header and define `NK_IMPLEMENTATION`
+2. Include `nuklear.h` and define `NK_IMPLEMENTATION`
 ```c
 #define NK_IMPLEMENTATION
 #include "nuklear.h"
 ```
-3. Take a look at one of the [backend](https://github.com/Immediate-Mode-UI/Nuklear/tree/master/demo) examples to see how you can plug Nuklear in your backend of choice. See [Getting Started]() for in depth steps and examples on setting up Nuklear with a rendering backing.
+3. Take a look at one of the [backend](https://github.com/Immediate-Mode-UI/Nuklear/tree/master/demo) examples to see how you can plug Nuklear in your backend of choice (Or just copy paste the files for your preferred backend into your project to get up and running fast💯) . See [Getting Started]() for in depth steps and examples on setting up Nuklear with a rendering backing.
 4. You're ready to create a UI with Nuklear. Check the [wiki](https://github.com/Immediate-Mode-UI/Nuklear/wiki) for examples and documentation on components, layouts and more.
 
 
@@ -83,17 +83,8 @@ This is very important; not doing it either leads to compiler errors, or even wo
 
 See [Getting Started]() for more examples and detailed explanations.
 
-## Gallery
 
-![screenshot](https://cloud.githubusercontent.com/assets/8057201/11761525/ae06f0ca-a0c6-11e5-819d-5610b25f6ef4.gif)
-![screen](https://cloud.githubusercontent.com/assets/8057201/13538240/acd96876-e249-11e5-9547-5ac0b19667a0.png)
-![screen2](https://cloud.githubusercontent.com/assets/8057201/13538243/b04acd4c-e249-11e5-8fd2-ad7744a5b446.png)
-![node](https://cloud.githubusercontent.com/assets/8057201/9976995/e81ac04a-5ef7-11e5-872b-acd54fbeee03.gif)
-![skinning](https://cloud.githubusercontent.com/assets/8057201/15991632/76494854-30b8-11e6-9555-a69840d0d50b.png)
-![gamepad](https://cloud.githubusercontent.com/assets/8057201/14902576/339926a8-0d9c-11e6-9fee-a8b73af04473.png)
-
-## Example
-
+### Example
 ```c
 /* init gui state */
 struct nk_context ctx;
@@ -130,6 +121,18 @@ if (nk_begin(&ctx, "Show", nk_rect(50, 50, 220, 220),
 nk_end(&ctx);
 ```
 ![example](https://cloud.githubusercontent.com/assets/8057201/10187981/584ecd68-675c-11e5-897c-822ef534a876.png)
+
+
+
+## Gallery
+
+![screenshot](https://cloud.githubusercontent.com/assets/8057201/11761525/ae06f0ca-a0c6-11e5-819d-5610b25f6ef4.gif)
+![screen](https://cloud.githubusercontent.com/assets/8057201/13538240/acd96876-e249-11e5-9547-5ac0b19667a0.png)
+![screen2](https://cloud.githubusercontent.com/assets/8057201/13538243/b04acd4c-e249-11e5-8fd2-ad7744a5b446.png)
+![node](https://cloud.githubusercontent.com/assets/8057201/9976995/e81ac04a-5ef7-11e5-872b-acd54fbeee03.gif)
+![skinning](https://cloud.githubusercontent.com/assets/8057201/15991632/76494854-30b8-11e6-9555-a69840d0d50b.png)
+![gamepad](https://cloud.githubusercontent.com/assets/8057201/14902576/339926a8-0d9c-11e6-9fee-a8b73af04473.png)
+
 
 ## Bindings
 There are a number of nuklear bindings for different languages created by other authors.
