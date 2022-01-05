@@ -1,7 +1,3 @@
-<h3 align="center">
-  The web has evolved. Finally, testing has too.
-</h3>
-
 <h1 align="center">Nuklear</h1>
 <h3 align="center">A small, simple and portable immediate mode UI library</h3>
 
