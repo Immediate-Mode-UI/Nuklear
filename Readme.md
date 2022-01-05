@@ -66,7 +66,7 @@ render backends, it focuses only on the actual UI.
 #define NK_IMPLEMENTATION
 #include "nuklear.h"
 ```
-3. Take a look at one of the [backend](https://github.com/Immediate-Mode-UI/Nuklear/tree/master/demo) examples to see how you can plug Nuklear in your backend of choice (Or just copy paste the files for your preferred backend into your project to get up and running fast💯) . See [Getting Started]() for in depth steps and examples on setting up Nuklear with a rendering backing.
+3. Take a look at one of the [backend](https://github.com/Immediate-Mode-UI/Nuklear/tree/master/demo) examples to see how you can plug Nuklear in your backend of choice (Or just copy paste the files for your preferred backend into your project to get up and running fast) . See [Getting Started]() for in depth steps and examples on setting up Nuklear with a rendering backing.
 4. You're ready to create a UI with Nuklear. Check the [wiki](https://github.com/Immediate-Mode-UI/Nuklear/wiki) for examples and documentation on components, layouts and more.
 
 
@@ -182,6 +182,7 @@ Reviewing changes to `src/*` and `nuklear.h`:
   and added their changes to the
   [CHANGELOG](https://github.com/Immediate-Mode-UI/Nuklear/blob/master/src/CHANGELOG).
 * Have at least one other person review the changes before merging.
+* Check that no unneeded files or changes are added (Like editor ignores in the .gitignore, or temp files).
 
 Reviewing changes to `demo/*`, `example/*` and other files in the repo:
 
