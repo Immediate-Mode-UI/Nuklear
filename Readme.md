@@ -1,15 +1,29 @@
-<center> 
+<h3 align="center">
+  The web has evolved. Finally, testing has too.
+</h3>
 
-<h1>Nuklear</h1>
-<h3>A small, simple and portable immediate mode UI library</h3>
+<h1 align="center">Nuklear</h1>
+<h3 align="center">A small, simple and portable immediate mode UI library</h3>
 
-[Documentation](https://github.com/Immediate-Mode-UI/Nuklear/wiki) - [Getting Started](https://github.com/Immediate-Mode-UI/Nuklear/wiki) - [Gallery & Examples](#gallery)
+<p align="center">
+  <a href="https://github.com/Immediate-Mode-UI/Nuklear/wiki">Documentation</a> |
+  <a href="https://github.com/Immediate-Mode-UI/Nuklear/wiki">Getting Started</a> |
+  <a href="#Gallery">Gallery & Examples</a>
+</p>
 
-[![](https://github.com/Immediate-Mode-UI/Nuklear/workflows/C%2FC++%20CI/badge.svg )](https://github.com/Immediate-Mode-UI/Nuklear/actions)
+<p align="center">
+  <a href="https://github.com/Immediate-Mode-UI/Nuklear/actions">
+    <img src="https://github.com/Immediate-Mode-UI/Nuklear/workflows/C%2FC++%20CI/badge.svg" alt="buildstatus"/>
+  </a>
+<br />
+  <a href="https://discord.gg/r27Ze67R">
+    Join us on discord!
+  </a>
+</p>
 
-<img src="https://cloud.githubusercontent.com/assets/8057201/11761525/ae06f0ca-a0c6-11e5-819d-5610b25f6ef4.gif" alt="drawing" width="800"/>
-
-</center>
+<p align="center">
+  <img src="https://cloud.githubusercontent.com/assets/8057201/11761525/ae06f0ca-a0c6-11e5-819d-5610b25f6ef4.gif" alt="drawing" width="800"/>
+</p>
 
 ## Description
 This is a minimal-state, immediate-mode graphical user interface toolkit
