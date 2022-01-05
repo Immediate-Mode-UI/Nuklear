@@ -9,3 +9,4 @@ docs/src
 *.swo
 *.swp
 /private/
+.idea/

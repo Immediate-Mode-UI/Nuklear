@@ -1,7 +1,17 @@
-# Nuklear
+<center> 
+
+<h1>Nuklear</h1>
+<h3>A small, simple and portable immediate mode UI library</h3>
+
+[Documentation](https://github.com/Immediate-Mode-UI/Nuklear/wiki) - [Getting Started](https://github.com/Immediate-Mode-UI/Nuklear/wiki) - [Gallery & Examples](#gallery)
 
 [![](https://github.com/Immediate-Mode-UI/Nuklear/workflows/C%2FC++%20CI/badge.svg )](https://github.com/Immediate-Mode-UI/Nuklear/actions)
 
+<img src="https://cloud.githubusercontent.com/assets/8057201/11761525/ae06f0ca-a0c6-11e5-819d-5610b25f6ef4.gif" alt="drawing" width="800"/>
+
+</center>
+
+## Description
 This is a minimal-state, immediate-mode graphical user interface toolkit
 written in ANSI C and licensed under public domain. It was designed as a simple
 embeddable user interface for application and does not have any dependencies,
@@ -10,6 +20,14 @@ highly modular, library-based approach, with simple input state for input and
 draw commands describing primitive shapes as output. So instead of providing a
 layered library that tries to abstract over a number of platform and
 render backends, it focuses only on the actual UI.
+
+**Quick links:**
+
+| [Documentation & Wiki](https://github.com/Immediate-Mode-UI/Nuklear/wiki) |   [Getting Started]()    |                [Building Nuklear]() |
+|:--------------------------------------------------------------------------|:------------------------:|------------------------------------:|
+| [Contributing]()                                                          | [FAQ, Support, Issues]() |       [License & credits](#License) |
+| [Gallery & Examples](#Gallery)                                            |       [Bindings]()       | [Reviewers guide](#Reviewers-guide) |
+
 
 ## Features
 
@@ -27,7 +45,16 @@ render backends, it focuses only on the actual UI.
 - Optional font baker and vertex buffer output
 - [Documentation](https://Immediate-Mode-UI.github.io/Nuklear/doc/nuklear.html)
 
-## Building
+
+## Quick start 🚀
+1. Download the [header](https://raw.githubusercontent.com/Immediate-Mode-UI/Nuklear/master/nuklear.h) and place it in your project
+2. Include the header and define `NK_IMPLEMENTATION`
+```c
+#define NK_IMPLEMENTATION
+#include "nuklear.h"
+```
+3. Take a look at one of the [backend](https://github.com/Immediate-Mode-UI/Nuklear/tree/master/demo) examples to see how you can plug Nuklear in your backend of choice. See [Getting Started]() for in depth steps and examples on setting up Nuklear with a rendering backing.
+
 
 This library is self-contained in one single header file and can be used either
 in header-only mode or in implementation mode. The header-only mode is used
@@ -36,14 +63,13 @@ and does not contain the actual implementation.
 
 The implementation mode requires defining the preprocessor macro
 `NK_IMPLEMENTATION` in *one* .c/.cpp file before `#include`ing this file, e.g.:
-```c
-#define NK_IMPLEMENTATION
-#include "nuklear.h"
-```
-IMPORTANT: Every time you include "nuklear.h" you have to define the same optional flags.
+
+**IMPORTANT:** Every time you include "nuklear.h" you have to define the same optional flags.
 This is very important; not doing it either leads to compiler errors, or even worse, stack corruptions.
 
-## Gallery
+See [Getting Started]() for more examples and detailed explanations.
+
+## Gallery 🖼️
 
 ![screenshot](https://cloud.githubusercontent.com/assets/8057201/11761525/ae06f0ca-a0c6-11e5-819d-5610b25f6ef4.gif)
 ![screen](https://cloud.githubusercontent.com/assets/8057201/13538240/acd96876-e249-11e5-9547-5ac0b19667a0.png)
