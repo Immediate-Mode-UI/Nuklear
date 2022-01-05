@@ -33,10 +33,10 @@ render backends, it focuses only on the actual UI.
 
 **Quick links:**
 
-| [Documentation & Wiki](https://github.com/Immediate-Mode-UI/Nuklear/wiki) |   [Getting Started]()    |                [Building Nuklear]() |
-|:--------------------------------------------------------------------------|:------------------------:|------------------------------------:|
-| [Contributing]()                                                          | [FAQ, Support, Issues]() |       [License & credits](#License) |
-| [Gallery & Examples](#Gallery)                                            |  [Bindings](#Bindings)   | [Reviewers guide](#Reviewers-guide) |
+| [Documentation & Wiki](https://github.com/Immediate-Mode-UI/Nuklear/wiki) | [Getting Started](https://github.com/Immediate-Mode-UI/Nuklear/wiki/getting-started) | [Building Nuklear](https://github.com/Immediate-Mode-UI/Nuklear/wiki/building-nuklear) |
+|:--------------------------------------------------------------------------|:------------------------------------------------------------------------------------:|---------------------------------------------------------------------------------------:|
+| [Contributing](#Contributing)                                             |                               [FAQ, Support, Issues]()                               |                                                          [License & credits](#Credits) |
+| [Gallery & Examples](#Gallery)                                            |                                [Bindings](#Bindings)                                 |                                                    [Reviewers guide](#Reviewers-guide) |
 
 
 ## Features
@@ -147,6 +147,48 @@ languages. Furthermore there are no guarantee that all bindings will always be k
 - [CSharp/.NET](https://github.com/cartman300/NuklearDotNet) by cartman300@github.com
 - [V](https://github.com/nsauzede/vnk) by Nicolas Sauzede
 
+## Contributing
+Thanks for your interest in contributing to Nuklear! Contributions are always welcome and we appreciate the work. A few pointers:
+* Ask around on [Discord](https://discord.gg/r27Ze67R) or check the [Issues](https://github.com/Immediate-Mode-UI/Nuklear/issues) page to verify if your idea is something that the community also wants before putting in precious hours of work. If its something small, just open a PR and we'll look at it 👍
+* Please take note of the reviewers guide below to see what's important when submitting your PR.
+* Check the [Issues](https://github.com/Immediate-Mode-UI/Nuklear/issues) page if you want to find something to work on
+
+## Reviewers guide
+
+When reviewing pull request there are common things a reviewer should keep
+in mind.
+
+Reviewing changes to `src/*` and `nuklear.h`:
+
+* Ensure C89 compatibility.
+* The code should work for several backends to an acceptable degree.
+* Check no other parts of `nuklear.h` are related to the PR and thus nothing is missing.
+* Recommend simple optimizations.
+  * Pass small structs by value instead of by pointer.
+  * Use local buffers over heap allocation when possible.
+* Check that the coding style is consistent with code around it.
+  * Variable/function name casing.
+  * Indentation.
+  * Curly bracket (`{}`) placement.
+* Ensure that the contributor has bumped the appropriate version in
+  [clib.json](https://github.com/Immediate-Mode-UI/Nuklear/blob/master/clib.json)
+  and added their changes to the
+  [CHANGELOG](https://github.com/Immediate-Mode-UI/Nuklear/blob/master/src/CHANGELOG).
+* Have at least one other person review the changes before merging.
+
+Reviewing changes to `demo/*`, `example/*` and other files in the repo:
+
+* Focus on getting working code merged.
+  * We want to make it easy for people to get started with Nuklear, and any
+    `demo` and `example` improvements helps in this regard.
+* Use of newer C features, or even other languages is not discouraged.
+  * If another language is used, ensure that the build process is easy to figure out.
+* Messy or less efficient code can be merged so long as these outliers are pointed out
+  and easy to find.
+* Version shouldn't be bumped for these changes.
+* Changes that improves code to be more inline with `nuklear.h` are ofc always welcome.
+
+
 ## Credits
 Developed by Micha Mettke and every direct or indirect contributor to the GitHub.
 
@@ -203,39 +245,3 @@ ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -----------------------------------------------------------------------------
 ```
-
-## Reviewers guide
-
-When reviewing pull request there are common things a reviewer should keep
-in mind.
-
-Reviewing changes to `src/*` and `nuklear.h`:
-
-* Ensure C89 compatibility.
-* The code should work for several backends to an acceptable degree.
-* Check no other parts of `nuklear.h` are related to the PR and thus nothing is missing.
-* Recommend simple optimizations.
-  * Pass small structs by value instead of by pointer.
-  * Use local buffers over heap allocation when possible.
-* Check that the coding style is consistent with code around it.
-  * Variable/function name casing.
-  * Indentation.
-  * Curly bracket (`{}`) placement.
-* Ensure that the contributor has bumped the appropriate version in
-  [clib.json](https://github.com/Immediate-Mode-UI/Nuklear/blob/master/clib.json)
-  and added their changes to the
-  [CHANGELOG](https://github.com/Immediate-Mode-UI/Nuklear/blob/master/src/CHANGELOG).
-* Have at least one other person review the changes before merging.
-
-Reviewing changes to `demo/*`, `example/*` and other files in the repo:
-
-* Focus on getting working code merged.
-  * We want to make it easy for people to get started with Nuklear, and any
-    `demo` and `example` improvements helps in this regard.
-* Use of newer C features, or even other languages is not discouraged.
-  * If another language is used, ensure that the build process is easy to figure out.
-* Messy or less efficient code can be merged so long as these outliers are pointed out
-  and easy to find.
-* Version shouldn't be bumped for these changes.
-* Changes that improves code to be more inline with `nuklear.h` are ofc always welcome.
-
