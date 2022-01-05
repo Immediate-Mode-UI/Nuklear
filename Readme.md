@@ -79,7 +79,7 @@ This is very important; not doing it either leads to compiler errors, or even wo
 
 See [Getting Started]() for more examples and detailed explanations.
 
-## Gallery 🖼️
+## Gallery
 
 ![screenshot](https://cloud.githubusercontent.com/assets/8057201/11761525/ae06f0ca-a0c6-11e5-819d-5610b25f6ef4.gif)
 ![screen](https://cloud.githubusercontent.com/assets/8057201/13538240/acd96876-e249-11e5-9547-5ac0b19667a0.png)
