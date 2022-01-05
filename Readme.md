@@ -36,7 +36,7 @@ render backends, it focuses only on the actual UI.
 | [Documentation & Wiki](https://github.com/Immediate-Mode-UI/Nuklear/wiki) |   [Getting Started]()    |                [Building Nuklear]() |
 |:--------------------------------------------------------------------------|:------------------------:|------------------------------------:|
 | [Contributing]()                                                          | [FAQ, Support, Issues]() |       [License & credits](#License) |
-| [Gallery & Examples](#Gallery)                                            |       [Bindings]()       | [Reviewers guide](#Reviewers-guide) |
+| [Gallery & Examples](#Gallery)                                            |  [Bindings](#Bindings)   | [Reviewers guide](#Reviewers-guide) |
 
 
 ## Features
