@@ -135,9 +135,6 @@ int main(int argc, char **argv)
     struct nk_vec2 vec;
     struct nk_rect bounds = {40,40,0,0};
     struct sdlsurface_context *context;
-
-    NK_UNUSED(argc);
-    NK_UNUSED(argv);
     
     /* Normal SDL initialization stuff */
     SDL_DisplayMode dm;
@@ -145,6 +142,9 @@ int main(int argc, char **argv)
     SDL_Renderer *renderer;
     SDL_Texture *tex;
     SDL_Surface *surface;
+    
+    NK_UNUSED(argc);
+    NK_UNUSED(argv);
 
     SDL_Init(SDL_INIT_VIDEO);
     printf("sdl init called...\n");
