@@ -1,5 +1,5 @@
 /*
- * Nuklear - 1.32.0 - public domain
+ * Nuklear - 4.9.4 - public domain
  */
 /*
  * ==============================================================
@@ -8,10 +8,10 @@
  *
  * ===============================================================
  */
-#ifndef NK_SDL_GL2_H_
-#define NK_SDL_GL2_H_
+#ifndef NK_SDL_RENDERER_H_
+#define NK_SDL_RENDERER_H_
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 NK_API struct nk_context*   nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer);
 NK_API void                 nk_sdl_font_stash_begin(struct nk_font_atlas **atlas);
 NK_API void                 nk_sdl_font_stash_end(void);
@@ -19,7 +19,8 @@ NK_API int                  nk_sdl_handle_event(SDL_Event *evt);
 NK_API void                 nk_sdl_render(enum nk_anti_aliasing);
 NK_API void                 nk_sdl_shutdown(void);
 
-#endif
+#endif /* NK_SDL_RENDERER_H_ */
+
 /*
  * ==============================================================
  *
@@ -27,7 +28,7 @@ NK_API void                 nk_sdl_shutdown(void);
  *
  * ===============================================================
  */
-#ifdef NK_SDL_GL2_IMPLEMENTATION
+#ifdef NK_SDL_RENDERER_IMPLEMENTATION
 
 struct nk_sdl_device {
     struct nk_buffer cmds;
@@ -112,7 +113,7 @@ nk_sdl_render(enum nk_anti_aliasing AA)
 
         /* iterate over and execute each draw command */
         offset = (const nk_draw_index*)nk_buffer_memory_const(&ebuf);
-        
+
         clipping_enabled = SDL_RenderIsClipEnabled(sdl.renderer);
         SDL_RenderGetClipRect(sdl.renderer, &saved_clip);
 
@@ -324,4 +325,4 @@ void nk_sdl_shutdown(void)
     memset(&sdl, 0, sizeof(sdl));
 }
 
-#endif
+#endif /* NK_SDL_RENDERER_IMPLEMENTATION */

@@ -9,7 +9,7 @@
 #include <limits.h>
 #include <time.h>
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -19,9 +19,9 @@
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
-#define NK_SDL_GL2_IMPLEMENTATION
+#define NK_SDL_RENDERER_IMPLEMENTATION
 #include "../../nuklear.h"
-#include "nuklear_sdl_sdlrenderer.h"
+#include "nuklear_sdl_renderer.h"
 
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 800
@@ -42,6 +42,7 @@
 #ifdef INCLUDE_ALL
   #define INCLUDE_STYLE
   #define INCLUDE_CALCULATOR
+  #define INCLUDE_CANVAS
   #define INCLUDE_OVERVIEW
   #define INCLUDE_NODE_EDITOR
 #endif
@@ -51,6 +52,9 @@
 #endif
 #ifdef INCLUDE_CALCULATOR
   #include "../calculator.c"
+#endif
+#ifdef INCLUDE_CANVAS
+  #include "../canvas.c"
 #endif
 #ifdef INCLUDE_OVERVIEW
   #include "../overview.c"
@@ -93,7 +97,7 @@ main(int argc, char *argv[])
     flags |= SDL_RENDERER_ACCELERATED;
     flags |= SDL_RENDERER_PRESENTVSYNC;
 
-#if 0 
+#if 0
     SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
@@ -182,6 +186,9 @@ main(int argc, char *argv[])
         #ifdef INCLUDE_CALCULATOR
           calculator(ctx);
         #endif
+        #ifdef INCLUDE_CANVAS
+        canvas(ctx);
+        #endif
         #ifdef INCLUDE_OVERVIEW
           overview(ctx);
         #endif
@@ -192,9 +199,9 @@ main(int argc, char *argv[])
 
         SDL_SetRenderDrawColor(renderer, bg.r * 255, bg.g * 255, bg.b * 255, bg.a * 255);
         SDL_RenderClear(renderer);
-    
+
         nk_sdl_render(NK_ANTI_ALIASING_ON);
-    
+
         SDL_RenderPresent(renderer);
     }
 
