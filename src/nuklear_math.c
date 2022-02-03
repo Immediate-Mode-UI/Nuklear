@@ -33,6 +33,8 @@
     (it can actually approximate a lot more functions) can be
     found here: www.lolengine.net/wiki/oss/lolremez
 */
+#ifndef NK_INV_SQRT
+#define NK_INV_SQRT nk_inv_sqrt
 NK_LIB float
 nk_inv_sqrt(float n)
 {
@@ -45,6 +47,7 @@ nk_inv_sqrt(float n)
     conv.f = conv.f * (threehalfs - (x2 * conv.f * conv.f));
     return conv.f;
 }
+#endif
 #ifndef NK_SIN
 #define NK_SIN nk_sin
 NK_LIB float

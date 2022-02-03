@@ -477,7 +477,7 @@ nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *p
             /* vec2 inverted length  */
             len = nk_vec2_len_sqr(diff);
             if (len != 0.0f)
-                len = nk_inv_sqrt(len);
+                len = NK_INV_SQRT(len);
             else len = 1.0f;
 
             diff = nk_vec2_muls(diff, len);
@@ -628,7 +628,7 @@ nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *p
             /* vec2 inverted length  */
             len = nk_vec2_len_sqr(diff);
             if (len != 0.0f)
-                len = nk_inv_sqrt(len);
+                len = NK_INV_SQRT(len);
             else len = 1.0f;
             diff = nk_vec2_muls(diff, len);
 
@@ -718,7 +718,7 @@ nk_draw_list_fill_poly_convex(struct nk_draw_list *list,
             /* vec2 inverted length  */
             float len = nk_vec2_len_sqr(diff);
             if (len != 0.0f)
-                len = nk_inv_sqrt(len);
+                len = NK_INV_SQRT(len);
             else len = 1.0f;
             diff = nk_vec2_muls(diff, len);
 
