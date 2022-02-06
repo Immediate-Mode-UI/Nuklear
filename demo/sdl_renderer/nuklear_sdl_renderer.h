@@ -135,9 +135,9 @@ nk_sdl_render(enum nk_anti_aliasing AA)
 
                 SDL_RenderGeometryRaw(sdl.renderer,
                         (SDL_Texture *)cmd->texture.ptr,
-                        (const void*)((const nk_byte*)vertices + vp), vs,
-                        (const void*)((const nk_byte*)vertices + vc), vs,
-                        (const void*)((const nk_byte*)vertices + vt), vs,
+                        (const float*)((const nk_byte*)vertices + vp), vs,
+                        (const SDL_Color*)((const nk_byte*)vertices + vc), vs,
+                        (const float*)((const nk_byte*)vertices + vt), vs,
                         (vbuf.needed / vs),
                         (void *) offset, cmd->elem_count, 2);
 
