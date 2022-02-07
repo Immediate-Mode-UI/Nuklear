@@ -94,7 +94,9 @@ NK_GLOBAL const struct nk_color nk_yellow = {255,255,0,255};
     else (*(s)) = NK_WIDGET_STATE_INACTIVE;
 
 /* math */
+#ifndef NK_INV_SQRT
 NK_LIB float nk_inv_sqrt(float n);
+#endif
 #ifndef NK_SIN
 NK_LIB float nk_sin(float x);
 #endif
