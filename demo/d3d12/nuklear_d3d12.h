@@ -18,14 +18,60 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+/*
+ * USAGE:
+ *    - This function will initialize a new nuklear rendering context. The context will be bound to a GLOBAL DirectX 12 rendering state.
+ */
 NK_API struct nk_context *nk_d3d12_init(ID3D12Device *device, int width, int height, unsigned int max_vertex_buffer, unsigned int max_index_buffer, unsigned int max_user_textures);
+/*
+ * USAGE:
+ *    - A call to this function prepares the global nuklear d3d12 backend for receiving font information’s. Use the obtained atlas pointer to load all required fonts and do all required font setup.
+ */
 NK_API void nk_d3d12_font_stash_begin(struct nk_font_atlas **atlas);
+/*
+ * USAGE:
+ *    - Call this function after a call to nk_d3d12_font_stash_begin(...) when all fonts have been loaded and configured. 
+ *    - This function will place commands on the supplied ID3D12GraphicsCommandList.
+ *    - This function will allocate temporary data that is required until the command list has finish executing. The temporary data can be free by calling nk_d3d12_font_stash_cleanup(...)
+ */
 NK_API void nk_d3d12_font_stash_end(ID3D12GraphicsCommandList *command_list);
+/*
+ * USAGE:
+ *    - This function will free temporary data that was allocated by nk_d3d12_font_stash_begin(...)
+ *    - Only call this function after the command list used in the nk_d3d12_font_stash_begin(...) function call has finished executing.
+ *    - It is NOT required to call this function but highly recommended.
+ */
 NK_API void nk_d3d12_font_stash_cleanup();
+/*
+ * USAGE:
+ *    - This function will setup the supplied texture (ID3D12Resource) for rendering custom images using the supplied D3D12_SHADER_RESOURCE_VIEW_DESC.
+ *    - This function may override any previous calls to nk_d3d12_set_user_texture(...) while using the same index.
+ *    - The returned handle can be used as texture handle to render custom images.
+ *    - The caller must keep track of the state of the texture when it comes to rendering with nk_d3d12_render(...).
+ */
 NK_API nk_bool nk_d3d12_set_user_texture(unsigned int index, ID3D12Resource* texture, const D3D12_SHADER_RESOURCE_VIEW_DESC* description, nk_handle* handle_out);
+/*
+ * USAGE:
+ *    - This function should be called within the user window proc to allow nuklear to listen to window events
+ */
 NK_API int nk_d3d12_handle_event(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+/*
+ * USAGE:
+ *    - A call to this function renders any previous placed nuklear draw calls and will flush all nuklear buffers for the next frame
+ *    - This function will place commands on the supplied ID3D12GraphicsCommandList.
+ *    - When using custom images for rendering make sure they are in the correct resource state (D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE) when calling this function.
+ *    - This function will upload data to the gpu (64 + max_vertex_buffer + max_index_buffer BYTES).
+ */
 NK_API void nk_d3d12_render(ID3D12GraphicsCommandList *command_list, enum nk_anti_aliasing AA);
+/*
+ * USAGE:
+ *    - This function will notify nuklear that the framebuffer dimensions have changed.
+ */
 NK_API void nk_d3d12_resize(int width, int height);
+/*
+ * USAGE:
+ *    - This function will free the global d3d12 rendering state.
+ */
 NK_API void nk_d3d12_shutdown(void);
 
 #endif
