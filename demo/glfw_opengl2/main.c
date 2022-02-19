@@ -41,7 +41,7 @@
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 #define INCLUDE_CANVAS
-#define INCLUDE_FILE_BROWSER
+//#define INCLUDE_FILE_BROWSER
 /* #define INCLUDE_OVERVIEW */
 /*#define INCLUDE_NODE_EDITOR */
 
@@ -111,8 +111,10 @@ int main(void)
     /* GUI */
     struct nk_context *ctx;
     struct nk_colorf bg;
+#ifdef INCLUDE_FILE_BROWSER
     struct file_browser browser;
     struct media media;
+#endif
 
     /* GLFW */
     glfwSetErrorCallback(error_callback);
@@ -149,6 +151,7 @@ int main(void)
 
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
     
+    #ifdef INCLUDE_FILE_BROWSER
     /* icons */
     glEnable(GL_TEXTURE_2D);
     media.icons.home = icon_load("icon/home.png");
@@ -164,7 +167,8 @@ int main(void)
     media_init(&media);
 
     file_browser_init(&browser, &media);
-    
+    #endif
+
     while (!glfwWindowShouldClose(win))
     {
         /* Input */
@@ -236,7 +240,8 @@ int main(void)
         nk_glfw3_render(NK_ANTI_ALIASING_ON);
         glfwSwapBuffers(win);
     }
-       
+
+    #ifdef INCLUDE_FILE_BROWSER       
     glDeleteTextures(1,(const GLuint*)&media.icons.home.handle.id);
     glDeleteTextures(1,(const GLuint*)&media.icons.directory.handle.id);
     glDeleteTextures(1,(const GLuint*)&media.icons.computer.handle.id);
@@ -249,6 +254,7 @@ int main(void)
     glDeleteTextures(1,(const GLuint*)&media.icons.movie_file.handle.id);
 
     file_browser_free(&browser);
+    #endif    
     
     nk_glfw3_shutdown();
     glfwTerminate();
