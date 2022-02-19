@@ -151,16 +151,16 @@ int main(void)
     
     /* icons */
     glEnable(GL_TEXTURE_2D);
-    media.icons.home = icon_load("/home/pinto-pc/Documents/Nuklear/demo/glfw_opengl2/icon/home.png");
-    media.icons.directory = icon_load("/home/pinto-pc/Documents/Nuklear/demo/glfw_opengl2/icon/directory.png");
-    media.icons.computer = icon_load("/home/pinto-pc/Documents/Nuklear/demo/glfw_opengl2/icon/computer.png");
-    media.icons.desktop = icon_load("/home/pinto-pc/Documents/Nuklear/demo/glfw_opengl2/icon/desktop.png");
-    media.icons.default_file = icon_load("/home/pinto-pc/Documents/Nuklear/demo/glfw_opengl2/icon/default.png");
-    media.icons.text_file = icon_load("/home/pinto-pc/Documents/Nuklear/demo/glfw_opengl2/icon/text.png");
-    media.icons.music_file = icon_load("/home/pinto-pc/Documents/Nuklear/demo/glfw_opengl2/icon/music.png");
-    media.icons.font_file =  icon_load("/home/pinto-pc/Documents/Nuklear/demo/glfw_opengl2/icon/font.png");
-    media.icons.img_file = icon_load("/home/pinto-pc/Documents/Nuklear/demo/glfw_opengl2/icon/img.png");
-    media.icons.movie_file = icon_load("/home/pinto-pc/Documents/Nuklear/demo/glfw_opengl2/icon/movie.png");
+    media.icons.home = icon_load("icon/home.png");
+    media.icons.directory = icon_load("icon/directory.png");
+    media.icons.computer = icon_load("icon/computer.png");
+    media.icons.desktop = icon_load("icon/desktop.png");
+    media.icons.default_file = icon_load("icon/default.png");
+    media.icons.text_file = icon_load("icon/text.png");
+    media.icons.music_file = icon_load("icon/music.png");
+    media.icons.font_file =  icon_load("icon/font.png");
+    media.icons.img_file = icon_load("icon/img.png");
+    media.icons.movie_file = icon_load("icon/movie.png");
     media_init(&media);
 
     file_browser_init(&browser, &media);
