@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AndroidLayouts">
+    <shared>
+      <config />
+    </shared>
+  </component>
+  <component name="AndroidLogFilters">
+    <option name="TOOL_WINDOW_CUSTOM_FILTER" value="Native Asset Manager" />
+    <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="Show only selected application" />
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="f47be98f-2a62-4b43-991d-92824aab576e" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../../../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../../../.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/7.3/checksums/checksums.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/7.3/dependencies-accessors/dependencies-accessors.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/7.3/dependencies-accessors/gc.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/7.3/executionHistory/executionHistory.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/7.3/executionHistory/executionHistory.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/7.3/fileChanges/last-build.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/7.3/fileHashes/fileHashes.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/7.3/fileHashes/fileHashes.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/7.3/fileHashes/resourceHashesCache.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/7.3/gc.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/vcs-1/gc.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/app/sdl_opengl2.app.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/sdl_opengl2.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/Android.mk" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/Application.mk" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/CMakeLists.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/Android.mk" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/arm64-v8a/libSDL2.so" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/arm64-v8a/libhidapi.so" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/arm64-v8a/libmain.so" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/armeabi-v7a/libSDL2.so" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/armeabi-v7a/libhidapi.so" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/armeabi-v7a/libmain.so" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_assert.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_atomic.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_audio.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_bits.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_blendmode.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_clipboard.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_config.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_config.h.cmake" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_config.h.in" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_config_android.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_config_emscripten.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_config_iphoneos.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_config_macosx.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_config_minimal.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_config_os2.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_config_pandora.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_config_psp.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_config_windows.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_config_winrt.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_config_wiz.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_copying.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_cpuinfo.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_egl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_endian.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_error.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_events.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_filesystem.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_gamecontroller.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_gesture.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_haptic.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_hidapi.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_hints.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_joystick.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_keyboard.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_keycode.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_loadso.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_locale.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_log.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_main.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_messagebox.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_metal.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_misc.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_mouse.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_mutex.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_name.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_opengl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_opengl_glext.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_opengles.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_opengles2.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_opengles2_gl2.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_opengles2_gl2ext.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_opengles2_gl2platform.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_opengles2_khrplatform.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_pixels.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_platform.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_power.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_quit.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_rect.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_render.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_revision.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_revision.h.cmake" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_rwops.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_scancode.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_sensor.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_shape.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_stdinc.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_surface.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_system.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_syswm.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_test.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_test_assert.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_test_common.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_test_compare.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_test_crc32.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_test_font.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_test_fuzzer.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_test_harness.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_test_images.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_test_log.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_test_md5.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_test_memory.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_test_random.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_thread.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_timer.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_touch.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_types.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_version.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_video.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/SDL_vulkan.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/begin_code.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/include/SDL2/close_code.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/x86/libSDL2.so" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/x86/libhidapi.so" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/x86/libmain.so" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/x86_64/libSDL2.so" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/x86_64/libhidapi.so" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/SDL/x86_64/libmain.so" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/src/Android.mk" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/src/AssetManager.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/src/CMakeLists.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/src/main-gles2.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/src/nuklear.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/src/nuklear_sdl_gles2.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/jni/src/stb_image.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/proguard-rules.pro" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/checked.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/cloud.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/computer.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/copy.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/delete.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/desktop.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/directory.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/edit.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/export.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/font.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/home.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/image1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/image2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/image3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/image4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/image5.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/image6.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/image7.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/image8.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/image9.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/img.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/movie.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/music.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/next.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/page.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/pause.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/pen.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/phone.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/plane.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/play.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/prev.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/rocket.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/settings.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/stop.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/text.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/tools.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/unchecked.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/volume.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/wifi.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/leonel/nuklear/nuklearActivity.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/org/libsdl/app/HIDDevice.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/org/libsdl/app/HIDDeviceBLESteamController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/org/libsdl/app/HIDDeviceManager.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/org/libsdl/app/HIDDeviceUSB.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/org/libsdl/app/SDL.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/org/libsdl/app/SDLActivity.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/org/libsdl/app/SDLAudioManager.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/org/libsdl/app/SDLControllerManager.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-hdpi/ic_launcher.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-mdpi/ic_launcher.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-xhdpi/ic_launcher.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-xxhdpi/ic_launcher.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/colors.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/styles.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradlew.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/local.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings.gradle" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[RF8MB3E7SAB]" />
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../.." />
+  </component>
+  <component name="ProjectId" id="25OB2NCVuIkhCMbuxsGUyE868Yv" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="cidr.known.project.marker" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/app/src/main/assets" />
+      <recent name="$PROJECT_DIR$/app/jni/src" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="app" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
+      <module name="sdl_opengl2.app" />
+      <option name="DEPLOY" value="true" />
+      <option name="DEPLOY_APK_FROM_BUNDLE" value="false" />
+      <option name="DEPLOY_AS_INSTANT" value="false" />
+      <option name="ARTIFACT_NAME" value="" />
+      <option name="PM_INSTALL_OPTIONS" value="" />
+      <option name="ALL_USERS" value="false" />
+      <option name="ALWAYS_INSTALL_WITH_PM" value="false" />
+      <option name="DYNAMIC_FEATURES_DISABLED_LIST" value="" />
+      <option name="ACTIVITY_EXTRA_FLAGS" value="" />
+      <option name="MODE" value="default_activity" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
+      <option name="SKIP_NOOP_APK_INSTALLATIONS" value="true" />
+      <option name="FORCE_STOP_RUNNING_APP" value="true" />
+      <option name="INSPECTION_WITHOUT_ACTIVITY_RESTART" value="false" />
+      <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
+      <option name="SELECTED_CLOUD_MATRIX_CONFIGURATION_ID" value="-1" />
+      <option name="SELECTED_CLOUD_MATRIX_PROJECT_ID" value="" />
+      <option name="DEBUGGER_TYPE" value="Auto" />
+      <Auto>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+      </Auto>
+      <Hybrid>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+      </Hybrid>
+      <Java />
+      <Native>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+      </Native>
+      <Profilers>
+        <option name="ADVANCED_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_CONFIGURATION_NAME" value="Java/Kotlin Method Sample (legacy)" />
+        <option name="STARTUP_NATIVE_MEMORY_PROFILING_ENABLED" value="false" />
+        <option name="NATIVE_MEMORY_SAMPLE_RATE_BYTES" value="2048" />
+      </Profilers>
+      <option name="DEEP_LINK" value="" />
+      <option name="ACTIVITY_CLASS" value="" />
+      <option name="SEARCH_ACTIVITY_IN_GLOBAL_SCOPE" value="false" />
+      <option name="SKIP_ACTIVITY_VALIDATION" value="false" />
+      <method v="2">
+        <option name="Android.Gradle.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="f47be98f-2a62-4b43-991d-92824aab576e" name="Default Changelist" comment="" />
+      <created>1645388045418</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1645388045418</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+</project>
