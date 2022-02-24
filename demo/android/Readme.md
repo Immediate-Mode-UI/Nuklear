@@ -16,7 +16,7 @@ This folder contains all the dependencies for build a project based on **OpenGL 
 
 `sdl2surface_rawfb`:
 
-This folder contains all the dependencies for build a project based on **Raw SDL Surface**,  OpenGL context will not be accessible inside this project, anyways under the hood SDL works with OpenGL, just like the previous demo you will found the project builded in folder `build` named as ***com.sdl2rawfb.nuklear*** .
+This folder contains all the dependencies for build a project based on **Raw SDL Surface**,  OpenGL context will not be accessible inside this project, anyways under the hood SDL works with OpenGL, just like the previous demo you will find the project builded in folder `build` named as ***com.sdl2rawfb.nuklear*** .
 
 `project-template`:
 
