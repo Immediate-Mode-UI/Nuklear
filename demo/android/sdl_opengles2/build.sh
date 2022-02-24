@@ -6,7 +6,7 @@
 
 SOURCES=()
 MKSOURCES=""
-CURDIR=`pwd -P`
+CURDIR="$( pwd -P )"
 
 
 if [ -z "$SDLPATH" ];then
@@ -19,7 +19,7 @@ if [ -z "$ANDROID_HOME" ];then
     exit 1
 fi
 
-if [ ! -d "$ANDROID_HOME/ndk-bundle" -a -z "$ANDROID_NDK_HOME" ]; then
+if [ ! -d "$ANDROID_HOME/ndk-bundle" ] && [ -z "$ANDROID_NDK_HOME" ];  then
     echo "Please set the ANDROID_NDK_HOME directory to the path of the Android NDK"
     exit 1
 fi
@@ -29,7 +29,7 @@ APPARR=(${APP//./ })
 BUILDPATH="$CURDIR/../build/$APP"
 
 # Start Building
-
+# Whe are erasing previos building
 rm -rf $BUILDPATH
 mkdir -p $BUILDPATH
 
@@ -92,6 +92,6 @@ public class $ACTIVITY extends SDLActivity
 }
 __EOF__
 
-# Update project and build
+# Updating and building project
 cd $BUILDPATH
 ./gradlew installDebug
