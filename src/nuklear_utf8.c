@@ -23,7 +23,7 @@ nk_utf_validate(nk_rune *u, int i)
     return i;
 }
 NK_INTERN nk_rune
-nk_utf_decode_byte(char c, int *i)
+nk_utf_decode_byte(char c, nk_size *i)
 {
     NK_ASSERT(i);
     if (!i) return 0;
@@ -34,24 +34,24 @@ nk_utf_decode_byte(char c, int *i)
     return 0;
 }
 NK_API int
-nk_utf_decode(const char *c, nk_rune *u, int clen)
+nk_utf_decode(struct nk_slice str, nk_rune *u)
 {
-    int i, j, len, type=0;
+    nk_size i, j, len, type=0;
     nk_rune udecoded;
 
-    NK_ASSERT(c);
+    NK_ASSERT(str.ptr);
     NK_ASSERT(u);
 
-    if (!c || !u) return 0;
-    if (!clen) return 0;
+    if (!str.ptr || !u) return 0;
+    if (!str.len) return 0;
     *u = NK_UTF_INVALID;
 
-    udecoded = nk_utf_decode_byte(c[0], &len);
+    udecoded = nk_utf_decode_byte(str.ptr[0], &len);
     if (!NK_BETWEEN(len, 1, NK_UTF_SIZE))
         return 1;
 
-    for (i = 1, j = 1; i < clen && j < len; ++i, ++j) {
-        udecoded = (udecoded << 6) | nk_utf_decode_byte(c[i], &type);
+    for (i = 1, j = 1; i < str.len && j < len; ++i, ++j) {
+        udecoded = (udecoded << 6) | nk_utf_decode_byte(str.ptr[i], &type);
         if (type != 0)
             return j;
     }
@@ -82,63 +82,48 @@ nk_utf_encode(nk_rune u, char *c, int clen)
     return len;
 }
 NK_API int
-nk_utf_len(const char *str, int len)
+nk_utf_len(struct nk_slice str)
 {
-    const char *text;
     int glyphs = 0;
-    int text_len;
     int glyph_len;
-    int src_len = 0;
+    nk_size src_len = 0;
     nk_rune unicode;
 
-    NK_ASSERT(str);
-    if (!str || !len) return 0;
+    NK_ASSERT(str.ptr);
+    if (!str.ptr || !str.len) return 0;
 
-    text = str;
-    text_len = len;
-    glyph_len = nk_utf_decode(text, &unicode, text_len);
-    while (glyph_len && src_len < len) {
+    glyph_len = nk_utf_decode(str, &unicode);
+    while (glyph_len && src_len < str.len) {
         glyphs++;
         src_len = src_len + glyph_len;
-        glyph_len = nk_utf_decode(text + src_len, &unicode, text_len - src_len);
+        glyph_len = nk_utf_decode(nk_substr(str, src_len, str.len), &unicode);
     }
     return glyphs;
 }
-NK_API const char*
-nk_utf_at(const char *buffer, int length, int index,
-    nk_rune *unicode, int *len)
+NK_API struct nk_slice
+nk_utf_at(struct nk_slice buffer, int index,
+    nk_rune *unicode)
 {
     int i = 0;
     int src_len = 0;
     int glyph_len = 0;
-    const char *text;
-    int text_len;
 
-    NK_ASSERT(buffer);
+    NK_ASSERT(buffer.ptr);
     NK_ASSERT(unicode);
-    NK_ASSERT(len);
 
-    if (!buffer || !unicode || !len) return 0;
+    if (!buffer.ptr || !unicode) return nk_slicez("");
     if (index < 0) {
         *unicode = NK_UTF_INVALID;
-        *len = 0;
-        return 0;
+        return nk_slicez("");
     }
 
-    text = buffer;
-    text_len = length;
-    glyph_len = nk_utf_decode(text, unicode, text_len);
-    while (glyph_len) {
-        if (i == index) {
-            *len = glyph_len;
-            break;
-        }
-
+    glyph_len = nk_utf_decode(buffer, unicode);
+    while (glyph_len && i != index) {
         i++;
         src_len = src_len + glyph_len;
-        glyph_len = nk_utf_decode(text + src_len, unicode, text_len - src_len);
+        glyph_len = nk_utf_decode(nk_substr(buffer, src_len, buffer.len), unicode);
     }
-    if (i != index) return 0;
-    return buffer + src_len;
+    if (i != index) return nk_slicez("");
+    return nk_substr(buffer, src_len, src_len + glyph_len);
 }
 

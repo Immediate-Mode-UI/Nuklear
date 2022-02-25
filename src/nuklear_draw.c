@@ -516,15 +516,16 @@ nk_push_custom(struct nk_command_buffer *b, struct nk_rect r,
 }
 NK_API void
 nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
-    const char *string, int length, const struct nk_user_font *font,
+    struct nk_slice string, const struct nk_user_font *font,
     struct nk_color bg, struct nk_color fg)
 {
+    int length = string.len;
     float text_width = 0;
     struct nk_command_text *cmd;
 
     NK_ASSERT(b);
     NK_ASSERT(font);
-    if (!b || !string || !length || (bg.a == 0 && fg.a == 0)) return;
+    if (!b || !string.ptr || !string.len || (bg.a == 0 && fg.a == 0)) return;
     if (b->use_clipping) {
         const struct nk_rect *c = &b->clip;
         if (c->w == 0 || c->h == 0 || !NK_INTERSECT(r.x, r.y, r.w, r.h, c->x, c->y, c->w, c->h))
@@ -532,11 +533,11 @@ nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
     }
 
     /* make sure text fits inside bounds */
-    text_width = font->width(font->userdata, font->height, string, length);
+    text_width = font->width(font->userdata, font->height, string);
     if (text_width > r.w){
         int glyphs = 0;
         float txt_width = (float)text_width;
-        length = nk_text_clamp(font, string, length, r.w, &glyphs, &txt_width, 0,0);
+        length = nk_text_clamp(font, string, r.w, &glyphs, &txt_width, 0,0);
     }
 
     if (!length) return;
@@ -552,7 +553,7 @@ nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
     cmd->font = font;
     cmd->length = length;
     cmd->height = font->height;
-    NK_MEMCPY(cmd->string, string, (nk_size)length);
+    NK_MEMCPY(cmd->string, string.ptr, (nk_size)length);
     cmd->string[length] = '\0';
 }
 

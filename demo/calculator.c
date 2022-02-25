@@ -2,7 +2,7 @@
 static void
 calculator(struct nk_context *ctx)
 {
-    if (nk_begin(ctx, "Calculator", nk_rect(10, 10, 180, 250),
+    if (nk_begin(ctx, nk_slicez("Calculator"), nk_rect(10, 10, 180, 250),
         NK_WINDOW_BORDER|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_MOVABLE))
     {
         static int set = 0, prev = 0, op = 0;
@@ -24,19 +24,19 @@ calculator(struct nk_context *ctx)
         for (i = 0; i < 16; ++i) {
             if (i >= 12 && i < 15) {
                 if (i > 12) continue;
-                if (nk_button_label(ctx, "C")) {
+                if (nk_button_label(ctx, nk_slicez("C"))) {
                     a = b = op = 0; current = &a; set = 0;
-                } if (nk_button_label(ctx, "0")) {
+                } if (nk_button_label(ctx, nk_slicez("0"))) {
                     *current = *current*10.0f; set = 0;
-                } if (nk_button_label(ctx, "=")) {
+                } if (nk_button_label(ctx, nk_slicez("="))) {
                     solve = 1; prev = op; op = 0;
                 }
             } else if (((i+1) % 4)) {
-                if (nk_button_text(ctx, &numbers[(i/4)*3+i%4], 1)) {
+                if (nk_button_label(ctx, nk_slice(&numbers[(i/4)*3+i%4], 1))) {
                     *current = *current * 10.0f + numbers[(i/4)*3+i%4] - '0';
                     set = 0;
                 }
-            } else if (nk_button_text(ctx, &ops[i/4], 1)) {
+            } else if (nk_button_label(ctx, nk_slice(&ops[i/4], 1))) {
                 if (!set) {
                     if (current != &b) {
                         current = &b;
