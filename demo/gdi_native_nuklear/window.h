@@ -130,8 +130,8 @@ void nkgdi_window_create(struct nkgdi_window* wnd, unsigned int width, unsigned 
     wnd->_internal.is_maximized = 0;
     wnd->_internal.drag_offset.x = 0;
     wnd->_internal.drag_offset.y = 0;
-    wnd->_internal.width = 0;
-    wnd->_internal.height = 0;
+    wnd->_internal.width = width;
+    wnd->_internal.height = height;
 }
 
 void nkgdi_window_destroy(struct nkgdi_window* wnd)
@@ -193,7 +193,7 @@ int nkgdi_window_update(struct nkgdi_window* wnd)
             nk_window_set_bounds(wnd->_internal.nk_ctx, title, nk_rect(0, 0, wnd->_internal.width, wnd->_internal.height));
         if (nk_begin(wnd->_internal.nk_ctx, title, nk_rect(0, 0, wnd->_internal.width, wnd->_internal.height), window_flags))
         {
-            if(!wnd->cb_on_draw(wnd->_internal.nk_ctx))
+            if(wnd->cb_on_draw && !wnd->cb_on_draw(wnd->_internal.nk_ctx))
                 wnd->_internal.is_open = 0;
 
             // Update window size
