@@ -2,6 +2,11 @@
  * Nuklear - 1.32.0 - public domain
  * no warrenty implied; use at your own risk.
  * authored from 2015-2016 by Micha Mettke
+ * 
+ * Modified GDI backend 2022
+ * Now based on a context that is required for each API function call.
+ * Removes the global state --> you can have multiple windows :-)
+ * 
  */
  /*
   * ==============================================================
