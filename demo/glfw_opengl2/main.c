@@ -25,7 +25,7 @@
 #include "nuklear_glfw_gl2.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "../../demo/common/filebrowser/stb_image.h"
 
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 800
@@ -132,16 +132,16 @@ int main(void)
     #ifdef INCLUDE_FILE_BROWSER
     /* icons */
     glEnable(GL_TEXTURE_2D);
-    media.icons.home = icon_load("icon/home.png");
-    media.icons.directory = icon_load("icon/directory.png");
-    media.icons.computer = icon_load("icon/computer.png");
-    media.icons.desktop = icon_load("icon/desktop.png");
-    media.icons.default_file = icon_load("icon/default.png");
-    media.icons.text_file = icon_load("icon/text.png");
-    media.icons.music_file = icon_load("icon/music.png");
-    media.icons.font_file =  icon_load("icon/font.png");
-    media.icons.img_file = icon_load("icon/img.png");
-    media.icons.movie_file = icon_load("icon/movie.png");
+    media.icons.home = icon_load("../../demo/common/filebrowser/icon/home.png");
+    media.icons.directory = icon_load("../../demo/common/filebrowser/icon/directory.png");
+    media.icons.computer = icon_load("../../demo/common/filebrowser/icon/computer.png");
+    media.icons.desktop = icon_load("../../demo/common/filebrowser/icon/desktop.png");
+    media.icons.default_file = icon_load("../../demo/common/filebrowser/icon/default.png");
+    media.icons.text_file = icon_load("../../demo/common/filebrowser/icon/text.png");
+    media.icons.music_file = icon_load("../../demo/common/filebrowser/icon/music.png");
+    media.icons.font_file =  icon_load("../../demo/common/filebrowser/icon/font.png");
+    media.icons.img_file = icon_load("../../demo/common/filebrowser/icon/img.png");
+    media.icons.movie_file = icon_load("../../demo/common/filebrowser/icon/movie.png");
     media_init(&media);
 
     file_browser_init(&browser, &media);
