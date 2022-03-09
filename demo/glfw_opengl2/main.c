@@ -37,13 +37,13 @@
  * ===============================================================*/
 /* This are some code examples to provide a small overview of what can be
  * done with this library. To try out an example uncomment the defines */
-/*#define INCLUDE_ALL */
-/*#define INCLUDE_STYLE */
-/*#define INCLUDE_CALCULATOR */
+/* #define INCLUDE_ALL          */
+/* #define INCLUDE_STYLE        */
+/* #define INCLUDE_CALCULATOR   */
 #define INCLUDE_CANVAS
-#define INCLUDE_FILE_BROWSER
-/* #define INCLUDE_OVERVIEW */
-/*#define INCLUDE_NODE_EDITOR */
+/* #define INCLUDE_FILE_BROWSER */
+/* #define INCLUDE_OVERVIEW     */
+/* #define INCLUDE_NODE_EDITOR  */
 
 #ifdef INCLUDE_ALL
   #define INCLUDE_STYLE
@@ -54,22 +54,22 @@
 #endif
 
 #ifdef INCLUDE_STYLE
-  #include "../style.c"
+  #include "../../demo/common/style.c"
 #endif
 #ifdef INCLUDE_CALCULATOR
-  #include "../calculator.c"
+  #include "../../demo/common/calculator.c"
 #endif
 #ifdef INCLUDE_CANVAS
-  #include "../canvas.c"
+  #include "../../demo/common/canvas.c"
 #endif
 #ifdef INCLUDE_FILE_BROWSER
-  #include "../file_browser.c"
+  #include "../../demo/common/file_browser.c"
 #endif
 #ifdef INCLUDE_OVERVIEW
-  #include "../overview.c"
+  #include "../../demo/common/overview.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
-  #include "../node_editor.c"
+  #include "../../demo/common/node_editor.c"
 #endif
 
 /* ===============================================================
