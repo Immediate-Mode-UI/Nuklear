@@ -76,6 +76,8 @@ main(int argc, char *argv[])
     SDL_Renderer *renderer;
     int running = 1;
     int flags = 0;
+    unsigned char oversample_h = 1;
+    unsigned char oversample_v = 1;
 
     /* GUI */
     struct nk_context *ctx;
@@ -112,22 +114,53 @@ main(int argc, char *argv[])
         exit(-1);
     }
 
+    /* scale the renderer output for High-DPI displays */
+    {
+        int render_w, render_h;
+        int window_w, window_h;
+        float scale_x, scale_y;
+        SDL_GetRendererOutputSize(renderer, &render_w, &render_h);
+        SDL_GetWindowSize(win, &window_w, &window_h);
+        scale_x = (float)(render_w) / (float)(window_w);
+        scale_y = (float)(render_h) / (float)(window_h);
+        SDL_RenderSetScale(renderer, scale_x, scale_y);
+        if (scale_x > 1) {
+            oversample_h = nk_iceilf(scale_x);
+        }
+        if (scale_y > 1) {
+            oversample_v = nk_iceilf(scale_y);
+        }
+    }
 
     /* GUI */
     ctx = nk_sdl_init(win, renderer);
     /* Load Fonts: if none of these are loaded a default font will be used  */
     /* Load Cursor: if you uncomment cursor loading please hide the cursor */
-    {struct nk_font_atlas *atlas;
-    nk_sdl_font_stash_begin(&atlas);
-    /*struct nk_font *droid = nk_font_atlas_add_from_file(atlas, "../../../extra_font/DroidSans.ttf", 14, 0);*/
-    /*struct nk_font *roboto = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Roboto-Regular.ttf", 16, 0);*/
-    /*struct nk_font *future = nk_font_atlas_add_from_file(atlas, "../../../extra_font/kenvector_future_thin.ttf", 13, 0);*/
-    /*struct nk_font *clean = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyClean.ttf", 12, 0);*/
-    /*struct nk_font *tiny = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyTiny.ttf", 10, 0);*/
-    /*struct nk_font *cousine = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Cousine-Regular.ttf", 13, 0);*/
-    nk_sdl_font_stash_end();
-    /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
-    /*nk_style_set_font(ctx, &roboto->handle)*/;}
+    {
+        struct nk_font_atlas *atlas;
+        struct nk_font_config config = nk_font_config(0);
+
+        /* oversample the fonts for high-DPI displays */
+        if (oversample_h > 1) {
+            config.oversample_h = oversample_h;
+        }
+        if (oversample_v > 1) {
+            config.oversample_v = oversample_v;
+        }
+
+        /* set up the font atlas and add desired fonts */
+        nk_sdl_font_stash_begin(&atlas);
+        struct nk_font *default_font = nk_font_atlas_add_default(atlas, 12, &config);
+        /*struct nk_font *droid = nk_font_atlas_add_from_file(atlas, "../../../extra_font/DroidSans.ttf", 14, &config);*/
+        /*struct nk_font *roboto = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Roboto-Regular.ttf", 16, &config);*/
+        /*struct nk_font *future = nk_font_atlas_add_from_file(atlas, "../../../extra_font/kenvector_future_thin.ttf", 13, &config);*/
+        /*struct nk_font *clean = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyClean.ttf", 12, &config);*/
+        /*struct nk_font *tiny = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyTiny.ttf", 10, &config);*/
+        /*struct nk_font *cousine = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Cousine-Regular.ttf", 13, &config);*/
+        nk_sdl_font_stash_end();
+        /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
+        nk_style_set_font(ctx, &default_font->handle);
+    }
 
     #ifdef INCLUDE_STYLE
     /*set_style(ctx, THEME_WHITE);*/
@@ -212,4 +245,3 @@ cleanup:
     SDL_Quit();
     return 0;
 }
-
