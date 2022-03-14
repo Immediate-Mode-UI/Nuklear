@@ -123,8 +123,8 @@ nk_sdl_render(enum nk_anti_aliasing AA)
 
             {
                 SDL_Rect r;
-                r.x = cmd->clip_rect.x;
-                r.y = cmd->clip_rect.y;
+                r.x = NK_MAX(0, (int)(cmd->clip_rect.x));
+                r.y = NK_MAX(0, (int)(cmd->clip_rect.y));
                 r.w = cmd->clip_rect.w;
                 r.h = cmd->clip_rect.h;
                 SDL_RenderSetClipRect(sdl.renderer, &r);
