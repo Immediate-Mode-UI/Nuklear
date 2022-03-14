@@ -123,10 +123,22 @@ nk_sdl_render(enum nk_anti_aliasing AA)
 
             {
                 SDL_Rect r;
-                r.x = NK_MAX(0, (int)(cmd->clip_rect.x));
-                r.y = NK_MAX(0, (int)(cmd->clip_rect.y));
+                r.x = cmd->clip_rect.x;
+                r.y = cmd->clip_rect.y;
                 r.w = cmd->clip_rect.w;
                 r.h = cmd->clip_rect.h;
+
+                /* adjust the clip rect if its coordinates are negative, necessary for Metal to render properly */
+                /* see https://discourse.libsdl.org/t/rendergeometryraw-producing-different-results-in-metal-vs-opengl/34953/5 */
+                /*if (r.x < 0) {
+                    r.w += r.x;
+                    r.x = 0;
+                }
+                if (r.y < 0) {
+                    r.h += r.y;
+                    r.y = 0;
+                }*/
+
                 SDL_RenderSetClipRect(sdl.renderer, &r);
             }
 
