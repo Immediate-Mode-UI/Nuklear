@@ -19,7 +19,7 @@ NK_API int                  nk_sdl_handle_event(SDL_Event *evt);
 NK_API void                 nk_sdl_render(enum nk_anti_aliasing);
 NK_API void                 nk_sdl_shutdown(void);
 
-#if SDL_COMPILEDVERSION <= SDL_VERSIONNUM(2, 0, 22)
+#if SDL_COMPILEDVERSION < SDL_VERSIONNUM(2, 0, 22)
 /* Metal API does not support cliprects with negative coordinates or large
  * dimensions. The issue is fixed in SDL2 with version 2.0.22 but until
  * that version is released, the NK_SDL_CLAMP_CLIP_RECT flag can be used to
@@ -224,8 +224,7 @@ nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer)
     SDL_GetRendererInfo(renderer, &info);
     SDL_GetVersion(&runtimeVer);
     if (strncmp("metal", info.name, 5) == 0 &&
-        SDL_COMPILEDVERSION >= SDL_VERSIONNUM(2, 0, 22) &&
-        SDL_VERSIONNUM(runtimeVer.major, runtimeVer.minor, runtimeVer.patch) < SDL_COMPILEDVERSION)
+        SDL_VERSIONNUM(runtimeVer.major, runtimeVer.minor, runtimeVer.patch) < SDL_VERSIONNUM(2, 0, 22))
     {
         SDL_LogWarn(
             SDL_LOG_CATEGORY_APPLICATION,
