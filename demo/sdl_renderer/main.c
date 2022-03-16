@@ -76,10 +76,7 @@ main(int argc, char *argv[])
     SDL_Renderer *renderer;
     int running = 1;
     int flags = 0;
-
-    /* Nuklear settings */
-    unsigned char oversample_h = 1;
-    unsigned char oversample_v = 1;
+    float font_scale = 1;
 
     /* GUI */
     struct nk_context *ctx;
@@ -126,12 +123,7 @@ main(int argc, char *argv[])
         scale_x = (float)(render_w) / (float)(window_w);
         scale_y = (float)(render_h) / (float)(window_h);
         SDL_RenderSetScale(renderer, scale_x, scale_y);
-        if (scale_x > 1) {
-            oversample_h = 3 * nk_iceilf(scale_x);
-        }
-        if (scale_y > 1) {
-            oversample_v = nk_iceilf(scale_y);
-        }
+        font_scale = scale_y;
     }
 
     /* GUI */
@@ -141,28 +133,25 @@ main(int argc, char *argv[])
     {
         struct nk_font_atlas *atlas;
         struct nk_font_config config = nk_font_config(0);
-        struct nk_font *default_font, *droid, *roboto, *future, *clean, *tiny, *cousine;
+        struct nk_font *font;
 
-        /* oversample the fonts for high-DPI displays */
-        if (oversample_h > config.oversample_h) {
-            config.oversample_h = oversample_h;
-        }
-        if (oversample_v > config.oversample_v) {
-            config.oversample_v = oversample_v;
-        }
-
-        /* set up the font atlas and add desired fonts */
+        /* set up the font atlas and add desired font; note that font sizes are
+         * multiplied by font_scale to produce better results at higher DPIs */
         nk_sdl_font_stash_begin(&atlas);
-        default_font = nk_font_atlas_add_default(atlas, 13, &config);
-        /*droid = nk_font_atlas_add_from_file(atlas, "../../../extra_font/DroidSans.ttf", 14, &config);*/
-        /*roboto = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Roboto-Regular.ttf", 16, &config);*/
-        /*future = nk_font_atlas_add_from_file(atlas, "../../../extra_font/kenvector_future_thin.ttf", 13, &config);*/
-        /*clean = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyClean.ttf", 12, &config);*/
-        /*tiny = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyTiny.ttf", 10, &config);*/
-        /*cousine = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Cousine-Regular.ttf", 13, &config);*/
+        font = nk_font_atlas_add_default(atlas, 13 * font_scale, &config);
+        /*font = nk_font_atlas_add_from_file(atlas, "../../../extra_font/DroidSans.ttf", 14 * font_scale, &config);*/
+        /*font = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Roboto-Regular.ttf", 16 * font_scale, &config);*/
+        /*font = nk_font_atlas_add_from_file(atlas, "../../../extra_font/kenvector_future_thin.ttf", 13 * font_scale, &config);*/
+        /*font = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyClean.ttf", 12 * font_scale, &config);*/
+        /*font = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyTiny.ttf", 10 * font_scale, &config);*/
+        /*font = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Cousine-Regular.ttf", 13 * font_scale, &config);*/
         nk_sdl_font_stash_end();
+
+        /* this hack makes the font appear to be scaled down to the desired
+         * size and is only necessary when font_scale > 1 */
+        font->handle.height /= font_scale;
         /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
-        nk_style_set_font(ctx, &default_font->handle);
+        nk_style_set_font(ctx, &font->handle);
     }
 
     #ifdef INCLUDE_STYLE
