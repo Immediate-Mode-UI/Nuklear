@@ -373,7 +373,7 @@ file_browser_run(struct file_browser *browser, struct nk_context *ctx)
     struct media *media = browser->media;
     struct nk_rect total_space;
 
-    if (nk_begin(ctx, "File Browser", nk_rect(50, 50, 800, 600),
+    if (nk_begin(ctx, "File Browser", nk_rect(50, 50, 600, 400),
         NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
             NK_WINDOW_CLOSABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
     {
@@ -406,6 +406,7 @@ file_browser_run(struct file_browser *browser, struct nk_context *ctx)
         /* window layout */
         total_space = nk_window_get_content_region(ctx);
         nk_layout_row(ctx, NK_DYNAMIC, total_space.h, 2, ratio);
+
         nk_group_begin(ctx, "Special", NK_WINDOW_NO_SCROLLBAR);
         {
             struct nk_image home = media->icons.home;
@@ -426,21 +427,25 @@ file_browser_run(struct file_browser *browser, struct nk_context *ctx)
         nk_group_begin(ctx, "Content", 0);
         {
             int index = -1;
-            size_t i = 0, j = 0, k = 0;
+            size_t i = 0, j = 0;
             size_t rows = 0, cols = 0;
             size_t count = browser->dir_count + browser->file_count;
 
-            cols = 4;
+            /* File icons layout */
+            cols = 2;
             rows = count / cols;
+            static float ratio2[] = {0.08f, NK_UNDEFINED};
+            nk_layout_row(ctx, NK_DYNAMIC, 30, 2, ratio2);
             for (i = 0; i <= rows; i += 1) {
-                {size_t n = j + cols;
-                nk_layout_row_dynamic(ctx, 135, (int)cols);
+                size_t n = j + cols;
                 for (; j < count && j < n; ++j) {
-                    /* draw one row of icons */
+                    /* draw one column of icons */
                     if (j < browser->dir_count) {
                         /* draw and execute directory buttons */
                         if (nk_button_image(ctx,media->icons.directory))
                             index = (int)j;
+                        
+                        nk_label(ctx, browser->directories[j], NK_TEXT_LEFT);
                     } else {
                         /* draw and execute files buttons */
                         struct nk_image *icon;
@@ -453,18 +458,12 @@ file_browser_run(struct file_browser *browser, struct nk_context *ctx)
                             ret = 1;
                         }
                     }
-                }}
-                {size_t n = k + cols;
-                nk_layout_row_dynamic(ctx, 20, (int)cols);
-                for (; k < count && k < n; k++) {
-                    /* draw one row of labels */
-                    if (k < browser->dir_count) {
-                        nk_label(ctx, browser->directories[k], NK_TEXT_CENTERED);
-                    } else {
-                        size_t t = k-browser->dir_count;
-                        nk_label(ctx,browser->files[t],NK_TEXT_CENTERED);
+                    /* draw one column of labels */
+                    if (j >= browser->dir_count) {
+                        size_t t = j - browser->dir_count;
+                        nk_label(ctx,browser->files[t],NK_TEXT_LEFT);
                     }
-                }}
+                }
             }
 
             if (index != -1) {
