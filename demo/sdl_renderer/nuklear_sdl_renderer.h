@@ -19,6 +19,16 @@ NK_API int                  nk_sdl_handle_event(SDL_Event *evt);
 NK_API void                 nk_sdl_render(enum nk_anti_aliasing);
 NK_API void                 nk_sdl_shutdown(void);
 
+#if SDL_COMPILEDVERSION < SDL_VERSIONNUM(2, 0, 22)
+/* Metal API does not support cliprects with negative coordinates or large
+ * dimensions. The issue is fixed in SDL2 with version 2.0.22 but until
+ * that version is released, the NK_SDL_CLAMP_CLIP_RECT flag can be used to
+ * ensure the cliprect is itself clipped to the viewport.
+ * See discussion at https://discourse.libsdl.org/t/rendergeometryraw-producing-different-results-in-metal-vs-opengl/34953
+ */
+#define NK_SDL_CLAMP_CLIP_RECT
+#endif
+
 #endif /* NK_SDL_RENDERER_H_ */
 
 /*
@@ -29,6 +39,8 @@ NK_API void                 nk_sdl_shutdown(void);
  * ===============================================================
  */
 #ifdef NK_SDL_RENDERER_IMPLEMENTATION
+
+#include <strings.h>
 
 struct nk_sdl_device {
     struct nk_buffer cmds;
@@ -75,6 +87,9 @@ nk_sdl_render(enum nk_anti_aliasing AA)
 
     {
         SDL_Rect saved_clip;
+#ifdef NK_SDL_CLAMP_CLIP_RECT
+        SDL_Rect viewport;
+#endif
         SDL_bool clipping_enabled;
         int vs = sizeof(struct nk_sdl_vertex);
         size_t vp = offsetof(struct nk_sdl_vertex, position);
@@ -116,6 +131,9 @@ nk_sdl_render(enum nk_anti_aliasing AA)
 
         clipping_enabled = SDL_RenderIsClipEnabled(sdl.renderer);
         SDL_RenderGetClipRect(sdl.renderer, &saved_clip);
+#ifdef NK_SDL_CLAMP_CLIP_RECT
+        SDL_RenderGetViewport(sdl.renderer, &viewport);
+#endif
 
         nk_draw_foreach(cmd, &sdl.ctx, &dev->cmds)
         {
@@ -127,6 +145,22 @@ nk_sdl_render(enum nk_anti_aliasing AA)
                 r.y = cmd->clip_rect.y;
                 r.w = cmd->clip_rect.w;
                 r.h = cmd->clip_rect.h;
+#ifdef NK_SDL_CLAMP_CLIP_RECT
+                if (r.x < 0) {
+                    r.w += r.x;
+                    r.x = 0;
+                }
+                if (r.y < 0) {
+                    r.h += r.y;
+                    r.y = 0;
+                }
+                if (r.h > viewport.h) {
+                    r.h = viewport.h;
+                }
+                if (r.w > viewport.w) {
+                    r.w = viewport.w;
+                }
+#endif
                 SDL_RenderSetClipRect(sdl.renderer, &r);
             }
 
@@ -182,6 +216,25 @@ nk_sdl_clipboard_copy(nk_handle usr, const char *text, int len)
 NK_API struct nk_context*
 nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer)
 {
+#ifndef NK_SDL_CLAMP_CLIP_RECT
+    SDL_RendererInfo info;
+    SDL_version runtimeVer;
+
+    /* warn for cases where NK_SDL_CLAMP_CLIP_RECT should have been set but isn't */
+    SDL_GetRendererInfo(renderer, &info);
+    SDL_GetVersion(&runtimeVer);
+    if (strncmp("metal", info.name, 5) == 0 &&
+        SDL_VERSIONNUM(runtimeVer.major, runtimeVer.minor, runtimeVer.patch) < SDL_VERSIONNUM(2, 0, 22))
+    {
+        SDL_LogWarn(
+            SDL_LOG_CATEGORY_APPLICATION,
+            "renderer is using Metal API but runtime SDL version %d.%d.%d is older than compiled version %d.%d.%d, "
+            "which may cause issues with rendering",
+            runtimeVer.major, runtimeVer.minor, runtimeVer.patch,
+            SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL
+        );
+    }
+#endif
     sdl.win = win;
     sdl.renderer = renderer;
     nk_init_default(&sdl.ctx, 0);
