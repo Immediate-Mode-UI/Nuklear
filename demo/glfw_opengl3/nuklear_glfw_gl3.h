@@ -346,7 +346,7 @@ nk_glfw3_mouse_button_callback(GLFWwindow* win, int button, int action, int mods
 NK_INTERN void
 nk_glfw3_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
 {
-    struct nk_glfw* glfw = usr.ptr;
+    struct nk_glfw* glfw = (struct nk_glfw*)usr.ptr;
     const char *text = glfwGetClipboardString(glfw->win);
     if (text) nk_textedit_paste(edit, text, nk_strlen(text));
     (void)usr;
@@ -355,7 +355,7 @@ nk_glfw3_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
 NK_INTERN void
 nk_glfw3_clipboard_copy(nk_handle usr, const char *text, int len)
 {
-    struct nk_glfw* glfw = usr.ptr;
+    struct nk_glfw* glfw = (struct nk_glfw*)usr.ptr;
     char *str = 0;
     if (!len) return;
     str = (char*)malloc((size_t)len+1);
