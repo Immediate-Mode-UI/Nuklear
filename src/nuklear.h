@@ -177,13 +177,11 @@ extern "C" {
   #endif
 #endif
 
-#ifndef NK_BOOL
-  #ifdef NK_INCLUDE_STANDARD_BOOL
-    #include <stdbool.h>
-    #define NK_BOOL bool
-  #else
-    #define NK_BOOL int /* could be char, use int for drop-in replacement backwards compatibility */
-  #endif
+#ifdef NK_INCLUDE_STANDARD_BOOL
+  #include <stdbool.h>
+  typedef bool nk_bool;
+#else
+  typedef int nk_bool; /* could be char, use int for drop-in replacement backwards compatibility */
 #endif
 
 typedef NK_INT8 nk_char;
@@ -195,7 +193,6 @@ typedef NK_INT32 nk_int;
 typedef NK_UINT32 nk_uint;
 typedef NK_SIZE_TYPE nk_size;
 typedef NK_POINTER_TYPE nk_ptr;
-typedef NK_BOOL nk_bool;
 
 typedef nk_uint nk_hash;
 typedef nk_uint nk_flags;
