@@ -1,5 +1,3 @@
-nk_bool file_browser_is_open;
-
 struct icons {
     struct nk_image desktop;
     struct nk_image home;
@@ -327,7 +325,6 @@ file_browser_reload_directory_content(struct file_browser *browser, const char *
 static void
 file_browser_init(struct file_browser *browser, struct media *media)
 {
-    file_browser_is_open = nk_true;
     memset(browser, 0, sizeof(*browser));
     browser->media = media;
     {
@@ -375,6 +372,7 @@ file_browser_run(struct file_browser *browser, struct nk_context *ctx)
     int ret = 0;
     struct media *media = browser->media;
     struct nk_rect total_space;
+    static nk_bool file_browser_is_open = nk_true;
 
     if (file_browser_is_open)
     {
@@ -492,7 +490,7 @@ file_browser_run(struct file_browser *browser, struct nk_context *ctx)
             {
                 fprintf(stdout, "File dialog has been closed!\n");
                 file_browser_is_open = nk_false;
-            }
+            }            
             if(nk_button_label(ctx, "Save"))
                 fprintf(stdout, "Insert routine to open/save the file!\n");
         }
