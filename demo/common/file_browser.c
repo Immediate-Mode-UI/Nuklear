@@ -491,7 +491,7 @@ file_browser_run(struct file_browser *browser, struct nk_context *ctx)
                 fprintf(stdout, "File dialog has been closed!\n");
                 file_browser_is_open = nk_false;
             }            
-            if(nk_button_label(ctx, "Save"))
+            if(nk_button_label(ctx, "Open"))
                 fprintf(stdout, "Insert routine to open/save the file!\n");
         }
         nk_end(ctx);
