@@ -87,6 +87,8 @@ struct file_browser {
 # include <pwd.h>
 #endif
 
+#include <string.h>
+
 static void
 die(const char *fmt, ...)
 {
