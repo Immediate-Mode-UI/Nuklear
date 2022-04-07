@@ -1126,6 +1126,19 @@ nk_draw_list_add_image(struct nk_draw_list *list, struct nk_image texture,
             nk_vec2(0.0f, 0.0f), nk_vec2(1.0f, 1.0f),color);
 }
 NK_API void
+nk_draw_list_add_image_tiled(struct nk_draw_list *list, struct nk_image texture,
+    struct nk_rect rect, struct nk_color color)
+{
+    NK_ASSERT(list);
+    if (!list) return;
+    /* push new command with given texture */
+    nk_draw_list_push_image(list, texture.handle);
+    /* No support for tiled subimages, texture.region is ignored */
+    nk_draw_list_push_rect_uv(list, nk_vec2(rect.x, rect.y),
+            nk_vec2(rect.x + rect.w, rect.y + rect.h), nk_vec2(0.0f, 0.0f),
+            nk_vec2(rect.w/(float)texture.w, rect.h/(float)texture.h), color);
+}
+NK_API void
 nk_draw_list_add_text(struct nk_draw_list *list, const struct nk_user_font *font,
     struct nk_rect rect, const char *text, int len, float font_height,
     struct nk_color fg)
@@ -1303,7 +1316,10 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
         } break;
         case NK_COMMAND_IMAGE: {
             const struct nk_command_image *i = (const struct nk_command_image*)cmd;
-            nk_draw_list_add_image(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
+	     if(ctx->style.window.tiled_background)
+		 nk_draw_list_add_image_tiled(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
+	     else
+		 nk_draw_list_add_image(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
         } break;
         case NK_COMMAND_CUSTOM: {
             const struct nk_command_custom *c = (const struct nk_command_custom*)cmd;

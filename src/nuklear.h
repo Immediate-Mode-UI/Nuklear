@@ -4619,6 +4619,7 @@ NK_API void nk_draw_list_fill_poly_convex(struct nk_draw_list*, const struct nk_
 
 /* misc */
 NK_API void nk_draw_list_add_image(struct nk_draw_list*, struct nk_image texture, struct nk_rect rect, struct nk_color);
+NK_API void nk_draw_list_add_image_tiled(struct nk_draw_list*, struct nk_image texture, struct nk_rect rect, struct nk_color);
 NK_API void nk_draw_list_add_text(struct nk_draw_list*, const struct nk_user_font*, struct nk_rect, const char *text, int len, float font_height, struct nk_color);
 #ifdef NK_INCLUDE_COMMAND_USERDATA
 NK_API void nk_draw_list_push_userdata(struct nk_draw_list*, nk_handle userdata);
@@ -5005,7 +5006,7 @@ struct nk_style_window_header {
 
 struct nk_style_window {
     struct nk_style_window_header header;
-    struct nk_style_item fixed_background;
+    struct nk_style_item image;
     struct nk_color background;
 
     struct nk_color border_color;
@@ -5025,6 +5026,7 @@ struct nk_style_window {
     float tooltip_border;
     float popup_border;
     float min_row_height_padding;
+    NK_BOOL tiled_background;
 
     float rounding;
     struct nk_vec2 spacing;

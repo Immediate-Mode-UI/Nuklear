@@ -4840,6 +4840,7 @@ NK_API void nk_draw_list_fill_poly_convex(struct nk_draw_list*, const struct nk_
 
 /* misc */
 NK_API void nk_draw_list_add_image(struct nk_draw_list*, struct nk_image texture, struct nk_rect rect, struct nk_color);
+NK_API void nk_draw_list_add_image_tiled(struct nk_draw_list*, struct nk_image texture, struct nk_rect rect, struct nk_color);
 NK_API void nk_draw_list_add_text(struct nk_draw_list*, const struct nk_user_font*, struct nk_rect, const char *text, int len, float font_height, struct nk_color);
 #ifdef NK_INCLUDE_COMMAND_USERDATA
 NK_API void nk_draw_list_push_userdata(struct nk_draw_list*, nk_handle userdata);
@@ -5226,7 +5227,7 @@ struct nk_style_window_header {
 
 struct nk_style_window {
     struct nk_style_window_header header;
-    struct nk_style_item fixed_background;
+    struct nk_style_item image;
     struct nk_color background;
 
     struct nk_color border_color;
@@ -5246,6 +5247,7 @@ struct nk_style_window {
     float tooltip_border;
     float popup_border;
     float min_row_height_padding;
+    NK_BOOL tiled_background;
 
     float rounding;
     struct nk_vec2 spacing;
@@ -10508,6 +10510,19 @@ nk_draw_list_add_image(struct nk_draw_list *list, struct nk_image texture,
             nk_vec2(0.0f, 0.0f), nk_vec2(1.0f, 1.0f),color);
 }
 NK_API void
+nk_draw_list_add_image_tiled(struct nk_draw_list *list, struct nk_image texture,
+    struct nk_rect rect, struct nk_color color)
+{
+    NK_ASSERT(list);
+    if (!list) return;
+    /* push new command with given texture */
+    nk_draw_list_push_image(list, texture.handle);
+    /* No support for tiled subimages, texture.region is ignored */
+    nk_draw_list_push_rect_uv(list, nk_vec2(rect.x, rect.y),
+            nk_vec2(rect.x + rect.w, rect.y + rect.h), nk_vec2(0.0f, 0.0f),
+            nk_vec2(rect.w/(float)texture.w, rect.h/(float)texture.h), color);
+}
+NK_API void
 nk_draw_list_add_text(struct nk_draw_list *list, const struct nk_user_font *font,
     struct nk_rect rect, const char *text, int len, float font_height,
     struct nk_color fg)
@@ -10685,7 +10700,10 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
         } break;
         case NK_COMMAND_IMAGE: {
             const struct nk_command_image *i = (const struct nk_command_image*)cmd;
-            nk_draw_list_add_image(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
+	     if(ctx->style.window.tiled_background)
+		 nk_draw_list_add_image_tiled(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
+	     else
+		 nk_draw_list_add_image(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
         } break;
         case NK_COMMAND_CUSTOM: {
             const struct nk_command_custom *c = (const struct nk_command_custom*)cmd;
@@ -18654,7 +18672,7 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
 
     /* window */
     win->background = table[NK_COLOR_WINDOW];
-    win->fixed_background = nk_style_item_color(table[NK_COLOR_WINDOW]);
+    win->image = nk_style_item_color(table[NK_COLOR_WINDOW]);
     win->border_color = table[NK_COLOR_BORDER];
     win->popup_border_color = table[NK_COLOR_BORDER];
     win->combo_border_color = table[NK_COLOR_BORDER];
@@ -19697,15 +19715,15 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         body.y = (win->bounds.y + layout->header_height);
         body.h = (win->bounds.h - layout->header_height);
 
-        switch(style->window.fixed_background.type) {
+        switch(style->window.image.type) {
             case NK_STYLE_ITEM_IMAGE:
-                nk_draw_image(out, body, &style->window.fixed_background.data.image, nk_white);
+                nk_draw_image(out, body, &style->window.image.data.image, nk_white);
                 break;
             case NK_STYLE_ITEM_NINE_SLICE:
-                nk_draw_nine_slice(out, body, &style->window.fixed_background.data.slice, nk_white);
+                nk_draw_nine_slice(out, body, &style->window.image.data.slice, nk_white);
                 break;
             case NK_STYLE_ITEM_COLOR:
-                nk_fill_rect(out, body, 0, style->window.fixed_background.data.color);
+                nk_fill_rect(out, body, 0, style->window.image.data.color);
                 break;
         }
     }
@@ -23542,7 +23560,8 @@ NK_API nk_bool
 nk_image_is_subimage(const struct nk_image* img)
 {
     NK_ASSERT(img);
-    return !(img->w == 0 && img->h == 0);
+    return !(img->region[0] == 0 && img->region[1] == 0 &&
+	     img->region[2] == 0 && img->region[3] == 0);
 }
 NK_API void
 nk_image(struct nk_context *ctx, struct nk_image img)
@@ -29629,6 +29648,8 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2022/04/07 (5.0.0)  - tiling window backgrounds, nk_style_window.fixed_background
+///                         renamed to nk_style_window.image
 /// - 2022/02/03 (4.9.6)  - Allow overriding the NK_INV_SQRT function, similar to NK_SIN and NK_COS
 /// - 2021/12/22 (4.9.5)  - Revert layout bounds not accounting for padding due to regressions
 /// - 2021/12/22 (4.9.4)  - Fix checking hovering when window is minimized

@@ -301,15 +301,15 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         body.y = (win->bounds.y + layout->header_height);
         body.h = (win->bounds.h - layout->header_height);
 
-        switch(style->window.fixed_background.type) {
+        switch(style->window.image.type) {
             case NK_STYLE_ITEM_IMAGE:
-                nk_draw_image(out, body, &style->window.fixed_background.data.image, nk_white);
+                nk_draw_image(out, body, &style->window.image.data.image, nk_white);
                 break;
             case NK_STYLE_ITEM_NINE_SLICE:
-                nk_draw_nine_slice(out, body, &style->window.fixed_background.data.slice, nk_white);
+                nk_draw_nine_slice(out, body, &style->window.image.data.slice, nk_white);
                 break;
             case NK_STYLE_ITEM_COLOR:
-                nk_fill_rect(out, body, 0, style->window.fixed_background.data.color);
+                nk_fill_rect(out, body, 0, style->window.image.data.color);
                 break;
         }
     }

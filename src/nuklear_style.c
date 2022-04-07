@@ -598,7 +598,7 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
 
     /* window */
     win->background = table[NK_COLOR_WINDOW];
-    win->fixed_background = nk_style_item_color(table[NK_COLOR_WINDOW]);
+    win->image = nk_style_item_color(table[NK_COLOR_WINDOW]);
     win->border_color = table[NK_COLOR_BORDER];
     win->popup_border_color = table[NK_COLOR_BORDER];
     win->combo_border_color = table[NK_COLOR_BORDER];
