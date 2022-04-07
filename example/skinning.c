@@ -415,7 +415,7 @@ int main(int argc, char *argv[])
 
         /* window */
         ctx.style.window.background = nk_rgb(204,204,204);
-        ctx.style.window.fixed_background = nk_style_item_image(media.window);
+        ctx.style.window.image = nk_style_item_image(media.window);
         ctx.style.window.border_color = nk_rgb(67,67,67);
         ctx.style.window.combo_border_color = nk_rgb(67,67,67);
         ctx.style.window.contextual_border_color = nk_rgb(67,67,67);

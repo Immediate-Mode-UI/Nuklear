@@ -84,8 +84,8 @@ ui_piemenu(struct nk_context *ctx, struct nk_vec2 pos, float radius,
 
     /* pie menu popup */
     struct nk_color border = ctx->style.window.border_color;
-    struct nk_style_item background = ctx->style.window.fixed_background;
-    ctx->style.window.fixed_background = nk_style_item_hide();
+    struct nk_style_item background = ctx->style.window.image;
+    ctx->style.window.image = nk_style_item_hide();
     ctx->style.window.border_color = nk_rgba(0,0,0,0);
 
     total_space  = nk_window_get_content_region(ctx);
@@ -167,7 +167,7 @@ ui_piemenu(struct nk_context *ctx, struct nk_vec2 pos, float radius,
     ctx->style.window.padding = nk_vec2(8,8);
     nk_popup_end(ctx);
 
-    ctx->style.window.fixed_background = background;
+    ctx->style.window.image = background;
     ctx->style.window.border_color = border;
     return ret;
 }

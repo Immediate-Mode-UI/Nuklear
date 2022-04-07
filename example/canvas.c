@@ -364,12 +364,12 @@ canvas_begin(struct nk_context *ctx, struct nk_canvas *canvas, nk_flags flags,
     /* save style properties which will be overwritten */
     canvas->panel_padding = ctx->style.window.padding;
     canvas->item_spacing = ctx->style.window.spacing;
-    canvas->window_background = ctx->style.window.fixed_background;
+    canvas->window_background = ctx->style.window.image;
 
     /* use the complete window space and set background */
     ctx->style.window.spacing = nk_vec2(0,0);
     ctx->style.window.padding = nk_vec2(0,0);
-    ctx->style.window.fixed_background = nk_style_item_color(background_color);
+    ctx->style.window.image = nk_style_item_color(background_color);
 
     /* create/update window and set position + size */
     flags = flags & ~NK_WINDOW_DYNAMIC;
@@ -390,7 +390,7 @@ canvas_end(struct nk_context *ctx, struct nk_canvas *canvas)
     nk_end(ctx);
     ctx->style.window.spacing = canvas->panel_padding;
     ctx->style.window.padding = canvas->item_spacing;
-    ctx->style.window.fixed_background = canvas->window_background;
+    ctx->style.window.image = canvas->window_background;
 }
 
 int main(int argc, char *argv[])
