@@ -87,6 +87,8 @@ struct file_browser {
 # include <pwd.h>
 #endif
 
+#include <string.h>
+
 static void
 die(const char *fmt, ...)
 {
@@ -366,6 +368,13 @@ file_browser_free(struct file_browser *browser)
     memset(browser, 0, sizeof(*browser));
 }
 
+int cmp_fn(const void *str1, const void *str2)
+{
+    const char *str1_ret = *(const char **)str1;
+    const char *str2_ret = *(const char **)str2;
+    return strcmp(str1_ret, str2_ret);
+}
+
 static int
 file_browser_run(struct file_browser *browser, struct nk_context *ctx)
 {
@@ -448,6 +457,7 @@ file_browser_run(struct file_browser *browser, struct nk_context *ctx)
                             if (nk_button_image(ctx,media->icons.directory))
                                 index = (int)j;
                             
+                            qsort(browser->directories, browser->dir_count, sizeof(char *), cmp_fn);
                             nk_label(ctx, browser->directories[j], NK_TEXT_LEFT);
                         } else {
                             /* draw and execute files buttons */
@@ -464,6 +474,7 @@ file_browser_run(struct file_browser *browser, struct nk_context *ctx)
                         /* draw one column of labels */
                         if (j >= browser->dir_count) {
                             size_t t = j - browser->dir_count;
+                            qsort(browser->files, browser->file_count, sizeof(char *), cmp_fn);
                             nk_label(ctx,browser->files[t],NK_TEXT_LEFT);
                         }
                     }
