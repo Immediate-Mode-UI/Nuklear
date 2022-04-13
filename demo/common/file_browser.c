@@ -1,3 +1,12 @@
+#ifdef __unix__
+#include <dirent.h>
+#include <unistd.h>
+#endif
+
+#ifndef _WIN32
+# include <pwd.h>
+#endif
+
 struct icons {
     struct nk_image desktop;
     struct nk_image home;
@@ -77,17 +86,6 @@ struct file_browser {
     size_t dir_count;
     struct media *media;
 };
-
-#ifdef __unix__
-#include <dirent.h>
-#include <unistd.h>
-#endif
-
-#ifndef _WIN32
-# include <pwd.h>
-#endif
-
-#include <string.h>
 
 static void
 die(const char *fmt, ...)
