@@ -372,7 +372,7 @@ int cmp_fn(const void *str1, const void *str2)
 {
     const char *str1_ret = *(const char **)str1;
     const char *str2_ret = *(const char **)str2;
-    return strcmp(str1_ret, str2_ret);
+    return nk_stricmp(str1_ret, str2_ret);
 }
 
 static int
