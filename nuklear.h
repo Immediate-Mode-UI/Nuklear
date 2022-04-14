@@ -4439,6 +4439,7 @@ enum nk_command_type {
     NK_COMMAND_POLYLINE,
     NK_COMMAND_TEXT,
     NK_COMMAND_IMAGE,
+    NK_COMMAND_IMAGE_TILED,    
     NK_COMMAND_CUSTOM
 };
 
@@ -4636,6 +4637,7 @@ NK_API void nk_fill_polygon(struct nk_command_buffer*, float*, int point_count, 
 
 /* misc */
 NK_API void nk_draw_image(struct nk_command_buffer*, struct nk_rect, const struct nk_image*, struct nk_color);
+NK_API void nk_draw_image_tiled(struct nk_command_buffer*, struct nk_rect, const struct nk_image*, struct nk_color);
 NK_API void nk_draw_nine_slice(struct nk_command_buffer*, struct nk_rect, const struct nk_nine_slice*, struct nk_color);
 NK_API void nk_draw_text(struct nk_command_buffer*, struct nk_rect, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color);
 NK_API void nk_push_scissor(struct nk_command_buffer*, struct nk_rect);
@@ -9240,6 +9242,29 @@ nk_draw_image(struct nk_command_buffer *b, struct nk_rect r,
     cmd->col = col;
 }
 NK_API void
+nk_draw_image_tiled(struct nk_command_buffer *b, struct nk_rect r,
+    const struct nk_image *img, struct nk_color col)
+{
+    struct nk_command_image *cmd;
+    NK_ASSERT(b);
+    if (!b) return;
+    if (b->use_clipping) {
+        const struct nk_rect *c = &b->clip;
+        if (c->w == 0 || c->h == 0 || !NK_INTERSECT(r.x, r.y, r.w, r.h, c->x, c->y, c->w, c->h))
+            return;
+    }
+    
+    cmd = (struct nk_command_image*)
+        nk_command_buffer_push(b, NK_COMMAND_IMAGE_TILED, sizeof(*cmd));
+    if (!cmd) return;
+    cmd->x = (short)r.x;
+    cmd->y = (short)r.y;
+    cmd->w = (unsigned short)NK_MAX(0, r.w);
+    cmd->h = (unsigned short)NK_MAX(0, r.h);
+    cmd->img = *img;
+    cmd->col = col;
+}
+NK_API void
 nk_draw_nine_slice(struct nk_command_buffer *b, struct nk_rect r,
     const struct nk_nine_slice *slc, struct nk_color col)
 {
@@ -10700,11 +10725,12 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
         } break;
         case NK_COMMAND_IMAGE: {
             const struct nk_command_image *i = (const struct nk_command_image*)cmd;
-	     if(ctx->style.window.tiled_background)
-		 nk_draw_list_add_image_tiled(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
-	     else
-		 nk_draw_list_add_image(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
-        } break;
+	     nk_draw_list_add_image(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
+	 } break;
+	 case NK_COMMAND_IMAGE_TILED: {
+	    const struct nk_command_image *i = (const struct nk_command_image*)cmd;
+	    nk_draw_list_add_image_tiled(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
+	 } break;
         case NK_COMMAND_CUSTOM: {
             const struct nk_command_custom *c = (const struct nk_command_custom*)cmd;
             c->callback(&ctx->draw_list, c->x, c->y, c->w, c->h, c->callback_data);
@@ -19717,7 +19743,10 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
 
         switch(style->window.image.type) {
             case NK_STYLE_ITEM_IMAGE:
-                nk_draw_image(out, body, &style->window.image.data.image, nk_white);
+		 if(ctx->style.window.tiled_background)
+		     nk_draw_image_tiled(out, body, &style->window.image.data.image, nk_white);
+		 else 
+		     nk_draw_image(out, body, &style->window.image.data.image, nk_white);
                 break;
             case NK_STYLE_ITEM_NINE_SLICE:
                 nk_draw_nine_slice(out, body, &style->window.image.data.slice, nk_white);

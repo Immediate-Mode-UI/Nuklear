@@ -303,7 +303,10 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
 
         switch(style->window.image.type) {
             case NK_STYLE_ITEM_IMAGE:
-                nk_draw_image(out, body, &style->window.image.data.image, nk_white);
+		 if(ctx->style.window.tiled_background)
+		     nk_draw_image_tiled(out, body, &style->window.image.data.image, nk_white);
+		 else 
+		     nk_draw_image(out, body, &style->window.image.data.image, nk_white);
                 break;
             case NK_STYLE_ITEM_NINE_SLICE:
                 nk_draw_nine_slice(out, body, &style->window.image.data.slice, nk_white);

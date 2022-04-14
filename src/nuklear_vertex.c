@@ -1316,11 +1316,12 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
         } break;
         case NK_COMMAND_IMAGE: {
             const struct nk_command_image *i = (const struct nk_command_image*)cmd;
-	     if(ctx->style.window.tiled_background)
-		 nk_draw_list_add_image_tiled(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
-	     else
-		 nk_draw_list_add_image(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
-        } break;
+	     nk_draw_list_add_image(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
+	 } break;
+	 case NK_COMMAND_IMAGE_TILED: {
+	    const struct nk_command_image *i = (const struct nk_command_image*)cmd;
+	    nk_draw_list_add_image_tiled(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
+	 } break;
         case NK_COMMAND_CUSTOM: {
             const struct nk_command_custom *c = (const struct nk_command_custom*)cmd;
             c->callback(&ctx->draw_list, c->x, c->y, c->w, c->h, c->callback_data);
