@@ -3839,6 +3839,10 @@ struct nk_font_atlas {
     int tex_width;
     int tex_height;
 
+    /* Use max_pack_XXX to set maximum packing sizes for this atlas */
+    nk_size max_pack_width;
+    nk_size max_pack_height;
+
     struct nk_allocator permanent;
     struct nk_allocator temporary;
 
