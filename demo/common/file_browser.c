@@ -1,3 +1,5 @@
+#include <string.h> // strcpy, strlen
+
 #ifdef __unix__
 #include <dirent.h>
 #include <unistd.h>
@@ -454,7 +456,7 @@ file_browser_run(struct file_browser *browser, struct nk_context *ctx)
                             /* draw and execute directory buttons */
                             if (nk_button_image(ctx,media->icons.directory))
                                 index = (int)j;
-                            
+
                             qsort(browser->directories, browser->dir_count, sizeof(char *), cmp_fn);
                             nk_label(ctx, browser->directories[j], NK_TEXT_LEFT);
                         } else {
@@ -499,7 +501,7 @@ file_browser_run(struct file_browser *browser, struct nk_context *ctx)
             {
                 fprintf(stdout, "File dialog has been closed!\n");
                 file_browser_is_open = nk_false;
-            }            
+            }
             if(nk_button_label(ctx, "Open"))
                 fprintf(stdout, "Insert routine to open/save the file!\n");
         }
