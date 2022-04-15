@@ -24,6 +24,9 @@
 #include "../../nuklear.h"
 #include "nuklear_glfw_gl2.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "../../demo/common/filebrowser/stb_image.h"
+
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 800
 
@@ -34,12 +37,13 @@
  * ===============================================================*/
 /* This are some code examples to provide a small overview of what can be
  * done with this library. To try out an example uncomment the defines */
-/*#define INCLUDE_ALL */
-/*#define INCLUDE_STYLE */
-/*#define INCLUDE_CALCULATOR */
-/*#define INCLUDE_CANVAS */
-#define INCLUDE_OVERVIEW
-/*#define INCLUDE_NODE_EDITOR */
+/* #define INCLUDE_ALL          */
+/* #define INCLUDE_STYLE        */
+/* #define INCLUDE_CALCULATOR   */
+#define INCLUDE_CANVAS
+/* #define INCLUDE_FILE_BROWSER */
+/* #define INCLUDE_OVERVIEW     */
+/* #define INCLUDE_NODE_EDITOR  */
 
 #ifdef INCLUDE_ALL
   #define INCLUDE_STYLE
@@ -50,19 +54,22 @@
 #endif
 
 #ifdef INCLUDE_STYLE
-  #include "../style.c"
+  #include "../../demo/common/style.c"
 #endif
 #ifdef INCLUDE_CALCULATOR
-  #include "../calculator.c"
+  #include "../../demo/common/calculator.c"
 #endif
 #ifdef INCLUDE_CANVAS
-  #include "../canvas.c"
+  #include "../../demo/common/canvas.c"
+#endif
+#ifdef INCLUDE_FILE_BROWSER
+  #include "../../demo/common/file_browser.c"
 #endif
 #ifdef INCLUDE_OVERVIEW
-  #include "../overview.c"
+  #include "../../demo/common/overview.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
-  #include "../node_editor.c"
+  #include "../../demo/common/node_editor.c"
 #endif
 
 /* ===============================================================
@@ -78,8 +85,14 @@ int main(void)
     /* Platform */
     static GLFWwindow *win;
     int width = 0, height = 0;
+    
+    /* GUI */
     struct nk_context *ctx;
     struct nk_colorf bg;
+#ifdef INCLUDE_FILE_BROWSER
+    struct file_browser browser;
+    struct media media;
+#endif
 
     /* GLFW */
     glfwSetErrorCallback(error_callback);
@@ -115,6 +128,25 @@ int main(void)
     #endif
 
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
+    
+    #ifdef INCLUDE_FILE_BROWSER
+    /* icons */
+    glEnable(GL_TEXTURE_2D);
+    media.icons.home = icon_load("../../demo/common/filebrowser/icon/home.png");
+    media.icons.directory = icon_load("../../demo/common/filebrowser/icon/directory.png");
+    media.icons.computer = icon_load("../../demo/common/filebrowser/icon/computer.png");
+    media.icons.desktop = icon_load("../../demo/common/filebrowser/icon/desktop.png");
+    media.icons.default_file = icon_load("../../demo/common/filebrowser/icon/default.png");
+    media.icons.text_file = icon_load("../../demo/common/filebrowser/icon/text.png");
+    media.icons.music_file = icon_load("../../demo/common/filebrowser/icon/music.png");
+    media.icons.font_file =  icon_load("../../demo/common/filebrowser/icon/font.png");
+    media.icons.img_file = icon_load("../../demo/common/filebrowser/icon/img.png");
+    media.icons.movie_file = icon_load("../../demo/common/filebrowser/icon/movie.png");
+    media_init(&media);
+
+    file_browser_init(&browser, &media);
+    #endif
+
     while (!glfwWindowShouldClose(win))
     {
         /* Input */
@@ -163,6 +195,9 @@ int main(void)
         #ifdef INCLUDE_CANVAS
           canvas(ctx);
         #endif
+        #ifdef INCLUDE_FILE_BROWSER
+          file_browser_run(&browser, ctx);
+        #endif
         #ifdef INCLUDE_OVERVIEW
           overview(ctx);
         #endif
@@ -183,8 +218,23 @@ int main(void)
         nk_glfw3_render(NK_ANTI_ALIASING_ON);
         glfwSwapBuffers(win);
     }
+
+    #ifdef INCLUDE_FILE_BROWSER       
+    glDeleteTextures(1,(const GLuint*)&media.icons.home.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.directory.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.computer.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.desktop.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.default_file.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.text_file.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.music_file.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.font_file.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.img_file.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.movie_file.handle.id);
+
+    file_browser_free(&browser);
+    #endif    
+    
     nk_glfw3_shutdown();
     glfwTerminate();
     return 0;
 }
-
