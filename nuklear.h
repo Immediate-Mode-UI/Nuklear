@@ -2015,7 +2015,7 @@ NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show
 /// __color__       | Color of the horizontal line
 /// __rounding__    | Whether or not to make the line round
 */
-NK_API void nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, NK_BOOL rounding)
+NK_API void nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, nk_bool rounding);
 /* =============================================================================
  *
  *                                  LAYOUT
@@ -20700,9 +20700,8 @@ nk_window_set_focus(struct nk_context *ctx, const char *name)
     }
     ctx->active = win;
 }
-
 NK_API void
-nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, NK_BOOL rounding)
+nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, nk_bool rounding)
 {
     struct nk_rect space;
     enum nk_widget_layout_states state = nk_widget(&space, ctx);

@@ -1794,7 +1794,7 @@ NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show
 /// __color__       | Color of the horizontal line
 /// __rounding__    | Whether or not to make the line round
 */
-NK_API void nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, NK_BOOL rounding)
+NK_API void nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, nk_bool rounding);
 /* =============================================================================
  *
  *                                  LAYOUT

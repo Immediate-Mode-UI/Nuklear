@@ -669,9 +669,8 @@ nk_window_set_focus(struct nk_context *ctx, const char *name)
     }
     ctx->active = win;
 }
-
 NK_API void
-nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, NK_BOOL rounding)
+nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, nk_bool rounding)
 {
     struct nk_rect space;
     enum nk_widget_layout_states state = nk_widget(&space, ctx);
