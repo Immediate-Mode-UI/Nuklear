@@ -29652,7 +29652,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
-/// - 2022/02/03 (4.9.7)  - Added nk_rule_horizontal() widget
+/// - 2022/04/15 (4.9.7)  - Added nk_rule_horizontal() widget
 /// - 2022/02/03 (4.9.6)  - Allow overriding the NK_INV_SQRT function, similar to NK_SIN and NK_COS
 /// - 2021/12/22 (4.9.5)  - Revert layout bounds not accounting for padding due to regressions
 /// - 2021/12/22 (4.9.4)  - Fix checking hovering when window is minimized
