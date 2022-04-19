@@ -127,7 +127,7 @@ nk_stroke_curve(struct nk_command_buffer *b, float ax, float ay,
 }
 NK_API void
 nk_stroke_rect(struct nk_command_buffer *b, struct nk_rect rect,
-    float rounding, float line_thickness, struct nk_color c)
+    struct nk_vec4 rounding, float line_thickness, struct nk_color c)
 {
     struct nk_command_rect *cmd;
     NK_ASSERT(b);
@@ -140,7 +140,7 @@ nk_stroke_rect(struct nk_command_buffer *b, struct nk_rect rect,
     cmd = (struct nk_command_rect*)
         nk_command_buffer_push(b, NK_COMMAND_RECT, sizeof(*cmd));
     if (!cmd) return;
-    cmd->rounding = (unsigned short)rounding;
+    cmd->rounding = (struct nk_vec4)rounding;
     cmd->line_thickness = (unsigned short)line_thickness;
     cmd->x = (short)rect.x;
     cmd->y = (short)rect.y;
@@ -150,7 +150,7 @@ nk_stroke_rect(struct nk_command_buffer *b, struct nk_rect rect,
 }
 NK_API void
 nk_fill_rect(struct nk_command_buffer *b, struct nk_rect rect,
-    float rounding, struct nk_color c)
+    struct nk_vec4 rounding, struct nk_color c)
 {
     struct nk_command_rect_filled *cmd;
     NK_ASSERT(b);
@@ -164,7 +164,7 @@ nk_fill_rect(struct nk_command_buffer *b, struct nk_rect rect,
     cmd = (struct nk_command_rect_filled*)
         nk_command_buffer_push(b, NK_COMMAND_RECT_FILLED, sizeof(*cmd));
     if (!cmd) return;
-    cmd->rounding = (unsigned short)rounding;
+    cmd->rounding = (struct nk_vec4)rounding;
     cmd->x = (short)rect.x;
     cmd->y = (short)rect.y;
     cmd->w = (unsigned short)NK_MAX(0, rect.w);

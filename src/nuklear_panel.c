@@ -228,7 +228,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
                 break;
             case NK_STYLE_ITEM_COLOR:
                 text.background = background->data.color;
-                nk_fill_rect(out, header, style->window.rounding, background->data.color);
+                nk_fill_rect(out, header, nk_vec4(style->window.rounding, style->window.rounding, style->window.rounding, style->window.rounding), background->data.color);
                 break;
         }
 
@@ -309,7 +309,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
                 nk_draw_nine_slice(out, body, &style->window.fixed_background.data.slice, nk_white);
                 break;
             case NK_STYLE_ITEM_COLOR:
-                nk_fill_rect(out, body, style->window.rounding, style->window.fixed_background.data.color);
+                nk_fill_rect(out, body, nk_vec4(style->window.rounding, style->window.rounding, style->window.rounding, style->window.rounding), style->window.fixed_background.data.color);
                 break;
         }
     }
@@ -369,14 +369,14 @@ nk_panel_end(struct nk_context *ctx)
         empty_space.y = layout->bounds.y;
         empty_space.h = panel_padding.y;
         empty_space.w = window->bounds.w;
-        nk_fill_rect(out, empty_space, 0, style->window.background);
+        nk_fill_rect(out, empty_space, nk_vec4(0, 0, 0, 0), style->window.background);
 
         /* fill left empty space */
         empty_space.x = window->bounds.x;
         empty_space.y = layout->bounds.y;
         empty_space.w = panel_padding.x + layout->border;
         empty_space.h = layout->bounds.h;
-        nk_fill_rect(out, empty_space, 0, style->window.background);
+        nk_fill_rect(out, empty_space, nk_vec4(0, 0, 0, 0), style->window.background);
 
         /* fill right empty space */
         empty_space.x = layout->bounds.x + layout->bounds.w;
@@ -385,7 +385,7 @@ nk_panel_end(struct nk_context *ctx)
         empty_space.h = layout->bounds.h;
         if (*layout->offset_y == 0 && !(layout->flags & NK_WINDOW_NO_SCROLLBAR))
             empty_space.w += scrollbar_size.x;
-        nk_fill_rect(out, empty_space, 0, style->window.background);
+        nk_fill_rect(out, empty_space, nk_vec4(0, 0, 0, 0), style->window.background);
 
         /* fill bottom empty space */
         if (layout->footer_height > 0) {
@@ -393,7 +393,7 @@ nk_panel_end(struct nk_context *ctx)
             empty_space.y = layout->bounds.y + layout->bounds.h;
             empty_space.w = window->bounds.w;
             empty_space.h = layout->footer_height;
-            nk_fill_rect(out, empty_space, 0, style->window.background);
+            nk_fill_rect(out, empty_space, nk_vec4(0, 0, 0, 0), style->window.background);
         }
     }
 
@@ -505,7 +505,7 @@ nk_panel_end(struct nk_context *ctx)
                 : (window->bounds.y + window->bounds.h));
         struct nk_rect b = window->bounds;
         b.h = padding_y - window->bounds.y;
-        nk_stroke_rect(out, b, 0, layout->border, border_color);
+        nk_stroke_rect(out, b, nk_vec4(0, 0, 0, 0), layout->border, border_color);
     }
 
     /* scaler */

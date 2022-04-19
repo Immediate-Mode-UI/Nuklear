@@ -32,9 +32,9 @@ nk_draw_symbol(struct nk_command_buffer *out, enum nk_symbol_type type,
     case NK_SYMBOL_RECT_OUTLINE: {
         /* simple empty/filled shapes */
         if (type == NK_SYMBOL_RECT_SOLID || type == NK_SYMBOL_RECT_OUTLINE) {
-            nk_fill_rect(out, content,  0, foreground);
+            nk_fill_rect(out, content, nk_vec4(0, 0, 0, 0), foreground);
             if (type == NK_SYMBOL_RECT_OUTLINE)
-                nk_fill_rect(out, nk_shrink_rect(content, border_width), 0, background);
+                nk_fill_rect(out, nk_shrink_rect(content, border_width), nk_vec4(0, 0, 0, 0), background);
         } else {
             nk_fill_circle(out, content, foreground);
             if (type == NK_SYMBOL_CIRCLE_OUTLINE)
@@ -106,8 +106,8 @@ nk_draw_button(struct nk_command_buffer *out,
             nk_draw_nine_slice(out, *bounds, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-            nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), background->data.color);
+            nk_stroke_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->border, style->border_color);
             break;
     }
     return background;

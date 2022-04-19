@@ -111,8 +111,8 @@ nk_draw_scrollbar(struct nk_command_buffer *out, nk_flags state,
             nk_draw_nine_slice(out, *bounds, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-            nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), background->data.color);
+            nk_stroke_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->border, style->border_color);
             break;
     }
 
@@ -125,8 +125,8 @@ nk_draw_scrollbar(struct nk_command_buffer *out, nk_flags state,
             nk_draw_nine_slice(out, *scroll, &cursor->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, *scroll, style->rounding_cursor, cursor->data.color);
-            nk_stroke_rect(out, *scroll, style->rounding_cursor, style->border_cursor, style->cursor_border_color);
+            nk_fill_rect(out, *scroll, nk_vec4(style->rounding_cursor, style->rounding_cursor, style->rounding_cursor, style->rounding_cursor), cursor->data.color);
+            nk_stroke_rect(out, *scroll, nk_vec4(style->rounding_cursor, style->rounding_cursor, style->rounding_cursor, style->rounding_cursor), style->border_cursor, style->cursor_border_color);
             break;
     }
 }

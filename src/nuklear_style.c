@@ -609,6 +609,7 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     win->scaler = nk_style_item_color(table[NK_COLOR_TEXT]);
 
     win->rounding = 0.0f;
+    win->group_rounding = 0.0f;
     win->spacing = nk_vec2(4,4);
     win->scrollbar_size = nk_vec2(10,10);
     win->min_size = nk_vec2(64,64);

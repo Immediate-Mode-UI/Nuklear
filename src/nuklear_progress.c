@@ -68,8 +68,8 @@ nk_draw_progress(struct nk_command_buffer *out, nk_flags state,
             nk_draw_nine_slice(out, *bounds, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-            nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), background->data.color);
+            nk_stroke_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->border, style->border_color);
             break;
     }
 
@@ -82,8 +82,8 @@ nk_draw_progress(struct nk_command_buffer *out, nk_flags state,
             nk_draw_nine_slice(out, *scursor, &cursor->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, *scursor, style->rounding, cursor->data.color);
-            nk_stroke_rect(out, *scursor, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, *scursor, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), cursor->data.color);
+            nk_stroke_rect(out, *scursor, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->border, style->border_color);
             break;
     }
 }

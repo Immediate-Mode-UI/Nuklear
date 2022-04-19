@@ -99,14 +99,14 @@ nk_draw_slider(struct nk_command_buffer *out, nk_flags state,
             nk_draw_nine_slice(out, *bounds, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-            nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), background->data.color);
+            nk_stroke_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->border, style->border_color);
             break;
     }
 
     /* draw slider bar */
-    nk_fill_rect(out, bar, style->rounding, bar_color);
-    nk_fill_rect(out, fill, style->rounding, style->bar_filled);
+    nk_fill_rect(out, bar, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), bar_color);
+    nk_fill_rect(out, fill, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->bar_filled);
 
     /* draw cursor */
     if (cursor->type == NK_STYLE_ITEM_IMAGE)
