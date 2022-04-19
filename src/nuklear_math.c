@@ -249,6 +249,23 @@ nk_vec2iv(const int *v)
 {
     return nk_vec2i(v[0], v[1]);
 }
+NK_API struct nk_vec4
+nk_vec4(float a, float b, float c, float d)
+{
+    struct nk_vec4 ret;
+    ret.a = a; ret.b = b; ret.c = c; ret.d = d;
+    return ret;
+}
+NK_API struct nk_vec4
+nk_vec4i(int a, int b, int c, int d)
+{
+    struct nk_vec4 ret;
+    ret.a = (float)a;
+    ret.b = (float)b;
+    ret.c = (float)c;
+    ret.d = (float)d;
+    return ret;
+}
 NK_LIB void
 nk_unify(struct nk_rect *clip, const struct nk_rect *a, float x0, float y0,
     float x1, float y1)

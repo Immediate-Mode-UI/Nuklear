@@ -228,7 +228,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
                 break;
             case NK_STYLE_ITEM_COLOR:
                 text.background = background->data.color;
-                nk_fill_rect(out, header, 0, background->data.color);
+                nk_fill_rect(out, header, style->window.rounding, background->data.color);
                 break;
         }
 
@@ -309,7 +309,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
                 nk_draw_nine_slice(out, body, &style->window.fixed_background.data.slice, nk_white);
                 break;
             case NK_STYLE_ITEM_COLOR:
-                nk_fill_rect(out, body, 0, style->window.fixed_background.data.color);
+                nk_fill_rect(out, body, style->window.rounding, style->window.fixed_background.data.color);
                 break;
         }
     }
