@@ -228,7 +228,14 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
                 break;
             case NK_STYLE_ITEM_COLOR:
                 text.background = background->data.color;
-                nk_fill_rect(out, header, nk_vec4(style->window.rounding, style->window.rounding, style->window.rounding, style->window.rounding), background->data.color);
+		 switch(panel_type) {
+		     case NK_PANEL_GROUP:
+			 nk_fill_rect(out, header, nk_vec4(style->window.group_rounding, style->window.group_rounding, 0, 0), background->data.color);
+			 break;
+		     default:
+			 nk_fill_rect(out, header, nk_vec4(style->window.rounding, style->window.rounding, 0, 0), background->data.color);
+			 break;
+		 }
                 break;
         }
 
@@ -309,7 +316,20 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
                 nk_draw_nine_slice(out, body, &style->window.fixed_background.data.slice, nk_white);
                 break;
             case NK_STYLE_ITEM_COLOR:
-                nk_fill_rect(out, body, nk_vec4(style->window.rounding, style->window.rounding, style->window.rounding, style->window.rounding), style->window.fixed_background.data.color);
+		 switch(panel_type) {
+		     case NK_PANEL_GROUP:
+			 if (nk_panel_has_header(win->flags, title))
+			     nk_fill_rect(out, body, nk_vec4(0, 0, style->window.group_rounding, style->window.group_rounding), style->window.fixed_background.data.color);
+			 else
+			     nk_fill_rect(out, body, nk_vec4(style->window.group_rounding, style->window.group_rounding, style->window.group_rounding, style->window.group_rounding), style->window.fixed_background.data.color);
+			 break;
+		     default:
+			 if (nk_panel_has_header(win->flags, title))
+			     nk_fill_rect(out, body, nk_vec4(0, 0, style->window.rounding, style->window.rounding), style->window.fixed_background.data.color);
+			 else
+			     nk_fill_rect(out, body, nk_vec4(style->window.rounding, style->window.rounding, style->window.rounding, style->window.rounding), style->window.fixed_background.data.color);
+			 break;
+		 }
                 break;
         }
     }
@@ -505,7 +525,14 @@ nk_panel_end(struct nk_context *ctx)
                 : (window->bounds.y + window->bounds.h));
         struct nk_rect b = window->bounds;
         b.h = padding_y - window->bounds.y;
-        nk_stroke_rect(out, b, nk_vec4(0, 0, 0, 0), layout->border, border_color);
+        switch(layout->type) {
+            case NK_PANEL_GROUP:
+		nk_stroke_rect(out, b, nk_vec4(style->window.group_rounding, style->window.group_rounding, style->window.group_rounding, style->window.group_rounding), layout->border, border_color);
+		break;
+            default:
+		nk_stroke_rect(out, b, nk_vec4(style->window.rounding, style->window.rounding, style->window.rounding, style->window.rounding), layout->border, border_color);
+		break;
+	}
     }
 
     /* scaler */
