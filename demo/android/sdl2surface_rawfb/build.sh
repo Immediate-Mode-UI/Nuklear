@@ -33,7 +33,8 @@ BUILDPATH="$CURDIR/../build/$APP"
 rm -rf $BUILDPATH
 mkdir -p $BUILDPATH
 
-cp -r $CURDIR/../project-template/* $BUILDPATH
+cp -r $SDLPATH/android-project/* $BUILDPATH
+rm -r $BUILDPATH/app/jni/src/*
 
 # Create SDL jni struct
 mkdir -p $BUILDPATH/app/jni
