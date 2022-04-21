@@ -54,10 +54,10 @@ canvas(struct nk_context *ctx)
         {
             float x = canvas.painter->clip.x, y = canvas.painter->clip.y;
 
-            nk_fill_rect(canvas.painter, nk_rect(x + 15, y + 15, 210, 210), 5, nk_rgb(247, 230, 154));
-            nk_fill_rect(canvas.painter, nk_rect(x + 20, y + 20, 200, 200), 5, nk_rgb(188, 174, 118));
+            nk_fill_rect(canvas.painter, nk_rect(x + 15, y + 15, 210, 210), nk_vec4(5, 5, 5, 5), nk_rgb(247, 230, 154));
+            nk_fill_rect(canvas.painter, nk_rect(x + 20, y + 20, 200, 200), nk_vec4(5, 5, 5, 5), nk_rgb(188, 174, 118));
             /* nk_draw_text(canvas.painter, nk_rect(x + 30, y + 30, 150, 20), "Text to draw", 12, &font->handle, nk_rgb(188,174,118), nk_rgb(0,0,0)); */
-            nk_fill_rect(canvas.painter, nk_rect(x + 250, y + 20, 100, 100), 0, nk_rgb(0,0,255));
+            nk_fill_rect(canvas.painter, nk_rect(x + 250, y + 20, 100, 100), nk_vec4(0, 0, 0, 0), nk_rgb(0,0,255));
             nk_fill_circle(canvas.painter, nk_rect(x + 20, y + 250, 100, 100), nk_rgb(255,0,0));
             nk_fill_triangle(canvas.painter, x + 250, y + 250, x + 350, y + 250, x + 300, y + 350, nk_rgb(0,255,0));
             nk_fill_arc(canvas.painter, x + 300, y + 420, 50, 0, 3.141592654f * 3.0f / 4.0f, nk_rgb(255,255,0));
@@ -94,7 +94,7 @@ canvas(struct nk_context *ctx)
             }
 
             nk_stroke_line(canvas.painter, x + 15, y + 10, x + 200, y + 10, 2.0f, nk_rgb(189,45,75));
-            nk_stroke_rect(canvas.painter, nk_rect(x + 370, y + 20, 100, 100), 10, 3, nk_rgb(0,0,255));
+            nk_stroke_rect(canvas.painter, nk_rect(x + 370, y + 20, 100, 100), nk_vec4(10, 10, 10, 10), 3, nk_rgb(0,0,255));
             nk_stroke_curve(canvas.painter, x + 380, y + 200, x + 405, y + 270, x + 455, y + 120, x + 480, y + 200, 2, nk_rgb(0,150,220));
             nk_stroke_circle(canvas.painter, nk_rect(x + 20, y + 370, 100, 100), 5, nk_rgb(0,255,120));
             nk_stroke_triangle(canvas.painter, x + 370, y + 250, x + 470, y + 250, x + 420, y + 350, 6, nk_rgb(255,0,143));
