@@ -85,6 +85,25 @@ nk_push_scissor(struct nk_command_buffer *b, struct nk_rect r)
     cmd->w = (unsigned short)NK_MAX(0, r.w);
     cmd->h = (unsigned short)NK_MAX(0, r.h);
 }
+NK_API struct nk_vec4
+nk_clamp_rounding(struct nk_rect bounds, struct nk_vec4 rounding)
+{
+    /* Rounding may not exceed half a rect's dimension */
+    float max_rounding = NK_MIN(bounds.w / 2.0f, bounds.h / 2.0f);
+    /* Float -> int coneversion during drawing may cause rounding
+       to overshoot due to decimal place being dropped. Doing the
+       same conversion to ensure this does not happpen. */
+    bounds.x = (short)bounds.y;
+    bounds.y = (short)bounds.y;
+    bounds.w = (unsigned short)NK_MAX(0, bounds.w);
+    bounds.h = (unsigned short)NK_MAX(0, bounds.h);
+    /* Since  */
+    rounding.a = NK_MIN(rounding.a, max_rounding);
+    rounding.b = NK_MIN(rounding.b, max_rounding);
+    rounding.c = NK_MIN(rounding.c, max_rounding);
+    rounding.d = NK_MIN(rounding.d, max_rounding);
+    return rounding;
+}
 NK_API void
 nk_stroke_line(struct nk_command_buffer *b, float x0, float y0,
     float x1, float y1, float line_thickness, struct nk_color c)
@@ -140,7 +159,7 @@ nk_stroke_rect(struct nk_command_buffer *b, struct nk_rect rect,
     cmd = (struct nk_command_rect*)
         nk_command_buffer_push(b, NK_COMMAND_RECT, sizeof(*cmd));
     if (!cmd) return;
-    cmd->rounding = (struct nk_vec4)rounding;
+    cmd->rounding = (struct nk_vec4)nk_clamp_rounding(rect, rounding);
     cmd->line_thickness = (unsigned short)line_thickness;
     cmd->x = (short)rect.x;
     cmd->y = (short)rect.y;
@@ -164,7 +183,7 @@ nk_fill_rect(struct nk_command_buffer *b, struct nk_rect rect,
     cmd = (struct nk_command_rect_filled*)
         nk_command_buffer_push(b, NK_COMMAND_RECT_FILLED, sizeof(*cmd));
     if (!cmd) return;
-    cmd->rounding = (struct nk_vec4)rounding;
+    cmd->rounding = (struct nk_vec4)nk_clamp_rounding(rect, rounding);
     cmd->x = (short)rect.x;
     cmd->y = (short)rect.y;
     cmd->w = (unsigned short)NK_MAX(0, rect.w);

@@ -4408,7 +4408,7 @@ NK_API void nk_textedit_redo(struct nk_text_edit*);
 
             if (state != NK_WIDGET_ROM)
                 update_your_widget_by_user_input(...);
-            nk_fill_rect(canvas, space, 0, nk_rgb(255,0,0));
+            nk_fill_rect(canvas, space, nk_vec4(0, 0, 0, 0), nk_rgb(255,0,0));
         }
 
         if (nk_begin(...)) {
@@ -4481,7 +4481,7 @@ struct nk_command_curve {
 
 struct nk_command_rect {
     struct nk_command header;
-    unsigned short rounding;
+    struct nk_vec4 rounding;
     unsigned short line_thickness;
     short x, y;
     unsigned short w, h;
@@ -4490,7 +4490,7 @@ struct nk_command_rect {
 
 struct nk_command_rect_filled {
     struct nk_command header;
-    unsigned short rounding;
+    struct nk_vec4 rounding;
     short x, y;
     unsigned short w, h;
     struct nk_color color;
@@ -4624,7 +4624,7 @@ struct nk_command_buffer {
 /* shape outlines */
 NK_API void nk_stroke_line(struct nk_command_buffer *b, float x0, float y0, float x1, float y1, float line_thickness, struct nk_color);
 NK_API void nk_stroke_curve(struct nk_command_buffer*, float, float, float, float, float, float, float, float, float line_thickness, struct nk_color);
-NK_API void nk_stroke_rect(struct nk_command_buffer*, struct nk_rect, float rounding, float line_thickness, struct nk_color);
+NK_API void nk_stroke_rect(struct nk_command_buffer*, struct nk_rect, struct nk_vec4 rounding, float line_thickness, struct nk_color);
 NK_API void nk_stroke_circle(struct nk_command_buffer*, struct nk_rect, float line_thickness, struct nk_color);
 NK_API void nk_stroke_arc(struct nk_command_buffer*, float cx, float cy, float radius, float a_min, float a_max, float line_thickness, struct nk_color);
 NK_API void nk_stroke_triangle(struct nk_command_buffer*, float, float, float, float, float, float, float line_thichness, struct nk_color);
@@ -4632,7 +4632,7 @@ NK_API void nk_stroke_polyline(struct nk_command_buffer*, float *points, int poi
 NK_API void nk_stroke_polygon(struct nk_command_buffer*, float*, int point_count, float line_thickness, struct nk_color);
 
 /* filled shades */
-NK_API void nk_fill_rect(struct nk_command_buffer*, struct nk_rect, float rounding, struct nk_color);
+NK_API void nk_fill_rect(struct nk_command_buffer*, struct nk_rect, struct nk_vec4 rounding, struct nk_color);
 NK_API void nk_fill_rect_multi_color(struct nk_command_buffer*, struct nk_rect, struct nk_color left, struct nk_color top, struct nk_color right, struct nk_color bottom);
 NK_API void nk_fill_circle(struct nk_command_buffer*, struct nk_rect, struct nk_color);
 NK_API void nk_fill_arc(struct nk_command_buffer*, float cx, float cy, float radius, float a_min, float a_max, struct nk_color);
@@ -4826,21 +4826,21 @@ NK_API void nk_draw_list_path_clear(struct nk_draw_list*);
 NK_API void nk_draw_list_path_line_to(struct nk_draw_list*, struct nk_vec2 pos);
 NK_API void nk_draw_list_path_arc_to_fast(struct nk_draw_list*, struct nk_vec2 center, float radius, int a_min, int a_max);
 NK_API void nk_draw_list_path_arc_to(struct nk_draw_list*, struct nk_vec2 center, float radius, float a_min, float a_max, unsigned int segments);
-NK_API void nk_draw_list_path_rect_to(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, float r0, float r1, float r2, float r3);
+NK_API void nk_draw_list_path_rect_to(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, struct nk_vec4 rounding);
 NK_API void nk_draw_list_path_curve_to(struct nk_draw_list*, struct nk_vec2 p2, struct nk_vec2 p3, struct nk_vec2 p4, unsigned int num_segments);
 NK_API void nk_draw_list_path_fill(struct nk_draw_list*, struct nk_color);
 NK_API void nk_draw_list_path_stroke(struct nk_draw_list*, struct nk_color, enum nk_draw_list_stroke closed, float thickness);
 
 /* stroke */
 NK_API void nk_draw_list_stroke_line(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, struct nk_color, float thickness);
-NK_API void nk_draw_list_stroke_rect(struct nk_draw_list*, struct nk_rect rect, struct nk_color, float r0, float r1,  float r2,  float r3, float thickness);
+NK_API void nk_draw_list_stroke_rect(struct nk_draw_list*, struct nk_rect rect, struct nk_color, struct nk_vec4 rounding, float thickness);
 NK_API void nk_draw_list_stroke_triangle(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, struct nk_vec2 c, struct nk_color, float thickness);
 NK_API void nk_draw_list_stroke_circle(struct nk_draw_list*, struct nk_vec2 center, float radius, struct nk_color, unsigned int segs, float thickness);
 NK_API void nk_draw_list_stroke_curve(struct nk_draw_list*, struct nk_vec2 p0, struct nk_vec2 cp0, struct nk_vec2 cp1, struct nk_vec2 p1, struct nk_color, unsigned int segments, float thickness);
 NK_API void nk_draw_list_stroke_poly_line(struct nk_draw_list*, const struct nk_vec2 *pnts, const unsigned int cnt, struct nk_color, enum nk_draw_list_stroke, float thickness, enum nk_anti_aliasing);
 
 /* fill */
-NK_API void nk_draw_list_fill_rect(struct nk_draw_list*, struct nk_rect rect, struct nk_color, float r0, float r1, float r2, float r3);
+NK_API void nk_draw_list_fill_rect(struct nk_draw_list*, struct nk_rect rect, struct nk_color, struct nk_vec4 rounding);
 NK_API void nk_draw_list_fill_rect_multi_color(struct nk_draw_list*, struct nk_rect rect, struct nk_color left, struct nk_color top, struct nk_color right, struct nk_color bottom);
 NK_API void nk_draw_list_fill_triangle(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, struct nk_vec2 c, struct nk_color);
 NK_API void nk_draw_list_fill_circle(struct nk_draw_list*, struct nk_vec2 center, float radius, struct nk_color col, unsigned int segs);
@@ -5256,6 +5256,7 @@ struct nk_style_window {
     float min_row_height_padding;
 
     float rounding;
+    float group_rounding;
     struct nk_vec2 spacing;
     struct nk_vec2 scrollbar_size;
     struct nk_vec2 min_size;
@@ -5903,6 +5904,7 @@ NK_LIB void* nk_buffer_alloc(struct nk_buffer *b, enum nk_buffer_allocation_type
 NK_LIB void* nk_buffer_realloc(struct nk_buffer *b, nk_size capacity, nk_size *size);
 
 /* draw */
+NK_API struct nk_vec4 nk_clamp_rounding(struct nk_rect bounds, struct nk_vec4 rounding);
 NK_LIB void nk_command_buffer_init(struct nk_command_buffer *cb, struct nk_buffer *b, enum nk_command_clipping clip);
 NK_LIB void nk_command_buffer_reset(struct nk_command_buffer *b);
 NK_LIB void* nk_command_buffer_push(struct nk_command_buffer* b, enum nk_command_type t, nk_size size);
@@ -8933,6 +8935,25 @@ nk_push_scissor(struct nk_command_buffer *b, struct nk_rect r)
     cmd->w = (unsigned short)NK_MAX(0, r.w);
     cmd->h = (unsigned short)NK_MAX(0, r.h);
 }
+NK_API struct nk_vec4
+nk_clamp_rounding(struct nk_rect bounds, struct nk_vec4 rounding)
+{
+    /* Rounding may not exceed half a rect's dimension */
+    float max_rounding = NK_MIN(bounds.w / 2.0f, bounds.h / 2.0f);
+    /* Float -> int coneversion during drawing may cause rounding
+       to overshoot due to decimal place being dropped. Doing the
+       same conversion to ensure this does not happpen. */
+    bounds.x = (short)bounds.y;
+    bounds.y = (short)bounds.y;
+    bounds.w = (unsigned short)NK_MAX(0, bounds.w);
+    bounds.h = (unsigned short)NK_MAX(0, bounds.h);
+    /* Since  */
+    rounding.a = NK_MIN(rounding.a, max_rounding);
+    rounding.b = NK_MIN(rounding.b, max_rounding);
+    rounding.c = NK_MIN(rounding.c, max_rounding);
+    rounding.d = NK_MIN(rounding.d, max_rounding);
+    return rounding;
+}
 NK_API void
 nk_stroke_line(struct nk_command_buffer *b, float x0, float y0,
     float x1, float y1, float line_thickness, struct nk_color c)
@@ -8975,7 +8996,7 @@ nk_stroke_curve(struct nk_command_buffer *b, float ax, float ay,
 }
 NK_API void
 nk_stroke_rect(struct nk_command_buffer *b, struct nk_rect rect,
-    float rounding, float line_thickness, struct nk_color c)
+    struct nk_vec4 rounding, float line_thickness, struct nk_color c)
 {
     struct nk_command_rect *cmd;
     NK_ASSERT(b);
@@ -8988,7 +9009,7 @@ nk_stroke_rect(struct nk_command_buffer *b, struct nk_rect rect,
     cmd = (struct nk_command_rect*)
         nk_command_buffer_push(b, NK_COMMAND_RECT, sizeof(*cmd));
     if (!cmd) return;
-    cmd->rounding = (unsigned short)rounding;
+    cmd->rounding = (struct nk_vec4)nk_clamp_rounding(rect, rounding);
     cmd->line_thickness = (unsigned short)line_thickness;
     cmd->x = (short)rect.x;
     cmd->y = (short)rect.y;
@@ -8998,7 +9019,7 @@ nk_stroke_rect(struct nk_command_buffer *b, struct nk_rect rect,
 }
 NK_API void
 nk_fill_rect(struct nk_command_buffer *b, struct nk_rect rect,
-    float rounding, struct nk_color c)
+    struct nk_vec4 rounding, struct nk_color c)
 {
     struct nk_command_rect_filled *cmd;
     NK_ASSERT(b);
@@ -9012,7 +9033,7 @@ nk_fill_rect(struct nk_command_buffer *b, struct nk_rect rect,
     cmd = (struct nk_command_rect_filled*)
         nk_command_buffer_push(b, NK_COMMAND_RECT_FILLED, sizeof(*cmd));
     if (!cmd) return;
-    cmd->rounding = (unsigned short)rounding;
+    cmd->rounding = (struct nk_vec4)nk_clamp_rounding(rect, rounding);
     cmd->x = (short)rect.x;
     cmd->y = (short)rect.y;
     cmd->w = (unsigned short)NK_MAX(0, rect.w);
@@ -10271,30 +10292,30 @@ nk_draw_list_path_arc_to(struct nk_draw_list *list, struct nk_vec2 center,
 }
 NK_API void
 nk_draw_list_path_rect_to(struct nk_draw_list *list, struct nk_vec2 a,
-    struct nk_vec2 b, float r0, float r1, float r2, float r3)
+    struct nk_vec2 b, struct nk_vec4 rounding)
 {
     NK_ASSERT(list);
     if (!list) return;
     /* Propably redundant recalculation */
-    r0 = NK_MIN(r0, ((b.x-a.x) < 0) ? -(b.x-a.x): (b.x-a.x));
-    r0 = NK_MIN(r0, ((b.y-a.y) < 0) ? -(b.y-a.y): (b.y-a.y));
-    r1 = NK_MIN(r1, ((b.x-a.x) < 0) ? -(b.x-a.x): (b.x-a.x));
-    r1 = NK_MIN(r1, ((b.y-a.y) < 0) ? -(b.y-a.y): (b.y-a.y));
-    r2 = NK_MIN(r2, ((b.x-a.x) < 0) ? -(b.x-a.x): (b.x-a.x));
-    r2 = NK_MIN(r2, ((b.y-a.y) < 0) ? -(b.y-a.y): (b.y-a.y));
-    r3 = NK_MIN(r3, ((b.x-a.x) < 0) ? -(b.x-a.x): (b.x-a.x));
-    r3 = NK_MIN(r3, ((b.y-a.y) < 0) ? -(b.y-a.y): (b.y-a.y));
+    rounding.a = NK_MIN(rounding.a, ((b.x-a.x) < 0) ? -(b.x-a.x): (b.x-a.x));
+    rounding.a = NK_MIN(rounding.a, ((b.y-a.y) < 0) ? -(b.y-a.y): (b.y-a.y));
+    rounding.b = NK_MIN(rounding.b, ((b.x-a.x) < 0) ? -(b.x-a.x): (b.x-a.x));
+    rounding.b = NK_MIN(rounding.b, ((b.y-a.y) < 0) ? -(b.y-a.y): (b.y-a.y));
+    rounding.c = NK_MIN(rounding.c, ((b.x-a.x) < 0) ? -(b.x-a.x): (b.x-a.x));
+    rounding.c = NK_MIN(rounding.c, ((b.y-a.y) < 0) ? -(b.y-a.y): (b.y-a.y));
+    rounding.d = NK_MIN(rounding.d, ((b.x-a.x) < 0) ? -(b.x-a.x): (b.x-a.x));
+    rounding.d = NK_MIN(rounding.d, ((b.y-a.y) < 0) ? -(b.y-a.y): (b.y-a.y));
 
-    if (r0 == 0.0f && r1 == 0.0f && r2 == 0.0f && r3 == 0.0f) {
+    if (rounding.a == 0.0f && rounding.b == 0.0f && rounding.c == 0.0f && rounding.d == 0.0f) {
         nk_draw_list_path_line_to(list, a);
         nk_draw_list_path_line_to(list, nk_vec2(b.x,a.y));
         nk_draw_list_path_line_to(list, b);
         nk_draw_list_path_line_to(list, nk_vec2(a.x,b.y));
     } else {
-        nk_draw_list_path_arc_to_fast(list, nk_vec2(a.x + r0, a.y + r0), r0, 6, 9);
-        nk_draw_list_path_arc_to_fast(list, nk_vec2(b.x - r1, a.y + r1), r1, 9, 12);
-        nk_draw_list_path_arc_to_fast(list, nk_vec2(b.x - r2, b.y - r2), r2, 0, 3);
-        nk_draw_list_path_arc_to_fast(list, nk_vec2(a.x + r3, b.y - r3), r3, 3, 6);
+        nk_draw_list_path_arc_to_fast(list, nk_vec2(a.x + rounding.a, a.y + rounding.a), rounding.a, 6, 9);
+        nk_draw_list_path_arc_to_fast(list, nk_vec2(b.x - rounding.b, a.y + rounding.b), rounding.b, 9, 12);
+        nk_draw_list_path_arc_to_fast(list, nk_vec2(b.x - rounding.c, b.y - rounding.c), rounding.c, 0, 3);
+        nk_draw_list_path_arc_to_fast(list, nk_vec2(a.x + rounding.d, b.y - rounding.d), rounding.d, 3, 6);
     }
 }
 NK_API void
@@ -10363,35 +10384,31 @@ nk_draw_list_stroke_line(struct nk_draw_list *list, struct nk_vec2 a,
 }
 NK_API void
 nk_draw_list_fill_rect(struct nk_draw_list *list, struct nk_rect rect,
-    struct nk_color col, float r0, float r1, float r2, float r3)
+    struct nk_color col, struct nk_vec4 rounding)
 {
     NK_ASSERT(list);
     if (!list || !col.a) return;
 
     if (list->line_AA == NK_ANTI_ALIASING_ON) {
         nk_draw_list_path_rect_to(list, nk_vec2(rect.x, rect.y),
-            nk_vec2(rect.x + rect.w, rect.y + rect.h),
-            r0, r1, r2, r3);
+            nk_vec2(rect.x + rect.w, rect.y + rect.h), rounding);
     } else {
         nk_draw_list_path_rect_to(list, nk_vec2(rect.x-0.5f, rect.y-0.5f),
-            nk_vec2(rect.x + rect.w, rect.y + rect.h),
-            r0, r1, r2, r3);
+            nk_vec2(rect.x + rect.w, rect.y + rect.h), rounding);
     } nk_draw_list_path_fill(list,  col);
 }
 NK_API void
 nk_draw_list_stroke_rect(struct nk_draw_list *list, struct nk_rect rect,
-    struct nk_color col, float r0, float r1, float r2, float r3, float thickness)
+    struct nk_color col, struct nk_vec4 rounding, float thickness)
 {
     NK_ASSERT(list);
     if (!list || !col.a) return;
     if (list->line_AA == NK_ANTI_ALIASING_ON) {
         nk_draw_list_path_rect_to(list, nk_vec2(rect.x, rect.y),
-            nk_vec2(rect.x + rect.w, rect.y + rect.h),
-            r0, r1, r2, r3);
+            nk_vec2(rect.x + rect.w, rect.y + rect.h), rounding);
     } else {
         nk_draw_list_path_rect_to(list, nk_vec2(rect.x-0.5f, rect.y-0.5f),
-            nk_vec2(rect.x + rect.w, rect.y + rect.h),
-            r0, r1, r2, r3);
+            nk_vec2(rect.x + rect.w, rect.y + rect.h), rounding);
     } nk_draw_list_path_stroke(list,  col, NK_STROKE_CLOSED, thickness);
 }
 NK_API void
@@ -10636,12 +10653,12 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
         case NK_COMMAND_RECT: {
             const struct nk_command_rect *r = (const struct nk_command_rect*)cmd;
             nk_draw_list_stroke_rect(&ctx->draw_list, nk_rect(r->x, r->y, r->w, r->h),
-                r->color, (float)r->rounding, (float)r->rounding, (float)r->rounding, (float)r->rounding, r->line_thickness);
+                r->color, (struct nk_vec4)r->rounding, r->line_thickness);
         } break;
         case NK_COMMAND_RECT_FILLED: {
             const struct nk_command_rect_filled *r = (const struct nk_command_rect_filled*)cmd;
             nk_draw_list_fill_rect(&ctx->draw_list, nk_rect(r->x, r->y, r->w, r->h),
-                r->color, (float)r->rounding, (float)r->rounding, (float)r->rounding, (float)r->rounding);
+                r->color, (struct nk_vec4)r->rounding);
         } break;
         case NK_COMMAND_RECT_MULTI_COLOR: {
             const struct nk_command_rect_multi_color *r = (const struct nk_command_rect_multi_color*)cmd;
@@ -18711,6 +18728,7 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     win->scaler = nk_style_item_color(table[NK_COLOR_TEXT]);
 
     win->rounding = 0.0f;
+    win->group_rounding = 0.0f;
     win->spacing = nk_vec2(4,4);
     win->scrollbar_size = nk_vec2(10,10);
     win->min_size = nk_vec2(64,64);
@@ -19670,7 +19688,14 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
                 break;
             case NK_STYLE_ITEM_COLOR:
                 text.background = background->data.color;
-                nk_fill_rect(out, header, style->window.rounding, background->data.color);
+		 switch(panel_type) {
+		     case NK_PANEL_GROUP:
+			 nk_fill_rect(out, header, nk_vec4(style->window.group_rounding, style->window.group_rounding, 0, 0), background->data.color);
+			 break;
+		     default:
+			 nk_fill_rect(out, header, nk_vec4(style->window.rounding, style->window.rounding, 0, 0), background->data.color);
+			 break;
+		 }
                 break;
         }
 
@@ -19751,7 +19776,20 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
                 nk_draw_nine_slice(out, body, &style->window.fixed_background.data.slice, nk_white);
                 break;
             case NK_STYLE_ITEM_COLOR:
-                nk_fill_rect(out, body, style->window.rounding, style->window.fixed_background.data.color);
+		 switch(panel_type) {
+		     case NK_PANEL_GROUP:
+			 if (nk_panel_has_header(win->flags, title))
+			     nk_fill_rect(out, body, nk_vec4(0, 0, style->window.group_rounding, style->window.group_rounding), style->window.fixed_background.data.color);
+			 else
+			     nk_fill_rect(out, body, nk_vec4(style->window.group_rounding, style->window.group_rounding, style->window.group_rounding, style->window.group_rounding), style->window.fixed_background.data.color);
+			 break;
+		     default:
+			 if (nk_panel_has_header(win->flags, title))
+			     nk_fill_rect(out, body, nk_vec4(0, 0, style->window.rounding, style->window.rounding), style->window.fixed_background.data.color);
+			 else
+			     nk_fill_rect(out, body, nk_vec4(style->window.rounding, style->window.rounding, style->window.rounding, style->window.rounding), style->window.fixed_background.data.color);
+			 break;
+		 }
                 break;
         }
     }
@@ -19811,14 +19849,14 @@ nk_panel_end(struct nk_context *ctx)
         empty_space.y = layout->bounds.y;
         empty_space.h = panel_padding.y;
         empty_space.w = window->bounds.w;
-        nk_fill_rect(out, empty_space, 0, style->window.background);
+        nk_fill_rect(out, empty_space, nk_vec4(0, 0, 0, 0), style->window.background);
 
         /* fill left empty space */
         empty_space.x = window->bounds.x;
         empty_space.y = layout->bounds.y;
         empty_space.w = panel_padding.x + layout->border;
         empty_space.h = layout->bounds.h;
-        nk_fill_rect(out, empty_space, 0, style->window.background);
+        nk_fill_rect(out, empty_space, nk_vec4(0, 0, 0, 0), style->window.background);
 
         /* fill right empty space */
         empty_space.x = layout->bounds.x + layout->bounds.w;
@@ -19827,7 +19865,7 @@ nk_panel_end(struct nk_context *ctx)
         empty_space.h = layout->bounds.h;
         if (*layout->offset_y == 0 && !(layout->flags & NK_WINDOW_NO_SCROLLBAR))
             empty_space.w += scrollbar_size.x;
-        nk_fill_rect(out, empty_space, 0, style->window.background);
+        nk_fill_rect(out, empty_space, nk_vec4(0, 0, 0, 0), style->window.background);
 
         /* fill bottom empty space */
         if (layout->footer_height > 0) {
@@ -19835,7 +19873,7 @@ nk_panel_end(struct nk_context *ctx)
             empty_space.y = layout->bounds.y + layout->bounds.h;
             empty_space.w = window->bounds.w;
             empty_space.h = layout->footer_height;
-            nk_fill_rect(out, empty_space, 0, style->window.background);
+            nk_fill_rect(out, empty_space, nk_vec4(0, 0, 0, 0), style->window.background);
         }
     }
 
@@ -19947,7 +19985,14 @@ nk_panel_end(struct nk_context *ctx)
                 : (window->bounds.y + window->bounds.h));
         struct nk_rect b = window->bounds;
         b.h = padding_y - window->bounds.y;
-        nk_stroke_rect(out, b, 0, layout->border, border_color);
+        switch(layout->type) {
+            case NK_PANEL_GROUP:
+		nk_stroke_rect(out, b, nk_vec4(style->window.group_rounding, style->window.group_rounding, style->window.group_rounding, style->window.group_rounding), layout->border, border_color);
+		break;
+            default:
+		nk_stroke_rect(out, b, nk_vec4(style->window.rounding, style->window.rounding, style->window.rounding, style->window.rounding), layout->border, border_color);
+		break;
+	}
     }
 
     /* scaler */
@@ -21627,7 +21672,7 @@ nk_panel_layout(const struct nk_context *ctx, struct nk_window *win,
         background.w = win->bounds.w;
         background.y = layout->at_y - 1.0f;
         background.h = layout->row.height + 1.0f;
-        nk_fill_rect(out, background, 0, color);
+        nk_fill_rect(out, background, nk_vec4(0, 0, 0, 0), color);
     }
 }
 NK_LIB void
@@ -22347,9 +22392,9 @@ nk_tree_state_base(struct nk_context *ctx, enum nk_tree_type type,
                 nk_draw_nine_slice(out, header, &background->data.slice, nk_white);
                 break;
             case NK_STYLE_ITEM_COLOR:
-                nk_fill_rect(out, header, 0, style->tab.border_color);
+                nk_fill_rect(out, header, nk_vec4(0, 0, 0, 0), style->tab.border_color);
                 nk_fill_rect(out, nk_shrink_rect(header, style->tab.border),
-                    style->tab.rounding, background->data.color);
+                    nk_vec4(style->tab.rounding, style->tab.rounding, style->tab.rounding, style->tab.rounding), background->data.color);
                 break;
         }
     } else text.background = style->window.background;
@@ -22537,9 +22582,9 @@ nk_tree_element_image_push_hashed_base(struct nk_context *ctx, enum nk_tree_type
                 nk_draw_nine_slice(out, header, &background->data.slice, nk_white);
                 break;
             case NK_STYLE_ITEM_COLOR:
-                nk_fill_rect(out, header, 0, style->tab.border_color);
+                nk_fill_rect(out, header, nk_vec4(0, 0, 0, 0), style->tab.border_color);
                 nk_fill_rect(out, nk_shrink_rect(header, style->tab.border),
-                    style->tab.rounding, background->data.color);
+		     nk_vec4(style->tab.rounding, style->tab.rounding, style->tab.rounding, style->tab.rounding), background->data.color);
                 break;
         }
     }
@@ -23763,9 +23808,9 @@ nk_draw_symbol(struct nk_command_buffer *out, enum nk_symbol_type type,
     case NK_SYMBOL_RECT_OUTLINE: {
         /* simple empty/filled shapes */
         if (type == NK_SYMBOL_RECT_SOLID || type == NK_SYMBOL_RECT_OUTLINE) {
-            nk_fill_rect(out, content,  0, foreground);
+            nk_fill_rect(out, content, nk_vec4(0, 0, 0, 0), foreground);
             if (type == NK_SYMBOL_RECT_OUTLINE)
-                nk_fill_rect(out, nk_shrink_rect(content, border_width), 0, background);
+                nk_fill_rect(out, nk_shrink_rect(content, border_width), nk_vec4(0, 0, 0, 0), background);
         } else {
             nk_fill_circle(out, content, foreground);
             if (type == NK_SYMBOL_CIRCLE_OUTLINE)
@@ -23837,8 +23882,8 @@ nk_draw_button(struct nk_command_buffer *out,
             nk_draw_nine_slice(out, *bounds, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-            nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), background->data.color);
+            nk_stroke_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->border, style->border_color);
             break;
     }
     return background;
@@ -24453,13 +24498,13 @@ nk_draw_checkbox(struct nk_command_buffer *out,
 
     /* draw background and cursor */
     if (background->type == NK_STYLE_ITEM_COLOR) {
-        nk_fill_rect(out, *selector, 0, style->border_color);
-        nk_fill_rect(out, nk_shrink_rect(*selector, style->border), 0, background->data.color);
+        nk_fill_rect(out, *selector, nk_vec4(0, 0, 0, 0), style->border_color);
+        nk_fill_rect(out, nk_shrink_rect(*selector, style->border), nk_vec4(0, 0, 0, 0), background->data.color);
     } else nk_draw_image(out, *selector, &background->data.image, nk_white);
     if (active) {
         if (cursor->type == NK_STYLE_ITEM_IMAGE)
             nk_draw_image(out, *cursors, &cursor->data.image, nk_white);
-        else nk_fill_rect(out, *cursors, 0, cursor->data.color);
+        else nk_fill_rect(out, *cursors, nk_vec4(0, 0, 0, 0), cursor->data.color);
     }
 
     text.padding.x = 0;
@@ -24778,7 +24823,7 @@ nk_draw_selectable(struct nk_command_buffer *out,
             break;
         case NK_STYLE_ITEM_COLOR:
             text.background = background->data.color;
-            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
+            nk_fill_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), background->data.color);
             break;
     }
     if (icon) {
@@ -25154,14 +25199,14 @@ nk_draw_slider(struct nk_command_buffer *out, nk_flags state,
             nk_draw_nine_slice(out, *bounds, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-            nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), background->data.color);
+            nk_stroke_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->border, style->border_color);
             break;
     }
 
     /* draw slider bar */
-    nk_fill_rect(out, bar, style->rounding, bar_color);
-    nk_fill_rect(out, fill, style->rounding, style->bar_filled);
+    nk_fill_rect(out, bar, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), bar_color);
+    nk_fill_rect(out, fill, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->bar_filled);
 
     /* draw cursor */
     if (cursor->type == NK_STYLE_ITEM_IMAGE)
@@ -25385,8 +25430,8 @@ nk_draw_progress(struct nk_command_buffer *out, nk_flags state,
             nk_draw_nine_slice(out, *bounds, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-            nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), background->data.color);
+            nk_stroke_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->border, style->border_color);
             break;
     }
 
@@ -25399,8 +25444,8 @@ nk_draw_progress(struct nk_command_buffer *out, nk_flags state,
             nk_draw_nine_slice(out, *scursor, &cursor->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, *scursor, style->rounding, cursor->data.color);
-            nk_stroke_rect(out, *scursor, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, *scursor, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), cursor->data.color);
+            nk_stroke_rect(out, *scursor, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->border, style->border_color);
             break;
     }
 }
@@ -25587,8 +25632,8 @@ nk_draw_scrollbar(struct nk_command_buffer *out, nk_flags state,
             nk_draw_nine_slice(out, *bounds, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-            nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), background->data.color);
+            nk_stroke_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->border, style->border_color);
             break;
     }
 
@@ -25601,8 +25646,8 @@ nk_draw_scrollbar(struct nk_command_buffer *out, nk_flags state,
             nk_draw_nine_slice(out, *scroll, &cursor->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, *scroll, style->rounding_cursor, cursor->data.color);
-            nk_stroke_rect(out, *scroll, style->rounding_cursor, style->border_cursor, style->cursor_border_color);
+            nk_fill_rect(out, *scroll, nk_vec4(style->rounding_cursor, style->rounding_cursor, style->rounding_cursor, style->rounding_cursor), cursor->data.color);
+            nk_stroke_rect(out, *scroll, nk_vec4(style->rounding_cursor, style->rounding_cursor, style->rounding_cursor, style->rounding_cursor), style->border_cursor, style->cursor_border_color);
             break;
     }
 }
@@ -26926,7 +26971,7 @@ nk_edit_draw_text(struct nk_command_buffer *out,
                 label.x += x_offset;
 
             if (is_selected) /* selection needs to draw different background color */
-                nk_fill_rect(out, label, 0, background);
+                nk_fill_rect(out, label, nk_vec4(0, 0, 0, 0), background);
             nk_widget_text(out, label, line, (int)((text + text_len) - line),
                 &txt, NK_TEXT_CENTERED, font);
 
@@ -26960,7 +27005,7 @@ nk_edit_draw_text(struct nk_command_buffer *out,
             label.x += x_offset;
 
         if (is_selected)
-            nk_fill_rect(out, label, 0, background);
+            nk_fill_rect(out, label, nk_vec4(0, 0, 0, 0), background);
         nk_widget_text(out, label, line, (int)((text + text_len) - line),
             &txt, NK_TEXT_LEFT, font);
     }}
@@ -27154,8 +27199,8 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
             nk_draw_nine_slice(out, bounds, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, bounds, style->rounding, background->data.color);
-            nk_stroke_rect(out, bounds, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), background->data.color);
+            nk_stroke_rect(out, bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->border, style->border_color);
             break;
     }}
 
@@ -27425,7 +27470,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                 cursor.x = area.x + cursor_pos.x - edit->scrollbar.x;
                 cursor.y = area.y + cursor_pos.y + row_height/2.0f - cursor.h/2.0f;
                 cursor.y -= edit->scrollbar.y;
-                nk_fill_rect(out, cursor, 0, cursor_color);
+                nk_fill_rect(out, cursor, nk_vec4(0, 0, 0, 0), cursor_color);
             } else {
                 /* draw cursor inside text */
                 int glyph_len;
@@ -27444,7 +27489,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                 txt.padding = nk_vec2(0,0);
                 txt.background = cursor_color;;
                 txt.text = cursor_text_color;
-                nk_fill_rect(out, label, 0, cursor_color);
+                nk_fill_rect(out, label, nk_vec4(0, 0, 0, 0), cursor_color);
                 nk_widget_text(out, label, cursor_ptr, glyph_len, &txt, NK_TEXT_LEFT, font);
             }
         }}
@@ -27735,8 +27780,8 @@ nk_draw_property(struct nk_command_buffer *out, const struct nk_style_property *
             break;
         case NK_STYLE_ITEM_COLOR:
             text.background = background->data.color;
-            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-            nk_stroke_rect(out, *bounds, style->rounding, style->border, background->data.color);
+            nk_fill_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), background->data.color);
+            nk_stroke_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->border, background->data.color);
             break;
     }
 
@@ -28207,9 +28252,9 @@ nk_chart_begin_colored(struct nk_context *ctx, enum nk_chart_type type,
             nk_draw_nine_slice(&win->buffer, bounds, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(&win->buffer, bounds, style->rounding, style->border_color);
+            nk_fill_rect(&win->buffer, bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->border_color);
             nk_fill_rect(&win->buffer, nk_shrink_rect(bounds, style->border),
-                style->rounding, style->background.data.color);
+                nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->background.data.color);
             break;
     }
     return 1;
@@ -28289,7 +28334,7 @@ nk_chart_push_line(struct nk_context *ctx, struct nk_window *win,
                 i->mouse.buttons[NK_BUTTON_LEFT].clicked) ? NK_CHART_CLICKED: 0;
             color = g->slots[slot].highlight;
         }
-        nk_fill_rect(out, bounds, 0, color);
+        nk_fill_rect(out, bounds, nk_vec4(0, 0, 0, 0), color);
         g->slots[slot].index += 1;
         return ret;
     }
@@ -28313,7 +28358,7 @@ nk_chart_push_line(struct nk_context *ctx, struct nk_window *win,
             color = g->slots[slot].highlight;
         }
     }
-    nk_fill_rect(out, nk_rect(cur.x - 2, cur.y - 2, 4, 4), 0, color);
+    nk_fill_rect(out, nk_rect(cur.x - 2, cur.y - 2, 4, 4), nk_vec4(0, 0, 0, 0), color);
 
     /* save current data point position */
     g->slots[slot].last.x = cur.x;
@@ -28363,7 +28408,7 @@ nk_chart_push_column(const struct nk_context *ctx, struct nk_window *win,
                 in->mouse.buttons[NK_BUTTON_LEFT].clicked) ? NK_CHART_CLICKED: 0;
         color = chart->slots[slot].highlight;
     }
-    nk_fill_rect(out, item, 0, color);
+    nk_fill_rect(out, item, nk_vec4(0, 0, 0, 0), color);
     chart->slots[slot].index += 1;
     return ret;
 }
@@ -28764,8 +28809,8 @@ nk_combo_begin_text(struct nk_context *ctx, const char *selected, int len,
             break;
         case NK_STYLE_ITEM_COLOR:
             text.background = background->data.color;
-            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            nk_fill_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), background->data.color);
+            nk_stroke_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), style->combo.border, style->combo.border_color);
             break;
     }
     {
@@ -28864,8 +28909,8 @@ nk_combo_begin_color(struct nk_context *ctx, struct nk_color color, struct nk_ve
             nk_draw_nine_slice(&win->buffer, header, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            nk_fill_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), background->data.color);
+            nk_stroke_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), style->combo.border, style->combo.border_color);
             break;
     }
     {
@@ -28903,7 +28948,7 @@ nk_combo_begin_color(struct nk_context *ctx, struct nk_color color, struct nk_ve
             bounds.w = (button.x - (style->combo.content_padding.x + style->combo.spacing.x)) - bounds.x;
         else
             bounds.w = header.w - 4 * style->combo.content_padding.x;
-        nk_fill_rect(&win->buffer, bounds, 0, color);
+        nk_fill_rect(&win->buffer, bounds, nk_vec4(0, 0, 0, 0), color);
 
         /* draw open/close button */
         if (draw_button_symbol)
@@ -28965,8 +29010,8 @@ nk_combo_begin_symbol(struct nk_context *ctx, enum nk_symbol_type symbol, struct
             break;
         case NK_STYLE_ITEM_COLOR:
             sym_background = background->data.color;
-            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            nk_fill_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), background->data.color);
+            nk_stroke_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), style->combo.border, style->combo.border_color);
             break;
     }
     {
@@ -29062,8 +29107,8 @@ nk_combo_begin_symbol_text(struct nk_context *ctx, const char *selected, int len
             break;
         case NK_STYLE_ITEM_COLOR:
             text.background = background->data.color;
-            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            nk_fill_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), background->data.color);
+            nk_stroke_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), style->combo.border, style->combo.border_color);
             break;
     }
     {
@@ -29153,8 +29198,8 @@ nk_combo_begin_image(struct nk_context *ctx, struct nk_image img, struct nk_vec2
             nk_draw_nine_slice(&win->buffer, header, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            nk_fill_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), background->data.color);
+            nk_stroke_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), style->combo.border, style->combo.border_color);
             break;
     }
     {
@@ -29253,8 +29298,8 @@ nk_combo_begin_image_text(struct nk_context *ctx, const char *selected, int len,
             break;
         case NK_STYLE_ITEM_COLOR:
             text.background = background->data.color;
-            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            nk_fill_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), background->data.color);
+            nk_stroke_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), style->combo.border, style->combo.border_color);
             break;
     }
     {
