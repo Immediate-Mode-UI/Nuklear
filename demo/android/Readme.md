@@ -15,17 +15,8 @@ This folder contains all the dependencies for build a project based on **OpenGL 
 `sdl2surface_rawfb`:
 This folder contains all the dependencies for build a project based on **Raw SDL Surface**,  OpenGL context will not be accessible inside this project, anyways under the hood SDL works with OpenGL, just like the previous demo you will found the project builded in folder `build` named as ***com.sdl2rawfb.nuklear*** .
 
-`project-template`:
-This folder and files in, shall not be edited manually, the build.sh script will copy and merge all files needed to generate the demo from the folders mentioned above.
-
 `build`:
 Has we have mentioned above, if builds were successfully, this folder will contains the demos ready to run on an Android device.        
-
-`native_activity`:
-This folder will contains an implementation whit out SDL as backend. All ready is in progress and I hope release as soon it will be ready.
-
-`surface_view`:
-This folder will contains an implementation whit out SDL as backend, plus we extend the features on an Java/Kotlin app.
 
  ## Building for SDL experts
  If you already are familiar whit SDL you con go strike forward to https://github.com/libsdl-org/SDL under the folder `build-scripts` you will see the script **androidbuild.sh**, this script will lead you to create a projects whit more flexibility.
