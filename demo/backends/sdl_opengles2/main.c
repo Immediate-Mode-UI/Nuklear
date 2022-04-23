@@ -18,7 +18,7 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
 #define NK_SDL_GLES2_IMPLEMENTATION
-#include "../../nuklear.h"
+#include "../../../nuklear.h"
 #include "nuklear_sdl_gles2.h"
 
 #define WINDOW_WIDTH 800
@@ -55,19 +55,19 @@
 #endif
 
 #ifdef INCLUDE_STYLE
-  #include "../../demo/common/style.c"
+  #include "../../../demo/common/style.c"
 #endif
 #ifdef INCLUDE_CALCULATOR
-  #include "../../demo/common/calculator.c"
+  #include "../../../demo/common/calculator.c"
 #endif
 #ifdef INCLUDE_CANVAS
-  #include "../../demo/common/canvas.c"
+  #include "../../../demo/common/canvas.c"
 #endif
 #ifdef INCLUDE_OVERVIEW
-  #include "../../demo/common/overview.c"
+  #include "../../../demo/common/overview.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
-  #include "../../demo/common/node_editor.c"
+  #include "../../../demo/common/node_editor.c"
 #endif
 
 /* ===============================================================

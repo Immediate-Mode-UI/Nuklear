@@ -21,10 +21,10 @@
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
-#include "../nuklear.h"
+#include "../../nuklear.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "../../demo/common/stb_image.h"
 
 /* macros */
 #define WINDOW_WIDTH 1200
@@ -828,16 +828,16 @@ int main(int argc, char *argv[])
 
     /* icons */
     glEnable(GL_TEXTURE_2D);
-    media.icons.home = icon_load("../icon/home.png");
-    media.icons.directory = icon_load("../icon/directory.png");
-    media.icons.computer = icon_load("../icon/computer.png");
-    media.icons.desktop = icon_load("../icon/desktop.png");
-    media.icons.default_file = icon_load("../icon/default.png");
-    media.icons.text_file = icon_load("../icon/text.png");
-    media.icons.music_file = icon_load("../icon/music.png");
-    media.icons.font_file =  icon_load("../icon/font.png");
-    media.icons.img_file = icon_load("../icon/img.png");
-    media.icons.movie_file = icon_load("../icon/movie.png");
+    media.icons.home = icon_load("../../../demo/common/icons/home.png");
+    media.icons.directory = icon_load("../../../demo/common/icons/directory.png");
+    media.icons.computer = icon_load("../../../demo/common/icons/computer.png");
+    media.icons.desktop = icon_load("../../../demo/common/icons/desktop.png");
+    media.icons.default_file = icon_load("../../../demo/common/icons/default.png");
+    media.icons.text_file = icon_load("../../../demo/common/icons/text.png");
+    media.icons.music_file = icon_load("../../../demo/common/icons/music.png");
+    media.icons.font_file =  icon_load("../../../demo/common/icons/font.png");
+    media.icons.img_file = icon_load("../../../demo/common/icons/img.png");
+    media.icons.movie_file = icon_load("../../../demo/common/icons/movie.png");
     media_init(&media);
 
     file_browser_init(&browser, &media);

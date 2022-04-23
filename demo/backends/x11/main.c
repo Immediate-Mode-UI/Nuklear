@@ -16,7 +16,7 @@
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_IMPLEMENTATION
 #define NK_XLIB_IMPLEMENTATION
-#include "../../nuklear.h"
+#include "../../../nuklear.h"
 #include "nuklear_xlib.h"
 
 #define DTIME           20
@@ -92,19 +92,19 @@ sleep_for(long t)
 #endif
 
 #ifdef INCLUDE_STYLE
-  #include "../../demo/common/style.c"
+  #include "../../../demo/common/style.c"
 #endif
 #ifdef INCLUDE_CALCULATOR
-  #include "../../demo/common/calculator.c"
+  #include "../../../demo/common/calculator.c"
 #endif
 #ifdef INCLUDE_CANVAS
-  #include "../../demo/common/canvas.c"
+  #include "../../../demo/common/canvas.c"
 #endif
 #ifdef INCLUDE_OVERVIEW
-  #include "../../demo/common/overview.c"
+  #include "../../../demo/common/overview.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
-  #include "../../demo/common/node_editor.c"
+  #include "../../../demo/common/node_editor.c"
 #endif
 
 /* ===============================================================

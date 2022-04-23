@@ -21,11 +21,11 @@
 #define NK_IMPLEMENTATION
 #define NK_GLFW_GL2_IMPLEMENTATION
 #define NK_KEYSTATE_BASED_INPUT
-#include "../../nuklear.h"
+#include "../../../nuklear.h"
 #include "nuklear_glfw_gl2.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "../../demo/common/filebrowser/stb_image.h"
+#include "../../../demo/common/stb_image.h"
 
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 800
@@ -41,7 +41,7 @@
 /* #define INCLUDE_STYLE        */
 /* #define INCLUDE_CALCULATOR   */
 #define INCLUDE_CANVAS
-/* #define INCLUDE_FILE_BROWSER */
+/* #define INCLUDE_FILE_BROWSER   */
 /* #define INCLUDE_OVERVIEW     */
 /* #define INCLUDE_NODE_EDITOR  */
 
@@ -54,22 +54,22 @@
 #endif
 
 #ifdef INCLUDE_STYLE
-  #include "../../demo/common/style.c"
+  #include "../../../demo/common/style.c"
 #endif
 #ifdef INCLUDE_CALCULATOR
-  #include "../../demo/common/calculator.c"
+  #include "../../../demo/common/calculator.c"
 #endif
 #ifdef INCLUDE_CANVAS
-  #include "../../demo/common/canvas.c"
+  #include "../../../demo/common/canvas.c"
 #endif
 #ifdef INCLUDE_FILE_BROWSER
-  #include "../../demo/common/file_browser.c"
+  #include "../../../demo/common/file_browser.c"
 #endif
 #ifdef INCLUDE_OVERVIEW
-  #include "../../demo/common/overview.c"
+  #include "../../../demo/common/overview.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
-  #include "../../demo/common/node_editor.c"
+  #include "../../../demo/common/node_editor.c"
 #endif
 
 /* ===============================================================
@@ -132,16 +132,16 @@ int main(void)
     #ifdef INCLUDE_FILE_BROWSER
     /* icons */
     glEnable(GL_TEXTURE_2D);
-    media.icons.home = icon_load("../../demo/common/filebrowser/icon/home.png");
-    media.icons.directory = icon_load("../../demo/common/filebrowser/icon/directory.png");
-    media.icons.computer = icon_load("../../demo/common/filebrowser/icon/computer.png");
-    media.icons.desktop = icon_load("../../demo/common/filebrowser/icon/desktop.png");
-    media.icons.default_file = icon_load("../../demo/common/filebrowser/icon/default.png");
-    media.icons.text_file = icon_load("../../demo/common/filebrowser/icon/text.png");
-    media.icons.music_file = icon_load("../../demo/common/filebrowser/icon/music.png");
-    media.icons.font_file =  icon_load("../../demo/common/filebrowser/icon/font.png");
-    media.icons.img_file = icon_load("../../demo/common/filebrowser/icon/img.png");
-    media.icons.movie_file = icon_load("../../demo/common/filebrowser/icon/movie.png");
+    media.icons.home = icon_load("../../../demo/common/icons/home.png");
+    media.icons.directory = icon_load("../../../demo/common/icons/directory.png");
+    media.icons.computer = icon_load("../../../demo/common/icons/computer.png");
+    media.icons.desktop = icon_load("../../../demo/common/icons/desktop.png");
+    media.icons.default_file = icon_load("../../../demo/common/icons/default.png");
+    media.icons.text_file = icon_load("../../../demo/common/icons/text.png");
+    media.icons.music_file = icon_load("../../../demo/common/icons/music.png");
+    media.icons.font_file =  icon_load("../../../demo/common/icons/font.png");
+    media.icons.img_file = icon_load("../../../demo/common/icons/img.png");
+    media.icons.movie_file = icon_load("../../../demo/common/icons/movie.png");
     media_init(&media);
 
     file_browser_init(&browser, &media);
