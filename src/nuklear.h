@@ -250,6 +250,14 @@ struct nk_style_tab;
 struct nk_style_window_header;
 struct nk_style_window;
 
+enum nk_image_type {
+    NK_IMAGE_STRETCH,
+    NK_IMAGE_FILL,
+    NK_IMAGE_FIT,
+    NK_IMAGE_CENTER,
+    NK_IMAGE_TILE
+};
+
 enum {nk_false, nk_true};
 struct nk_color {nk_byte r,g,b,a;};
 struct nk_colorf {float r,g,b,a;};
@@ -259,7 +267,7 @@ struct nk_rect {float x,y,w,h;};
 struct nk_recti {short x,y,w,h;};
 typedef char nk_glyph[NK_UTF_SIZE];
 typedef union {void *ptr; int id;} nk_handle;
-struct nk_image {nk_handle handle; nk_ushort w, h; nk_ushort region[4];};
+struct nk_image {nk_handle handle; nk_ushort w, h; enum nk_image_type type; nk_ushort region[4];};
 struct nk_nine_slice {struct nk_image img; nk_ushort l, t, r, b;};
 struct nk_cursor {struct nk_image img; struct nk_vec2 size, offset;};
 struct nk_scroll {nk_uint x, y;};
@@ -3505,13 +3513,13 @@ NK_API void nk_color_hsva_fv(float *hsva_out, struct nk_color);
  * ============================================================================= */
 NK_API nk_handle nk_handle_ptr(void*);
 NK_API nk_handle nk_handle_id(int);
-NK_API struct nk_image nk_image_handle(nk_handle);
-NK_API struct nk_image nk_image_ptr(void*);
-NK_API struct nk_image nk_image_id(int);
+NK_API struct nk_image nk_image_from_handle(nk_handle, nk_ushort w, nk_ushort h, enum nk_image_type);
+NK_API struct nk_image nk_image_from_ptr(void*, nk_ushort w, nk_ushort h, enum nk_image_type);
+NK_API struct nk_image nk_image_from_id(int, nk_ushort w, nk_ushort h, enum nk_image_type);
 NK_API nk_bool nk_image_is_subimage(const struct nk_image* img);
-NK_API struct nk_image nk_subimage_ptr(void*, nk_ushort w, nk_ushort h, struct nk_rect sub_region);
-NK_API struct nk_image nk_subimage_id(int, nk_ushort w, nk_ushort h, struct nk_rect sub_region);
-NK_API struct nk_image nk_subimage_handle(nk_handle, nk_ushort w, nk_ushort h, struct nk_rect sub_region);
+NK_API struct nk_image nk_subimage_from_ptr(void*, nk_ushort w, nk_ushort h, enum nk_image_type, struct nk_rect sub_region);
+NK_API struct nk_image nk_subimage_from_id(int, nk_ushort w, nk_ushort h, enum nk_image_type, struct nk_rect sub_region);
+NK_API struct nk_image nk_subimage_from_handle(nk_handle, nk_ushort w, nk_ushort h, enum nk_image_type, struct nk_rect sub_region);
 /* =============================================================================
  *
  *                                  9-SLICE
