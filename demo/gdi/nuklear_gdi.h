@@ -15,6 +15,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <wingdi.h>
 
 typedef struct GdiFont GdiFont;
 NK_API struct nk_context* nk_gdi_init(GdiFont *font, HDC window_dc, unsigned int width, unsigned int height);
@@ -392,6 +393,62 @@ nk_gdi_stroke_polyline(HDC dc, const struct nk_vec2i *pnts,
 }
 
 static void
+nk_gdi_stroke_arc(HDC dc, short cx, short cy, unsigned short r, float amin, float adelta, unsigned short line_thickness, struct nk_color col)
+{
+    COLORREF color = convert_color(col);
+
+    /* setup pen */
+    HPEN pen = NULL;
+    if (line_thickness == 1)
+        SetDCPenColor(dc, color);
+    else
+    {
+        /* the flat endcap makes thick arcs look better */
+        DWORD pen_style = PS_SOLID | PS_ENDCAP_FLAT | PS_GEOMETRIC;
+
+        LOGBRUSH brush;
+        brush.lbStyle = BS_SOLID;
+        brush.lbColor = color;
+        brush.lbHatch = 0;
+
+        pen = ExtCreatePen(pen_style, line_thickness, &brush, 0, NULL);
+        SelectObject(dc, pen);
+    }
+
+    /* calculate arc and draw */
+    int start_x = cx + (int) ((float)r*nk_cos(amin+adelta)),
+        start_y = cy + (int) ((float)r*nk_sin(amin+adelta)),
+        end_x = cx + (int) ((float)r*nk_cos(amin)),
+        end_y = cy + (int) ((float)r*nk_sin(amin));
+
+    HGDIOBJ br = SelectObject(dc, GetStockObject(NULL_BRUSH));
+    SetArcDirection(dc, AD_COUNTERCLOCKWISE);
+    Pie(dc, cx-r, cy-r, cx+r, cy+r, start_x, start_y, end_x, end_y);
+    SelectObject(dc, br);
+
+    if (pen)
+    {
+        SelectObject(dc, GetStockObject(DC_PEN));
+        DeleteObject(pen);
+    }
+}
+
+static void
+nk_gdi_fill_arc(HDC dc, short cx, short cy, unsigned short r, float amin, float adelta, struct nk_color col)
+{
+    COLORREF color = convert_color(col);
+    SetDCBrushColor(dc, color);
+    SetDCPenColor(dc, color);
+
+    int start_x = cx + (int) ((float)r*nk_cos(amin+adelta)),
+        start_y = cy + (int) ((float)r*nk_sin(amin+adelta)),
+        end_x = cx + (int) ((float)r*nk_cos(amin)),
+        end_y = cy + (int) ((float)r*nk_sin(amin));
+
+    Pie(dc, cx-r, cy-r, cx+r, cy+r, start_x, start_y, end_x, end_y);
+}
+
+static void
 nk_gdi_fill_circle(HDC dc, short x, short y, unsigned short w,
     unsigned short h, struct nk_color col)
 {
@@ -413,9 +470,11 @@ nk_gdi_stroke_circle(HDC dc, short x, short y, unsigned short w,
         pen = CreatePen(PS_SOLID, line_thickness, color);
         SelectObject(dc, pen);
     }
-
+    
+    HGDIOBJ br = SelectObject(dc, GetStockObject(NULL_BRUSH));
     SetDCBrushColor(dc, OPAQUE);
     Ellipse(dc, x, y, x + w, y + h);
+    SelectObject(dc, br);
 
     if (pen) {
         SelectObject(dc, GetStockObject(DC_PEN));
@@ -716,6 +775,13 @@ nk_gdi_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case VK_PRIOR:
             nk_input_key(&gdi.ctx, NK_KEY_SCROLL_UP, down);
             return 1;
+                
+        case 'A':
+            if (ctrl) {
+                nk_input_key(&gdi.ctx, NK_KEY_TEXT_SELECT_ALL, down);
+                return 1;
+            }
+            break;
 
         case 'C':
             if (ctrl) {
@@ -859,6 +925,14 @@ nk_gdi_render(struct nk_color clear)
             const struct nk_command_circle_filled *c = (const struct nk_command_circle_filled *)cmd;
             nk_gdi_fill_circle(memory_dc, c->x, c->y, c->w, c->h, c->color);
         } break;
+        case NK_COMMAND_ARC: {
+            const struct nk_command_arc *q = (const struct nk_command_arc *)cmd;
+            nk_gdi_stroke_arc(memory_dc, q->cx, q->cy, q->r, q->a[0], q->a[1], q->line_thickness, q->color);
+        } break;
+        case NK_COMMAND_ARC_FILLED: {
+            const struct nk_command_arc_filled *q = (const struct nk_command_arc_filled *)cmd;
+            nk_gdi_fill_arc(memory_dc, q->cx, q->cy, q->r, q->a[0], q->a[1], q->color);
+        } break;
         case NK_COMMAND_TRIANGLE: {
             const struct nk_command_triangle*t = (const struct nk_command_triangle*)cmd;
             nk_gdi_stroke_triangle(memory_dc, t->a.x, t->a.y, t->b.x, t->b.y,
@@ -901,8 +975,7 @@ nk_gdi_render(struct nk_color clear)
             const struct nk_command_image *i = (const struct nk_command_image *)cmd;
             nk_gdi_draw_image(i->x, i->y, i->w, i->h, i->img, i->col);
         } break;
-        case NK_COMMAND_ARC:
-        case NK_COMMAND_ARC_FILLED:
+        case NK_COMMAND_CUSTOM:
         default: break;
         }
     }
