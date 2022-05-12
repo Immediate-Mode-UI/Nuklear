@@ -218,10 +218,10 @@ nk_gdi_fill_rect(HDC dc, short x, short y, unsigned short w,
 static void
 nk_gdi_set_vertexColor(PTRIVERTEX tri, struct nk_color col)
 {
-    tri->Red   = col.r << 8;
-    tri->Green = col.g << 8;
-    tri->Blue  = col.b << 8;
-    tri->Alpha = 0xff << 8;
+    tri->Red   = col.r * (0xffff / 0xff);
+    tri->Green = col.g * (0xffff / 0xff);
+    tri->Blue  = col.b * (0xffff / 0xff);
+    tri->Alpha = 0xffff;
 }
 
 static void
