@@ -221,7 +221,7 @@ nk_gdi_set_vertexColor(PTRIVERTEX tri, struct nk_color col)
     tri->Red   = col.r * (0xffff / 0xff);
     tri->Green = col.g * (0xffff / 0xff);
     tri->Blue  = col.b * (0xffff / 0xff);
-    tri->Alpha = 0xffff;
+    tri->Alpha = col.a * (0xffff / 0xff);
 }
 
 static void
@@ -229,16 +229,15 @@ nk_gdi_rect_multi_color(HDC dc, short x, short y, unsigned short w,
     unsigned short h, struct nk_color left, struct nk_color top,
     struct nk_color right, struct nk_color bottom)
 {
+    /* Note that GDI (without plus) does not appear to support alpha transparency properly in gradients. */
     BLENDFUNCTION alphaFunction;
-    GRADIENT_RECT gRect;
     GRADIENT_TRIANGLE gTri[2];
     TRIVERTEX vt[4];
     alphaFunction.BlendOp = AC_SRC_OVER;
     alphaFunction.BlendFlags = 0;
-    alphaFunction.SourceConstantAlpha = 0;
+    alphaFunction.SourceConstantAlpha = 0xff;
     alphaFunction.AlphaFormat = AC_SRC_ALPHA;
 
-    /* TODO: This Case Needs Repair.*/
     /* Top Left Corner */
     vt[0].x     = x;
     vt[0].y     = y;
@@ -251,7 +250,6 @@ nk_gdi_rect_multi_color(HDC dc, short x, short y, unsigned short w,
     vt[2].x     = x;
     vt[2].y     = y+h;
     nk_gdi_set_vertexColor(&vt[2], right);
-
     /* Bottom Right Corner */
     vt[3].x     = x+w;
     vt[3].y     = y+h;
@@ -263,9 +261,8 @@ nk_gdi_rect_multi_color(HDC dc, short x, short y, unsigned short w,
     gTri[1].Vertex1 = 2;
     gTri[1].Vertex2 = 1;
     gTri[1].Vertex3 = 3;
-    GdiGradientFill(dc, vt, 4, gTri, 2 , GRADIENT_FILL_TRIANGLE);
-    AlphaBlend(gdi.window_dc,  x, y, x+w, y+h,gdi.memory_dc, x, y, x+w, y+h,alphaFunction);
-
+    GradientFill(dc, vt, 4, gTri, 2, GRADIENT_FILL_TRIANGLE);
+    AlphaBlend(gdi.window_dc, x, y, w, h, dc, x, y, w, h, alphaFunction);
 }
 
 static BOOL
@@ -547,7 +544,6 @@ static void
 nk_gdi_blit(HDC dc)
 {
     BitBlt(dc, 0, 0, gdi.width, gdi.height, gdi.memory_dc, 0, 0, SRCCOPY);
-
 }
 
 GdiFont*
