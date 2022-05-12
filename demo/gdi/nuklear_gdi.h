@@ -15,6 +15,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <wingdi.h>
 
 typedef struct GdiFont GdiFont;
 NK_API struct nk_context* nk_gdi_init(GdiFont *font, HDC window_dc, unsigned int width, unsigned int height);
