@@ -921,6 +921,14 @@ nk_gdi_render(struct nk_color clear)
             const struct nk_command_circle_filled *c = (const struct nk_command_circle_filled *)cmd;
             nk_gdi_fill_circle(memory_dc, c->x, c->y, c->w, c->h, c->color);
         } break;
+        case NK_COMMAND_ARC: {
+            const struct nk_command_arc *q = (const struct nk_command_arc *)cmd;
+            nk_gdi_stroke_arc(memory_dc, q->cx, q->cy, q->r, q->a[0], q->a[1], q->line_thickness, q->color);
+        } break;
+        case NK_COMMAND_ARC_FILLED: {
+            const struct nk_command_arc_filled *q = (const struct nk_command_arc_filled *)cmd;
+            nk_gdi_fill_arc(memory_dc, q->cx, q->cy, q->r, q->a[0], q->a[1], q->color);
+        } break;
         case NK_COMMAND_TRIANGLE: {
             const struct nk_command_triangle*t = (const struct nk_command_triangle*)cmd;
             nk_gdi_stroke_triangle(memory_dc, t->a.x, t->a.y, t->b.x, t->b.y,
@@ -963,8 +971,7 @@ nk_gdi_render(struct nk_color clear)
             const struct nk_command_image *i = (const struct nk_command_image *)cmd;
             nk_gdi_draw_image(i->x, i->y, i->w, i->h, i->img, i->col);
         } break;
-        case NK_COMMAND_ARC:
-        case NK_COMMAND_ARC_FILLED:
+        case NK_COMMAND_CUSTOM:
         default: break;
         }
     }
