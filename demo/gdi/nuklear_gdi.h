@@ -392,6 +392,60 @@ nk_gdi_stroke_polyline(HDC dc, const struct nk_vec2i *pnts,
 }
 
 static void
+nk_gdi_stroke_arc(HDC dc, short cx, short cy, unsigned short r, float amin, float adelta, unsigned short line_thickness, struct nk_color col)
+{
+    COLORREF color = convert_color(col);
+
+    /* setup pen */
+    HPEN pen = NULL;
+    if (line_thickness == 1)
+        SetDCPenColor(dc, color);
+    else
+    {
+        /* the flat endcap makes thick arcs look better */
+        DWORD pen_style = PS_SOLID | PS_ENDCAP_FLAT | PS_GEOMETRIC;
+
+        LOGBRUSH brush;
+        brush.lbStyle = BS_SOLID;
+        brush.lbColor = color;
+        brush.lbHatch = 0;
+
+        pen = ExtCreatePen(pen_style, line_thickness, &brush, 0, NULL);
+        SelectObject(dc, pen);
+    }
+
+    /* calculate arc and draw */
+    int start_x = cx + (int) ((float)r*nk_cos(amin+adelta)),
+        start_y = cy + (int) ((float)r*nk_sin(amin+adelta)),
+        end_x = cx + (int) ((float)r*nk_cos(amin)),
+        end_y = cy + (int) ((float)r*nk_sin(amin));
+
+    SetArcDirection(dc, AD_COUNTERCLOCKWISE);
+    Pie(dc, cx-r, cy-r, cx+r, cy+r, start_x, start_y, end_x, end_y);
+
+    if (pen)
+    {
+        SelectObject(dc, GetStockObject(DC_PEN));
+        DeleteObject(pen);
+    }
+}
+
+static void
+nk_gdi_fill_arc(HDC dc, short cx, short cy, unsigned short r, float amin, float adelta, struct nk_color col)
+{
+    COLORREF color = convert_color(col);
+    SetDCBrushColor(dc, color);
+    SetDCPenColor(dc, color);
+
+    int start_x = cx + (int) ((float)r*nk_cos(amin+adelta)),
+        start_y = cy + (int) ((float)r*nk_sin(amin+adelta)),
+        end_x = cx + (int) ((float)r*nk_cos(amin)),
+        end_y = cy + (int) ((float)r*nk_sin(amin));
+
+    Pie(dc, cx-r, cy-r, cx+r, cy+r, start_x, start_y, end_x, end_y);
+}
+
+static void
 nk_gdi_fill_circle(HDC dc, short x, short y, unsigned short w,
     unsigned short h, struct nk_color col)
 {
@@ -414,6 +468,7 @@ nk_gdi_stroke_circle(HDC dc, short x, short y, unsigned short w,
         SelectObject(dc, pen);
     }
 
+    SelectObject(dc, GetStockObject(NULL_BRUSH));
     SetDCBrushColor(dc, OPAQUE);
     Ellipse(dc, x, y, x + w, y + h);
 
