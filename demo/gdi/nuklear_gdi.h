@@ -229,7 +229,9 @@ nk_gdi_rect_multi_color(HDC dc, short x, short y, unsigned short w,
     unsigned short h, struct nk_color left, struct nk_color top,
     struct nk_color right, struct nk_color bottom)
 {
-    /* Note that GDI (without plus) does not appear to support alpha transparency properly in gradients. */
+    /*  Note that GDI (without plus) does not appear to support alpha transparency properly in gradients.
+        Due to this lack of support, surfaces drawn with alpha tend to flicker a lot, when moving the cursor over them (e.g. the color picker matrix).
+    */
     BLENDFUNCTION alphaFunction;
     GRADIENT_TRIANGLE gTri[2];
     TRIVERTEX vt[4];
