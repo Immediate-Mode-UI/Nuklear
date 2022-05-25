@@ -43,9 +43,13 @@ configure_file(
 #=============#
 
 option(BUILD_HEADER_ONLY "Header only variant" "ON")
+option(BUILD_DEMOS "Build demos" "ON")
 option(BUILD_EXAMPLES "Build examples" "ON")
 
 add_subdirectory("src")
+if (BUILD_DEMOS)
+    add_subdirectory("demo")
+endif (BUILD_DEMOS)
 if (BUILD_EXAMPLES)
     add_subdirectory("example")
 endif (BUILD_EXAMPLES)
