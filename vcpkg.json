@@ -1,0 +1,11 @@
+{
+  "name": "nuklear",
+  "version-string": "0.0.1",
+  "port-version": 1,
+  "homepage": "https://github.com/Immediate-Mode-UI/Nuklear",
+  "description": "Minimal state immediate mode graphical user interface toolkit written in ANSI C and licensed under public domain.",
+  "dependencies": [
+    "glfw3",
+    "glew"
+  ]
+}

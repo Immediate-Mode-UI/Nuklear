@@ -20,7 +20,7 @@ set(msvc "$<COMPILE_LANG_AND_ID:C,CXX,MSVC>")
 target_compile_options(
         "${PROJECT_NAME}_compiler_flags"
         INTERFACE
-        "$<${gcc_like}:$<BUILD_INTERFACE:-Wno-shadow;-Wformat=2;-Wall;-Wno-gcc-compat;-Wno-c99-extensions>>"
+        "$<${gcc_like}:$<BUILD_INTERFACE:-Wall;-Wextra;-pedantic;-Wno-misleading-indentation;-Wno-shift-negative-value;-O2>>"
         "$<${msvc}:$<BUILD_INTERFACE:-W3;-WX;-Zi;-permissive->>"
 )
 
@@ -43,8 +43,12 @@ configure_file(
 #=============#
 
 option(BUILD_HEADER_ONLY "Header only variant" "ON")
+option(BUILD_EXAMPLES "Build examples" "ON")
 
 add_subdirectory("src")
+if (BUILD_EXAMPLES)
+    add_subdirectory("example")
+endif (BUILD_EXAMPLES)
 
 include(CTest)
 if (BUILD_TESTING)
