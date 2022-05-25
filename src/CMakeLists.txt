@@ -65,8 +65,7 @@ function (omit_includes new_file_contents file_contents blacklist)
 endfunction (omit_includes new_file_contents file_contents blacklist)
 
 function (fix_comments new_contents contents)
-    # TODO: Fix this `fix_comments` implementation
-    string(REGEX REPLACE "^//\(.*\)" "/*\\1 */" _contents "${contents}")
+    string(REGEX REPLACE "//(.*)" "/*1 */" _contents "${contents}")
     set(${new_contents} "${_contents}" PARENT_SCOPE)
 endfunction (fix_comments new_contents contents)
 
@@ -95,7 +94,7 @@ if (BUILD_HEADER_ONLY)
     foreach (filename ${priv1})
         file(READ "${filename}" file_contents)
         omit_includes(new_file_contents
-                "${file_contents}"
+                "\n${file_contents}"
                 "${priv_blacklist}")
         string(APPEND amalgam_contents "${new_file_contents}")
     endforeach (filename ${priv1})
@@ -112,7 +111,7 @@ if (BUILD_HEADER_ONLY)
                 "${file_contents}"
                 "${priv_blacklist}")
         string(APPEND amalgam_contents "${new_file_contents}")
-    endforeach (filename ${priv1})
+    endforeach (filename ${priv2})
 
     set(outro_contents "")
     foreach (filename ${outro})
@@ -130,8 +129,8 @@ if (BUILD_HEADER_ONLY)
             "#ifndef ${macro}_SINGLE_HEADER\n"
             "  #define ${macro}_SINGLE_HEADER\n"
             "#endif\n\n"
-            "${pub_contents}\n"
-            "#endif /* ${macro}_SINGLE_HEADER */\n\n"
+            "${pub_contents}"
+            #"#endif /* ${macro}_SINGLE_HEADER */\n\n"
 
            "#ifdef ${macro}_IMPLEMENTATION\n"
            "${amalgam_contents}"

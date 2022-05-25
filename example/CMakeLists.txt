@@ -8,7 +8,7 @@ find_package(OpenGL REQUIRED)
 
 include("${CMAKE_SOURCE_DIR}/cmake/modules/CMakeFindM.cmake")
 
-set(deps "glfw3" "GLEW::GLEW" "OpenGL::GL" "${M_LIBRARIES}")
+set(deps "glfw" "GLEW::GLEW" "OpenGL::GL" "${M_LIBRARIES}")
 if (APPLE)
     #SET(GUI_TYPE MACOSX_BUNDLE)
     #INCLUDE_DIRECTORIES ( /Developer/Headers/FlatCarbon )
