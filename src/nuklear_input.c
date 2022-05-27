@@ -155,7 +155,7 @@ nk_input_has_mouse_click_in_rect(const struct nk_input *i, enum nk_buttons id,
     return nk_true;
 }
 NK_API nk_bool
-nk_input_has_mouse_click_in_rect_button(const struct nk_input *i, enum nk_buttons id,
+nk_input_has_mouse_click_in_button_rect(const struct nk_input *i, enum nk_buttons id,
     struct nk_rect b)
 {
     const struct nk_mouse_button *btn;
