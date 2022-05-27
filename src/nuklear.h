@@ -4461,6 +4461,7 @@ struct nk_input {
 
 NK_API nk_bool nk_input_has_mouse_click(const struct nk_input*, enum nk_buttons);
 NK_API nk_bool nk_input_has_mouse_click_in_rect(const struct nk_input*, enum nk_buttons, struct nk_rect);
+NK_API nk_bool nk_input_has_mouse_click_in_rect_button(const struct nk_input*, enum nk_buttons, struct nk_rect);
 NK_API nk_bool nk_input_has_mouse_click_down_in_rect(const struct nk_input*, enum nk_buttons, struct nk_rect, nk_bool down);
 NK_API nk_bool nk_input_is_mouse_click_in_rect(const struct nk_input*, enum nk_buttons, struct nk_rect);
 NK_API nk_bool nk_input_is_mouse_click_down_in_rect(const struct nk_input *i, enum nk_buttons id, struct nk_rect b, nk_bool down);
