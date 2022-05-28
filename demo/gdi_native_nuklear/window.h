@@ -3,7 +3,7 @@
 
 #define NK_GDI_WINDOW_CLS L"WNDCLS_NkGdi"
 
-#include <Windows.h>
+#include <windows.h>
 
 /* Functin pointer types for window callbacks */
 typedef int(*nkgdi_window_func_close)(void);
