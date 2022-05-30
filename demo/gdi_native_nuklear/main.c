@@ -84,17 +84,19 @@ int drawCallback(struct nk_context* ctx)
     return 1;
 }
 
-/* Main entry point (Windows wchar_t) */
+/* Main entry point - wWinMain used for UNICODE
+ * (You can also use _tWinMain(...) to automaticaly use the ASCII or WIDE char entry point base on your build)  
+ */
 INT WINAPI wWinMain(HINSTANCE _In_ hInstance, HINSTANCE _In_opt_ hPrevInstance, PWSTR _In_ cmdArgs, INT _In_ cmdShow)
 {
     /* Call this first to setup all required prerequisites */
     nkgdi_window_init();
-
+	
     /* Preparing two window contexts */
     struct nkgdi_window w1, w2;
     memset(&w1, 0x0, sizeof(struct nkgdi_window));
     memset(&w2, 0x0, sizeof(struct nkgdi_window));
-
+	
     /* Configure and create window 1. 
      * Note: You can allways change the direct accesible parameters later as well! 
      */
