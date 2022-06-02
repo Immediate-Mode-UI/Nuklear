@@ -29,12 +29,13 @@
  * ===============================================================*/
 /* This are some code examples to provide a small overview of what can be
  * done with this library. To try out an example uncomment the defines */
-/*#define INCLUDE_ALL */
-/*#define INCLUDE_STYLE */
-/*#define INCLUDE_CALCULATOR */
-/*#define INCLUDE_CANVAS */
-/*#define INCLUDE_OVERVIEW */
-/*#define INCLUDE_NODE_EDITOR */
+
+/* #define INCLUDE_ALL */
+/* #define INCLUDE_STYLE */
+/* #define INCLUDE_CALCULATOR */
+/* #define INCLUDE_CANVAS */
+/* #define INCLUDE_OVERVIEW */
+/* #define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
   #define INCLUDE_STYLE
@@ -62,7 +63,7 @@
 
 static int translate_sdl_key(struct SDL_Keysym const *k)
 {
-    /*keyboard handling left as an exercise for the reader */
+    /* Keyboard handling left as an exercise for the reader */
     NK_UNUSED(k);
 
     return NK_KEY_NONE;
@@ -88,6 +89,7 @@ static int sdl_button_to_nk(int button)
     }
 }
 
+/* Can be manually overridden to include a local definition for the grid demo */
 #if 0
 static void
 grid_demo(struct nk_context *ctx)
@@ -128,17 +130,19 @@ grid_demo(struct nk_context *ctx)
 
 int main(int argc, char **argv)
 {
+    /* Define some varibles for later use */
     struct nk_color clear = {0,100,0,255};
     struct nk_vec2 vec;
     struct nk_rect bounds = {40,40,0,0};
     struct sdlsurface_context *context;
-
+    
+    /* Normal SDL initialization stuff */
     SDL_DisplayMode dm;
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_Texture *tex;
     SDL_Surface *surface;
-
+    
     NK_UNUSED(argc);
     NK_UNUSED(argv);
 
@@ -151,25 +155,35 @@ int main(int argc, char **argv)
 
     printf("desktop display mode %d %d\n", dm.w, dm.h);
 
-
+    /* Of course we need to make a window as well, before anything else */
     window = SDL_CreateWindow("Puzzle", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w-200,dm.h-200, SDL_WINDOW_OPENGL);
     if (!window)
     {
         printf("can't open window!\n");
         exit(1);
     }
+    
+    /* This example will use a process called bliting. 
+       This is a less effecent process where the cpu handles the 
+       composition of each frame of the gui and then copies it over to the gpu for rendering,
+       so we need to create both a surface for the cpu to work in,
+       and a renderer for the gpu to use */
 
-
+    /* The gpu's renderer */
     renderer = SDL_CreateRenderer(window, -1, 0);
 
+    /*The cpu's surface */
     surface = SDL_CreateRGBSurfaceWithFormat(0, dm.w-200, dm.h-200, 32, SDL_PIXELFORMAT_ARGB8888);
 
-
+    /* Nuklear's data about the gui its dealing with,
+       as well as giving it the SDL surface for it to render to */
     context = nk_sdlsurface_init(surface, 13.0f);
 
-
+    //The main loop
     while(1)
     {
+        /* Proceed to handle events from user input devices,
+           as well as telling nuklear to start caputring the input as well */
         SDL_Event event;
         nk_input_begin(&(context->ctx));
         while (SDL_PollEvent(&event))
@@ -202,8 +216,12 @@ int main(int argc, char **argv)
                 break;
             }
         }
-        nk_input_end(&(context->ctx));
+        nk_input_end(&(context->ctx)); 
+        /* Now that we have dealt with the events for this cycle */
 
+        /* Good ol' fastioned Nuklear code.
+           If this brings up questions, the documentation for Nuklear would be the best place to look,
+           as this is basically all related to making a GUI be created and managed */
         bounds.w = 400;
         bounds.h = 400;
         if (nk_begin(&(context->ctx), "Test", bounds, NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE | NK_WINDOW_TITLE))
@@ -223,6 +241,8 @@ int main(int argc, char **argv)
         }
         nk_end(&(context->ctx));
 
+        /* Uncomment if you manually enabled that grid demo from earler */
+        
         /* grid_demo(&(context->ctx)); */
 
         /* -------------- EXAMPLES ---------------- */
@@ -240,23 +260,25 @@ int main(int argc, char **argv)
         #endif
         /* ----------------------------------------- */
 
+        /*have Nuklear render to that surface now
         nk_sdlsurface_render(context, clear, 1);
-
-
-
-
+        
+        /* turn the surface into a texture: a format that a renderer can understand */
         tex = SDL_CreateTextureFromSurface(renderer, surface);
+        /* 'blit' the frame form the surface to the renderer for the gpu to draw */
         SDL_RenderCopy(renderer, tex, NULL, NULL);
+        /* show the renderer with its brand new frame */
         SDL_RenderPresent(renderer);
+        /* don't forget to free up that texture we just made! */
         SDL_DestroyTexture(tex);
 
     }
 
+    /* Have Nuklear shut down and clean up and all that */
     nk_sdlsurface_shutdown(context);
 
+    /* Have SDL do the same */
     SDL_FreeSurface(surface);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 }
-
-
