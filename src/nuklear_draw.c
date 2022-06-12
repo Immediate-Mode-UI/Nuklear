@@ -1,5 +1,6 @@
 #include "nuklear.h"
 #include "nuklear_internal.h"
+#include <stdio.h>
 
 /* ==============================================================
  *

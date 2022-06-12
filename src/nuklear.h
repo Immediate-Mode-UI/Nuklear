@@ -251,10 +251,24 @@ struct nk_style_window_header;
 struct nk_style_window;
 
 enum nk_image_type {
+    /* Image fills out the target nk_rect, ignoring aspect ratio */
     NK_IMAGE_STRETCH,
+    /* Image fills out the target nk_rect, honoring aspect ratio */
     NK_IMAGE_FILL,
+    /* a sub-rect is generated to fit the image inside the target nk_rect */
     NK_IMAGE_FIT,
+    /* If the target nk_rect is smaller than the image dimension,
+       draw the image center aligned, with UVs for 1:1 pixel mapping. If the
+       target nk_rect is bigger, generate a sub-rect, so the image is not drawn
+       outside it's bounds. */
     NK_IMAGE_CENTER,
+    /* Just draw the image with UVs for 1:1 pixel mapping. Image is draw outside
+       it's bounds. What is drawn outside the bounds is determined by the
+       backend. Eg. To get tiling behaviour with OpenGL, the texture should have
+       been uploaded to the GPU with GL_REPEAT:
+       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+       (Which is the default OpenGL Texture behaviour anyways.) */
     NK_IMAGE_TILE
 };
 

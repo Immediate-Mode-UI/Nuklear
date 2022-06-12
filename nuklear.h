@@ -472,10 +472,24 @@ struct nk_style_window_header;
 struct nk_style_window;
 
 enum nk_image_type {
+    /* Image fills out the target nk_rect, ignoring aspect ratio */
     NK_IMAGE_STRETCH,
+    /* Image fills out the target nk_rect, honoring aspect ratio */
     NK_IMAGE_FILL,
+    /* a sub-rect is generated to fit the image inside the target nk_rect */
     NK_IMAGE_FIT,
+    /* If the target nk_rect is smaller than the image dimension,
+       draw the image center aligned, with UVs for 1:1 pixel mapping. If the
+       target nk_rect is bigger, generate a sub-rect, so the image is not drawn
+       outside it's bounds. */
     NK_IMAGE_CENTER,
+    /* Just draw the image with UVs for 1:1 pixel mapping. Image is draw outside
+       it's bounds. What is drawn outside the bounds is determined by the
+       backend. Eg. To get tiling behaviour with OpenGL, the texture should have
+       been uploaded to the GPU with GL_REPEAT:
+       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+       (Which is the default OpenGL Texture behaviour anyways.) */
     NK_IMAGE_TILE
 };
 
@@ -8834,6 +8848,7 @@ nk_str_free(struct nk_str *str)
 
 
 
+#include <stdio.h>
 
 /* ==============================================================
  *
@@ -10501,6 +10516,9 @@ NK_API void
 nk_draw_list_add_image(struct nk_draw_list *list, struct nk_image texture,
     struct nk_rect rect, struct nk_color color)
 {
+    float img_ratio;
+    float rect_ratio;
+    struct nk_vec2 top_left, bot_right;
     NK_ASSERT(list);
     if (!list) return;
     /* push new command with given texture */
@@ -10516,11 +10534,94 @@ nk_draw_list_add_image(struct nk_draw_list *list, struct nk_image texture,
             nk_vec2(rect.x + rect.w, rect.y + rect.h),  uv[0], uv[1], color);
     } else {
 	switch(texture.type){
-	default: nk_draw_list_push_rect_uv(list,
-					   nk_vec2(rect.x, rect.y),
-					   nk_vec2(rect.x + rect.w, rect.y + rect.h),
-					   nk_vec2(0.0f, 0.0f),
-					   nk_vec2(1.0f, 1.0f),color);
+	case NK_IMAGE_FILL:
+	    img_ratio = (float)texture.w / (float)texture.h;
+	    rect_ratio = rect.w / rect.h;
+	    /* Here we modify the UVs, so top_left and bot_right are UV coords */
+	    if(img_ratio > rect_ratio){
+		top_left  = nk_vec2((1.f - rect_ratio / img_ratio) * 0.5, 0);
+		bot_right = nk_vec2((1.f + rect_ratio / img_ratio) * 0.5, 1);
+	    }else{
+		top_left  = nk_vec2(0, (1.f - img_ratio / rect_ratio) * 0.5);
+		bot_right = nk_vec2(1, (1.f + img_ratio / rect_ratio) * 0.5);
+	    }
+	    nk_draw_list_push_rect_uv(list,
+				      nk_vec2(rect.x, rect.y),
+				      nk_vec2(rect.x + rect.w, rect.y + rect.h),
+				      top_left,
+				      bot_right, color);
+	    break;
+	case NK_IMAGE_FIT:
+	    /* NK_IMAGE_FIT applies pixel snap.
+	       floorf to all pixel positions, because otherwise we sample outside
+	       the texture sometimes, which results in artifacts depending on the
+	       backend's sample setting. The drawback is that aspect ratio will
+	       differ be off by one pixel, depending on scaling. */
+	    img_ratio = (float)texture.w / (float)texture.h;
+	    rect_ratio = rect.w / rect.h;
+	    /* Here we modify rect position, so top_left
+	       and bot_right are pixel position coordinates, not UV coords */
+	    if(img_ratio > rect_ratio){
+		rect.y += floorf((rect.h - texture.h * rect.w/texture.w) * 0.5);
+		top_left  = nk_vec2(rect.x, rect.y);
+		bot_right = nk_vec2(rect.x + rect.w,
+				    rect.y + floorf(texture.h * rect.w/texture.w));
+	    }else{
+		rect.x += floorf((rect.w - texture.w * rect.h/texture.h) * 0.5);
+		top_left  = nk_vec2(rect.x, rect.y);
+		bot_right = nk_vec2(rect.x + floorf(texture.w * rect.h/texture.h),
+				    rect.y + rect.h);
+	    }
+	    nk_draw_list_push_rect_uv(list,
+				      top_left,
+				      bot_right,
+				      nk_vec2(0.0f, 0.0f),
+				      nk_vec2(1.0f, 1.0f),color);
+	    break;
+	case NK_IMAGE_CENTER:
+	    /* Use Scissor to cut image into target range, if image is bigger
+	       than target rect. Possibly a bad idea? Alternative is to calcuate
+	       the UV offset instead and combine NK_IMAGE_FIT with an offset UV
+	       to produce a centered image. This would avoid the usage of
+	       scissor */
+	    if(texture.w < rect.w && texture.h < rect.h){
+		int center_offset_x = rect.w * 0.5f - texture.w * 0.5f;
+		int center_offset_y = rect.h * 0.5f - texture.h * 0.5f;
+
+		nk_draw_list_push_rect_uv(list,
+					  nk_vec2(rect.x + center_offset_x, rect.y + center_offset_y),
+					  nk_vec2(rect.x + texture.w + center_offset_x, rect.y + texture.h + center_offset_y),
+					  nk_vec2(0.0f, 0.0f),
+					  nk_vec2(1.0f, 1.0f),color);
+	    } else {
+		int center_offset_x = rect.w * 0.5f - texture.w * 0.5f;
+		int center_offset_y = rect.h * 0.5f - texture.h * 0.5f;
+		struct nk_rect prev_clip = list->clip_rect;
+		
+		nk_draw_list_add_clip(list, rect);
+		nk_draw_list_push_rect_uv(list,
+					  nk_vec2(rect.x + center_offset_x, rect.y + center_offset_y),
+					  nk_vec2(rect.x + texture.w + center_offset_x, rect.y + texture.h + center_offset_y),
+					  nk_vec2(0.0f, 0.0f),
+					  nk_vec2(1.0f, 1.0f),color);
+		nk_draw_list_add_clip(list, prev_clip);
+	    }
+	    break;
+	case NK_IMAGE_TILE:
+	    nk_draw_list_push_rect_uv(list,
+				      nk_vec2(rect.x, rect.y),
+				      nk_vec2(rect.x + rect.w, rect.y + rect.h),
+				      nk_vec2(0.0f, 0.0f),
+				      nk_vec2(rect.w/(float)texture.w, rect.h/(float)texture.h),
+				      color);
+	    break;
+	default:
+	    /* fall-through behaviour is stretch-to-fill */
+	    nk_draw_list_push_rect_uv(list,
+				      nk_vec2(rect.x, rect.y),
+				      nk_vec2(rect.x + rect.w, rect.y + rect.h),
+				      nk_vec2(0.0f, 0.0f),
+				      nk_vec2(1.0f, 1.0f),color);
 	}
     }
 }
@@ -10701,7 +10802,7 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
                 t->string, t->length, t->height, t->foreground);
         } break;
         case NK_COMMAND_IMAGE: {
-            const struct nk_command_image *i = (const struct nk_command_image*)cmd;
+            const struct nk_command_image *i = (const struct nk_command_image*)cmd;;
             nk_draw_list_add_image(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
         } break;
         case NK_COMMAND_CUSTOM: {
