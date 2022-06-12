@@ -1154,14 +1154,14 @@ nk_draw_list_add_image(struct nk_draw_list *list, struct nk_image texture,
 	    /* Here we modify rect position, so top_left
 	       and bot_right are pixel position coordinates, not UV coords */
 	    if(img_ratio > rect_ratio){
-		rect.y += floorf((rect.h - texture.h * rect.w/texture.w) * 0.5);
+		rect.y += floor((rect.h - texture.h * rect.w/texture.w) * 0.5);
 		top_left  = nk_vec2(rect.x, rect.y);
 		bot_right = nk_vec2(rect.x + rect.w,
-				    rect.y + floorf(texture.h * rect.w/texture.w));
+				    rect.y + floor(texture.h * rect.w/texture.w));
 	    }else{
-		rect.x += floorf((rect.w - texture.w * rect.h/texture.h) * 0.5);
+		rect.x += floor((rect.w - texture.w * rect.h/texture.h) * 0.5);
 		top_left  = nk_vec2(rect.x, rect.y);
-		bot_right = nk_vec2(rect.x + floorf(texture.w * rect.h/texture.h),
+		bot_right = nk_vec2(rect.x + floor(texture.w * rect.h/texture.h),
 				    rect.y + rect.h);
 	    }
 	    nk_draw_list_push_rect_uv(list,
