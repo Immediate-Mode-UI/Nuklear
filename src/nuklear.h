@@ -5452,7 +5452,7 @@ struct nk_context {
 
 #define NK_UNUSED(x) ((void)(x))
 #define NK_SATURATE(x) (NK_MAX(0, NK_MIN(1.0f, x)))
-#define NK_LEN(a) (sizeof(a)/sizeof(a)[0])
+#define NK_LEN(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 #define NK_ABS(a) (((a) < 0) ? -(a) : (a))
 #define NK_BETWEEN(x, a, b) ((a) <= (x) && (x) < (b))
 #define NK_INBOX(px, py, x, y, w, h)\
