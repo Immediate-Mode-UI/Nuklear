@@ -95,7 +95,7 @@ icon_load(const char *filename)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);	
     glGenerateMipmap(GL_TEXTURE_2D);	
     stbi_image_free(data);	
-    return nk_image_from_id((int)tex, x, y, NK_IMAGE_FIT);
+    return nk_image_id((int)tex);
 }
 */
 

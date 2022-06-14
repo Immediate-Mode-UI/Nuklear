@@ -1394,7 +1394,7 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
                 t->string, t->length, t->height, t->foreground);
         } break;
         case NK_COMMAND_IMAGE: {
-            const struct nk_command_image *i = (const struct nk_command_image*)cmd;;
+            const struct nk_command_image *i = (const struct nk_command_image*)cmd;
             nk_draw_list_add_image(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
         } break;
         case NK_COMMAND_CUSTOM: {

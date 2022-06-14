@@ -3748,13 +3748,20 @@ NK_API void nk_color_hsva_fv(float *hsva_out, struct nk_color);
  * ============================================================================= */
 NK_API nk_handle nk_handle_ptr(void*);
 NK_API nk_handle nk_handle_id(int);
-NK_API struct nk_image nk_image_from_handle(nk_handle, nk_ushort w, nk_ushort h, enum nk_image_type);
-NK_API struct nk_image nk_image_from_ptr(void*, nk_ushort w, nk_ushort h, enum nk_image_type);
-NK_API struct nk_image nk_image_from_id(int, nk_ushort w, nk_ushort h, enum nk_image_type);
 NK_API nk_bool nk_image_is_subimage(const struct nk_image* img);
-NK_API struct nk_image nk_subimage_from_ptr(void*, nk_ushort w, nk_ushort h, enum nk_image_type, struct nk_rect sub_region);
-NK_API struct nk_image nk_subimage_from_id(int, nk_ushort w, nk_ushort h, enum nk_image_type, struct nk_rect sub_region);
-NK_API struct nk_image nk_subimage_from_handle(nk_handle, nk_ushort w, nk_ushort h, enum nk_image_type, struct nk_rect sub_region);
+NK_API struct nk_image nk_image_handle(nk_handle);
+NK_API struct nk_image nk_image_ptr(void*);
+NK_API struct nk_image nk_image_id(int);
+NK_API struct nk_image nk_subimage_ptr(void*, nk_ushort w, nk_ushort h, struct nk_rect sub_region);
+NK_API struct nk_image nk_subimage_id(int, nk_ushort w, nk_ushort h, struct nk_rect sub_region);
+NK_API struct nk_image nk_subimage_handle(nk_handle, nk_ushort w, nk_ushort h, struct nk_rect sub_region);
+/* Create nk_image with modes that honor the image's aspect-ratio */
+NK_API struct nk_image nk_image_type_handle(nk_handle, nk_ushort w, nk_ushort h, enum nk_image_type);
+NK_API struct nk_image nk_image_type_ptr(void*, nk_ushort w, nk_ushort h, enum nk_image_type);
+NK_API struct nk_image nk_image_type_id(int, nk_ushort w, nk_ushort h, enum nk_image_type);
+NK_API struct nk_image nk_subimage_type_ptr(void*, nk_ushort w, nk_ushort h, enum nk_image_type, struct nk_rect sub_region);
+NK_API struct nk_image nk_subimage_type_id(int, nk_ushort w, nk_ushort h, enum nk_image_type, struct nk_rect sub_region);
+NK_API struct nk_image nk_subimage_type_handle(nk_handle, nk_ushort w, nk_ushort h, enum nk_image_type, struct nk_rect sub_region);
 /* =============================================================================
  *
  *                                  9-SLICE
@@ -8848,7 +8855,6 @@ nk_str_free(struct nk_str *str)
 
 
 
-#include <stdio.h>
 
 /* ==============================================================
  *
@@ -10562,14 +10568,14 @@ nk_draw_list_add_image(struct nk_draw_list *list, struct nk_image texture,
 	    /* Here we modify rect position, so top_left
 	       and bot_right are pixel position coordinates, not UV coords */
 	    if(img_ratio > rect_ratio){
-		rect.y += floorf((rect.h - texture.h * rect.w/texture.w) * 0.5);
+		rect.y += floor((rect.h - texture.h * rect.w/texture.w) * 0.5);
 		top_left  = nk_vec2(rect.x, rect.y);
 		bot_right = nk_vec2(rect.x + rect.w,
-				    rect.y + floorf(texture.h * rect.w/texture.w));
+				    rect.y + floor(texture.h * rect.w/texture.w));
 	    }else{
-		rect.x += floorf((rect.w - texture.w * rect.h/texture.h) * 0.5);
+		rect.x += floor((rect.w - texture.w * rect.h/texture.h) * 0.5);
 		top_left  = nk_vec2(rect.x, rect.y);
-		bot_right = nk_vec2(rect.x + floorf(texture.w * rect.h/texture.h),
+		bot_right = nk_vec2(rect.x + floor(texture.w * rect.h/texture.h),
 				    rect.y + rect.h);
 	    }
 	    nk_draw_list_push_rect_uv(list,
@@ -10802,7 +10808,7 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
                 t->string, t->length, t->height, t->foreground);
         } break;
         case NK_COMMAND_IMAGE: {
-            const struct nk_command_image *i = (const struct nk_command_image*)cmd;;
+            const struct nk_command_image *i = (const struct nk_command_image*)cmd;
             nk_draw_list_add_image(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
         } break;
         case NK_COMMAND_CUSTOM: {
@@ -23590,18 +23596,16 @@ nk_handle_id(int id)
     return handle;
 }
 NK_API struct nk_image
-nk_subimage_from_ptr(void *ptr, nk_ushort w, nk_ushort h, enum nk_image_type type, struct nk_rect r)
+nk_subimage_type_ptr(void *ptr, nk_ushort w, nk_ushort h, enum nk_image_type type, struct nk_rect r)
 {
     struct nk_image s;
     nk_zero(&s, sizeof(s));
     s.handle.ptr = ptr;
-    NK_ASSERT(w); 		/* Size may not be zero */
-    NK_ASSERT(h); 		/* Size may not be zero */
     s.w = w; s.h = h;
     /* Because a subimage just uses modified UVs to show a small portion of an
-       nk_image, using CENTER or TILED will result in the rest of the image
+       nk_image, TILED will result in the rest of the image
        bleeding through. */
-    NK_ASSERT(type != NK_IMAGE_CENTER && type != NK_IMAGE_TILE);
+    NK_ASSERT(type != NK_IMAGE_TILE);
     s.type = type;
     s.region[0] = (nk_ushort)r.x;
     s.region[1] = (nk_ushort)r.y;
@@ -23613,18 +23617,16 @@ nk_subimage_from_ptr(void *ptr, nk_ushort w, nk_ushort h, enum nk_image_type typ
     return s;
 }
 NK_API struct nk_image
-nk_subimage_from_id(int id, nk_ushort w, nk_ushort h, enum nk_image_type type, struct nk_rect r)
+nk_subimage_type_id(int id, nk_ushort w, nk_ushort h, enum nk_image_type type, struct nk_rect r)
 {
     struct nk_image s;
     nk_zero(&s, sizeof(s));
     s.handle.id = id;
-    NK_ASSERT(w); 		/* Size may not be zero */
-    NK_ASSERT(h); 		/* Size may not be zero */
     s.w = w; s.h = h;
     /* Because a subimage just uses modified UVs to show a small portion of an
-       nk_image, using CENTER or TILED will result in the rest of the image
+       nk_image, using TILED will result in the rest of the image
        bleeding through. */
-    NK_ASSERT(type != NK_IMAGE_CENTER && type != NK_IMAGE_TILE);
+    NK_ASSERT(type != NK_IMAGE_TILE);
     s.type = type;
     s.region[0] = (nk_ushort)r.x;
     s.region[1] = (nk_ushort)r.y;
@@ -23636,18 +23638,16 @@ nk_subimage_from_id(int id, nk_ushort w, nk_ushort h, enum nk_image_type type, s
     return s;
 }
 NK_API struct nk_image
-nk_subimage_from_handle(nk_handle handle, nk_ushort w, nk_ushort h, enum nk_image_type type, struct nk_rect r)
+nk_subimage_type_handle(nk_handle handle, nk_ushort w, nk_ushort h, enum nk_image_type type, struct nk_rect r)
 {
     struct nk_image s;
     nk_zero(&s, sizeof(s));
     s.handle = handle;
-    NK_ASSERT(w); 		/* Size may not be zero */
-    NK_ASSERT(h); 		/* Size may not be zero */
     s.w = w; s.h = h;
     /* Because a subimage just uses modified UVs to show a small portion of an
-       nk_image, using CENTER or TILED will result in the rest of the image
+       nk_image, using TILED will result in the rest of the image
        bleeding through. */
-    NK_ASSERT(type != NK_IMAGE_CENTER && type != NK_IMAGE_TILE);
+    NK_ASSERT(type != NK_IMAGE_TILE);
     s.type = type;
     s.region[0] = (nk_ushort)r.x;
     s.region[1] = (nk_ushort)r.y;
@@ -23659,13 +23659,62 @@ nk_subimage_from_handle(nk_handle handle, nk_ushort w, nk_ushort h, enum nk_imag
     return s;
 }
 NK_API struct nk_image
-nk_image_from_handle(nk_handle handle, nk_ushort w, nk_ushort h, enum nk_image_type type)
+nk_subimage_ptr(void *ptr, nk_ushort w, nk_ushort h, struct nk_rect r)
+{
+    struct nk_image s;
+    nk_zero(&s, sizeof(s));
+    s.handle.ptr = ptr;
+    s.w = w; s.h = h;
+    s.type = NK_IMAGE_STRETCH;
+    s.region[0] = (nk_ushort)r.x;
+    s.region[1] = (nk_ushort)r.y;
+    /* A subregion with dimensions 0 is not valid and won't display. */
+    NK_ASSERT( r.w );
+    NK_ASSERT( r.h );
+    s.region[2] = (nk_ushort)r.w;
+    s.region[3] = (nk_ushort)r.h;
+    return s;
+}
+NK_API struct nk_image
+nk_subimage_id(int id, nk_ushort w, nk_ushort h, struct nk_rect r)
+{
+    struct nk_image s;
+    nk_zero(&s, sizeof(s));
+    s.handle.id = id;
+    s.w = w; s.h = h;
+    s.type = NK_IMAGE_STRETCH;
+    s.region[0] = (nk_ushort)r.x;
+    s.region[1] = (nk_ushort)r.y;
+    /* A subregion with dimensions 0 is not valid and won't display. */
+    NK_ASSERT( r.w );
+    NK_ASSERT( r.h );
+    s.region[2] = (nk_ushort)r.w;
+    s.region[3] = (nk_ushort)r.h;
+    return s;
+}
+NK_API struct nk_image
+nk_subimage_handle(nk_handle handle, nk_ushort w, nk_ushort h, struct nk_rect r)
 {
     struct nk_image s;
     nk_zero(&s, sizeof(s));
     s.handle = handle;
-    NK_ASSERT(w); 		/* Size may not be zero */
-    NK_ASSERT(h); 		/* Size may not be zero */
+    s.w = w; s.h = h;
+    s.type = NK_IMAGE_STRETCH;
+    s.region[0] = (nk_ushort)r.x;
+    s.region[1] = (nk_ushort)r.y;
+    /* A subregion with dimensions 0 is not valid and won't display. */
+    NK_ASSERT( r.w );
+    NK_ASSERT( r.h );
+    s.region[2] = (nk_ushort)r.w;
+    s.region[3] = (nk_ushort)r.h;
+    return s;
+}
+NK_API struct nk_image
+nk_image_type_handle(nk_handle handle, nk_ushort w, nk_ushort h, enum nk_image_type type)
+{
+    struct nk_image s;
+    nk_zero(&s, sizeof(s));
+    s.handle = handle;
     s.w = w; s.h = h;
     s.type = type;
     s.region[0] = 0;
@@ -23675,14 +23724,12 @@ nk_image_from_handle(nk_handle handle, nk_ushort w, nk_ushort h, enum nk_image_t
     return s;
 }
 NK_API struct nk_image
-nk_image_from_ptr(void *ptr, nk_ushort w, nk_ushort h, enum nk_image_type type)
+nk_image_type_ptr(void *ptr, nk_ushort w, nk_ushort h, enum nk_image_type type)
 {
     struct nk_image s;
     nk_zero(&s, sizeof(s));
     NK_ASSERT(ptr);
     s.handle.ptr = ptr;
-    NK_ASSERT(w); 		/* Size may not be zero */
-    NK_ASSERT(h); 		/* Size may not be zero */
     s.w = w; s.h = h;
     s.type = type;
     s.region[0] = 0;
@@ -23692,15 +23739,56 @@ nk_image_from_ptr(void *ptr, nk_ushort w, nk_ushort h, enum nk_image_type type)
     return s;
 }
 NK_API struct nk_image
-nk_image_from_id(int id, nk_ushort w, nk_ushort h, enum nk_image_type type)
+nk_image_type_id(int id, nk_ushort w, nk_ushort h, enum nk_image_type type)
 {
     struct nk_image s;
     nk_zero(&s, sizeof(s));
     s.handle.id = id;
-    NK_ASSERT(w); 		/* Size may not be zero */
-    NK_ASSERT(h); 		/* Size may not be zero */
     s.w = w; s.h = h;
     s.type = type;
+    s.region[0] = 0;
+    s.region[1] = 0;
+    s.region[2] = 0;
+    s.region[3] = 0;
+    return s;
+}
+NK_API struct nk_image
+nk_image_handle(nk_handle handle)
+{
+    struct nk_image s;
+    nk_zero(&s, sizeof(s));
+    s.handle = handle;
+    s.w = 0; s.h = 0;
+    s.type = NK_IMAGE_STRETCH;
+    s.region[0] = 0;
+    s.region[1] = 0;
+    s.region[2] = 0;
+    s.region[3] = 0;
+    return s;
+}
+NK_API struct nk_image
+nk_image_ptr(void *ptr)
+{
+    struct nk_image s;
+    nk_zero(&s, sizeof(s));
+    NK_ASSERT(ptr);
+    s.handle.ptr = ptr;
+    s.w = 0; s.h = 0;
+    s.type = NK_IMAGE_STRETCH;
+    s.region[0] = 0;
+    s.region[1] = 0;
+    s.region[2] = 0;
+    s.region[3] = 0;
+    return s;
+}
+NK_API struct nk_image
+nk_image_id(int id)
+{
+    struct nk_image s;
+    nk_zero(&s, sizeof(s));
+    s.handle.id = id;
+    s.w = 0; s.h = 0;
+    s.type = NK_IMAGE_STRETCH;
     s.region[0] = 0;
     s.region[1] = 0;
     s.region[2] = 0;
