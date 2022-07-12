@@ -170,6 +170,7 @@ int main(void)
                     glXGetFBConfigAttrib(win.dpy, fbc[i], GLX_SAMPLES, &samples);
                     if ((fb_best < 0) || (sample_buffer && samples > best_num_samples))
                         fb_best = i, best_num_samples = samples;
+                    XFree(vi);
                 }
             }
             win.fbc = fbc[fb_best];
