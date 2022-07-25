@@ -26423,6 +26423,7 @@ retry:
          if (shift_mod) {
             nk_textedit_prep_selection_at_cursor(state);
             state->cursor = state->select_end = state->string.len;
+			if (state->select_start >= state->select_end) state->select_start = 0;
             state->has_preferred_x = 0;
          } else {
             state->cursor = state->string.len;
@@ -30006,4 +30007,3 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 /// in libraries and brought me to create some of my own. Finally Apoorva Joshi
 /// for his single header file packer.
 */
-
