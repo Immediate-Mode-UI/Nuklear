@@ -2,7 +2,7 @@
  * Nuklear - 1.32.0 - public domain
  * no warrenty implied; use at your own risk.
  * authored from 2015-2016 by Micha Mettke
- * 
+ *
  * D3D12 backend created by Ludwig Fuechsl (2022)
  */
 /*
@@ -30,7 +30,7 @@ NK_API struct nk_context *nk_d3d12_init(ID3D12Device *device, int width, int hei
 NK_API void nk_d3d12_font_stash_begin(struct nk_font_atlas **atlas);
 /*
  * USAGE:
- *    - Call this function after a call to nk_d3d12_font_stash_begin(...) when all fonts have been loaded and configured. 
+ *    - Call this function after a call to nk_d3d12_font_stash_begin(...) when all fonts have been loaded and configured.
  *    - This function will place commands on the supplied ID3D12GraphicsCommandList.
  *    - This function will allocate temporary data that is required until the command list has finish executing. The temporary data can be free by calling nk_d3d12_font_stash_cleanup(...)
  */
@@ -96,7 +96,7 @@ NK_API void nk_d3d12_shutdown(void);
 #include "nuklear_d3d12_vertex_shader.h"
 #include "nuklear_d3d12_pixel_shader.h"
 
-struct nk_d3d12_vertex 
+struct nk_d3d12_vertex
 {
     float position[2];
     float uv[2];
@@ -198,7 +198,7 @@ nk_d3d12_render(ID3D12GraphicsCommandList *command_list, enum nk_anti_aliasing A
     config.circle_segment_count = 22;
     config.curve_segment_count = 22;
     config.arc_segment_count = 22;
-    config.null = d3d12.null;
+    config.tex_null = d3d12.null;
 
     struct nk_buffer vbuf, ibuf;
     nk_buffer_init_fixed(&vbuf, &ptr_data[sizeof(float) * 4 * 4], (size_t)d3d12.max_vertex_buffer);
@@ -505,7 +505,7 @@ nk_d3d12_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
     (void)usr;
     if (IsClipboardFormatAvailable(CF_UNICODETEXT) && OpenClipboard(NULL))
     {
-        HGLOBAL mem = GetClipboardData(CF_UNICODETEXT); 
+        HGLOBAL mem = GetClipboardData(CF_UNICODETEXT);
         if (mem)
         {
             SIZE_T size = GlobalSize(mem) - 1;
@@ -525,7 +525,7 @@ nk_d3d12_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
                             free(utf8);
                         }
                     }
-                    GlobalUnlock(mem); 
+                    GlobalUnlock(mem);
                 }
             }
         }
@@ -551,7 +551,7 @@ nk_d3d12_clipboard_copy(nk_handle usr, const char *text, int len)
                     MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
                     wstr[wsize] = 0;
                     GlobalUnlock(mem);
-                    SetClipboardData(CF_UNICODETEXT, mem); 
+                    SetClipboardData(CF_UNICODETEXT, mem);
                 }
             }
         }
@@ -566,7 +566,7 @@ nk_d3d12_init(ID3D12Device *device, int width, int height, unsigned int max_vert
     D3D12_CONSTANT_BUFFER_VIEW_DESC cbv;
     D3D12_CPU_DESCRIPTOR_HANDLE cbv_handle;
 
-    /* Do plain object / ref copys */ 
+    /* Do plain object / ref copys */
     d3d12.max_vertex_buffer = max_vertex_buffer;
     d3d12.max_index_buffer = max_index_buffer;
     d3d12.max_user_textures = max_user_textures;
@@ -679,7 +679,7 @@ nk_d3d12_init(ID3D12Device *device, int width, int height, unsigned int max_vert
     /* Get address of first handle (CPU and GPU) */
     ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(d3d12.desc_heap, &d3d12.cpu_descriptor_handle);
     ID3D12DescriptorHeap_GetGPUDescriptorHandleForHeapStart(d3d12.desc_heap, &d3d12.gpu_descriptor_handle);
-    
+
     /* Get addresses of vertex & index buffers */
     d3d12.gpu_vertex_buffer_address = ID3D12Resource_GetGPUVirtualAddress(d3d12.vertex_buffer);
     d3d12.gpu_index_buffer_address = ID3D12Resource_GetGPUVirtualAddress(d3d12.index_buffer);
@@ -870,7 +870,7 @@ nk_d3d12_font_stash_end(ID3D12GraphicsCommandList *command_list)
         nk_style_set_font(&d3d12.ctx, &d3d12.atlas.default_font->handle);
 }
 
-NK_API 
+NK_API
 void nk_d3d12_font_stash_cleanup()
 {
     if(d3d12.font_upload_buffer)
@@ -880,7 +880,7 @@ void nk_d3d12_font_stash_cleanup()
     }
 }
 
-NK_API 
+NK_API
 nk_bool nk_d3d12_set_user_texture(unsigned int index, ID3D12Resource* texture, const D3D12_SHADER_RESOURCE_VIEW_DESC* description, nk_handle* handle_out)
 {
     nk_bool result = nk_false;
@@ -919,7 +919,7 @@ void nk_d3d12_shutdown(void)
     ID3D12Resource_Release(d3d12.const_buffer);
     ID3D12Resource_Release(d3d12.index_buffer);
     ID3D12Resource_Release(d3d12.vertex_buffer);
-    if(d3d12.font_texture) 
+    if(d3d12.font_texture)
         ID3D12Resource_Release(d3d12.font_texture);
     if(d3d12.font_upload_buffer)
         ID3D12Resource_Release(d3d12.font_upload_buffer);

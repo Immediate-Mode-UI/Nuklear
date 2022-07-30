@@ -150,7 +150,7 @@ nk_d3d9_render(enum nk_anti_aliasing AA)
         config.circle_segment_count = 22;
         config.curve_segment_count = 22;
         config.arc_segment_count = 22;
-        config.null = d3d9.null;
+        config.tex_null = d3d9.null;
 
         /* convert shapes into vertexes */
         nk_buffer_init_default(&vbuf);
@@ -468,7 +468,7 @@ nk_d3d9_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
         }
     }
 
-    GlobalUnlock(mem); 
+    GlobalUnlock(mem);
     CloseClipboard();
 }
 
@@ -491,7 +491,7 @@ nk_d3d9_clipboard_copy(nk_handle usr, const char *text, int len)
                 MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
                 wstr[wsize] = 0;
                 GlobalUnlock(mem);
-                SetClipboardData(CF_UNICODETEXT, mem); 
+                SetClipboardData(CF_UNICODETEXT, mem);
             }
         }
     }

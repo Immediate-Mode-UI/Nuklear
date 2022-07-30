@@ -248,7 +248,7 @@ nk_sfml_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_
             config.vertex_layout = vertex_layout;
             config.vertex_size = sizeof(struct nk_sfml_vertex);
             config.vertex_alignment = NK_ALIGNOF(struct nk_sfml_vertex);
-            config.null = dev->null;
+            config.tex_null = dev->null;
             config.circle_segment_count = 22;
             config.curve_segment_count = 22;
             config.arc_segment_count = 22;
@@ -451,7 +451,7 @@ nk_sfml_handle_event(sf::Event* evt)
         return 1;
     } else if(evt->type == sf::Event::TextEntered) {
 		/* 8 ~ backspace */
-		if (evt->text.unicode != 8) {  
+		if (evt->text.unicode != 8) {
 			nk_input_unicode(ctx, evt->text.unicode);
 		}
         return 1;
