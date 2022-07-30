@@ -118,7 +118,7 @@ nk_sfml_render(enum nk_anti_aliasing AA)
         config.vertex_layout = vertex_layout;
         config.vertex_size = sizeof(struct nk_sfml_vertex);
         config.vertex_alignment = NK_ALIGNOF(struct nk_sfml_vertex);
-        config.tex_null = dev->null;
+        config.tex_null = dev->tex_null;
         config.circle_segment_count = 22;
         config.curve_segment_count = 22;
         config.arc_segment_count = 22;

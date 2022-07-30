@@ -245,7 +245,7 @@ nk_sdl_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
             config.vertex_layout = vertex_layout;
             config.vertex_size = sizeof(struct nk_sdl_vertex);
             config.vertex_alignment = NK_ALIGNOF(struct nk_sdl_vertex);
-            config.tex_null = dev->null;
+            config.tex_null = dev->tex_null;
             config.circle_segment_count = 22;
             config.curve_segment_count = 22;
             config.arc_segment_count = 22;
