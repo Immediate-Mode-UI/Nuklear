@@ -43,7 +43,7 @@ NK_API void                 nk_sfml_device_destroy(void);
 
 struct nk_sfml_device {
     struct nk_buffer cmds;
-    struct nk_draw_null_texture null;
+    struct nk_draw_null_texture tex_null;
     GLuint vbo, vao, ebo;
     GLuint prog;
     GLuint vert_shdr;
@@ -353,7 +353,7 @@ nk_sfml_font_stash_end()
     int w, h;
     image = nk_font_atlas_bake(&sfml.atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
     nk_sfml_device_upload_atlas(image, w, h);
-    nk_font_atlas_end(&sfml.atlas, nk_handle_id((int)sfml.ogl.font_tex), &sfml.ogl.null);
+    nk_font_atlas_end(&sfml.atlas, nk_handle_id((int)sfml.ogl.font_tex), &sfml.ogl.tex_null);
     if(sfml.atlas.default_font)
         nk_style_set_font(&sfml.ctx, &sfml.atlas.default_font->handle);
 }

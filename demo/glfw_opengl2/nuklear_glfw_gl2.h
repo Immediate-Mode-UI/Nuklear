@@ -53,7 +53,7 @@ NK_API void                 nk_gflw3_scroll_callback(GLFWwindow *win, double xof
 
 struct nk_glfw_device {
     struct nk_buffer cmds;
-    struct nk_draw_null_texture null;
+    struct nk_draw_null_texture tex_null;
     GLuint font_tex;
 };
 
@@ -288,7 +288,7 @@ nk_glfw3_font_stash_end(void)
     const void *image; int w, h;
     image = nk_font_atlas_bake(&glfw.atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
     nk_glfw3_device_upload_atlas(image, w, h);
-    nk_font_atlas_end(&glfw.atlas, nk_handle_id((int)glfw.ogl.font_tex), &glfw.ogl.null);
+    nk_font_atlas_end(&glfw.atlas, nk_handle_id((int)glfw.ogl.font_tex), &glfw.ogl.tex_null);
     if (glfw.atlas.default_font)
         nk_style_set_font(&glfw.ctx, &glfw.atlas.default_font->handle);
 }

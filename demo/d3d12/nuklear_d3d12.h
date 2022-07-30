@@ -109,7 +109,7 @@ static struct
     struct nk_font_atlas atlas;
     struct nk_buffer cmds;
 
-    struct nk_draw_null_texture null;
+    struct nk_draw_null_texture tex_null;
     unsigned int max_vertex_buffer;
     unsigned int max_index_buffer;
     unsigned int max_user_textures;
@@ -198,7 +198,7 @@ nk_d3d12_render(ID3D12GraphicsCommandList *command_list, enum nk_anti_aliasing A
     config.circle_segment_count = 22;
     config.curve_segment_count = 22;
     config.arc_segment_count = 22;
-    config.tex_null = d3d12.null;
+    config.tex_null = d3d12.tex_null;
 
     struct nk_buffer vbuf, ibuf;
     nk_buffer_init_fixed(&vbuf, &ptr_data[sizeof(float) * 4 * 4], (size_t)d3d12.max_vertex_buffer);
@@ -863,7 +863,7 @@ nk_d3d12_font_stash_end(ID3D12GraphicsCommandList *command_list)
     ID3D12Device_CreateShaderResourceView(d3d12.device, d3d12.font_texture, &srv_desc, srv_handle);
 
     /* Done with nk atlas data. Atlas will be served with texture id 0 */
-    nk_font_atlas_end(&d3d12.atlas, nk_handle_id(0), &d3d12.null);
+    nk_font_atlas_end(&d3d12.atlas, nk_handle_id(0), &d3d12.tex_null);
 
     /* Setup default font */
     if (d3d12.atlas.default_font)

@@ -52,7 +52,7 @@ struct nk_glfw_vertex {
 
 struct device {
     struct nk_buffer cmds;
-    struct nk_draw_null_texture null;
+    struct nk_draw_null_texture tex_null;
     GLuint vbo, vao, ebo;
     GLuint prog;
     GLuint vert_shdr;
@@ -441,7 +441,7 @@ int main(int argc, char *argv[])
     font = nk_font_atlas_add_default(&atlas, 13, 0);
     image = nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
     device_upload_atlas(&device, image, w, h);
-    nk_font_atlas_end(&atlas, nk_handle_id((int)device.font_tex), &device.null);
+    nk_font_atlas_end(&atlas, nk_handle_id((int)device.font_tex), &device.tex_null);
     nk_init_default(&ctx, &font->handle);
 
     glEnable(GL_TEXTURE_2D);
