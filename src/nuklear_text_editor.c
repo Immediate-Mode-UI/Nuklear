@@ -395,6 +395,7 @@ nk_textedit_text(struct nk_text_edit *state, const char *text, int total_len)
             {
                 nk_textedit_makeundo_insert(state, state->cursor, 1);
                 ++state->cursor;
+                state->cursor = NK_MIN(state->cursor, state->string.len);
                 state->has_preferred_x = 0;
             }
         }
