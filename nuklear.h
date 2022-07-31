@@ -26163,6 +26163,7 @@ nk_textedit_text(struct nk_text_edit *state, const char *text, int total_len)
             {
                 nk_textedit_makeundo_insert(state, state->cursor, 1);
                 ++state->cursor;
+				state->cursor = NK_MIN(state->cursor, state->string.len);
                 state->has_preferred_x = 0;
             }
         }
@@ -26423,7 +26424,6 @@ retry:
          if (shift_mod) {
             nk_textedit_prep_selection_at_cursor(state);
             state->cursor = state->select_end = state->string.len;
-			if (state->select_start >= state->select_end) state->select_start = 0;
             state->has_preferred_x = 0;
          } else {
             state->cursor = state->string.len;
@@ -30007,3 +30007,4 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 /// in libraries and brought me to create some of my own. Finally Apoorva Joshi
 /// for his single header file packer.
 */
+
