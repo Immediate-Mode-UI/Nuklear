@@ -7,7 +7,9 @@
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
-/// - 2022/07/30 (4.10.1) - Renamed the `null` texture variable to `tex_null`
+/// - 2022/08/03 (4.10.2) - Renamed the `null` texture variable to `tex_null`
+/// - 2022/08/01 (4.10.1) - Fix cursor jumping back to beginning of text when typing more than
+///                         nk_edit_xxx limit
 /// - 2022/05/27 (4.10.0) - Add nk_input_has_mouse_click_in_button_rect() to fix window move bug
 /// - 2022/04/18 (4.9.7)  - Change button behavior when NK_BUTTON_TRIGGER_ON_RELEASE is defined to
 ///                         only trigger when the mouse position was inside the same button on down
