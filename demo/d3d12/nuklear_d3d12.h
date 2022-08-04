@@ -611,7 +611,7 @@ nk_d3d12_init(ID3D12Device *device, int width, int height, unsigned int max_vert
     desc.SampleDesc.Quality = 0;
     desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
     desc.Flags = D3D12_RESOURCE_FLAG_NONE;
-    hr = ID3D12Device_CreateCommittedResource(device, &d3d12.heap_prop_upload, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_COPY_SOURCE, NULL, &IID_ID3D12Resource, &d3d12.upload_buffer);
+    hr = ID3D12Device_CreateCommittedResource(device, &d3d12.heap_prop_upload, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ, NULL, &IID_ID3D12Resource, &d3d12.upload_buffer);
     NK_ASSERT(SUCCEEDED(hr));
     }
     /* Create constant buffer */
@@ -812,7 +812,7 @@ nk_d3d12_font_stash_end(ID3D12GraphicsCommandList *command_list)
     desc.SampleDesc.Quality = 0;
     desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
     desc.Flags = D3D12_RESOURCE_FLAG_NONE;
-    hr = ID3D12Device_CreateCommittedResource(d3d12.device, &d3d12.heap_prop_upload, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_COPY_SOURCE, NULL, &IID_ID3D12Resource, &d3d12.font_upload_buffer);
+    hr = ID3D12Device_CreateCommittedResource(d3d12.device, &d3d12.heap_prop_upload, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ, NULL, &IID_ID3D12Resource, &d3d12.font_upload_buffer);
     NK_ASSERT(SUCCEEDED(hr));
     }
 
