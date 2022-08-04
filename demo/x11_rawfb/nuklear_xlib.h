@@ -109,7 +109,7 @@ nk_xlib_init(Display *dpy, Visual *vis, int screen, Window root,
             break;
         }
         xlib.xsi.shmaddr = xlib.ximg->data = shmat(xlib.xsi.shmid, NULL, 0);
-        if ((size_t)xlib.xsi.shmaddr < 0) {
+        if ((intptr_t)xlib.xsi.shmaddr < 0) {
             XDestroyImage(xlib.ximg);
             xlib.fallback = True;
             break;
@@ -254,10 +254,10 @@ nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt, struct r
     } else if (evt->type == Expose || evt->type == ConfigureNotify) {
         /* Window resize handler */
         void *fb;
+        rawfb_pl pl;
         unsigned int width, height;
         XWindowAttributes attr;
         XGetWindowAttributes(dpy, win, &attr);
-	rawfb_pl pl;
 
         width = (unsigned int)attr.width;
         height = (unsigned int)attr.height;
@@ -287,7 +287,7 @@ nk_xlib_shutdown(void)
         XDestroyImage(xlib.ximg);
         shmdt(xlib.xsi.shmaddr);
         shmctl(xlib.xsi.shmid, IPC_RMID, NULL);
-    } NK_MEMSET(&xlib, 0, sizeof(xlib));
+    } memset(&xlib, 0, sizeof(xlib));
 }
 
 NK_API void

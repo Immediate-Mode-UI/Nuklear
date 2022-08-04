@@ -65,6 +65,8 @@ struct device {
     GLuint font_tex;
 };
 
+/* function icon_load () is not used to build this file but might still be useful :) */
+/*
 static void
 die(const char *fmt, ...)
 {
@@ -76,8 +78,6 @@ die(const char *fmt, ...)
     exit(EXIT_FAILURE);
 }
 
-/* function icon_load () is not used to build this file but might still be useful :) */
-/*
 static struct nk_image	
 icon_load(const char *filename)	
 {	
@@ -404,6 +404,9 @@ int main(int argc, char *argv[])
     struct nk_font_atlas atlas;
     struct nk_context ctx;
 
+    NK_UNUSED(argc);
+    NK_UNUSED(argv);
+
     /* GLFW */
     glfwSetErrorCallback(error_callback);
     if (!glfwInit()) {
@@ -477,7 +480,10 @@ int main(int argc, char *argv[])
         canvas_end(&ctx, &canvas);}
 
         /* Draw */
-        glfwGetWindowSize(win, &width, &height);
+        /* Framebuffer size is used instead of window size because the window size is in screen coordinates instead of pixels.
+         * See https://www.glfw.org/docs/latest/window_guide.html#window_size for more info
+         */
+        glfwGetFramebufferSize(win, &width, &height);
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);

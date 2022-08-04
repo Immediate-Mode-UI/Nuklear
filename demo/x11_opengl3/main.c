@@ -38,27 +38,32 @@
 /*#define INCLUDE_ALL */
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
+/*#define INCLUDE_CANVAS */
 /*#define INCLUDE_OVERVIEW */
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
   #define INCLUDE_STYLE
   #define INCLUDE_CALCULATOR
+  #define INCLUDE_CANVAS
   #define INCLUDE_OVERVIEW
   #define INCLUDE_NODE_EDITOR
 #endif
 
 #ifdef INCLUDE_STYLE
-  #include "../style.c"
+  #include "../../demo/common/style.c"
 #endif
 #ifdef INCLUDE_CALCULATOR
-  #include "../calculator.c"
+  #include "../../demo/common/calculator.c"
+#endif
+#ifdef INCLUDE_CANVAS
+  #include "../../demo/common/canvas.c"
 #endif
 #ifdef INCLUDE_OVERVIEW
-  #include "../overview.c"
+  #include "../../demo/common/overview.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
-  #include "../node_editor.c"
+  #include "../../demo/common/node_editor.c"
 #endif
 
 /* ===============================================================
@@ -165,6 +170,7 @@ int main(void)
                     glXGetFBConfigAttrib(win.dpy, fbc[i], GLX_SAMPLES, &samples);
                     if ((fb_best < 0) || (sample_buffer && samples > best_num_samples))
                         fb_best = i, best_num_samples = samples;
+                    XFree(vi);
                 }
             }
             win.fbc = fbc[fb_best];
@@ -305,6 +311,9 @@ int main(void)
         /* -------------- EXAMPLES ---------------- */
         #ifdef INCLUDE_CALCULATOR
           calculator(ctx);
+        #endif
+        #ifdef INCLUDE_CANVAS
+          canvas(ctx);
         #endif
         #ifdef INCLUDE_OVERVIEW
           overview(ctx);

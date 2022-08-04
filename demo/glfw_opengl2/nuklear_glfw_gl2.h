@@ -136,7 +136,7 @@ nk_glfw3_render(enum nk_anti_aliasing AA)
             {NK_VERTEX_COLOR, NK_FORMAT_R8G8B8A8, NK_OFFSETOF(struct nk_glfw_vertex, col)},
             {NK_VERTEX_LAYOUT_END}
         };
-        NK_MEMSET(&config, 0, sizeof(config));
+        memset(&config, 0, sizeof(config));
         config.vertex_layout = vertex_layout;
         config.vertex_size = sizeof(struct nk_glfw_vertex);
         config.vertex_alignment = NK_ALIGNOF(struct nk_glfw_vertex);
@@ -218,6 +218,7 @@ NK_API void
 nk_glfw3_mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
     double x, y;
+    NK_UNUSED(mods);
     if (button != GLFW_MOUSE_BUTTON_LEFT) return;
     glfwGetCursorPos(window, &x, &y);
     if (action == GLFW_PRESS)  {

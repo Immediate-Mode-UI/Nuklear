@@ -70,18 +70,20 @@ static struct nk_allegro5 {
 
 NK_API struct nk_image* nk_allegro5_create_image(const char* file_name)
 {
+    ALLEGRO_BITMAP *bitmap;
+    struct nk_image *image;
     if (!al_init_image_addon()) {
         fprintf(stdout, "Unable to initialize required allegro5 image addon\n");
         exit(1);
     }
 
-    ALLEGRO_BITMAP* bitmap = al_load_bitmap(file_name);
+    bitmap = al_load_bitmap(file_name);
     if (bitmap == NULL) {
         fprintf(stdout, "Unable to load image file: %s\n", file_name);
         return NULL;
     }
 
-    struct nk_image *image = (struct nk_image*)calloc(1, sizeof(struct nk_image));
+    image = (struct nk_image*)calloc(1, sizeof(struct nk_image));
     image->handle.ptr = bitmap;
     image->w = al_get_bitmap_width(bitmap);
     image->h = al_get_bitmap_height(bitmap);
@@ -98,7 +100,10 @@ NK_API void nk_allegro5_del_image(struct nk_image* image)
 static float
 nk_allegro5_font_get_text_width(nk_handle handle, float height, const char *text, int len)
 {
+    float width;
+    char *strcpy;
     NkAllegro5Font *font = (NkAllegro5Font*)handle.ptr;
+    NK_UNUSED(height);
     if (!font || !text) {
         return 0;
     }
@@ -106,16 +111,19 @@ nk_allegro5_font_get_text_width(nk_handle handle, float height, const char *text
        as nuklear uses variable size buffers and al_get_text_width doesn't
        accept a length, it infers length from null-termination
        (which is unsafe API design by allegro devs!) */
-    char strcpy[len+1];
-    strncpy((char*)&strcpy, text, len);
+    strcpy = malloc(len + 1);
+    strncpy(strcpy, text, len);
     strcpy[len] = '\0';
-    return al_get_text_width(font->font, strcpy);
+    width = al_get_text_width(font->font, strcpy);
+    free(strcpy);
+    return width;
 }
 
 /* Flags are identical to al_load_font() flags argument */
 NK_API NkAllegro5Font*
 nk_allegro5_font_create_from_file(const char *file_name, int font_size, int flags)
 {
+    NkAllegro5Font *font;
     if (!al_init_image_addon()) {
         fprintf(stdout, "Unable to initialize required allegro5 image addon\n");
         exit(1);
@@ -128,7 +136,7 @@ nk_allegro5_font_create_from_file(const char *file_name, int font_size, int flag
         fprintf(stdout, "Unable to initialize required allegro5 TTF font addon\n");
         exit(1);
     }
-    NkAllegro5Font *font = (NkAllegro5Font*)calloc(1, sizeof(NkAllegro5Font));
+    font = (NkAllegro5Font*)calloc(1, sizeof(NkAllegro5Font));
 
     font->font = al_load_font(file_name, font_size, flags);
     if (font->font == NULL) {
@@ -200,18 +208,18 @@ nk_allegro5_render()
                 (float)r->rounding, color);
         } break;
         case NK_COMMAND_CIRCLE: {
+            float xr, yr;
             const struct nk_command_circle *c = (const struct nk_command_circle *)cmd;
             color = nk_color_to_allegro_color(c->color);
-            float xr, yr;
             xr = (float)c->w/2;
             yr = (float)c->h/2;
             al_draw_ellipse(((float)(c->x)) + xr, ((float)c->y) + yr,
                 xr, yr, color, (float)c->line_thickness);
         } break;
         case NK_COMMAND_CIRCLE_FILLED: {
+            float xr, yr;
             const struct nk_command_circle_filled *c = (const struct nk_command_circle_filled *)cmd;
             color = nk_color_to_allegro_color(c->color);
-            float xr, yr;
             xr = (float)c->w/2;
             yr = (float)c->h/2;
             al_draw_filled_ellipse(((float)(c->x)) + xr, ((float)c->y) + yr,
@@ -230,54 +238,61 @@ nk_allegro5_render()
                 (float)t->b.y, (float)t->c.x, (float)t->c.y, color);
         } break;
         case NK_COMMAND_POLYGON: {
-            const struct nk_command_polygon *p = (const struct nk_command_polygon*)cmd;
-            color = nk_color_to_allegro_color(p->color);
             int i;
-            float vertices[p->point_count * 2];
+            float *vertices;
+            const struct nk_command_polygon *p = (const struct nk_command_polygon*)cmd;
+            vertices = calloc(p->point_count * 2, sizeof(float));
+            color = nk_color_to_allegro_color(p->color);
             for (i = 0; i < p->point_count; i++) {
                 vertices[i*2] = p->points[i].x;
                 vertices[(i*2) + 1] = p->points[i].y;
             }
-            al_draw_polyline((const float*)&vertices, (2 * sizeof(float)),
+            al_draw_polyline(vertices, (2 * sizeof(float)),
                 (int)p->point_count, ALLEGRO_LINE_JOIN_ROUND, ALLEGRO_LINE_CAP_CLOSED,
                 color, (float)p->line_thickness, 0.0);
+            free(vertices);
         } break;
         case NK_COMMAND_POLYGON_FILLED: {
+            int i, j = 0;
+            float *vertices;
             const struct nk_command_polygon_filled *p = (const struct nk_command_polygon_filled *)cmd;
+            vertices = calloc(p->point_count * 2, sizeof(float));
             color = nk_color_to_allegro_color(p->color);
-            int i;
-            float vertices[p->point_count * 2];
-            for (i = 0; i < p->point_count; i++) {
-                vertices[i*2] = p->points[i].x;
-                vertices[(i*2) + 1] = p->points[i].y;
+            for (i = p->point_count - 1; i >= 0; i--) {
+                vertices[j++] = p->points[i].x;
+                vertices[j++] = p->points[i].y;
             }
-            al_draw_filled_polygon((const float*)&vertices, (int)p->point_count, color);
+            al_draw_filled_polygon(vertices, (int)p->point_count, color);
+            free(vertices);
         } break;
         case NK_COMMAND_POLYLINE: {
-            const struct nk_command_polyline *p = (const struct nk_command_polyline *)cmd;
-            color = nk_color_to_allegro_color(p->color);
             int i;
-            float vertices[p->point_count * 2];
+            float *vertices;
+            const struct nk_command_polyline *p = (const struct nk_command_polyline *)cmd;
+            vertices = calloc(p->point_count * 2, sizeof(float));
+            color = nk_color_to_allegro_color(p->color);
             for (i = 0; i < p->point_count; i++) {
                 vertices[i*2] = p->points[i].x;
                 vertices[(i*2) + 1] = p->points[i].y;
             }
-            al_draw_polyline((const float*)&vertices, (2 * sizeof(float)),
+            al_draw_polyline(vertices, (2 * sizeof(float)),
                 (int)p->point_count, ALLEGRO_LINE_JOIN_ROUND, ALLEGRO_LINE_CAP_ROUND,
                 color, (float)p->line_thickness, 0.0);
+            free(vertices);
         } break;
         case NK_COMMAND_TEXT: {
+            NkAllegro5Font *font;
             const struct nk_command_text *t = (const struct nk_command_text*)cmd;
             color = nk_color_to_allegro_color(t->foreground);
-            NkAllegro5Font *font = (NkAllegro5Font*)t->font->userdata.ptr;
+            font = (NkAllegro5Font*)t->font->userdata.ptr;
             al_draw_text(font->font,
                 color, (float)t->x, (float)t->y, 0,
                 (const char*)t->string);
         } break;
         case NK_COMMAND_CURVE: {
+            float points[8];
             const struct nk_command_curve *q = (const struct nk_command_curve *)cmd;
             color = nk_color_to_allegro_color(q->color);
-            float points[8];
             points[0] = (float)q->begin.x;
             points[1] = (float)q->begin.y;
             points[2] = (float)q->ctrl[0].x;
@@ -291,15 +306,20 @@ nk_allegro5_render()
         case NK_COMMAND_ARC: {
             const struct nk_command_arc *a = (const struct nk_command_arc *)cmd;
             color = nk_color_to_allegro_color(a->color);
-            al_draw_arc((float)a->cx, (float)a->cy, (float)a->r, a->a[0],
+            al_draw_pieslice((float)a->cx, (float)a->cy, (float)a->r, a->a[0],
                 a->a[1], color, (float)a->line_thickness);
+        } break;
+        case NK_COMMAND_ARC_FILLED: {
+            const struct nk_command_arc_filled *a = (const struct nk_command_arc_filled *)cmd;
+            color = nk_color_to_allegro_color(a->color);
+            al_draw_filled_pieslice((float)a->cx, (float)a->cy, (float)a->r, a->a[0],
+                a->a[1], color);
         } break;
         case NK_COMMAND_IMAGE: {
             const struct nk_command_image *i = (const struct nk_command_image *)cmd;
             al_draw_bitmap_region(i->img.handle.ptr, 0, 0, i->w, i->h, i->x, i->y, 0);
         } break;
         case NK_COMMAND_RECT_MULTI_COLOR:
-        case NK_COMMAND_ARC_FILLED:
         default: break;
         }
     }
@@ -465,12 +485,13 @@ NK_API struct nk_context*
 nk_allegro5_init(NkAllegro5Font *allegro5font, ALLEGRO_DISPLAY *dsp,
     unsigned int width, unsigned int height)
 {
+    struct nk_user_font *font;
     if (!al_init_primitives_addon()) {
         fprintf(stdout, "Unable to initialize required allegro5 primitives addon\n");
         exit(1);
     }
 
-    struct nk_user_font *font = &allegro5font->nk;
+    font = &allegro5font->nk;
 
     allegro5.dsp = dsp;
     allegro5.width = width;

@@ -1,4 +1,2 @@
 #!/bin/sh
-cat ../nuklear.h|./doc > nuklear.html
-
-
+cat ../nuklear.h|./doc > index.html
