@@ -38,7 +38,7 @@ static void die(const char *fmt, ...)
 /* This are some code examples to provide a small overview of what can be
  * done with this library. To try out an example uncomment the defines */
 /*#define INCLUDE_ALL*/
-#define INCLUDE_STYLE 
+#define INCLUDE_STYLE
 /*#define INCLUDE_CALCULATOR */
 #define INCLUDE_OVERVIEW
 /*#define INCLUDE_NODE_EDITOR */
@@ -51,16 +51,16 @@ static void die(const char *fmt, ...)
 #endif
 
 #ifdef INCLUDE_STYLE
-  #include "../style.c"
+  #include "../common/style.c"
 #endif
 #ifdef INCLUDE_CALCULATOR
-  #include "../calculator.c"
+  #include "../common/calculator.c"
 #endif
 #ifdef INCLUDE_OVERVIEW
-  #include "../overview.c"
+  #include "../common/overview.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
-  #include "../node_editor.c"
+  #include "../common/node_editor.c"
 #endif
 
 /* ===============================================================
