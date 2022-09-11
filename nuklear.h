@@ -372,7 +372,7 @@ extern "C" {
     #elif (defined(_WIN32) || defined(WIN32)) && defined(_MSC_VER)
       #define NK_SIZE_TYPE unsigned __int32
     #elif defined(__GNUC__) || defined(__clang__)
-      #if defined(__x86_64__) || defined(__ppc64__)
+      #if defined(__x86_64__) || defined(__ppc64__) || defined(__aarch64__)
         #define NK_SIZE_TYPE unsigned long
       #else
         #define NK_SIZE_TYPE unsigned int
@@ -387,7 +387,7 @@ extern "C" {
     #elif (defined(_WIN32) || defined(WIN32)) && defined(_MSC_VER)
       #define NK_POINTER_TYPE unsigned __int32
     #elif defined(__GNUC__) || defined(__clang__)
-      #if defined(__x86_64__) || defined(__ppc64__)
+      #if defined(__x86_64__) || defined(__ppc64__) || defined(__aarch64__)
         #define NK_POINTER_TYPE unsigned long
       #else
         #define NK_POINTER_TYPE unsigned int
@@ -29656,6 +29656,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2022/08/01 (4.10.2) - Fix Apple Silicon with incorrect NK_SITE_TYPE and NK_POINTER_TYPE
 /// - 2022/08/01 (4.10.1) - Fix cursor jumping back to beginning of text when typing more than
 ///                         nk_edit_xxx limit
 /// - 2022/05/27 (4.10.0) - Add nk_input_has_mouse_click_in_button_rect() to fix window move bug
