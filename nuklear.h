@@ -372,7 +372,7 @@ extern "C" {
     #elif (defined(_WIN32) || defined(WIN32)) && defined(_MSC_VER)
       #define NK_SIZE_TYPE unsigned __int32
     #elif defined(__GNUC__) || defined(__clang__)
-      #if defined(__x86_64__) || defined(__ppc64__)
+      #if defined(__x86_64__) || defined(__ppc64__) || defined(__aarch64__)
         #define NK_SIZE_TYPE unsigned long
       #else
         #define NK_SIZE_TYPE unsigned int
@@ -387,7 +387,7 @@ extern "C" {
     #elif (defined(_WIN32) || defined(WIN32)) && defined(_MSC_VER)
       #define NK_POINTER_TYPE unsigned __int32
     #elif defined(__GNUC__) || defined(__clang__)
-      #if defined(__x86_64__) || defined(__ppc64__)
+      #if defined(__x86_64__) || defined(__ppc64__) || defined(__aarch64__)
         #define NK_POINTER_TYPE unsigned long
       #else
         #define NK_POINTER_TYPE unsigned int
@@ -1149,7 +1149,7 @@ NK_API void nk_input_end(struct nk_context*);
 /// cfg.curve_segment_count = 22;
 /// cfg.arc_segment_count = 22;
 /// cfg.global_alpha = 1.0f;
-/// cfg.null = dev->null;
+/// cfg.tex_null = dev->tex_null;
 /// //
 /// // setup buffers and convert
 /// struct nk_buffer cmds, verts, idx;
@@ -1199,7 +1199,7 @@ struct nk_convert_config {
     unsigned circle_segment_count; /* number of segments used for circles: default to 22 */
     unsigned arc_segment_count; /* number of segments used for arcs: default to 22 */
     unsigned curve_segment_count; /* number of segments used for curves: default to 22 */
-    struct nk_draw_null_texture null; /* handle to texture with a white pixel for shape drawing */
+    struct nk_draw_null_texture tex_null; /* handle to texture with a white pixel for shape drawing */
     const struct nk_draw_vertex_layout_element *vertex_layout; /* describes the vertex output format and packing */
     nk_size vertex_size; /* sizeof one vertex for vertex packing */
     nk_size vertex_alignment; /* vertex alignment: Can be obtained by NK_ALIGNOF */
@@ -4711,6 +4711,7 @@ struct nk_input {
 
 NK_API nk_bool nk_input_has_mouse_click(const struct nk_input*, enum nk_buttons);
 NK_API nk_bool nk_input_has_mouse_click_in_rect(const struct nk_input*, enum nk_buttons, struct nk_rect);
+NK_API nk_bool nk_input_has_mouse_click_in_button_rect(const struct nk_input*, enum nk_buttons, struct nk_rect);
 NK_API nk_bool nk_input_has_mouse_click_down_in_rect(const struct nk_input*, enum nk_buttons, struct nk_rect, nk_bool down);
 NK_API nk_bool nk_input_is_mouse_click_in_rect(const struct nk_input*, enum nk_buttons, struct nk_rect);
 NK_API nk_bool nk_input_is_mouse_click_down_in_rect(const struct nk_input *i, enum nk_buttons id, struct nk_rect b, nk_bool down);
@@ -9591,7 +9592,7 @@ nk_draw_list_add_clip(struct nk_draw_list *list, struct nk_rect rect)
     NK_ASSERT(list);
     if (!list) return;
     if (!list->cmd_count) {
-        nk_draw_list_push_command(list, rect, list->config.null.texture);
+        nk_draw_list_push_command(list, rect, list->config.tex_null.texture);
     } else {
         struct nk_draw_command *prev = nk_draw_list_command_last(list);
         if (prev->elem_count == 0)
@@ -9946,7 +9947,7 @@ nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *p
 
             /* fill vertices */
             for (i = 0; i < points_count; ++i) {
-                const struct nk_vec2 uv = list->config.null.uv;
+                const struct nk_vec2 uv = list->config.tex_null.uv;
                 vtx = nk_draw_vertex(vtx, &list->config, points[i], uv, col);
                 vtx = nk_draw_vertex(vtx, &list->config, temp[i*2+0], uv, col_trans);
                 vtx = nk_draw_vertex(vtx, &list->config, temp[i*2+1], uv, col_trans);
@@ -10011,7 +10012,7 @@ nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *p
 
             /* add vertices */
             for (i = 0; i < points_count; ++i) {
-                const struct nk_vec2 uv = list->config.null.uv;
+                const struct nk_vec2 uv = list->config.tex_null.uv;
                 vtx = nk_draw_vertex(vtx, &list->config, temp[i*4+0], uv, col_trans);
                 vtx = nk_draw_vertex(vtx, &list->config, temp[i*4+1], uv, col);
                 vtx = nk_draw_vertex(vtx, &list->config, temp[i*4+2], uv, col);
@@ -10032,7 +10033,7 @@ nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *p
 
         for (i1 = 0; i1 < count; ++i1) {
             float dx, dy;
-            const struct nk_vec2 uv = list->config.null.uv;
+            const struct nk_vec2 uv = list->config.tex_null.uv;
             const nk_size i2 = ((i1+1) == points_count) ? 0 : i1 + 1;
             const struct nk_vec2 p1 = points[i1];
             const struct nk_vec2 p2 = points[i2];
@@ -10142,7 +10143,7 @@ nk_draw_list_fill_poly_convex(struct nk_draw_list *list,
 
         /* add vertices + indexes */
         for (i0 = points_count-1, i1 = 0; i1 < points_count; i0 = i1++) {
-            const struct nk_vec2 uv = list->config.null.uv;
+            const struct nk_vec2 uv = list->config.tex_null.uv;
             struct nk_vec2 n0 = normals[i0];
             struct nk_vec2 n1 = normals[i1];
             struct nk_vec2 dm = nk_vec2_muls(nk_vec2_add(n0, n1), 0.5f);
@@ -10179,7 +10180,7 @@ nk_draw_list_fill_poly_convex(struct nk_draw_list *list,
 
         if (!vtx || !ids) return;
         for (i = 0; i < vtx_count; ++i)
-            vtx = nk_draw_vertex(vtx, &list->config, points[i], list->config.null.uv, col);
+            vtx = nk_draw_vertex(vtx, &list->config, points[i], list->config.tex_null.uv, col);
         for (i = 2; i < points_count; ++i) {
             ids[0] = (nk_draw_index)index;
             ids[1] = (nk_draw_index)(index+ i - 1);
@@ -10208,8 +10209,8 @@ nk_draw_list_path_line_to(struct nk_draw_list *list, struct nk_vec2 pos)
         nk_draw_list_add_clip(list, nk_null_rect);
 
     cmd = nk_draw_list_command_last(list);
-    if (cmd && cmd->texture.ptr != list->config.null.texture.ptr)
-        nk_draw_list_push_image(list, list->config.null.texture);
+    if (cmd && cmd->texture.ptr != list->config.tex_null.texture.ptr)
+        nk_draw_list_push_image(list, list->config.tex_null.texture);
 
     points = nk_draw_list_alloc_path(list, 1);
     if (!points) return;
@@ -10411,7 +10412,7 @@ nk_draw_list_fill_rect_multi_color(struct nk_draw_list *list, struct nk_rect rec
     NK_ASSERT(list);
     if (!list) return;
 
-    nk_draw_list_push_image(list, list->config.null.texture);
+    nk_draw_list_push_image(list, list->config.tex_null.texture);
     index = (nk_draw_index)list->vertex_count;
     vtx = nk_draw_list_alloc_vertices(list, 4);
     idx = nk_draw_list_alloc_elements(list, 6);
@@ -10421,10 +10422,10 @@ nk_draw_list_fill_rect_multi_color(struct nk_draw_list *list, struct nk_rect rec
     idx[2] = (nk_draw_index)(index+2); idx[3] = (nk_draw_index)(index+0);
     idx[4] = (nk_draw_index)(index+2); idx[5] = (nk_draw_index)(index+3);
 
-    vtx = nk_draw_vertex(vtx, &list->config, nk_vec2(rect.x, rect.y), list->config.null.uv, col_left);
-    vtx = nk_draw_vertex(vtx, &list->config, nk_vec2(rect.x + rect.w, rect.y), list->config.null.uv, col_top);
-    vtx = nk_draw_vertex(vtx, &list->config, nk_vec2(rect.x + rect.w, rect.y + rect.h), list->config.null.uv, col_right);
-    vtx = nk_draw_vertex(vtx, &list->config, nk_vec2(rect.x, rect.y + rect.h), list->config.null.uv, col_bottom);
+    vtx = nk_draw_vertex(vtx, &list->config, nk_vec2(rect.x, rect.y), list->config.tex_null.uv, col_left);
+    vtx = nk_draw_vertex(vtx, &list->config, nk_vec2(rect.x + rect.w, rect.y), list->config.tex_null.uv, col_top);
+    vtx = nk_draw_vertex(vtx, &list->config, nk_vec2(rect.x + rect.w, rect.y + rect.h), list->config.tex_null.uv, col_right);
+    vtx = nk_draw_vertex(vtx, &list->config, nk_vec2(rect.x, rect.y + rect.h), list->config.tex_null.uv, col_bottom);
 }
 NK_API void
 nk_draw_list_fill_triangle(struct nk_draw_list *list, struct nk_vec2 a,
@@ -16632,7 +16633,7 @@ nk_font_chinese_glyph_ranges(void)
         0x3000, 0x30FF,
         0x31F0, 0x31FF,
         0xFF00, 0xFFEF,
-        0x4e00, 0x9FAF,
+        0x4E00, 0x9FAF,
         0
     };
     return ranges;
@@ -17823,20 +17824,20 @@ failed:
 }
 NK_API void
 nk_font_atlas_end(struct nk_font_atlas *atlas, nk_handle texture,
-    struct nk_draw_null_texture *null)
+    struct nk_draw_null_texture *tex_null)
 {
     int i = 0;
     struct nk_font *font_iter;
     NK_ASSERT(atlas);
     if (!atlas) {
-        if (!null) return;
-        null->texture = texture;
-        null->uv = nk_vec2(0.5f,0.5f);
+        if (!tex_null) return;
+        tex_null->texture = texture;
+        tex_null->uv = nk_vec2(0.5f,0.5f);
     }
-    if (null) {
-        null->texture = texture;
-        null->uv.x = (atlas->custom.x + 0.5f)/(float)atlas->tex_width;
-        null->uv.y = (atlas->custom.y + 0.5f)/(float)atlas->tex_height;
+    if (tex_null) {
+        tex_null->texture = texture;
+        tex_null->uv.x = (atlas->custom.x + 0.5f)/(float)atlas->tex_width;
+        tex_null->uv.y = (atlas->custom.y + 0.5f)/(float)atlas->tex_height;
     }
     for (font_iter = atlas->fonts; font_iter; font_iter = font_iter->next) {
         font_iter->texture = texture;
@@ -18067,6 +18068,17 @@ nk_input_has_mouse_click(const struct nk_input *i, enum nk_buttons id)
 }
 NK_API nk_bool
 nk_input_has_mouse_click_in_rect(const struct nk_input *i, enum nk_buttons id,
+    struct nk_rect b)
+{
+    const struct nk_mouse_button *btn;
+    if (!i) return nk_false;
+    btn = &i->mouse.buttons[id];
+    if (!NK_INBOX(btn->clicked_pos.x,btn->clicked_pos.y,b.x,b.y,b.w,b.h))
+        return nk_false;
+    return nk_true;
+}
+NK_API nk_bool
+nk_input_has_mouse_click_in_button_rect(const struct nk_input *i, enum nk_buttons id,
     struct nk_rect b)
 {
     const struct nk_mouse_button *btn;
@@ -24013,7 +24025,7 @@ nk_button_behavior(nk_flags *state, struct nk_rect r,
         *state = NK_WIDGET_STATE_HOVERED;
         if (nk_input_is_mouse_down(i, NK_BUTTON_LEFT))
             *state = NK_WIDGET_STATE_ACTIVE;
-        if (nk_input_has_mouse_click_in_rect(i, NK_BUTTON_LEFT, r)) {
+        if (nk_input_has_mouse_click_in_button_rect(i, NK_BUTTON_LEFT, r)) {
             ret = (behavior != NK_BUTTON_DEFAULT) ?
                 nk_input_is_mouse_down(i, NK_BUTTON_LEFT):
 #ifdef NK_BUTTON_TRIGGER_ON_RELEASE
@@ -26393,7 +26405,7 @@ nk_textedit_text(struct nk_text_edit *state, const char *text, int total_len)
                                         text+text_len, 1))
             {
                 nk_textedit_makeundo_insert(state, state->cursor, 1);
-                ++state->cursor;
+                state->cursor = NK_MIN(state->cursor + 1, state->string.len);
                 state->has_preferred_x = 0;
             }
         }
@@ -29887,6 +29899,11 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2022/08/28 (4.10.3) - Renamed the `null` texture variable to `tex_null`
+/// - 2022/08/01 (4.10.2) - Fix Apple Silicon with incorrect NK_SITE_TYPE and NK_POINTER_TYPE
+/// - 2022/08/01 (4.10.1) - Fix cursor jumping back to beginning of text when typing more than
+///                         nk_edit_xxx limit
+/// - 2022/05/27 (4.10.0) - Add nk_input_has_mouse_click_in_button_rect() to fix window move bug
 /// - 2022/04/18 (4.9.7)  - Change button behavior when NK_BUTTON_TRIGGER_ON_RELEASE is defined to
 ///                         only trigger when the mouse position was inside the same button on down
 /// - 2022/02/03 (4.9.6)  - Allow overriding the NK_INV_SQRT function, similar to NK_SIN and NK_COS

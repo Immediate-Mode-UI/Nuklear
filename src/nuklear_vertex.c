@@ -177,7 +177,7 @@ nk_draw_list_add_clip(struct nk_draw_list *list, struct nk_rect rect)
     NK_ASSERT(list);
     if (!list) return;
     if (!list->cmd_count) {
-        nk_draw_list_push_command(list, rect, list->config.null.texture);
+        nk_draw_list_push_command(list, rect, list->config.tex_null.texture);
     } else {
         struct nk_draw_command *prev = nk_draw_list_command_last(list);
         if (prev->elem_count == 0)
@@ -532,7 +532,7 @@ nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *p
 
             /* fill vertices */
             for (i = 0; i < points_count; ++i) {
-                const struct nk_vec2 uv = list->config.null.uv;
+                const struct nk_vec2 uv = list->config.tex_null.uv;
                 vtx = nk_draw_vertex(vtx, &list->config, points[i], uv, col);
                 vtx = nk_draw_vertex(vtx, &list->config, temp[i*2+0], uv, col_trans);
                 vtx = nk_draw_vertex(vtx, &list->config, temp[i*2+1], uv, col_trans);
@@ -597,7 +597,7 @@ nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *p
 
             /* add vertices */
             for (i = 0; i < points_count; ++i) {
-                const struct nk_vec2 uv = list->config.null.uv;
+                const struct nk_vec2 uv = list->config.tex_null.uv;
                 vtx = nk_draw_vertex(vtx, &list->config, temp[i*4+0], uv, col_trans);
                 vtx = nk_draw_vertex(vtx, &list->config, temp[i*4+1], uv, col);
                 vtx = nk_draw_vertex(vtx, &list->config, temp[i*4+2], uv, col);
@@ -618,7 +618,7 @@ nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *p
 
         for (i1 = 0; i1 < count; ++i1) {
             float dx, dy;
-            const struct nk_vec2 uv = list->config.null.uv;
+            const struct nk_vec2 uv = list->config.tex_null.uv;
             const nk_size i2 = ((i1+1) == points_count) ? 0 : i1 + 1;
             const struct nk_vec2 p1 = points[i1];
             const struct nk_vec2 p2 = points[i2];
@@ -728,7 +728,7 @@ nk_draw_list_fill_poly_convex(struct nk_draw_list *list,
 
         /* add vertices + indexes */
         for (i0 = points_count-1, i1 = 0; i1 < points_count; i0 = i1++) {
-            const struct nk_vec2 uv = list->config.null.uv;
+            const struct nk_vec2 uv = list->config.tex_null.uv;
             struct nk_vec2 n0 = normals[i0];
             struct nk_vec2 n1 = normals[i1];
             struct nk_vec2 dm = nk_vec2_muls(nk_vec2_add(n0, n1), 0.5f);
@@ -765,7 +765,7 @@ nk_draw_list_fill_poly_convex(struct nk_draw_list *list,
 
         if (!vtx || !ids) return;
         for (i = 0; i < vtx_count; ++i)
-            vtx = nk_draw_vertex(vtx, &list->config, points[i], list->config.null.uv, col);
+            vtx = nk_draw_vertex(vtx, &list->config, points[i], list->config.tex_null.uv, col);
         for (i = 2; i < points_count; ++i) {
             ids[0] = (nk_draw_index)index;
             ids[1] = (nk_draw_index)(index+ i - 1);
@@ -794,8 +794,8 @@ nk_draw_list_path_line_to(struct nk_draw_list *list, struct nk_vec2 pos)
         nk_draw_list_add_clip(list, nk_null_rect);
 
     cmd = nk_draw_list_command_last(list);
-    if (cmd && cmd->texture.ptr != list->config.null.texture.ptr)
-        nk_draw_list_push_image(list, list->config.null.texture);
+    if (cmd && cmd->texture.ptr != list->config.tex_null.texture.ptr)
+        nk_draw_list_push_image(list, list->config.tex_null.texture);
 
     points = nk_draw_list_alloc_path(list, 1);
     if (!points) return;
@@ -997,7 +997,7 @@ nk_draw_list_fill_rect_multi_color(struct nk_draw_list *list, struct nk_rect rec
     NK_ASSERT(list);
     if (!list) return;
 
-    nk_draw_list_push_image(list, list->config.null.texture);
+    nk_draw_list_push_image(list, list->config.tex_null.texture);
     index = (nk_draw_index)list->vertex_count;
     vtx = nk_draw_list_alloc_vertices(list, 4);
     idx = nk_draw_list_alloc_elements(list, 6);
@@ -1007,10 +1007,10 @@ nk_draw_list_fill_rect_multi_color(struct nk_draw_list *list, struct nk_rect rec
     idx[2] = (nk_draw_index)(index+2); idx[3] = (nk_draw_index)(index+0);
     idx[4] = (nk_draw_index)(index+2); idx[5] = (nk_draw_index)(index+3);
 
-    vtx = nk_draw_vertex(vtx, &list->config, nk_vec2(rect.x, rect.y), list->config.null.uv, col_left);
-    vtx = nk_draw_vertex(vtx, &list->config, nk_vec2(rect.x + rect.w, rect.y), list->config.null.uv, col_top);
-    vtx = nk_draw_vertex(vtx, &list->config, nk_vec2(rect.x + rect.w, rect.y + rect.h), list->config.null.uv, col_right);
-    vtx = nk_draw_vertex(vtx, &list->config, nk_vec2(rect.x, rect.y + rect.h), list->config.null.uv, col_bottom);
+    vtx = nk_draw_vertex(vtx, &list->config, nk_vec2(rect.x, rect.y), list->config.tex_null.uv, col_left);
+    vtx = nk_draw_vertex(vtx, &list->config, nk_vec2(rect.x + rect.w, rect.y), list->config.tex_null.uv, col_top);
+    vtx = nk_draw_vertex(vtx, &list->config, nk_vec2(rect.x + rect.w, rect.y + rect.h), list->config.tex_null.uv, col_right);
+    vtx = nk_draw_vertex(vtx, &list->config, nk_vec2(rect.x, rect.y + rect.h), list->config.tex_null.uv, col_bottom);
 }
 NK_API void
 nk_draw_list_fill_triangle(struct nk_draw_list *list, struct nk_vec2 a,
