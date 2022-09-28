@@ -7,6 +7,7 @@
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2022/09/03 (4.10.3) - Renamed the `null` texture variable to `tex_null`
 /// - 2022/08/01 (4.10.2) - Fix Apple Silicon with incorrect NK_SITE_TYPE and NK_POINTER_TYPE
 /// - 2022/08/01 (4.10.1) - Fix cursor jumping back to beginning of text when typing more than
 ///                         nk_edit_xxx limit

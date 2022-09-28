@@ -906,7 +906,7 @@ NK_API void nk_input_end(struct nk_context*);
 /// cfg.curve_segment_count = 22;
 /// cfg.arc_segment_count = 22;
 /// cfg.global_alpha = 1.0f;
-/// cfg.null = dev->null;
+/// cfg.tex_null = dev->tex_null;
 /// //
 /// // setup buffers and convert
 /// struct nk_buffer cmds, verts, idx;
@@ -956,7 +956,7 @@ struct nk_convert_config {
     unsigned circle_segment_count; /* number of segments used for circles: default to 22 */
     unsigned arc_segment_count; /* number of segments used for arcs: default to 22 */
     unsigned curve_segment_count; /* number of segments used for curves: default to 22 */
-    struct nk_draw_null_texture null; /* handle to texture with a white pixel for shape drawing */
+    struct nk_draw_null_texture tex_null; /* handle to texture with a white pixel for shape drawing */
     const struct nk_draw_vertex_layout_element *vertex_layout; /* describes the vertex output format and packing */
     nk_size vertex_size; /* sizeof one vertex for vertex packing */
     nk_size vertex_alignment; /* vertex alignment: Can be obtained by NK_ALIGNOF */
