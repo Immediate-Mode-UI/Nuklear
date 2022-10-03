@@ -76,7 +76,7 @@ nk_create_image(struct nk_image * image, const char * frame_buffer, const int wi
         image->region[1] = 0;
         image->region[2] = width;
         image->region[3] = height;
-        
+
         bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
         bi.bmiHeader.biWidth = width;
         bi.bmiHeader.biHeight = height;
@@ -84,9 +84,9 @@ nk_create_image(struct nk_image * image, const char * frame_buffer, const int wi
         bi.bmiHeader.biBitCount = 24;
         bi.bmiHeader.biCompression = BI_RGB;
         bi.bmiHeader.biSizeImage = row * height;
-        
+
         hbm = CreateDIBSection(NULL, &bi, DIB_RGB_COLORS, (void**)&lpBuf, NULL, 0);
-        
+
         pb = lpBuf + row * height;
         for (v = 0; v < height; v++)
         {
@@ -98,7 +98,7 @@ nk_create_image(struct nk_image * image, const char * frame_buffer, const int wi
                 pb[i + 2] = src[2];
                 src += 3;
             }
-        }        
+        }
         SetDIBits(NULL, hbm, 0, height, lpBuf, &bi, DIB_RGB_COLORS);
         image->handle.ptr = hbm;
     }
@@ -122,10 +122,10 @@ nk_gdi_draw_image(short x, short y, unsigned short w, unsigned short h,
     HBITMAP hbm = (HBITMAP)img.handle.ptr;
     HDC     hDCBits;
     BITMAP  bitmap;
-    
+
     if (!gdi.memory_dc || !hbm)
         return;
-    
+
     hDCBits = CreateCompatibleDC(gdi.memory_dc);
     GetObject(hbm, sizeof(BITMAP), (LPSTR)&bitmap);
     SelectObject(hDCBits, hbm);
@@ -192,7 +192,7 @@ nk_gdi_stroke_rect(HDC dc, short x, short y, unsigned short w,
     }
     SelectObject(dc, br);
 
-    if (pen) { 
+    if (pen) {
         SelectObject(dc, GetStockObject(DC_PEN));
         DeleteObject(pen);
     }
@@ -459,6 +459,61 @@ nk_gdi_fill_circle(HDC dc, short x, short y, unsigned short w,
 }
 
 static void
+nk_gdi_stroke_arc(HDC dc, short cx, short cy, unsigned short r, float amin, float adelta, unsigned short line_thickness, struct nk_color col)
+{
+    COLORREF color = convert_color(col);
+
+    /* setup pen */
+    HPEN pen = NULL;
+    if (line_thickness == 1)
+        SetDCPenColor(dc, color);
+    else
+    {
+        DWORD pen_style = PS_SOLID | PS_ENDCAP_FLAT | PS_GEOMETRIC; /* without that endcap round caps are used which looks really weird for thick arcs */
+
+        LOGBRUSH brush;
+        brush.lbStyle = BS_SOLID;
+        brush.lbColor = color;
+        brush.lbHatch = 0;
+
+        pen = ExtCreatePen(pen_style, line_thickness, &brush, 0, NULL);
+        SelectObject(dc, pen);
+    }
+
+    /* calculate arc and draw */
+    float start_x = cx + r*nk_cos((amin+adelta)*NK_PI/180.0);
+    float start_y = cy + r*nk_sin((amin+adelta)*NK_PI/180.0);
+
+    float end_x = cx + r*nk_cos(amin*NK_PI/180.0);
+    float end_y = cy + r*nk_sin(amin*NK_PI/180.0);
+
+    SetArcDirection(dc, AD_COUNTERCLOCKWISE);
+    Arc(dc, cx-r, cy-r, cx+r, cy+r, start_x, start_y, end_x, end_y);
+
+    if (pen)
+    {
+        SelectObject(dc, GetStockObject(DC_PEN));
+        DeleteObject(pen);
+    }
+}
+
+static void
+nk_gdi_fill_arc(HDC dc, short cx, short cy, unsigned short r, float amin, float adelta, struct nk_color col)
+{
+    COLORREF color = convert_color(col);
+    SetDCBrushColor(dc, color);
+    SetDCPenColor(dc, color);
+
+    float start_x = cx + r*nk_cos((amin+adelta)*NK_PI/180.0);
+    float start_y = cy + r*nk_sin((amin+adelta)*NK_PI/180.0);
+
+    float end_x = cx + r*nk_cos(amin*NK_PI/180.0);
+    float end_y = cy + r*nk_sin(amin*NK_PI/180.0);
+
+    Pie(dc, cx-r, cy-r, cx+r, cy+r, start_x, start_y, end_x, end_y);
+}
+
+static void
 nk_gdi_stroke_circle(HDC dc, short x, short y, unsigned short w,
     unsigned short h, unsigned short line_thickness, struct nk_color col)
 {
@@ -598,14 +653,14 @@ nk_gdi_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
     (void)usr;
     if (IsClipboardFormatAvailable(CF_UNICODETEXT) && OpenClipboard(NULL))
     {
-        HGLOBAL mem = GetClipboardData(CF_UNICODETEXT); 
+        HGLOBAL mem = GetClipboardData(CF_UNICODETEXT);
         if (mem)
         {
             SIZE_T size = GlobalSize(mem) - 1;
             if (size)
             {
                 LPCWSTR wstr = (LPCWSTR)GlobalLock(mem);
-                if (wstr) 
+                if (wstr)
                 {
                     int utf8size = WideCharToMultiByte(CP_UTF8, 0, wstr, (int)(size / sizeof(wchar_t)), NULL, 0, NULL, NULL);
                     if (utf8size)
@@ -618,7 +673,7 @@ nk_gdi_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
                             free(utf8);
                         }
                     }
-                    GlobalUnlock(mem); 
+                    GlobalUnlock(mem);
                 }
             }
         }
@@ -642,9 +697,9 @@ nk_gdi_clipboard_copy(nk_handle usr, const char *text, int len)
                 {
                     MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
                     wstr[wsize] = 0;
-                    GlobalUnlock(mem); 
+                    GlobalUnlock(mem);
 
-                    SetClipboardData(CF_UNICODETEXT, mem); 
+                    SetClipboardData(CF_UNICODETEXT, mem);
                 }
             }
         }

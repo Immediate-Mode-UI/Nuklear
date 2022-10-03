@@ -358,6 +358,38 @@ nk_xsurf_stroke_circle(XSurface *surf, short x, short y, unsigned short w,
 }
 
 NK_INTERN void
+nk_xdraw_stroke_arc(XSurface* surf, short cx, short cy, unsigned short r, float amin, float adelta, unsigned short line_thickness, struct nk_color col)
+{
+    float ul_x = cx - r;
+    float ul_y = cy - r;
+
+    int width = 2*r;
+    int height = width;
+
+    unsigned long c = nk_color_from_byte(&col.r);
+    XSetForeground(surf->dpy, surf->gc, c);
+
+    XSetLineAttributes(surf->dpy, surf->gc, line_thickness, LineSolid, CapButt, JoinMiter);
+    XDrawArc(surf->dpy, surf->drawable, surf->gc, ul_x, ul_y, width, height, (int)(-amin*64), (int)(-adelta*64));
+    XSetLineAttributes(surf->dpy, surf->gc, 1, LineSolid, CapButt, JoinMiter);
+}
+
+NK_INTERN void
+nk_xdraw_fill_arc(XSurface* surf, short cx, short cy, unsigned short r, float amin, float adelta, struct nk_color col)
+{
+    float ul_x = cx - r;
+    float ul_y = cy - r;
+
+    int width = 2*r;
+    int height = width;
+
+    unsigned long c = nk_color_from_byte(&col.r);
+    XSetForeground(surf->dpy, surf->gc, c);
+
+    XFillArc(surf->dpy, surf->drawable, surf->gc, ul_x, ul_y, width, height, -amin*64, -adelta*64);
+}
+
+NK_INTERN void
 nk_xsurf_stroke_curve(XSurface *surf, struct nk_vec2i p1,
     struct nk_vec2i p2, struct nk_vec2i p3, struct nk_vec2i p4,
     unsigned int num_segments, unsigned short line_thickness, struct nk_color col)
@@ -413,10 +445,10 @@ nk_stbi_image_to_xsurf(unsigned char *data, int width, int height, int channels)
     int bpl = channels;
     long i, isize = width*height*channels;
     XImageWithAlpha *aimage = (XImageWithAlpha*)calloc( 1, sizeof(XImageWithAlpha) );
-    int depth = DefaultDepth(surf->dpy, surf->screen); 
+    int depth = DefaultDepth(surf->dpy, surf->screen);
     if (data == NULL) return nk_image_id(0);
     if (aimage == NULL) return nk_image_id(0);
-    
+
     switch (depth){
         case 24:
             bpl = 4;
@@ -429,7 +461,7 @@ nk_stbi_image_to_xsurf(unsigned char *data, int width, int height, int channels)
             bpl = 1;
         break;
     }
-    
+
     /* rgba to bgra */
     if (channels >= 3){
         for (i=0; i < isize; i += channels) {
@@ -441,9 +473,9 @@ nk_stbi_image_to_xsurf(unsigned char *data, int width, int height, int channels)
     }
 
     if (channels == 4){
-        const unsigned alpha_treshold = 127;        
+        const unsigned alpha_treshold = 127;
         aimage->clipMask = XCreatePixmap(surf->dpy, surf->drawable, width, height, 1);
-        
+
         if( aimage->clipMask ){
             aimage->clipMaskGC = XCreateGC(surf->dpy, aimage->clipMask, 0, 0);
             XSetForeground(surf->dpy, aimage->clipMaskGC, BlackPixel(surf->dpy, surf->screen));
@@ -460,13 +492,13 @@ nk_stbi_image_to_xsurf(unsigned char *data, int width, int height, int channels)
             }
         }
     }
-    
-    aimage->ximage = XCreateImage(surf->dpy, 
-           CopyFromParent, depth, 
-           ZPixmap, 0, 
-           (char*)data, 
-           width, height, 
-           bpl*8, bpl * width); 
+
+    aimage->ximage = XCreateImage(surf->dpy,
+           CopyFromParent, depth,
+           ZPixmap, 0,
+           (char*)data,
+           width, height,
+           bpl*8, bpl * width);
     img = nk_image_ptr( (void*)aimage);
     img.h = height;
     img.w = width;
@@ -503,7 +535,7 @@ nk_xsurf_draw_image(XSurface *surf, short x, short y, unsigned short w, unsigned
     if (aimage){
         if (aimage->clipMask){
             XSetClipMask(surf->dpy, surf->gc, aimage->clipMask);
-            XSetClipOrigin(surf->dpy, surf->gc, x, y); 
+            XSetClipOrigin(surf->dpy, surf->gc, x, y);
         }
         XPutImage(surf->dpy, surf->drawable, surf->gc, aimage->ximage, 0, 0, x, y, w, h);
         XSetClipMask(surf->dpy, surf->gc, None);
@@ -915,6 +947,14 @@ nk_xlib_render(Drawable screen, struct nk_color clear)
             const struct nk_command_circle_filled *c = (const struct nk_command_circle_filled *)cmd;
             nk_xsurf_fill_circle(surf, c->x, c->y, c->w, c->h, c->color);
         } break;
+        case NK_COMMAND_ARC: {
+            const struct nk_command_arc *q = (const struct nk_command_arc *)cmd;
+            nk_xdraw_stroke_arc(surf, q->cx, q->cy, q->r, q->a[0], q->a[1], q->line_thickness, q->color);
+        } break;
+        case NK_COMMAND_ARC_FILLED: {
+            const struct nk_command_arc_filled *q = (const struct nk_command_arc_filled *)cmd;
+            nk_xdraw_fill_arc(surf, q->cx, q->cy, q->r, q->a[0], q->a[1], q->color);
+        } break;
         case NK_COMMAND_TRIANGLE: {
             const struct nk_command_triangle*t = (const struct nk_command_triangle*)cmd;
             nk_xsurf_stroke_triangle(surf, t->a.x, t->a.y, t->b.x, t->b.y,
@@ -954,8 +994,6 @@ nk_xlib_render(Drawable screen, struct nk_color clear)
             nk_xsurf_draw_image(surf, i->x, i->y, i->w, i->h, i->img, i->col);
         } break;
         case NK_COMMAND_RECT_MULTI_COLOR:
-        case NK_COMMAND_ARC:
-        case NK_COMMAND_ARC_FILLED:
         case NK_COMMAND_CUSTOM:
         default: break;
         }
