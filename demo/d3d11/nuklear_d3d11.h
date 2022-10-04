@@ -61,7 +61,7 @@ static struct
     struct nk_font_atlas atlas;
     struct nk_buffer cmds;
 
-    struct nk_draw_null_texture null;
+    struct nk_draw_null_texture tex_null;
     unsigned int max_vertex_buffer;
     unsigned int max_index_buffer;
 
@@ -137,7 +137,7 @@ nk_d3d11_render(ID3D11DeviceContext *context, enum nk_anti_aliasing AA)
         config.circle_segment_count = 22;
         config.curve_segment_count = 22;
         config.arc_segment_count = 22;
-        config.null = d3d11.null;
+        config.tex_null = d3d11.tex_null;
 
         {/* setup buffers to load vertices and elements */
         struct nk_buffer vbuf, ibuf;
@@ -373,7 +373,7 @@ nk_d3d11_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
     (void)usr;
     if (IsClipboardFormatAvailable(CF_UNICODETEXT) && OpenClipboard(NULL))
     {
-        HGLOBAL mem = GetClipboardData(CF_UNICODETEXT); 
+        HGLOBAL mem = GetClipboardData(CF_UNICODETEXT);
         if (mem)
         {
             SIZE_T size = GlobalSize(mem) - 1;
@@ -393,7 +393,7 @@ nk_d3d11_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
                             free(utf8);
                         }
                     }
-                    GlobalUnlock(mem); 
+                    GlobalUnlock(mem);
                 }
             }
         }
@@ -419,7 +419,7 @@ nk_d3d11_clipboard_copy(nk_handle usr, const char *text, int len)
                     MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
                     wstr[wsize] = 0;
                     GlobalUnlock(mem);
-                    SetClipboardData(CF_UNICODETEXT, mem); 
+                    SetClipboardData(CF_UNICODETEXT, mem);
                 }
             }
         }
@@ -603,7 +603,7 @@ nk_d3d11_font_stash_end(void)
     assert(SUCCEEDED(hr));}
     ID3D11Texture2D_Release(font_texture);}
 
-    nk_font_atlas_end(&d3d11.atlas, nk_handle_ptr(d3d11.font_texture_view), &d3d11.null);
+    nk_font_atlas_end(&d3d11.atlas, nk_handle_ptr(d3d11.font_texture_view), &d3d11.tex_null);
     if (d3d11.atlas.default_font)
         nk_style_set_font(&d3d11.ctx, &d3d11.atlas.default_font->handle);
 }
