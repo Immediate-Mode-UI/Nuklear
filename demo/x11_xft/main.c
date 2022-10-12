@@ -157,10 +157,15 @@ main(void)
                     xw.width, xw.height);
 
     #ifdef INCLUDE_STYLE
-    /*set_style(ctx, THEME_WHITE);*/
-    /*set_style(ctx, THEME_RED);*/
-    /*set_style(ctx, THEME_BLUE);*/
-    /*set_style(ctx, THEME_DARK);*/
+    #ifdef STYLE_WHITE
+    set_style(ctx, THEME_WHITE);
+    #elif defined(STYLE_RED)
+    set_style(ctx, THEME_RED);
+    #elif defined(STYLE_BLUE)
+    set_style(ctx, THEME_BLUE);
+    #elif defined(STYLE_DARK)
+    set_style(ctx, THEME_DARK);
+    #endif
     #endif
 
     while (running)

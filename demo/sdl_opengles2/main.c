@@ -209,10 +209,15 @@ int main(int argc, char* argv[])
     /*nk_style_set_font(ctx, &roboto->handle)*/;}
 
     /* style.c */
-    /*set_style(ctx, THEME_WHITE);*/
-    /*set_style(ctx, THEME_RED);*/
-    /*set_style(ctx, THEME_BLUE);*/
-    /*set_style(ctx, THEME_DARK);*/
+    #ifdef STYLE_WHITE
+    set_style(ctx, THEME_WHITE);
+    #elif defined(STYLE_RED)
+    set_style(ctx, THEME_RED);
+    #elif defined(STYLE_BLUE)
+    set_style(ctx, THEME_BLUE);
+    #elif defined(STYLE_DARK)
+    set_style(ctx, THEME_DARK);
+    #endif
 
 #if defined(__EMSCRIPTEN__)
     #include <emscripten.h>

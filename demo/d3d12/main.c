@@ -191,7 +191,7 @@ WindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 int main(void)
-{  
+{
     struct nk_context *ctx;
     struct nk_colorf bg;
 
@@ -278,7 +278,7 @@ int main(void)
 
     /* GUI */
     ctx = nk_d3d12_init(device, WINDOW_WIDTH, WINDOW_HEIGHT, MAX_VERTEX_BUFFER, MAX_INDEX_BUFFER, USER_TEXTURES);
-    
+
     /* Load Fonts: if none of these are loaded a default font will be used  */
     /* Load Cursor: if you uncomment cursor loading please hide the cursor */
     {
@@ -302,10 +302,15 @@ int main(void)
 
     /* style.c */
     #ifdef INCLUDE_STYLE
-    /*set_style(ctx, THEME_WHITE);*/
-    /*set_style(ctx, THEME_RED);*/
-    /*set_style(ctx, THEME_BLUE);*/
-    /*set_style(ctx, THEME_DARK);*/
+    #ifdef STYLE_WHITE
+    set_style(ctx, THEME_WHITE);
+    #elif defined(STYLE_RED)
+    set_style(ctx, THEME_RED);
+    #elif defined(STYLE_BLUE)
+    set_style(ctx, THEME_BLUE);
+    #elif defined(STYLE_DARK)
+    set_style(ctx, THEME_DARK);
+    #endif
     #endif
 
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;

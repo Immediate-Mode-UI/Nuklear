@@ -126,10 +126,15 @@ int main(void)
     /*nk_style_set_font(ctx, &droid->handle);*/}
 
     #ifdef INCLUDE_STYLE
-    /*set_style(ctx, THEME_WHITE);*/
-    /*set_style(ctx, THEME_RED);*/
-    /*set_style(ctx, THEME_BLUE);*/
-    /*set_style(ctx, THEME_DARK);*/
+    #ifdef STYLE_WHITE
+    set_style(ctx, THEME_WHITE);
+    #elif defined(STYLE_RED)
+    set_style(ctx, THEME_RED);
+    #elif defined(STYLE_BLUE)
+    set_style(ctx, THEME_BLUE);
+    #elif defined(STYLE_DARK)
+    set_style(ctx, THEME_DARK);
+    #endif
     #endif
 
     /* Create bindless texture.
