@@ -194,6 +194,7 @@ main(void)
     if (!rawfb) running = 0;
 
     #ifdef INCLUDE_STYLE
+    /* ease regression testing during Nuklear release process; not needed for anything else */
     #ifdef STYLE_WHITE
     set_style(&rawfb->ctx, THEME_WHITE);
     #elif defined(STYLE_RED)

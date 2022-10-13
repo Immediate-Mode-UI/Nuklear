@@ -128,6 +128,7 @@ int main(int argc, char *argv[])
 
     /* style.c */
     #ifdef INCLUDE_STYLE
+    /* ease regression testing during Nuklear release process; not needed for anything else */
     #ifdef STYLE_WHITE
     set_style(ctx, THEME_WHITE);
     #elif defined(STYLE_RED)
