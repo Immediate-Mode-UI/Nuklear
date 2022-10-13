@@ -390,6 +390,29 @@ nk_xsurf_stroke_circle(XSurface *surf, short x, short y, unsigned short w,
 }
 
 NK_INTERN void
+nk_xsurf_stroke_arc(XSurface *surf, short cx, short cy, unsigned short radius,
+    float a_min, float a_max, unsigned short line_thickness, struct nk_color col)
+{
+    unsigned long c = nk_color_from_byte(&col.r);
+    XSetLineAttributes(surf->dpy, surf->gc, line_thickness, LineSolid, CapButt, JoinMiter);
+    XSetForeground(surf->dpy, surf->gc, c);
+    XDrawArc(surf->dpy, surf->drawable, surf->gc, (int)(cx - radius), (int)(cy - radius),
+        (unsigned)(radius * 2), (unsigned)(radius * 2),
+        (int)(a_min * 180 * 64 / NK_PI), (int)(a_max * 180 * 64 / NK_PI));
+}
+
+NK_INTERN void
+nk_xsurf_fill_arc(XSurface *surf, short cx, short cy, unsigned short radius,
+    float a_min, float a_max, struct nk_color col)
+{
+    unsigned long c = nk_color_from_byte(&col.r);
+    XSetForeground(surf->dpy, surf->gc, c);
+    XFillArc(surf->dpy, surf->drawable, surf->gc, (int)(cx - radius), (int)(cy - radius),
+        (unsigned)(radius * 2), (unsigned)(radius * 2),
+        (int)(a_min * 180 * 64 / NK_PI), (int)(a_max * 180 * 64 / NK_PI));
+}
+
+NK_INTERN void
 nk_xsurf_stroke_curve(XSurface *surf, struct nk_vec2i p1,
     struct nk_vec2i p2, struct nk_vec2i p3, struct nk_vec2i p4,
     unsigned int num_segments, unsigned short line_thickness, struct nk_color col)
@@ -997,6 +1020,14 @@ nk_xlib_render(Drawable screen, struct nk_color clear)
             const struct nk_command_circle_filled *c = (const struct nk_command_circle_filled *)cmd;
             nk_xsurf_fill_circle(surf, c->x, c->y, c->w, c->h, c->color);
         } break;
+        case NK_COMMAND_ARC: {
+            const struct nk_command_arc *a = (const struct nk_command_arc *)cmd;
+            nk_xsurf_stroke_arc(surf, a->cx, a->cy, a->r, a->a[0], a->a[1], a->line_thickness, a->color);
+        } break;
+        case NK_COMMAND_ARC_FILLED: {
+            const struct nk_command_arc_filled *a = (const struct nk_command_arc_filled *)cmd;
+            nk_xsurf_fill_arc(surf, a->cx, a->cy, a->r, a->a[0], a->a[1], a->color);
+        } break;
         case NK_COMMAND_TRIANGLE: {
             const struct nk_command_triangle*t = (const struct nk_command_triangle*)cmd;
             nk_xsurf_stroke_triangle(surf, t->a.x, t->a.y, t->b.x, t->b.y,
@@ -1034,8 +1065,6 @@ nk_xlib_render(Drawable screen, struct nk_color clear)
             nk_xsurf_draw_image(surf, i->x, i->y, i->w, i->h, i->img, i->col);
         } break;
         case NK_COMMAND_RECT_MULTI_COLOR:
-        case NK_COMMAND_ARC:
-        case NK_COMMAND_ARC_FILLED:
         case NK_COMMAND_CUSTOM:
         default: break;
         }
