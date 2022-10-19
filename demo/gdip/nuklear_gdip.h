@@ -47,6 +47,8 @@ NK_API void nk_gdip_image_free(struct nk_image image);
 
 #include <stdlib.h>
 #include <malloc.h>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 /* manually declare everything GDI+ needs, because
    GDI+ headers are not usable from C */
@@ -320,6 +322,10 @@ GdipDrawArcI(GpGraphics *graphics, GpPen *pen, INT x, INT y,
     INT width, INT height, REAL startAngle, REAL sweepAngle);
 
 GpStatus WINGDIPAPI
+GdipDrawPieI(GpGraphics *graphics, GpPen *pen, INT x, INT y,
+             INT width, INT height, REAL startAngle, REAL sweepAngle);
+
+GpStatus WINGDIPAPI
 GdipFillPieI(GpGraphics *graphics, GpBrush *brush, INT x, INT y,
     INT width, INT height, REAL startAngle, REAL sweepAngle);
 
@@ -471,15 +477,25 @@ nk_gdip_fill_rect(short x, short y, unsigned short w,
     }
 }
 
+static BOOL
+SetPoint(POINT *p, LONG x, LONG y)
+{
+    if (!p)
+        return FALSE;
+    p->x = x;
+    p->y = y;
+    return TRUE;
+}
+
 static void
 nk_gdip_fill_triangle(short x0, short y0, short x1,
     short y1, short x2, short y2, struct nk_color col)
 {
-    POINT points[] = {
-        { x0, y0 },
-        { x1, y1 },
-        { x2, y2 },
-    };
+    POINT points[3];
+
+    SetPoint(&points[0], x0, y0);
+    SetPoint(&points[1], x1, y1);
+    SetPoint(&points[2], x2, y2);
 
     GdipSetSolidFillColor(gdip.brush, convert_color(col));
     GdipFillPolygonI(gdip.memory, gdip.brush, points, 3, FillModeAlternate);
@@ -489,12 +505,13 @@ static void
 nk_gdip_stroke_triangle(short x0, short y0, short x1,
     short y1, short x2, short y2, unsigned short line_thickness, struct nk_color col)
 {
-    POINT points[] = {
-        { x0, y0 },
-        { x1, y1 },
-        { x2, y2 },
-        { x0, y0 },
-    };
+    POINT points[4];
+
+    SetPoint(&points[0], x0, y0);
+    SetPoint(&points[1], x1, y1);
+    SetPoint(&points[2], x2, y2);
+    SetPoint(&points[3], x0, y0);
+
     GdipSetPenWidth(gdip.pen, (REAL)line_thickness);
     GdipSetPenColor(gdip.pen, convert_color(col));
     GdipDrawPolygonI(gdip.memory, gdip.pen, points, 4);
@@ -570,12 +587,32 @@ nk_gdip_stroke_curve(struct nk_vec2i p1,
 }
 
 static void
+nk_gdip_fill_arc(short cx, short cy, unsigned short r, float amin, float adelta, struct nk_color col)
+{
+    GdipSetSolidFillColor(gdip.brush, convert_color(col));
+    GdipFillPieI(gdip.memory, gdip.brush, cx - r, cy - r, r * 2, r * 2, amin * (180/M_PI), adelta * (180/M_PI));
+}
+
+static void
+nk_gdip_stroke_arc(short cx, short cy, unsigned short r, float amin, float adelta, unsigned short line_thickness, struct nk_color col)
+{
+    GdipSetPenWidth(gdip.pen, (REAL)line_thickness);
+    GdipSetPenColor(gdip.pen, convert_color(col));
+    GdipDrawPieI(gdip.memory, gdip.pen, cx - r, cy - r, r * 2, r * 2, amin * (180/M_PI), adelta * (180/M_PI));
+}
+
+static void
 nk_gdip_draw_text(short x, short y, unsigned short w, unsigned short h,
     const char *text, int len, GdipFont *font, struct nk_color cbg, struct nk_color cfg)
 {
     int wsize;
     WCHAR* wstr;
-    RectF layout = { (FLOAT)x, (FLOAT)y, (FLOAT)w, (FLOAT)h };
+    RectF layout;
+
+    layout.X = x;
+    layout.Y = y;
+    layout.Width = w;
+    layout.Height = h;
 
     if(!text || !font || !len) return;
 
@@ -1149,9 +1186,15 @@ nk_gdip_prerender_gui(enum nk_anti_aliasing AA)
             const struct nk_command_image *i = (const struct nk_command_image *)cmd;
             nk_gdip_draw_image(i->x, i->y, i->w, i->h, i->img, i->col);
         } break;
+        case NK_COMMAND_ARC: {
+            const struct nk_command_arc *i = (const struct nk_command_arc *)cmd;
+            nk_gdip_stroke_arc(i->cx, i->cy, i->r, i->a[0], i->a[1], i->line_thickness, i->color);
+        } break;
+        case NK_COMMAND_ARC_FILLED: {
+            const struct nk_command_arc_filled *i = (const struct nk_command_arc_filled *)cmd;
+            nk_gdip_fill_arc(i->cx, i->cy, i->r, i->a[0], i->a[1], i->color);
+        } break;
         case NK_COMMAND_RECT_MULTI_COLOR:
-        case NK_COMMAND_ARC:
-        case NK_COMMAND_ARC_FILLED:
         default: break;
         }
     }

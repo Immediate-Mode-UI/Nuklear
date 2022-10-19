@@ -79,7 +79,7 @@ struct nk_glfw_vertex {
 
 struct device {
     struct nk_buffer cmds;
-    struct nk_draw_null_texture null;
+    struct nk_draw_null_texture tex_null;
     GLuint vbo, vao, ebo;
     GLuint prog;
     GLuint vert_shdr;
@@ -286,7 +286,7 @@ device_draw(struct device *dev, struct nk_context *ctx, int width, int height,
             config.vertex_layout = vertex_layout;
             config.vertex_size = sizeof(struct nk_glfw_vertex);
             config.vertex_alignment = NK_ALIGNOF(struct nk_glfw_vertex);
-            config.null = dev->null;
+            config.tex_null = dev->tex_null;
             config.circle_segment_count = 22;
             config.curve_segment_count = 22;
             config.arc_segment_count = 22;
@@ -388,7 +388,7 @@ int main(int argc, char *argv[])
     else font = nk_font_atlas_add_default(&atlas, 13.0f, NULL);
     image = nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
     device_upload_atlas(&device, image, w, h);
-    nk_font_atlas_end(&atlas, nk_handle_id((int)device.font_tex), &device.null);}
+    nk_font_atlas_end(&atlas, nk_handle_id((int)device.font_tex), &device.tex_null);}
     nk_init_default(&ctx, &font->handle);}
 
     {   /* skin */
@@ -733,7 +733,6 @@ int main(int argc, char *argv[])
         nk_input_end(&ctx);}
 
         /* GUI */
-        {struct nk_panel layout, tab;
         if (nk_begin(&ctx, "Demo", nk_rect(50, 50, 300, 400),
             NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE))
         {
@@ -805,7 +804,7 @@ int main(int argc, char *argv[])
                 nk_group_end(&ctx);
             }
         }
-        nk_end(&ctx);}
+        nk_end(&ctx);
 
         /* Draw */
         glViewport(0, 0, display_width, display_height);

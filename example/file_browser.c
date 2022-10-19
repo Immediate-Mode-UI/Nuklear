@@ -149,6 +149,7 @@ die(const char *fmt, ...)
     exit(EXIT_FAILURE);
 }
 
+#if 0
 static char*
 file_load(const char* path, size_t* siz)
 {
@@ -163,6 +164,7 @@ file_load(const char* path, size_t* siz)
     fclose(fd);
     return buf;
 }
+#endif
 
 static char*
 str_duplicate(const char *src)
@@ -200,6 +202,7 @@ dir_list(const char *dir, int return_subdirs, size_t *count)
     assert(dir);
     assert(count);
     strncpy(buffer, dir, MAX_PATH_LEN);
+    buffer[MAX_PATH_LEN - 1] = 0;
     n = strlen(buffer);
 
     if (n > 0 && (buffer[n-1] != '/'))
@@ -343,6 +346,7 @@ static void
 file_browser_reload_directory_content(struct file_browser *browser, const char *path)
 {
     strncpy(browser->directory, path, MAX_PATH_LEN);
+    browser->directory[MAX_PATH_LEN - 1] = 0;
     dir_free_list(browser->files, browser->file_count);
     dir_free_list(browser->directories, browser->dir_count);
     browser->files = dir_list(path, 0, &browser->file_count);
@@ -364,6 +368,7 @@ file_browser_init(struct file_browser *browser, struct media *media)
         {
             size_t l;
             strncpy(browser->home, home, MAX_PATH_LEN);
+            browser->home[MAX_PATH_LEN - 1] = 0;
             l = strlen(browser->home);
             strcpy(browser->home + l, "/");
             strcpy(browser->directory, browser->home);
@@ -522,7 +527,7 @@ struct nk_glfw_vertex {
 
 struct device {
     struct nk_buffer cmds;
-    struct nk_draw_null_texture null;
+    struct nk_draw_null_texture tex_null;
     GLuint vbo, vao, ebo;
     GLuint prog;
     GLuint vert_shdr;
@@ -717,7 +722,7 @@ device_draw(struct device *dev, struct nk_context *ctx, int width, int height,
             config.vertex_layout = vertex_layout;
             config.vertex_size = sizeof(struct nk_glfw_vertex);
             config.vertex_alignment = NK_ALIGNOF(struct nk_glfw_vertex);
-            config.null = dev->null;
+            config.tex_null = dev->tex_null;
             config.circle_segment_count = 22;
             config.curve_segment_count = 22;
             config.arc_segment_count = 22;
@@ -818,7 +823,7 @@ int main(int argc, char *argv[])
     else font = nk_font_atlas_add_default(&atlas, 13.0f, NULL);
     image = nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
     device_upload_atlas(&device, image, w, h);
-    nk_font_atlas_end(&atlas, nk_handle_id((int)device.font_tex), &device.null);}
+    nk_font_atlas_end(&atlas, nk_handle_id((int)device.font_tex), &device.tex_null);}
     nk_init_default(&ctx, &font->handle);}
 
     /* icons */

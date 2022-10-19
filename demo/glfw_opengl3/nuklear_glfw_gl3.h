@@ -26,7 +26,7 @@ enum nk_glfw_init_state{
 
 struct nk_glfw_device {
     struct nk_buffer cmds;
-    struct nk_draw_null_texture null;
+    struct nk_draw_null_texture tex_null;
     GLuint vbo, vao, ebo;
     GLuint prog;
     GLuint vert_shdr;
@@ -266,7 +266,7 @@ nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int max_vertex_b
             config.vertex_layout = vertex_layout;
             config.vertex_size = sizeof(struct nk_glfw_vertex);
             config.vertex_alignment = NK_ALIGNOF(struct nk_glfw_vertex);
-            config.null = dev->null;
+            config.tex_null = dev->tex_null;
             config.circle_segment_count = 22;
             config.curve_segment_count = 22;
             config.arc_segment_count = 22;
@@ -328,9 +328,10 @@ nk_gflw3_scroll_callback(GLFWwindow *win, double xoff, double yoff)
 NK_API void
 nk_glfw3_mouse_button_callback(GLFWwindow* win, int button, int action, int mods)
 {
-    double x, y;
-    if (button != GLFW_MOUSE_BUTTON_LEFT) return;
     struct nk_glfw* glfw = glfwGetWindowUserPointer(win);
+    double x, y;
+    NK_UNUSED(mods);
+    if (button != GLFW_MOUSE_BUTTON_LEFT) return;
     glfwGetCursorPos(win, &x, &y);
     if (action == GLFW_PRESS)  {
         double dt = glfwGetTime() - glfw->last_button_click;
@@ -345,7 +346,7 @@ nk_glfw3_mouse_button_callback(GLFWwindow* win, int button, int action, int mods
 NK_INTERN void
 nk_glfw3_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
 {
-    struct nk_glfw* glfw = usr.ptr;
+    struct nk_glfw* glfw = (struct nk_glfw*)usr.ptr;
     const char *text = glfwGetClipboardString(glfw->win);
     if (text) nk_textedit_paste(edit, text, nk_strlen(text));
     (void)usr;
@@ -354,13 +355,13 @@ nk_glfw3_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
 NK_INTERN void
 nk_glfw3_clipboard_copy(nk_handle usr, const char *text, int len)
 {
+    struct nk_glfw* glfw = (struct nk_glfw*)usr.ptr;
     char *str = 0;
     if (!len) return;
     str = (char*)malloc((size_t)len+1);
     if (!str) return;
     memcpy(str, text, (size_t)len);
     str[len] = '\0';
-    struct nk_glfw* glfw = usr.ptr;
     glfwSetClipboardString(glfw->win, str);
     free(str);
 }
@@ -402,7 +403,7 @@ nk_glfw3_font_stash_end(struct nk_glfw* glfw)
     const void *image; int w, h;
     image = nk_font_atlas_bake(&glfw->atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
     nk_glfw3_device_upload_atlas(glfw, image, w, h);
-    nk_font_atlas_end(&glfw->atlas, nk_handle_id((int)glfw->ogl.font_tex), &glfw->ogl.null);
+    nk_font_atlas_end(&glfw->atlas, nk_handle_id((int)glfw->ogl.font_tex), &glfw->ogl.tex_null);
     if (glfw->atlas.default_font)
         nk_style_set_font(&glfw->ctx, &glfw->atlas.default_font->handle);
 }
