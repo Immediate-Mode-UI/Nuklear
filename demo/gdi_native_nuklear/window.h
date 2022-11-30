@@ -44,7 +44,7 @@ struct nkgdi_window
         HDC window_dc;
 
         /* Internally used state variables */
-        int is_open; 
+        int is_open;
         int is_draggin;
         int ws_override;
         int is_maximized;
@@ -70,9 +70,9 @@ void nkgdi_window_destroy(struct nkgdi_window* wnd);
 
 /* Predeclare the windows window message procs */
 /* This proc will setup the pointer to the window context */
-LRESULT nkgdi_window_proc_setup(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam);
-/* This proc will take the window context pointer and performs operations on it*/ 
-LRESULT nkgdi_window_proc_run(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK nkgdi_window_proc_setup(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam);
+/* This proc will take the window context pointer and performs operations on it*/
+LRESULT CALLBACK nkgdi_window_proc_run(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 void nkgdi_window_init(void)
 {
@@ -126,7 +126,7 @@ void nkgdi_window_create(struct nkgdi_window* wnd, unsigned int width, unsigned 
         GetModuleHandleW(NULL),
         wnd
     );
- 
+
     /* Give the window the ascii char name */
     SetWindowTextA(wnd->_internal.window_handle, name);
 
@@ -232,7 +232,7 @@ int nkgdi_window_update(struct nkgdi_window* wnd)
     return wnd->_internal.is_open;
 }
 
-LRESULT nkgdi_window_proc_setup(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK nkgdi_window_proc_setup(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     /* Waiting to receive the NCCREATE message with the custom window data */
     if (msg == WM_NCCREATE)
@@ -253,11 +253,11 @@ LRESULT nkgdi_window_proc_setup(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam
     return DefWindowProc(wnd, msg, wParam, lParam);
 }
 
-LRESULT nkgdi_window_proc_run(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK nkgdi_window_proc_run(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     /* The window context is extracted from the window data */
     struct nkgdi_window* nkwnd = (struct nkgdi_window*)GetWindowLongPtrW(wnd, GWLP_USERDATA);
-    
+
     /* Switch on the message code to handle all required messages */
     switch (msg)
     {
@@ -267,7 +267,7 @@ LRESULT nkgdi_window_proc_run(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if(!nkwnd->cb_on_close || nkwnd->cb_on_close())
                 nkwnd->_internal.is_open = 0;
             return 0; /* No default behaviour. We do it our own way */
-        
+
         /* Window sizing event (is currently beeing sized) */
         case WM_SIZING:
             {
