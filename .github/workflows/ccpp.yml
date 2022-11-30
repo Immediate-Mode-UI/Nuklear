@@ -3,12 +3,12 @@ name: C/C++ CI
 on: [push, pull_request]
 
 jobs:
-  build:
+  build_linux:
 
     runs-on: ubuntu-latest
-    
     steps:
     - uses: actions/checkout@v1
+
     - name: apt-update
       run: sudo apt-get update -qq
     - name: apt get glfw
@@ -19,3 +19,40 @@ jobs:
       run: make -C demo/glfw_opengl3
     - name: build example
       run: make -C example
+
+  build_msvc:
+    strategy:
+      matrix:
+        arch: [x86, x64]
+        define: ['', '-DINCLUDE_ALL']
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: ${{ matrix.arch }}
+
+    - name: Build gdi
+      working-directory: demo/gdi
+      run: ./build.bat ${{ matrix.define }}
+
+    - name: Build gdip
+      working-directory: demo/gdip
+      run: ./build.bat ${{ matrix.define }}
+
+    - name: Build gdi_native_nuklear
+      working-directory: demo/gdi_native_nuklear
+      run: ./build.bat ${{ matrix.define }}
+
+    - name: Build d3d9
+      working-directory: demo/d3d9
+      run: ./build.bat ${{ matrix.define }}
+
+    - name: Build d3d11
+      working-directory: demo/d3d11
+      run: ./build.bat ${{ matrix.define }}
+
+    - name: Build d3d12
+      working-directory: demo/d3d12
+      run: ./build.bat ${{ matrix.define }}
