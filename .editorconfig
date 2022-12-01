@@ -12,3 +12,6 @@ trim_trailing_whitespace = true
 
 [clib.json]
 indent_size = 2
+
+[*.yml]
+indent_size = 2
