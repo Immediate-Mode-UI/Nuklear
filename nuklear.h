@@ -16619,7 +16619,7 @@ nk_font_bake_pack(struct nk_font_baker *baker,
             struct stbtt_fontinfo *font_info = &baker->build[i++].info;
             font_info->userdata = alloc;
 
-            if (!stbtt_InitFont(font_info, (const unsigned char*)it->ttf_blob, 0))
+            if (!stbtt_InitFont(font_info, (const unsigned char*)it->ttf_blob, stbtt_GetFontOffsetForIndex((const unsigned char*)it->ttf_blob, 0)))
                 return nk_false;
         } while ((it = it->n) != config_iter);
     }
@@ -29654,6 +29654,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2022/12/17 (4.10.5) - Fix nk_font_bake_pack() using TTC font offset incorrectly
 /// - 2022/10/24 (4.10.4) - Fix nk_str_{append,insert}_str_utf8 always returning 0
 /// - 2022/09/03 (4.10.3) - Renamed the `null` texture variable to `tex_null`
 /// - 2022/08/01 (4.10.2) - Fix Apple Silicon with incorrect NK_SITE_TYPE and NK_POINTER_TYPE

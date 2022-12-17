@@ -1,6 +1,6 @@
 {
   "name": "nuklear",
-  "version": "4.10.1",
+  "version": "4.10.5",
   "repo": "Immediate-Mode-UI/Nuklear",
   "description": "A small ANSI C gui toolkit",
   "keywords": ["gl", "ui", "toolkit"],
