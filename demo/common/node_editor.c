@@ -160,7 +160,7 @@ node_editor(struct nk_context *ctx)
     }
 
     if (nk_begin(ctx, "NodeEdit", nk_rect(0, 0, 800, 600),
-        NK_WINDOW_BORDER|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_MOVABLE|NK_WINDOW_CLOSABLE))
+         NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|NK_WINDOW_CLOSABLE|NK_WINDOW_TITLE))
     {
         /* allocate complete window space */
         canvas = nk_window_get_canvas(ctx);
@@ -176,17 +176,17 @@ node_editor(struct nk_context *ctx)
                 float x, y;
                 const float grid_size = 32.0f;
                 const struct nk_color grid_color = nk_rgb(50, 50, 50);
-                for (x = (float)fmod(size.x - nodedit->scrolling.x, grid_size); x < size.w; x += grid_size)
+                for (x = (float)fmod(size.x, grid_size); x < size.w; x += grid_size)
                     nk_stroke_line(canvas, x+size.x, size.y, x+size.x, size.y+size.h, 1.0f, grid_color);
-                for (y = (float)fmod(size.y - nodedit->scrolling.y, grid_size); y < size.h; y += grid_size)
+                for (y = (float)fmod(size.y, grid_size); y < size.h; y += grid_size)
                     nk_stroke_line(canvas, size.x, y+size.y, size.x+size.w, y+size.y, 1.0f, grid_color);
             }
 
             /* execute each node as a movable group */
             while (it) {
                 /* calculate scrolled node window position and size */
-                nk_layout_space_push(ctx, nk_rect(it->bounds.x - nodedit->scrolling.x,
-                    it->bounds.y - nodedit->scrolling.y, it->bounds.w, it->bounds.h));
+                nk_layout_space_push(ctx, nk_rect(it->bounds.x,
+                    it->bounds.y, it->bounds.w, it->bounds.h));
 
                 /* execute node window */
                 if (nk_group_begin(ctx, it->name, NK_WINDOW_MOVABLE|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BORDER|NK_WINDOW_TITLE))
@@ -217,8 +217,6 @@ node_editor(struct nk_context *ctx)
                     float space;
                     struct nk_rect bounds;
                     bounds = nk_layout_space_rect_to_local(ctx, node->bounds);
-                    bounds.x += nodedit->scrolling.x;
-                    bounds.y += nodedit->scrolling.y;
                     it->bounds = bounds;
 
                     /* output connector */
@@ -287,10 +285,6 @@ node_editor(struct nk_context *ctx)
                 struct nk_vec2 l1 = nk_layout_space_to_screen(ctx,
                     nk_vec2(no->bounds.x, 3.0f + no->bounds.y + spaceo * (float)(link->output_slot+1)));
 
-                l0.x -= nodedit->scrolling.x;
-                l0.y -= nodedit->scrolling.y;
-                l1.x -= nodedit->scrolling.x;
-                l1.y -= nodedit->scrolling.y;
                 nk_stroke_curve(canvas, l0.x, l0.y, l0.x + 50.0f, l0.y,
                     l1.x - 50.0f, l1.y, l1.x, l1.y, 1.0f, nk_rgb(100, 100, 100));
             }
@@ -308,8 +302,6 @@ node_editor(struct nk_context *ctx)
                 nodedit->bounds = nk_rect(in->mouse.pos.x, in->mouse.pos.y, 100, 200);
                 while (it) {
                     struct nk_rect b = nk_layout_space_rect_to_screen(ctx, it->bounds);
-                    b.x -= nodedit->scrolling.x;
-                    b.y -= nodedit->scrolling.y;
                     if (nk_input_is_mouse_hovering_rect(in, b))
                         nodedit->selected = it;
                     it = it->next;
@@ -333,8 +325,6 @@ node_editor(struct nk_context *ctx)
         /* window content scrolling */
         if (nk_input_is_mouse_hovering_rect(in, nk_window_get_bounds(ctx)) &&
             nk_input_is_mouse_down(in, NK_BUTTON_MIDDLE)) {
-            nodedit->scrolling.x += in->mouse.delta.x;
-            nodedit->scrolling.y += in->mouse.delta.y;
         }
     }
     nk_end(ctx);

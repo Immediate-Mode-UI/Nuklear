@@ -667,13 +667,15 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
     case NK_LAYOUT_STATIC_FREE: {
         /* free widget placing */
         bounds->x = layout->at_x + layout->row.item.x;
+        bounds->y = layout->at_y + layout->row.item.y;
         bounds->w = layout->row.item.w;
+        bounds->h = layout->row.item.h;
         if (((bounds->x + bounds->w) > layout->max_x) && modify)
             layout->max_x = (bounds->x + bounds->w);
         bounds->x -= (float)*layout->offset_x;
-        bounds->y = layout->at_y + layout->row.item.y;
+        if (((bounds->y + bounds->h) > layout->max_y) && modify)
+            layout->max_y = (bounds->y + bounds->h);
         bounds->y -= (float)*layout->offset_y;
-        bounds->h = layout->row.item.h;
         return;
     }
     case NK_LAYOUT_STATIC: {
@@ -700,12 +702,15 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
 
     /* set the bounds of the newly allocated widget */
     bounds->w = item_width;
-    bounds->h = layout->row.height - spacing.y;
+    bounds->h = layout->row.height + spacing.y;
     bounds->y = layout->at_y - (float)*layout->offset_y;
     bounds->x = layout->at_x + item_offset + item_spacing;
     if (((bounds->x + bounds->w) > layout->max_x) && modify)
         layout->max_x = bounds->x + bounds->w;
     bounds->x -= (float)*layout->offset_x;
+    if (((bounds->y + bounds->h) > layout->max_y) && modify)
+        layout->max_y = bounds->y + bounds->h;
+    bounds->y -= (float)*layout->offset_y;
 }
 NK_LIB void
 nk_panel_alloc_space(struct nk_rect *bounds, const struct nk_context *ctx)

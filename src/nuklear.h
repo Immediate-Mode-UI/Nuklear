@@ -5164,7 +5164,7 @@ struct nk_panel {
     struct nk_rect bounds;
     nk_uint *offset_x;
     nk_uint *offset_y;
-    float at_x, at_y, max_x;
+    float at_x, at_y, max_x, max_y;
     float footer_height;
     float header_height;
     float border;
