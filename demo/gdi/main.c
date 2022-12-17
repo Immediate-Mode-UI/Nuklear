@@ -103,7 +103,7 @@ int main(void)
     atom = RegisterClassW(&wc);
 
     AdjustWindowRectEx(&rect, style, FALSE, exstyle);
-    wnd = CreateWindowExW(exstyle, wc.lpszClassName, L"Nuklear Demo",
+    wnd = CreateWindowExW(exstyle, wc.lpszClassName, L"Nuklear GDI Demo",
         style | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT,
         rect.right - rect.left, rect.bottom - rect.top,
         NULL, NULL, wc.hInstance, NULL);
