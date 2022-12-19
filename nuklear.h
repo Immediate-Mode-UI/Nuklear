@@ -48,6 +48,7 @@
 /// - No global or hidden state
 /// - Customizable library modules (you can compile and use only what you need)
 /// - Optional font baker and vertex buffer output
+/// - [Code available on github](https://github.com/Immediate-Mode-UI/Nuklear/)
 ///
 /// ## Features
 /// - Absolutely no platform dependent code
@@ -5385,7 +5386,7 @@ struct nk_panel {
     struct nk_rect bounds;
     nk_uint *offset_x;
     nk_uint *offset_y;
-    float at_x, at_y, max_x;
+    float at_x, at_y, max_x, max_y;
     float footer_height;
     float header_height;
     float border;
@@ -19584,6 +19585,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
     layout->at_y = layout->bounds.y;
     layout->at_x = layout->bounds.x;
     layout->max_x = 0;
+    layout->max_y = 0;
     layout->header_height = 0;
     layout->footer_height = 0;
     nk_layout_reset_min_row_height(ctx);
@@ -19876,15 +19878,13 @@ nk_panel_end(struct nk_context *ctx)
             scroll.h = layout->bounds.h;
 
             scroll_offset = (float)*layout->offset_y;
-            scroll_step = scroll.h * 0.10f;
-            scroll_inc = scroll.h * 0.01f;
-            scroll_target = (float)(int)(layout->at_y - scroll.y);
+            scroll_target = (float)(int)(layout->max_y - scroll.y);
+            scroll_step = layout->max_y * 0.05f;
+            scroll_inc = layout->max_y * 0.005f;
             scroll_offset = nk_do_scrollbarv(&state, out, scroll, scroll_has_scrolling,
                 scroll_offset, scroll_target, scroll_step, scroll_inc,
                 &ctx->style.scrollv, in, style->font);
             *layout->offset_y = (nk_uint)scroll_offset;
-            if (in && scroll_has_scrolling)
-                in->mouse.scroll_delta.y = 0;
         }
         {
             /* horizontal scrollbar */
@@ -22166,13 +22166,15 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
     case NK_LAYOUT_STATIC_FREE: {
         /* free widget placing */
         bounds->x = layout->at_x + layout->row.item.x;
+        bounds->y = layout->at_y + layout->row.item.y;
         bounds->w = layout->row.item.w;
+        bounds->h = layout->row.item.h;
         if (((bounds->x + bounds->w) > layout->max_x) && modify)
             layout->max_x = (bounds->x + bounds->w);
         bounds->x -= (float)*layout->offset_x;
-        bounds->y = layout->at_y + layout->row.item.y;
+        if (((bounds->y + bounds->h) > layout->max_y) && modify)
+            layout->max_y = (bounds->y + bounds->h);
         bounds->y -= (float)*layout->offset_y;
-        bounds->h = layout->row.item.h;
         return;
     }
     case NK_LAYOUT_STATIC: {
@@ -22199,12 +22201,15 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
 
     /* set the bounds of the newly allocated widget */
     bounds->w = item_width;
-    bounds->h = layout->row.height - spacing.y;
+    bounds->h = layout->row.height + spacing.y;
     bounds->y = layout->at_y - (float)*layout->offset_y;
     bounds->x = layout->at_x + item_offset + item_spacing;
     if (((bounds->x + bounds->w) > layout->max_x) && modify)
         layout->max_x = bounds->x + bounds->w;
     bounds->x -= (float)*layout->offset_x;
+    if (((bounds->y + bounds->h) > layout->max_y) && modify)
+        layout->max_y = bounds->y + bounds->h;
+    bounds->y -= (float)*layout->offset_y;
 }
 NK_LIB void
 nk_panel_alloc_space(struct nk_rect *bounds, const struct nk_context *ctx)
