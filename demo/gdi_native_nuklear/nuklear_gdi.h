@@ -485,15 +485,21 @@ nk_gdi_draw_text(HDC dc, short x, short y, unsigned short w, unsigned short h,
 
     if (!text || !font || !len) return;
 
-    wsize = MultiByteToWideChar(CP_UTF8, 0, text, len, NULL, 0);
-    wstr = (WCHAR*)_alloca(wsize * sizeof(wchar_t));
-    MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
-
     SetBkColor(dc, convert_color(cbg));
     SetTextColor(dc, convert_color(cfg));
 
     SelectObject(dc, font->handle);
-    ExtTextOutW(dc, x, y, ETO_OPAQUE, NULL, wstr, wsize, NULL);
+
+    wsize = MultiByteToWideChar(CP_UTF8, 0, text, len, NULL, 0);
+    if (wsize) {
+        wstr = (WCHAR*)_alloca(wsize * sizeof(wchar_t));
+        MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
+
+        ExtTextOutW(dc, x, y, ETO_OPAQUE, NULL, wstr, wsize, NULL);
+    } else {
+        /* TODO: Convert from UTF-8 to the active code page */
+        ExtTextOutA(dc, x, y, ETO_OPAQUE, NULL, text, len, NULL);
+    }
 }
 
 static void
@@ -540,10 +546,17 @@ nk_gdifont_get_text_width(nk_handle handle, float height, const char* text, int 
         return 0;
 
     wsize = MultiByteToWideChar(CP_UTF8, 0, text, len, NULL, 0);
-    wstr = (WCHAR*)_alloca(wsize * sizeof(wchar_t));
-    MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
-    if (GetTextExtentPoint32W(font->dc, wstr, wsize, &size))
-        return (float)size.cx;
+    if (wsize) {
+        wstr = (WCHAR*)_alloca(wsize * sizeof(wchar_t));
+        MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
+        if (GetTextExtentPoint32W(font->dc, wstr, wsize, &size))
+            return (float)size.cx;
+    } else {
+        /* TODO: Convert from UTF-8 to the active code page */
+        if (GetTextExtentPoint32A(font->dc, text, len, &size))
+            return (float)size.cx;
+    }
+
     return -1.0f;
 }
 
