@@ -499,15 +499,26 @@ nk_glfw3_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
 }
 
 NK_INTERN void
-nk_glfw3_clipboard_copy(nk_handle usr, const char *text, int len)
+nk_glfw3_clipboard_copy(nk_handle usr, const char *text, int glyphs)
 {
-    char *str = 0;
-    (void)usr;
-    if (!len) return;
-    str = (char*)malloc((size_t)len+1);
+    NK_UNUSED(usr);
+    if (!glyphs) return;
+
+    int bytes = 0;
+    for (int i = 0; i < glyphs; i++)
+    {
+        int glyph_bytes;
+        // Find out how many bytes in a glyph
+        for (glyph_bytes = 1; (nk_byte)text[bytes] >= nk_utfmask[glyph_bytes]; glyph_bytes++)
+            ;
+        bytes += glyph_bytes;
+    }
+
+    char* str = (char*)malloc(bytes + 1);
     if (!str) return;
-    memcpy(str, text, (size_t)len);
-    str[len] = '\0';
+
+    memcpy(str, text, bytes);
+    str[bytes] = '\0';
     glfwSetClipboardString(glfw.win, str);
     free(str);
 }
