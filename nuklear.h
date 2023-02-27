@@ -10586,11 +10586,9 @@ nk_draw_list_add_image(struct nk_draw_list *list, struct nk_image texture,
 				      nk_vec2(1.0f, 1.0f),color);
 	    break;
 	case NK_IMAGE_CENTER:
-	    /* Use Scissor to cut image into target range, if image is bigger
-	       than target rect. Possibly a bad idea? Alternative is to calcuate
-	       the UV offset instead and combine NK_IMAGE_FIT with an offset UV
-	       to produce a centered image. This would avoid the usage of
-	       scissor */
+	    /* Use a combination of pixel coords and uv offsets to display
+        the center portion of the image if target texture is larger than container.
+        Otherise just center image */
 	    if(texture.w < rect.w && texture.h < rect.h){
 		int center_offset_x = rect.w * 0.5f - texture.w * 0.5f;
 		int center_offset_y = rect.h * 0.5f - texture.h * 0.5f;
@@ -10601,17 +10599,29 @@ nk_draw_list_add_image(struct nk_draw_list *list, struct nk_image texture,
 					  nk_vec2(0.0f, 0.0f),
 					  nk_vec2(1.0f, 1.0f),color);
 	    } else {
-		int center_offset_x = rect.w * 0.5f - texture.w * 0.5f;
-		int center_offset_y = rect.h * 0.5f - texture.h * 0.5f;
-		struct nk_rect prev_clip = list->clip_rect;
-		
-		nk_draw_list_add_clip(list, rect);
-		nk_draw_list_push_rect_uv(list,
+		 /* Container width OR height could be larger. Apply offset is that is the case. */
+        int center_offset_x = (rect.w > texture.w) ? rect.w * 0.5f - texture.w * 0.5f : 0;
+        int center_offset_y = (rect.h > texture.h) ? rect.h * 0.5f - texture.h * 0.5f : 0;
+
+        /* Fetch pixel coords for the centered inner image
+        and calculate uv coords */
+        int x_top = (texture.w * 0.5) - (rect.w * 0.5);
+        int y_top = (texture.h * 0.5) - (rect.h * 0.5);
+        int x_bot = (texture.w * 0.5) + (rect.w * 0.5);
+        int y_bot = (texture.h * 0.5) + (rect.h * 0.5);
+
+        float uv_a1 = NK_CLAMP(0, (float)x_top / (float)texture.w, 1);
+        float uv_b1 = NK_CLAMP(0, (float)y_top / (float)texture.h, 1);
+        float uv_a2 = NK_CLAMP(0, (float)x_bot / (float)texture.w, 1);
+        float uv_b2 = NK_CLAMP(0, (float)y_bot / (float)                                                                                                                                     texture.h, 1);
+        rect.w = NK_CLAMP(0, rect.w, texture.w);
+        rect.h = NK_CLAMP(0, rect.h, texture.h);
+
+        nk_draw_list_push_rect_uv(list,
 					  nk_vec2(rect.x + center_offset_x, rect.y + center_offset_y),
-					  nk_vec2(rect.x + texture.w + center_offset_x, rect.y + texture.h + center_offset_y),
-					  nk_vec2(0.0f, 0.0f),
-					  nk_vec2(1.0f, 1.0f),color);
-		nk_draw_list_add_clip(list, prev_clip);
+					  nk_vec2(rect.x + rect.w + center_offset_x , rect.y + rect.h + center_offset_y),
+					  nk_vec2(uv_a1, uv_b1),
+					  nk_vec2(uv_a2, uv_b2),color);
 	    }
 	    break;
 	case NK_IMAGE_TILE:
