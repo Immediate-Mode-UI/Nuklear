@@ -10613,7 +10613,7 @@ nk_draw_list_add_image(struct nk_draw_list *list, struct nk_image texture,
         float uv_a1 = NK_CLAMP(0, (float)x_top / (float)texture.w, 1);
         float uv_b1 = NK_CLAMP(0, (float)y_top / (float)texture.h, 1);
         float uv_a2 = NK_CLAMP(0, (float)x_bot / (float)texture.w, 1);
-        float uv_b2 = NK_CLAMP(0, (float)y_bot / (float)                                                                                                                                     texture.h, 1);
+        float uv_b2 = NK_CLAMP(0, (float)y_bot / (float)texture.h, 1);
         rect.w = NK_CLAMP(0, rect.w, texture.w);
         rect.h = NK_CLAMP(0, rect.h, texture.h);
 
