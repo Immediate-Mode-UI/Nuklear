@@ -101,7 +101,7 @@ static float
 nk_allegro5_font_get_text_width(nk_handle handle, float height, const char *text, int len)
 {
     float width;
-    char *strcpy;
+    char *str;
     NkAllegro5Font *font = (NkAllegro5Font*)handle.ptr;
     NK_UNUSED(height);
     if (!font || !text) {
@@ -111,11 +111,11 @@ nk_allegro5_font_get_text_width(nk_handle handle, float height, const char *text
        as nuklear uses variable size buffers and al_get_text_width doesn't
        accept a length, it infers length from null-termination
        (which is unsafe API design by allegro devs!) */
-    strcpy = malloc(len + 1);
-    strncpy(strcpy, text, len);
-    strcpy[len] = '\0';
-    width = al_get_text_width(font->font, strcpy);
-    free(strcpy);
+    str = calloc((size_t)len + 1, 1);
+    if(!str) return 0;
+    strncpy(str, text, len);
+    width = al_get_text_width(font->font, str);
+    free(str);
     return width;
 }
 
@@ -473,10 +473,9 @@ nk_allegro5_clipboard_copy(nk_handle usr, const char *text, int len)
     char *str = 0;
     (void)usr;
     if (!len) return;
-    str = (char*)malloc((size_t)len+1);
+    str = calloc((size_t)len + 1, 1);
     if (!str) return;
-    memcpy(str, text, (size_t)len);
-    str[len] = '\0';
+    strncpy(str, text, len);
     al_set_clipboard_text(allegro5.dsp, str);
     free(str);
 }
