@@ -1116,14 +1116,77 @@ nk_draw_list_add_image(struct nk_draw_list *list, struct nk_image texture,
     /* push new command with given texture */
     nk_draw_list_push_image(list, texture.handle);
     if (nk_image_is_subimage(&texture)) {
-        /* add region inside of the texture  */
+        struct nk_vec2 px[2];
         struct nk_vec2 uv[2];
-        uv[0].x = (float)texture.region[0]/(float)texture.w;
-        uv[0].y = (float)texture.region[1]/(float)texture.h;
-        uv[1].x = (float)(texture.region[0] + texture.region[2])/(float)texture.w;
-        uv[1].y = (float)(texture.region[1] + texture.region[3])/(float)texture.h;
-        nk_draw_list_push_rect_uv(list, nk_vec2(rect.x, rect.y),
-            nk_vec2(rect.x + rect.w, rect.y + rect.h),  uv[0], uv[1], color);
+        struct nk_rect sub_rect = {texture.region[0], texture.region[1], texture.region[2], texture.region[3]};
+        int x_offset = 0;
+        int y_offset = 0;
+        px[0].x = rect.x;
+        px[0].y = rect.y;
+        px[1].x = rect.x + rect.w; 
+        px[1].y = rect.y + rect.h;
+        /* Stretch is the default behaviour
+        switch only modifies coords for FILL, FIT, CENTER 
+        Note: TILE is not implemented
+        */
+        switch(texture.type) {
+            case NK_IMAGE_FILL:
+                img_ratio = (float)texture.region[2] / (float)texture.region[3];
+                rect_ratio = rect.w / rect.h;
+                if (img_ratio > rect_ratio) {
+                    x_offset = ((1.f - rect_ratio / img_ratio) * 0.5) * (float)texture.region[2];
+                } else {
+                    y_offset = ((1.f - img_ratio / rect_ratio) * 0.5) * (float)texture.region[3];
+                }
+                break;
+            case NK_IMAGE_FIT:
+                img_ratio = (float)texture.region[2] / (float)texture.region[3];
+                rect_ratio = rect.w / rect.h;
+                if (img_ratio > rect_ratio) {
+                    rect.y += nk_ifloorf((rect.h - texture.region[3] * rect.w / texture.region[2]) * 0.5);
+                    px[0].x = rect.x;
+                    px[0].y = rect.y;
+                    px[1].x = rect.x + rect.w;
+                    px[1].y = rect.y + nk_ifloorf(texture.region[3] * rect.w / texture.region[2]);
+                } else {
+                    rect.x += nk_ifloorf((rect.w - texture.region[2] * rect.h / texture.region[3]) * 0.5);
+                    px[0].x = rect.x;
+                    px[0].y = rect.y;   
+                    px[1].x = rect.x + nk_ifloorf(texture.region[2] * rect.h / texture.region[3]);
+                    px[1].y = rect.y + rect.h;
+                }
+                break;
+            case NK_IMAGE_CENTER:
+    	        if (sub_rect.w < rect.w && sub_rect.h < rect.h) {
+                    int center_offset_x = (rect.w * 0.5f - sub_rect.w * 0.5f);
+                    int center_offset_y = (rect.h * 0.5f - sub_rect.h * 0.5f);
+                    px[0].x += center_offset_x;
+                    px[0].y += center_offset_y;
+                    px[1].x -= center_offset_x;
+                    px[1].y -= center_offset_y;
+                } else {
+                    int center_offset_x = (rect.w > texture.region[2]) ? rect.w * 0.5f - texture.region[2] * 0.5f : 0;
+                    int center_offset_y = (rect.h > texture.region[3]) ? rect.h * 0.5f - texture.region[3] * 0.5f : 0;
+                    px[0].x += center_offset_x;
+                    px[0].y += center_offset_y;
+                    px[1].x -= center_offset_x;
+                    px[1].y -= center_offset_y;
+                    x_offset = NK_CLAMP(0,(texture.region[2] * 0.5) - (rect.w * 0.5), texture.region[2]);
+                    y_offset = NK_CLAMP(0,(texture.region[3] * 0.5) - (rect.h * 0.5), texture.region[3]);
+                    rect.w = NK_CLAMP(0, rect.w, texture.region[2]);
+                    rect.h = NK_CLAMP(0, rect.h, texture.region[3]);
+                }
+                break;
+        }
+        /* Calculate uv for subimage and apply additional masking if x and 
+        y offset is set. By default it will stretch the subimage to the entire rect. */
+        uv[0].x = (float)(texture.region[0] + x_offset) / (float)texture.w;
+        uv[0].y = (float)(texture.region[1] + y_offset) / (float)texture.h;
+        uv[1].x = (float)(texture.region[0] + texture.region[2] - x_offset) / (float)texture.w;
+        uv[1].y = (float)(texture.region[1] + texture.region[3] - y_offset) / (float)texture.h;
+        nk_draw_list_push_rect_uv(list,
+                        px[0], px[1],
+                        uv[0], uv[1],color);  
     } else {
 	switch(texture.type){
 	case NK_IMAGE_FILL:
