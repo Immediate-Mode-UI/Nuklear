@@ -454,10 +454,10 @@ int main(int argc, char *argv[])
         {struct nk_canvas canvas;
         canvas_begin(&ctx, &canvas, 0, 0, 0, width, height, nk_rgb(250,250,250));
         {
-            nk_fill_rect(canvas.painter, nk_rect(15,15,210,210), 5, nk_rgb(247, 230, 154));
-            nk_fill_rect(canvas.painter, nk_rect(20,20,200,200), 5, nk_rgb(188, 174, 118));
+            nk_fill_rect(canvas.painter, nk_rect(15,15,210,210), nk_vec4(5, 5, 5, 5), nk_rgb(247, 230, 154));
+            nk_fill_rect(canvas.painter, nk_rect(20,20,200,200), nk_vec4(5, 5, 5, 5), nk_rgb(188, 174, 118));
             nk_draw_text(canvas.painter, nk_rect(30, 30, 150, 20), "Text to draw", 12, &font->handle, nk_rgb(188,174,118), nk_rgb(0,0,0));
-            nk_fill_rect(canvas.painter, nk_rect(250,20,100,100), 0, nk_rgb(0,0,255));
+            nk_fill_rect(canvas.painter, nk_rect(250,20,100,100), nk_vec4(10, 10, 10, 10), nk_rgb(0,0,255));
             nk_fill_circle(canvas.painter, nk_rect(20,250,100,100), nk_rgb(255,0,0));
             nk_fill_triangle(canvas.painter, 250, 250, 350, 250, 300, 350, nk_rgb(0,255,0));
             nk_fill_arc(canvas.painter, 300, 180, 50, 0, 3.141592654f * 3.0f / 4.0f, nk_rgb(255,255,0));
@@ -472,7 +472,7 @@ int main(int argc, char *argv[])
             nk_fill_polygon(canvas.painter, points, 6, nk_rgb(0,0,0));}
 
             nk_stroke_line(canvas.painter, 15, 10, 200, 10, 2.0f, nk_rgb(189,45,75));
-            nk_stroke_rect(canvas.painter, nk_rect(370, 20, 100, 100), 10, 3, nk_rgb(0,0,255));
+            nk_stroke_rect(canvas.painter, nk_rect(370, 20, 100, 100), nk_vec4(10, 10, 10, 10), 3, nk_rgb(0,0,255));
             nk_stroke_curve(canvas.painter, 380, 200, 405, 270, 455, 120, 480, 200, 2, nk_rgb(0,150,220));
             nk_stroke_circle(canvas.painter, nk_rect(20, 370, 100, 100), 5, nk_rgb(0,255,120));
             nk_stroke_triangle(canvas.painter, 370, 250, 470, 250, 420, 350, 6, nk_rgb(255,0,143));

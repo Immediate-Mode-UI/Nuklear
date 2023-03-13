@@ -107,7 +107,7 @@ nk_panel_layout(const struct nk_context *ctx, struct nk_window *win,
         background.w = win->bounds.w;
         background.y = layout->at_y - 1.0f;
         background.h = layout->row.height + 1.0f;
-        nk_fill_rect(out, background, 0, color);
+        nk_fill_rect(out, background, nk_vec4(0, 0, 0, 0), color);
     }
 }
 NK_LIB void

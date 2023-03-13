@@ -864,25 +864,30 @@ nk_draw_list_path_arc_to(struct nk_draw_list *list, struct nk_vec2 center,
 }
 NK_API void
 nk_draw_list_path_rect_to(struct nk_draw_list *list, struct nk_vec2 a,
-    struct nk_vec2 b, float rounding)
+    struct nk_vec2 b, struct nk_vec4 rounding)
 {
-    float r;
     NK_ASSERT(list);
     if (!list) return;
-    r = rounding;
-    r = NK_MIN(r, ((b.x-a.x) < 0) ? -(b.x-a.x): (b.x-a.x));
-    r = NK_MIN(r, ((b.y-a.y) < 0) ? -(b.y-a.y): (b.y-a.y));
+    /* Propably redundant recalculation */
+    rounding.a = NK_MIN(rounding.a, ((b.x-a.x) < 0) ? -(b.x-a.x): (b.x-a.x));
+    rounding.a = NK_MIN(rounding.a, ((b.y-a.y) < 0) ? -(b.y-a.y): (b.y-a.y));
+    rounding.b = NK_MIN(rounding.b, ((b.x-a.x) < 0) ? -(b.x-a.x): (b.x-a.x));
+    rounding.b = NK_MIN(rounding.b, ((b.y-a.y) < 0) ? -(b.y-a.y): (b.y-a.y));
+    rounding.c = NK_MIN(rounding.c, ((b.x-a.x) < 0) ? -(b.x-a.x): (b.x-a.x));
+    rounding.c = NK_MIN(rounding.c, ((b.y-a.y) < 0) ? -(b.y-a.y): (b.y-a.y));
+    rounding.d = NK_MIN(rounding.d, ((b.x-a.x) < 0) ? -(b.x-a.x): (b.x-a.x));
+    rounding.d = NK_MIN(rounding.d, ((b.y-a.y) < 0) ? -(b.y-a.y): (b.y-a.y));
 
-    if (r == 0.0f) {
+    if (rounding.a == 0.0f && rounding.b == 0.0f && rounding.c == 0.0f && rounding.d == 0.0f) {
         nk_draw_list_path_line_to(list, a);
         nk_draw_list_path_line_to(list, nk_vec2(b.x,a.y));
         nk_draw_list_path_line_to(list, b);
         nk_draw_list_path_line_to(list, nk_vec2(a.x,b.y));
     } else {
-        nk_draw_list_path_arc_to_fast(list, nk_vec2(a.x + r, a.y + r), r, 6, 9);
-        nk_draw_list_path_arc_to_fast(list, nk_vec2(b.x - r, a.y + r), r, 9, 12);
-        nk_draw_list_path_arc_to_fast(list, nk_vec2(b.x - r, b.y - r), r, 0, 3);
-        nk_draw_list_path_arc_to_fast(list, nk_vec2(a.x + r, b.y - r), r, 3, 6);
+        nk_draw_list_path_arc_to_fast(list, nk_vec2(a.x + rounding.a, a.y + rounding.a), rounding.a, 6, 9);
+        nk_draw_list_path_arc_to_fast(list, nk_vec2(b.x - rounding.b, a.y + rounding.b), rounding.b, 9, 12);
+        nk_draw_list_path_arc_to_fast(list, nk_vec2(b.x - rounding.c, b.y - rounding.c), rounding.c, 0, 3);
+        nk_draw_list_path_arc_to_fast(list, nk_vec2(a.x + rounding.d, b.y - rounding.d), rounding.d, 3, 6);
     }
 }
 NK_API void
@@ -951,7 +956,7 @@ nk_draw_list_stroke_line(struct nk_draw_list *list, struct nk_vec2 a,
 }
 NK_API void
 nk_draw_list_fill_rect(struct nk_draw_list *list, struct nk_rect rect,
-    struct nk_color col, float rounding)
+    struct nk_color col, struct nk_vec4 rounding)
 {
     NK_ASSERT(list);
     if (!list || !col.a) return;
@@ -966,7 +971,7 @@ nk_draw_list_fill_rect(struct nk_draw_list *list, struct nk_rect rect,
 }
 NK_API void
 nk_draw_list_stroke_rect(struct nk_draw_list *list, struct nk_rect rect,
-    struct nk_color col, float rounding, float thickness)
+    struct nk_color col, struct nk_vec4 rounding, float thickness)
 {
     NK_ASSERT(list);
     if (!list || !col.a) return;
@@ -1220,12 +1225,12 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
         case NK_COMMAND_RECT: {
             const struct nk_command_rect *r = (const struct nk_command_rect*)cmd;
             nk_draw_list_stroke_rect(&ctx->draw_list, nk_rect(r->x, r->y, r->w, r->h),
-                r->color, (float)r->rounding, r->line_thickness);
+                r->color, (struct nk_vec4)r->rounding, r->line_thickness);
         } break;
         case NK_COMMAND_RECT_FILLED: {
             const struct nk_command_rect_filled *r = (const struct nk_command_rect_filled*)cmd;
             nk_draw_list_fill_rect(&ctx->draw_list, nk_rect(r->x, r->y, r->w, r->h),
-                r->color, (float)r->rounding);
+                r->color, (struct nk_vec4)r->rounding);
         } break;
         case NK_COMMAND_RECT_MULTI_COLOR: {
             const struct nk_command_rect_multi_color *r = (const struct nk_command_rect_multi_color*)cmd;

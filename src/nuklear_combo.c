@@ -94,8 +94,8 @@ nk_combo_begin_text(struct nk_context *ctx, const char *selected, int len,
             break;
         case NK_STYLE_ITEM_COLOR:
             text.background = background->data.color;
-            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            nk_fill_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), background->data.color);
+            nk_stroke_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), style->combo.border, style->combo.border_color);
             break;
     }
     {
@@ -194,8 +194,8 @@ nk_combo_begin_color(struct nk_context *ctx, struct nk_color color, struct nk_ve
             nk_draw_nine_slice(&win->buffer, header, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            nk_fill_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), background->data.color);
+            nk_stroke_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), style->combo.border, style->combo.border_color);
             break;
     }
     {
@@ -233,7 +233,7 @@ nk_combo_begin_color(struct nk_context *ctx, struct nk_color color, struct nk_ve
             bounds.w = (button.x - (style->combo.content_padding.x + style->combo.spacing.x)) - bounds.x;
         else
             bounds.w = header.w - 4 * style->combo.content_padding.x;
-        nk_fill_rect(&win->buffer, bounds, 0, color);
+        nk_fill_rect(&win->buffer, bounds, nk_vec4(0, 0, 0, 0), color);
 
         /* draw open/close button */
         if (draw_button_symbol)
@@ -295,8 +295,8 @@ nk_combo_begin_symbol(struct nk_context *ctx, enum nk_symbol_type symbol, struct
             break;
         case NK_STYLE_ITEM_COLOR:
             sym_background = background->data.color;
-            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            nk_fill_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), background->data.color);
+            nk_stroke_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), style->combo.border, style->combo.border_color);
             break;
     }
     {
@@ -392,8 +392,8 @@ nk_combo_begin_symbol_text(struct nk_context *ctx, const char *selected, int len
             break;
         case NK_STYLE_ITEM_COLOR:
             text.background = background->data.color;
-            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            nk_fill_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), background->data.color);
+            nk_stroke_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), style->combo.border, style->combo.border_color);
             break;
     }
     {
@@ -483,8 +483,8 @@ nk_combo_begin_image(struct nk_context *ctx, struct nk_image img, struct nk_vec2
             nk_draw_nine_slice(&win->buffer, header, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            nk_fill_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), background->data.color);
+            nk_stroke_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), style->combo.border, style->combo.border_color);
             break;
     }
     {
@@ -583,8 +583,8 @@ nk_combo_begin_image_text(struct nk_context *ctx, const char *selected, int len,
             break;
         case NK_STYLE_ITEM_COLOR:
             text.background = background->data.color;
-            nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
-            nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            nk_fill_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), background->data.color);
+            nk_stroke_rect(&win->buffer, header, nk_vec4(style->combo.rounding, style->combo.rounding, style->combo.rounding, style->combo.rounding), style->combo.border, style->combo.border_color);
             break;
     }
     {

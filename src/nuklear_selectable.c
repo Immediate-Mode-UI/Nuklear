@@ -53,7 +53,7 @@ nk_draw_selectable(struct nk_command_buffer *out,
             break;
         case NK_STYLE_ITEM_COLOR:
             text.background = background->data.color;
-            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
+            nk_fill_rect(out, *bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), background->data.color);
             break;
     }
     if (icon) {

@@ -109,7 +109,7 @@ nk_edit_draw_text(struct nk_command_buffer *out,
                 label.x += x_offset;
 
             if (is_selected) /* selection needs to draw different background color */
-                nk_fill_rect(out, label, 0, background);
+                nk_fill_rect(out, label, nk_vec4(0, 0, 0, 0), background);
             nk_widget_text(out, label, line, (int)((text + text_len) - line),
                 &txt, NK_TEXT_CENTERED, font);
 
@@ -143,7 +143,7 @@ nk_edit_draw_text(struct nk_command_buffer *out,
             label.x += x_offset;
 
         if (is_selected)
-            nk_fill_rect(out, label, 0, background);
+            nk_fill_rect(out, label, nk_vec4(0, 0, 0, 0), background);
         nk_widget_text(out, label, line, (int)((text + text_len) - line),
             &txt, NK_TEXT_LEFT, font);
     }}
@@ -337,8 +337,8 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
             nk_draw_nine_slice(out, bounds, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, bounds, style->rounding, background->data.color);
-            nk_stroke_rect(out, bounds, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), background->data.color);
+            nk_stroke_rect(out, bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->border, style->border_color);
             break;
     }}
 
@@ -608,7 +608,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                 cursor.x = area.x + cursor_pos.x - edit->scrollbar.x;
                 cursor.y = area.y + cursor_pos.y + row_height/2.0f - cursor.h/2.0f;
                 cursor.y -= edit->scrollbar.y;
-                nk_fill_rect(out, cursor, 0, cursor_color);
+                nk_fill_rect(out, cursor, nk_vec4(0, 0, 0, 0), cursor_color);
             } else {
                 /* draw cursor inside text */
                 int glyph_len;
@@ -627,7 +627,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                 txt.padding = nk_vec2(0,0);
                 txt.background = cursor_color;;
                 txt.text = cursor_text_color;
-                nk_fill_rect(out, label, 0, cursor_color);
+                nk_fill_rect(out, label, nk_vec4(0, 0, 0, 0), cursor_color);
                 nk_widget_text(out, label, cursor_ptr, glyph_len, &txt, NK_TEXT_LEFT, font);
             }
         }}

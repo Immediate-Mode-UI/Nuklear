@@ -65,9 +65,9 @@ nk_chart_begin_colored(struct nk_context *ctx, enum nk_chart_type type,
             nk_draw_nine_slice(&win->buffer, bounds, &background->data.slice, nk_white);
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(&win->buffer, bounds, style->rounding, style->border_color);
+            nk_fill_rect(&win->buffer, bounds, nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->border_color);
             nk_fill_rect(&win->buffer, nk_shrink_rect(bounds, style->border),
-                style->rounding, style->background.data.color);
+                nk_vec4(style->rounding, style->rounding, style->rounding, style->rounding), style->background.data.color);
             break;
     }
     return 1;
@@ -147,7 +147,7 @@ nk_chart_push_line(struct nk_context *ctx, struct nk_window *win,
                 i->mouse.buttons[NK_BUTTON_LEFT].clicked) ? NK_CHART_CLICKED: 0;
             color = g->slots[slot].highlight;
         }
-        nk_fill_rect(out, bounds, 0, color);
+        nk_fill_rect(out, bounds, nk_vec4(0, 0, 0, 0), color);
         g->slots[slot].index += 1;
         return ret;
     }
@@ -171,7 +171,7 @@ nk_chart_push_line(struct nk_context *ctx, struct nk_window *win,
             color = g->slots[slot].highlight;
         }
     }
-    nk_fill_rect(out, nk_rect(cur.x - 2, cur.y - 2, 4, 4), 0, color);
+    nk_fill_rect(out, nk_rect(cur.x - 2, cur.y - 2, 4, 4), nk_vec4(0, 0, 0, 0), color);
 
     /* save current data point position */
     g->slots[slot].last.x = cur.x;
@@ -221,7 +221,7 @@ nk_chart_push_column(const struct nk_context *ctx, struct nk_window *win,
                 in->mouse.buttons[NK_BUTTON_LEFT].clicked) ? NK_CHART_CLICKED: 0;
         color = chart->slots[slot].highlight;
     }
-    nk_fill_rect(out, item, 0, color);
+    nk_fill_rect(out, item, nk_vec4(0, 0, 0, 0), color);
     chart->slots[slot].index += 1;
     return ret;
 }

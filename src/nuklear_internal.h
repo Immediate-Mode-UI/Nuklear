@@ -151,6 +151,7 @@ NK_LIB void* nk_buffer_alloc(struct nk_buffer *b, enum nk_buffer_allocation_type
 NK_LIB void* nk_buffer_realloc(struct nk_buffer *b, nk_size capacity, nk_size *size);
 
 /* draw */
+NK_API struct nk_vec4 nk_clamp_rounding(struct nk_rect bounds, struct nk_vec4 rounding);
 NK_LIB void nk_command_buffer_init(struct nk_command_buffer *cb, struct nk_buffer *b, enum nk_command_clipping clip);
 NK_LIB void nk_command_buffer_reset(struct nk_command_buffer *b);
 NK_LIB void* nk_command_buffer_push(struct nk_command_buffer* b, enum nk_command_type t, nk_size size);
