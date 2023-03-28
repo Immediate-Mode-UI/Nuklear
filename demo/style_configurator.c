@@ -1,8 +1,10 @@
 
-// TODO design decisions
-// plural or not?  ie style_button or style_buttons?
-// use the duplicate array method, or just let the user
-// manually set those after calling the function by accessing ctx->style->*?
+/*
+ TODO design decisions
+ plural or not?  ie style_button or style_buttons?
+ use the duplicate array method, or just let the user
+ manually set those after calling the function by accessing ctx->style->*?
+*/
 
 static const char* symbols[NK_SYMBOL_MAX] =
 {
@@ -176,7 +178,7 @@ style_button(struct nk_context* ctx, struct nk_style_button* out_style, struct n
 	BOTTOM_RIGHT
 };
 
-	int cur_align;
+	int cur_align = button.text_alignment-NK_TEXT_LEFT;
 	for (int i=0; i<NK_LEN(aligns); ++i) {
 		if (button.text_alignment == aligns[i]) {
 			cur_align = i;
