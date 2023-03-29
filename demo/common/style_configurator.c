@@ -26,10 +26,11 @@ static const char* symbols[NK_SYMBOL_MAX] =
 static int
 style_rgb(struct nk_context* ctx, const char* name, struct nk_color* color)
 {
+	struct nk_colorf colorf;
 	nk_label(ctx, name, NK_TEXT_LEFT);
 	if (nk_combo_begin_color(ctx, *color, nk_vec2(nk_widget_width(ctx), 400))) {
 		nk_layout_row_dynamic(ctx, 120, 1);
-		struct nk_colorf colorf = nk_color_picker(ctx, nk_color_cf(*color), NK_RGB);
+		colorf = nk_color_picker(ctx, nk_color_cf(*color), NK_RGB);
 		nk_layout_row_dynamic(ctx, 25, 1);
 		colorf.r = nk_propertyf(ctx, "#R:", 0, colorf.r, 1.0f, 0.01f,0.005f);
 		colorf.g = nk_propertyf(ctx, "#G:", 0, colorf.g, 1.0f, 0.01f,0.005f);
@@ -43,7 +44,7 @@ style_rgb(struct nk_context* ctx, const char* name, struct nk_color* color)
 	return 0;
 }
 
-// TODO style_style_item?  how to handle images if at all?
+/* TODO style_style_item?  how to handle images if at all? */
 static void
 style_item_color(struct nk_context* ctx, const char* name, struct nk_style_item* item)
 {
@@ -64,7 +65,7 @@ style_vec2(struct nk_context* ctx, const char* name, struct nk_vec2* vec)
 	}
 }
 
-// style_general? pass array in instead of static?
+/* style_general? pass array in instead of static? */
 static void
 style_global_colors(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_COUNT])
 {
@@ -101,9 +102,10 @@ style_global_colors(struct nk_context* ctx, struct nk_color color_table[NK_COLOR
 	};
 
 	int clicked = 0;
+	int i;
 
 	nk_layout_row_dynamic(ctx, 30, 2);
-	for (int i=0; i<NK_COLOR_COUNT; ++i) {
+	for (i=0; i<NK_COLOR_COUNT; ++i) {
 		clicked |= style_rgb(ctx, color_labels[i], &color_table[i]);
 	}
 
@@ -145,6 +147,7 @@ style_button(struct nk_context* ctx, struct nk_style_button* out_style, struct n
 	style_vec2(ctx, "Image Padding:", &button.image_padding);
 	style_vec2(ctx, "Touch Padding:", &button.touch_padding);
 
+	{
 	const char* alignments[] =
 {
 	"LEFT",
@@ -165,7 +168,7 @@ style_button(struct nk_context* ctx, struct nk_style_button* out_style, struct n
 #define BOTTOM_CENTER  NK_TEXT_ALIGN_BOTTOM|NK_TEXT_ALIGN_CENTERED
 #define BOTTOM_RIGHT   NK_TEXT_ALIGN_BOTTOM|NK_TEXT_ALIGN_RIGHT
 
-	int aligns[] =
+	unsigned int aligns[] =
 {
 	NK_TEXT_LEFT,
 	NK_TEXT_CENTERED,
@@ -179,7 +182,8 @@ style_button(struct nk_context* ctx, struct nk_style_button* out_style, struct n
 };
 
 	int cur_align = button.text_alignment-NK_TEXT_LEFT;
-	for (int i=0; i<NK_LEN(aligns); ++i) {
+	int i;
+	for (i=0; i<(int)NK_LEN(aligns); ++i) {
 		if (button.text_alignment == aligns[i]) {
 			cur_align = i;
 			break;
@@ -194,9 +198,11 @@ style_button(struct nk_context* ctx, struct nk_style_button* out_style, struct n
 
 	*out_style = button;
 	if (duplicate_styles) {
-		for (int i=0; i<n_dups; ++i) {
+		int i;
+		for (i=0; i<n_dups; ++i) {
 			*duplicate_styles[i] = button;
 		}
+	}
 	}
 
 }
@@ -264,6 +270,7 @@ static void
 style_slider(struct nk_context* ctx, struct nk_style_slider* out_style)
 {
 	struct nk_style_slider slider = *out_style;
+	struct nk_style_button* dups[1];
 
 	nk_layout_row_dynamic(ctx, 30, 2);
 
@@ -297,10 +304,10 @@ style_slider(struct nk_context* ctx, struct nk_style_slider* out_style)
 		nk_label(ctx, "Dec Symbol:", NK_TEXT_LEFT);
 		slider.dec_symbol = nk_combo(ctx, symbols, NK_SYMBOL_MAX, slider.dec_symbol, 25, nk_vec2(200,200));
 
-		// necessary or do tree's always take the whole width?
-		//nk_layout_row_dynamic(ctx, 30, 1);
+		/* necessary or do tree's always take the whole width? */
+		/* nk_layout_row_dynamic(ctx, 30, 1); */
 		if (nk_tree_push(ctx, NK_TREE_TAB, "Slider Buttons", NK_MINIMIZED)) {
-			struct nk_style_button* dups[1] = { &ctx->style.slider.dec_button };
+			dups[0] = &ctx->style.slider.dec_button;
 			style_button(ctx, &ctx->style.slider.inc_button, dups, 1);
 			nk_tree_pop(ctx);
 		}
@@ -324,7 +331,7 @@ style_progress(struct nk_context* ctx, struct nk_style_progress* out_style)
 	style_item_color(ctx, "Cursor Hover:", &prog.cursor_hover);
 	style_item_color(ctx, "Cursor Active:", &prog.cursor_active);
 
-	// TODO rgba?
+	/* TODO rgba? */
 	style_rgb(ctx, "Border Color:", &prog.border_color);
 	style_rgb(ctx, "Cursor Border Color:", &prog.cursor_border_color);
 
@@ -343,6 +350,7 @@ static void
 style_scrollbars(struct nk_context* ctx, struct nk_style_scrollbar* out_style, struct nk_style_scrollbar** duplicate_styles, int n_dups)
 {
 	struct nk_style_scrollbar scroll = *out_style;
+	struct nk_style_button* dups[3];
 
 	nk_layout_row_dynamic(ctx, 30, 2);
 
@@ -353,7 +361,7 @@ style_scrollbars(struct nk_context* ctx, struct nk_style_scrollbar* out_style, s
 	style_item_color(ctx, "Cursor Hover:", &scroll.cursor_hover);
 	style_item_color(ctx, "Cursor Active:", &scroll.cursor_active);
 
-	// TODO rgba?
+	/* TODO rgba? */
 	style_rgb(ctx, "Border Color:", &scroll.border_color);
 	style_rgb(ctx, "Cursor Border Color:", &scroll.cursor_border_color);
 
@@ -362,11 +370,11 @@ style_scrollbars(struct nk_context* ctx, struct nk_style_scrollbar* out_style, s
 	nk_property_float(ctx, "#Border:", -100.0f, &scroll.border, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Rounding:", -100.0f, &scroll.rounding, 100.0f, 1,0.5f);
 
-	// TODO naming inconsistency with style_scrollress?
+	/* TODO naming inconsistency with style_scrollress? */
 	nk_property_float(ctx, "#Cursor Border:", -100.0f, &scroll.border_cursor, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Cursor Rounding:", -100.0f, &scroll.rounding_cursor, 100.0f, 1,0.5f);
 
-	// TODO what is wrong with scrollbar buttons?  Also look into controlling the total width (and height) of scrollbars
+	/* TODO what is wrong with scrollbar buttons?  Also look into controlling the total width (and height) of scrollbars */
 	nk_layout_row_dynamic(ctx, 30, 1);
 	nk_checkbox_label(ctx, "Show Buttons", &scroll.show_buttons);
 
@@ -377,11 +385,11 @@ style_scrollbars(struct nk_context* ctx, struct nk_style_scrollbar* out_style, s
 		nk_label(ctx, "Dec Symbol:", NK_TEXT_LEFT);
 		scroll.dec_symbol = nk_combo(ctx, symbols, NK_SYMBOL_MAX, scroll.dec_symbol, 25, nk_vec2(200,200));
 
-		//nk_layout_row_dynamic(ctx, 30, 1);
+		/* nk_layout_row_dynamic(ctx, 30, 1); */
 		if (nk_tree_push(ctx, NK_TREE_TAB, "Scrollbar Buttons", NK_MINIMIZED)) {
-			struct nk_style_button* dups[3] = { &ctx->style.scrollh.dec_button,
-			                                    &ctx->style.scrollv.inc_button,
-			                                    &ctx->style.scrollv.dec_button };
+			dups[0] = &ctx->style.scrollh.dec_button;
+			dups[1] = &ctx->style.scrollv.inc_button;
+			dups[2] = &ctx->style.scrollv.dec_button;
 			style_button(ctx, &ctx->style.scrollh.inc_button, dups, 3);
 			nk_tree_pop(ctx);
 		}
@@ -389,7 +397,8 @@ style_scrollbars(struct nk_context* ctx, struct nk_style_scrollbar* out_style, s
 
 	*out_style = scroll;
 	if (duplicate_styles) {
-		for (int i=0; i<n_dups; ++i) {
+		int i;
+		for (i=0; i<n_dups; ++i) {
 			*duplicate_styles[i] = scroll;
 		}
 	}
@@ -435,6 +444,7 @@ static void
 style_property(struct nk_context* ctx, struct nk_style_property* out_style)
 {
 	struct nk_style_property property = *out_style;
+	struct nk_style_button* dups[1];
 
 	nk_layout_row_dynamic(ctx, 30, 2);
 
@@ -449,11 +459,11 @@ style_property(struct nk_context* ctx, struct nk_style_property* out_style)
 
 	style_vec2(ctx, "Padding:", &property.padding);
 
-	// TODO check weird hover bug with properties, happens in overview basic section too
+	/* TODO check weird hover bug with properties, happens in overview basic section too */
 	nk_property_float(ctx, "#Border:", -100.0f, &property.border, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Rounding:", -100.0f, &property.rounding, 100.0f, 1,0.5f);
 
-	// there is no property.show_buttons, they're always there
+	/* there is no property.show_buttons, they're always there */
 
 	nk_label(ctx, "Left Symbol:", NK_TEXT_LEFT);
 	property.sym_left = nk_combo(ctx, symbols, NK_SYMBOL_MAX, property.sym_left, 25, nk_vec2(200,200));
@@ -461,7 +471,7 @@ style_property(struct nk_context* ctx, struct nk_style_property* out_style)
 	property.sym_right = nk_combo(ctx, symbols, NK_SYMBOL_MAX, property.sym_right, 25, nk_vec2(200,200));
 
 	if (nk_tree_push(ctx, NK_TREE_TAB, "Property Buttons", NK_MINIMIZED)) {
-		struct nk_style_button* dups[1] = { &property.dec_button };
+		dups[0] = &property.dec_button;
 		style_button(ctx, &property.inc_button, dups, 1);
 		nk_tree_pop(ctx);
 	}
@@ -540,11 +550,13 @@ style_tab(struct nk_context* ctx, struct nk_style_tab* out_style)
 	style_rgb(ctx, "Border:", &tab.border_color);
 	style_rgb(ctx, "Text:", &tab.text);
 
-	// FTR, I feel these fields are misnamed and should be sym_minimized and sym_maximized since they are
-	// what show in that state, not the button to push to get to that state
-	nk_label(ctx, "Minimize Symbol:", NK_TEXT_LEFT);
+	/*
+	 * FTR, I feel these fields are misnamed and should be sym_minimized and sym_maximized since they are
+	 * what show in that state, not the button to push to get to that state
+	 */
+	nk_label(ctx, "Minimized Symbol:", NK_TEXT_LEFT);
 	tab.sym_minimize = nk_combo(ctx, symbols, NK_SYMBOL_MAX, tab.sym_minimize, 25, nk_vec2(200,200));
-	nk_label(ctx, "Maxmize Symbol:", NK_TEXT_LEFT);
+	nk_label(ctx, "Maxmized Symbol:", NK_TEXT_LEFT);
 	tab.sym_maximize = nk_combo(ctx, symbols, NK_SYMBOL_MAX, tab.sym_maximize, 25, nk_vec2(200,200));
 
 	style_vec2(ctx, "Padding:", &tab.padding);
@@ -563,6 +575,7 @@ static void
 style_window_header(struct nk_context* ctx, struct nk_style_window_header* out_style)
 {
 	struct nk_style_window_header header = *out_style;
+	struct nk_style_button* dups[1];
 
 	nk_layout_row_dynamic(ctx, 30, 2);
 
@@ -579,11 +592,13 @@ style_window_header(struct nk_context* ctx, struct nk_style_window_header* out_s
 	style_vec2(ctx, "Spacing:", &header.spacing);
 
 #define NUM_ALIGNS 2
+	{
 	const char* alignments[NUM_ALIGNS] = { "LEFT", "RIGHT" };
 
 	nk_layout_row_dynamic(ctx, 30, 2);
 	nk_label(ctx, "Button Alignment:", NK_TEXT_LEFT);
 	header.align = nk_combo(ctx, alignments, NUM_ALIGNS, header.align, 25, nk_vec2(200,200));
+	}
 #undef NUM_ALIGNS
 
 	nk_label(ctx, "Close Symbol:", NK_TEXT_LEFT);
@@ -593,14 +608,13 @@ style_window_header(struct nk_context* ctx, struct nk_style_window_header* out_s
 	nk_label(ctx, "Maximize Symbol:", NK_TEXT_LEFT);
 	header.maximize_symbol = nk_combo(ctx, symbols, NK_SYMBOL_MAX, header.maximize_symbol, 25, nk_vec2(200,200));
 
-	// necessary or do tree's always take the whole width?
-	//nk_layout_row_dynamic(ctx, 30, 1);
+	/* necessary or do tree's always take the whole width? */
+	/* nk_layout_row_dynamic(ctx, 30, 1); */
 	if (nk_tree_push(ctx, NK_TREE_TAB, "Close and Minimize Button", NK_MINIMIZED)) {
-		struct nk_style_button* dups[1] = { &header.minimize_button };
+		dups[0] = &header.minimize_button;
 		style_button(ctx, &header.close_button, dups, 1);
 		nk_tree_pop(ctx);
 	}
-
 
 	*out_style = header;
 }
@@ -668,6 +682,8 @@ style_configurator(struct nk_context *ctx, struct nk_color color_table[NK_COLOR_
 	int scale_left = nk_false;
 	nk_flags window_flags = 0;
 	int minimizable = nk_true;
+	struct nk_style *style = NULL;
+	struct nk_style_button* dups[1];
 
 	/* window flags */
 	window_flags = 0;
@@ -678,7 +694,7 @@ style_configurator(struct nk_context *ctx, struct nk_color color_table[NK_COLOR_
 	if (scale_left) window_flags |= NK_WINDOW_SCALE_LEFT;
 	if (minimizable) window_flags |= NK_WINDOW_MINIMIZABLE;
 
-	struct nk_style *style = &ctx->style;
+	style = &ctx->style;
 
 	if (nk_begin(ctx, "Configurator", nk_rect(10, 10, 400, 600), window_flags))
 	{
@@ -713,12 +729,12 @@ style_configurator(struct nk_context *ctx, struct nk_color color_table[NK_COLOR_
 		}
 
 		if (nk_tree_push(ctx, NK_TREE_TAB, "Tab Min/Max Buttons", NK_MINIMIZED)) {
-			struct nk_style_button* dups[1] = { &style->tab.tab_maximize_button };
+			dups[0] = &style->tab.tab_maximize_button;
 			style_button(ctx, &style->tab.tab_minimize_button, dups, 1);
 			nk_tree_pop(ctx);
 		}
 		if (nk_tree_push(ctx, NK_TREE_TAB, "Node Min/Max Buttons", NK_MINIMIZED)) {
-			struct nk_style_button* dups[1] = { &style->tab.node_maximize_button };
+			dups[0] = &style->tab.node_maximize_button;
 			style_button(ctx, &style->tab.node_minimize_button, dups, 1);
 			nk_tree_pop(ctx);
 		}
@@ -760,7 +776,8 @@ style_configurator(struct nk_context *ctx, struct nk_color color_table[NK_COLOR_
 
 
 		if (nk_tree_push(ctx, NK_TREE_TAB, "Scrollbars", NK_MINIMIZED)) {
-			struct nk_style_scrollbar* dups[1] = { &style->scrollv };
+			struct nk_style_scrollbar* dups[1];
+			dups[0] = &style->scrollv;
 			style_scrollbars(ctx, &style->scrollh, dups, 1);
 			nk_tree_pop(ctx);
 		}

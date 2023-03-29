@@ -68,7 +68,7 @@
   #include "../../demo/common/overview.c"
 #endif
 #ifdef INCLUDE_OVERVIEW
-  #include "../style_configurator.c"
+  #include "../../demo/common/style_configurator.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
   #include "../../demo/common/node_editor.c"
@@ -90,6 +90,11 @@ int main(int argc, char *argv[])
     /* GUI */
     struct nk_context *ctx;
     struct nk_colorf bg;
+
+    #ifdef INCLUDE_CONFIGURATOR
+    static struct nk_color color_table[NK_COLOR_COUNT];
+    memcpy(color_table, nk_default_color_style, sizeof(color_table));
+    #endif
 
     NK_UNUSED(argc);
     NK_UNUSED(argv);
@@ -143,11 +148,6 @@ int main(int argc, char *argv[])
     #elif defined(STYLE_DARK)
     set_style(ctx, THEME_DARK);
     #endif
-    #endif
-
-    #ifdef INCLUDE_CONFIGURATOR
-    static struct nk_color color_table[NK_COLOR_COUNT];
-    memcpy(color_table, nk_default_color_style, sizeof(color_table));
     #endif
 
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
