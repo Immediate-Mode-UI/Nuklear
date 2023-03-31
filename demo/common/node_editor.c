@@ -10,6 +10,15 @@
  * In addition adding and removing nodes is quite limited at the
  * moment since it is based on a simple fixed array. If this is to be converted
  * into something more serious it is probably best to extend it.*/
+
+
+enum node_connector_type {fValue, fColor};
+
+struct node_connector {
+    enum node_connector_type type;
+    nk_bool isConnected;
+};
+
 struct node {
     int ID;
     char name[32];
@@ -18,8 +27,13 @@ struct node {
     struct nk_color color;
     int input_count;
     int output_count;
+    struct node_connector *inputs;      /* These could be made into arrays to get rid of the allocation at node creation. */
+    struct node_connector *outputs;     /* For this demo we probably only need a max of four inputs and one output.   */
     struct node *next; /* Z ordering only */
     struct node *prev; /* Z ordering only */
+
+    void* (*evalFunc)(struct node*, int oIndex);
+    void (*displayFunc)(struct node*, struct nk_context *ctx);
 };
 
 struct node_link {
@@ -111,6 +125,10 @@ node_editor_add(struct node_editor *editor, const char *name, struct nk_rect bou
     node->color = nk_rgb(255, 0, 0);
     node->input_count = in_count;
     node->output_count = out_count;
+
+    node->inputs = (node_connector*)malloc(node->input_count * sizeof(node_connector));
+    node->outputs = (node_connector*)malloc(node->output_count * sizeof(node_connector));
+
     node->color = col;
     node->bounds = bounds;
     strcpy(node->name, name);
@@ -266,7 +284,11 @@ node_editor_main(struct nk_context *ctx)
                         if (nk_input_is_mouse_released(in, NK_BUTTON_LEFT) &&
                             nk_input_is_mouse_hovering_rect(in, circle) &&
                             nodedit->linking.active && nodedit->linking.node != it) {
-                            nodedit->linking.active = nk_false;          
+                            nodedit->linking.active = nk_false;
+
+                            nodedit->linking.node->outputs[nodedit->linking.input_slot].isConnected = nk_true;
+                            it->inputs[n].isConnected = nk_true;
+                            
                             node_editor_link(nodedit, nodedit->linking.input_id,
                                 nodedit->linking.input_slot, it->ID, n);
                         }
