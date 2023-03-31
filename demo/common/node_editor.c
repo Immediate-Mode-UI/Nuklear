@@ -14,12 +14,12 @@ struct node {
     int ID;
     char name[32];
     struct nk_rect bounds;
-    float value;
+    float value; /* unused */
     struct nk_color color;
     int input_count;
     int output_count;
-    struct node *next;
-    struct node *prev;
+    struct node *next; /* Z ordering only */
+    struct node *prev; /* Z ordering only */
 };
 
 struct node_link {
@@ -27,8 +27,8 @@ struct node_link {
     int input_slot;
     int output_id;
     int output_slot;
-    struct nk_vec2 in;
-    struct nk_vec2 out;
+    /* struct nk_vec2 in;
+    struct nk_vec2 out; */
 };
 
 struct node_linking {
@@ -102,12 +102,12 @@ static void
 node_editor_add(struct node_editor *editor, const char *name, struct nk_rect bounds,
     struct nk_color col, int in_count, int out_count)
 {
-    static int IDs = 0;
+    static int IDs = 0;  /* static duration */
     struct node *node;
     NK_ASSERT((nk_size)editor->node_count < NK_LEN(editor->node_buf));
-    node = &editor->node_buf[editor->node_count++];
-    node->ID = IDs++;
-    node->value = 0;
+    node = &editor->node_buf[editor->node_count++]; /* next node in buffer */
+    node->ID = IDs++; /* increment IDs and set as node ID */
+    node->value = 0; /* unused? */
     node->color = nk_rgb(255, 0, 0);
     node->input_count = in_count;
     node->output_count = out_count;
@@ -145,7 +145,7 @@ node_editor_init(struct node_editor *editor)
 }
 
 static int
-node_editor(struct nk_context *ctx)
+node_editor_main(struct nk_context *ctx)
 {
     int n = 0;
     struct nk_rect total_space;
@@ -169,7 +169,7 @@ node_editor(struct nk_context *ctx)
         {
             struct node *it = nodedit->begin;
             struct nk_rect size = nk_layout_space_bounds(ctx);
-            struct nk_panel *node = 0;
+            struct nk_panel *nodePanel = 0;
 
             if (nodedit->show_grid) {
                 /* display grid */
@@ -183,6 +183,7 @@ node_editor(struct nk_context *ctx)
             }
 
             /* execute each node as a movable group */
+            /* (loop through nodes) */ 
             while (it) {
                 /* calculate scrolled node window position and size */
                 nk_layout_space_push(ctx, nk_rect(it->bounds.x - nodedit->scrolling.x,
@@ -193,10 +194,10 @@ node_editor(struct nk_context *ctx)
                 {
                     /* always have last selected node on top */
 
-                    node = nk_window_get_panel(ctx);
-                    if (nk_input_mouse_clicked(in, NK_BUTTON_LEFT, node->bounds) &&
+                    nodePanel = nk_window_get_panel(ctx);
+                    if (nk_input_mouse_clicked(in, NK_BUTTON_LEFT, nodePanel->bounds) &&
                         (!(it->prev && nk_input_mouse_clicked(in, NK_BUTTON_LEFT,
-                        nk_layout_space_rect_to_screen(ctx, node->bounds)))) &&
+                        nk_layout_space_rect_to_screen(ctx, nodePanel->bounds)))) &&
                         nodedit->end != it)
                     {
                         updated = it;
@@ -214,31 +215,35 @@ node_editor(struct nk_context *ctx)
                 }
                 {
                     /* node connector and linking */
-                    float space;
+                    float space;  /* space between output circles */
                     struct nk_rect bounds;
-                    bounds = nk_layout_space_rect_to_local(ctx, node->bounds);
+                    bounds = nk_layout_space_rect_to_local(ctx, nodePanel->bounds);
                     bounds.x += nodedit->scrolling.x;
                     bounds.y += nodedit->scrolling.y;
                     it->bounds = bounds;
 
                     /* output connector */
-                    space = node->bounds.h / (float)((it->output_count) + 1);
+                    space = nodePanel->bounds.h / (float)((it->output_count) + 1);
+                    
+                    /* (loop through outputs) */
                     for (n = 0; n < it->output_count; ++n) {
                         struct nk_rect circle;
-                        circle.x = node->bounds.x + node->bounds.w-4;
-                        circle.y = node->bounds.y + space * (float)(n+1);
+                        circle.x = nodePanel->bounds.x + nodePanel->bounds.w-4;
+                        circle.y = nodePanel->bounds.y + space * (float)(n+1);
                         circle.w = 8; circle.h = 8;
                         nk_fill_circle(canvas, circle, nk_rgb(100, 100, 100));
 
                         /* start linking process */
+                        /* (set linking active) */
                         if (nk_input_has_mouse_click_down_in_rect(in, NK_BUTTON_LEFT, circle, nk_true)) {
-                            nodedit->linking.active = nk_true;
+                            nodedit->linking.active = nk_true;  
                             nodedit->linking.node = it;
                             nodedit->linking.input_id = it->ID;
                             nodedit->linking.input_slot = n;
                         }
 
                         /* draw curve from linked node slot to mouse position */
+                        /* (if linking active) */
                         if (nodedit->linking.active && nodedit->linking.node == it &&
                             nodedit->linking.input_slot == n) {
                             struct nk_vec2 l0 = nk_vec2(circle.x + 3, circle.y + 3);
@@ -249,17 +254,19 @@ node_editor(struct nk_context *ctx)
                     }
 
                     /* input connector */
-                    space = node->bounds.h / (float)((it->input_count) + 1);
+                    space = nodePanel->bounds.h / (float)((it->input_count) + 1);
                     for (n = 0; n < it->input_count; ++n) {
                         struct nk_rect circle;
-                        circle.x = node->bounds.x-4;
-                        circle.y = node->bounds.y + space * (float)(n+1);
+                        circle.x = nodePanel->bounds.x-4;
+                        circle.y = nodePanel->bounds.y + space * (float)(n+1);
                         circle.w = 8; circle.h = 8;
                         nk_fill_circle(canvas, circle, nk_rgb(100, 100, 100));
+
+                        /* (Create link) */
                         if (nk_input_is_mouse_released(in, NK_BUTTON_LEFT) &&
                             nk_input_is_mouse_hovering_rect(in, circle) &&
                             nodedit->linking.active && nodedit->linking.node != it) {
-                            nodedit->linking.active = nk_false;
+                            nodedit->linking.active = nk_false;          
                             node_editor_link(nodedit, nodedit->linking.input_id,
                                 nodedit->linking.input_slot, it->ID, n);
                         }
@@ -280,8 +287,8 @@ node_editor(struct nk_context *ctx)
                 struct node_link *link = &nodedit->links[n];
                 struct node *ni = node_editor_find(nodedit, link->input_id);
                 struct node *no = node_editor_find(nodedit, link->output_id);
-                float spacei = node->bounds.h / (float)((ni->output_count) + 1);
-                float spaceo = node->bounds.h / (float)((no->input_count) + 1);
+                float spacei = nodePanel->bounds.h / (float)((ni->output_count) + 1);
+                float spaceo = nodePanel->bounds.h / (float)((no->input_count) + 1);
                 struct nk_vec2 l0 = nk_layout_space_to_screen(ctx,
                     nk_vec2(ni->bounds.x + ni->bounds.w, 3.0f + ni->bounds.y + spacei * (float)(link->input_slot+1)));
                 struct nk_vec2 l1 = nk_layout_space_to_screen(ctx,
