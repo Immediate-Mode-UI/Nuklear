@@ -201,6 +201,11 @@ int main(int argc, char **argv)
 
                 break;
             }
+
+            /* We don't want to compress key up/down nor mouse button up/down buttons,
+               because MacOS generates two events per Trackpad tap, and they could be lost. */
+            if((event.type==SDL_MOUSEBUTTONUP)||(event.type==SDL_MOUSEBUTTONDOWN)||
+               (event.type==SDL_KEYUP)||(event.type==SDL_KEYDOWN)) break;
         }
         nk_input_end(&(context->ctx));
 
