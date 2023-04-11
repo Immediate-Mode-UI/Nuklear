@@ -132,6 +132,11 @@ node_editor_add(struct node_editor *editor, const char *name, struct nk_rect bou
     node->inputs = (struct node_connector*)malloc(node->input_count * sizeof(struct node_connector));
     node->outputs = (struct node_connector*)malloc(node->output_count * sizeof(struct node_connector));
 
+    for (int i = 0; i < node->input_count; i++)
+        node->inputs[i].isConnected = nk_false;
+    for (i = 0; i < node->output_count; i++)
+        node->outputs[i].isConnected = nk_false;
+
     node->color = col;
     node->bounds = bounds;
     strcpy(node->name, name);
@@ -142,9 +147,12 @@ static void
 node_editor_link(struct node_editor *editor, struct node *in_node, int in_slot,
     struct node *out_node, int out_slot)
 {
+    /* Confusingly, in and out nodes/slots here refer to the inputs and outputs OF THE LINK ITSELF, not the nodes */
     struct node_link *link;
     NK_ASSERT((nk_size)editor->link_count < NK_LEN(editor->links));
     link = &editor->links[editor->link_count++];
+    out_node->inputs[out_slot].isConnected = nk_true;
+    in_node->outputs[in_slot].isConnected = nk_true;
     link->input_node = in_node;
     link->input_slot = in_slot;
     link->output_node = out_node;
@@ -160,8 +168,8 @@ node_editor_init(struct node_editor *editor)
     node_editor_add(editor, "Source", nk_rect(40, 10, 180, 220), nk_rgb(255, 0, 0), 0, 1);
     node_editor_add(editor, "Source", nk_rect(40, 260, 180, 220), nk_rgb(0, 255, 0), 0, 1);
     node_editor_add(editor, "Combine", nk_rect(400, 100, 180, 220), nk_rgb(0,0,255), 2, 2);
-    node_editor_link(editor, node_editor_find(&nodeEditor, 0), 0, node_editor_find(&nodeEditor, 2), 0);
-    node_editor_link(editor, node_editor_find(&nodeEditor, 1), 0, node_editor_find(&nodeEditor, 2), 1);
+    //node_editor_link(editor, node_editor_find(&nodeEditor, 0), 0, node_editor_find(&nodeEditor, 2), 0);
+    //node_editor_link(editor, node_editor_find(&nodeEditor, 1), 0, node_editor_find(&nodeEditor, 2), 1);
     editor->show_grid = nk_true;
 }
 
@@ -286,11 +294,10 @@ node_editor_main(struct nk_context *ctx)
                         /* (Create link) */
                         if (nk_input_is_mouse_released(in, NK_BUTTON_LEFT) &&
                             nk_input_is_mouse_hovering_rect(in, circle) &&
-                            nodedit->linking.active && nodedit->linking.node != it) {
+                            nodedit->linking.active && 
+                            nodedit->linking.node != it &&
+                            it->inputs[n].isConnected != nk_true) {
                             nodedit->linking.active = nk_false;
-
-                            nodedit->linking.node->outputs[nodedit->linking.input_slot].isConnected = nk_true;
-                            it->inputs[n].isConnected = nk_true;
                             
                             node_editor_link(nodedit, nodedit->linking.node,
                                 nodedit->linking.input_slot, it, n);
