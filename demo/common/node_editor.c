@@ -44,6 +44,7 @@ struct node_link {
     int input_slot;
     struct node* output_node;
     int output_slot;
+    nk_bool isActive;
     /* struct nk_vec2 in;
     struct nk_vec2 out; */
 };
@@ -115,6 +116,21 @@ node_editor_find(struct node_editor *editor, int ID)
     return NULL;
 }
 
+static struct node_link*
+node_editor_find_link_by_output(struct node_editor *editor, struct node *output_node, int node_input_connector)
+{
+    for (int i = 0; i < editor->link_count; i++)
+    {
+        if (editor->links[i].output_node == output_node &&
+            editor->links[i].output_slot == node_input_connector &&
+            editor->links[i].isActive == nk_true)
+            {
+                return &editor->links[i];
+            }
+    }
+    return NULL;
+}
+
 static void
 node_editor_add(struct node_editor *editor, const char *name, struct nk_rect bounds,
     struct nk_color col, int in_count, int out_count)
@@ -157,6 +173,7 @@ node_editor_link(struct node_editor *editor, struct node *in_node, int in_slot,
     link->input_slot = in_slot;
     link->output_node = out_node;
     link->output_slot = out_slot;
+    link->isActive = nk_true;
 }
 
 static void
@@ -291,6 +308,20 @@ node_editor_main(struct nk_context *ctx)
                         circle.w = 8; circle.h = 8;
                         nk_fill_circle(canvas, circle, nk_rgb(100, 100, 100));
 
+                        /* Detach link */
+                        if (nk_input_has_mouse_click_down_in_rect(in, NK_BUTTON_LEFT, circle, nk_true) &&
+                        nodedit->linking.active == nk_false &&
+                        it->inputs[n].isConnected == nk_true) {
+                            nodedit->linking.active = nk_true;  
+                            struct node_link *node_relink = node_editor_find_link_by_output(nodedit, it, n);
+                            nodedit->linking.node = node_relink->input_node;
+                            nodedit->linking.input_id = node_relink->input_node->ID;
+                            nodedit->linking.input_slot = node_relink->input_slot;
+                            node_relink->isActive = nk_false;
+                            it->inputs[n].isConnected = nk_false;
+                            node_relink->input_node->inputs[node_relink->input_slot].isConnected = nk_false;
+                        }
+
                         /* (Create link) */
                         if (nk_input_is_mouse_released(in, NK_BUTTON_LEFT) &&
                             nk_input_is_mouse_hovering_rect(in, circle) &&
@@ -317,21 +348,23 @@ node_editor_main(struct nk_context *ctx)
             /* draw each link */
             for (n = 0; n < nodedit->link_count; ++n) {
                 struct node_link *link = &nodedit->links[n];
-                struct node *ni = link->input_node;//node_editor_find(nodedit, link->input_id);
-                struct node *no = link->output_node;//node_editor_find(nodedit, link->output_id);
-                float spacei = nodePanel->bounds.h / (float)((ni->output_count) + 1);
-                float spaceo = nodePanel->bounds.h / (float)((no->input_count) + 1);
-                struct nk_vec2 l0 = nk_layout_space_to_screen(ctx,
-                    nk_vec2(ni->bounds.x + ni->bounds.w, 3.0f + ni->bounds.y + spacei * (float)(link->input_slot+1)));
-                struct nk_vec2 l1 = nk_layout_space_to_screen(ctx,
-                    nk_vec2(no->bounds.x, 3.0f + no->bounds.y + spaceo * (float)(link->output_slot+1)));
+                if (link->isActive == nk_true){
+                    struct node *ni = link->input_node;//node_editor_find(nodedit, link->input_id);
+                    struct node *no = link->output_node;//node_editor_find(nodedit, link->output_id);
+                    float spacei = nodePanel->bounds.h / (float)((ni->output_count) + 1);
+                    float spaceo = nodePanel->bounds.h / (float)((no->input_count) + 1);
+                    struct nk_vec2 l0 = nk_layout_space_to_screen(ctx,
+                        nk_vec2(ni->bounds.x + ni->bounds.w, 3.0f + ni->bounds.y + spacei * (float)(link->input_slot+1)));
+                    struct nk_vec2 l1 = nk_layout_space_to_screen(ctx,
+                        nk_vec2(no->bounds.x, 3.0f + no->bounds.y + spaceo * (float)(link->output_slot+1)));
 
-                l0.x -= nodedit->scrolling.x;
-                l0.y -= nodedit->scrolling.y;
-                l1.x -= nodedit->scrolling.x;
-                l1.y -= nodedit->scrolling.y;
-                nk_stroke_curve(canvas, l0.x, l0.y, l0.x + 50.0f, l0.y,
-                    l1.x - 50.0f, l1.y, l1.x, l1.y, 1.0f, nk_rgb(100, 100, 100));
+                    l0.x -= nodedit->scrolling.x;
+                    l0.y -= nodedit->scrolling.y;
+                    l1.x -= nodedit->scrolling.x;
+                    l1.y -= nodedit->scrolling.y;
+                    nk_stroke_curve(canvas, l0.x, l0.y, l0.x + 50.0f, l0.y,
+                        l1.x - 50.0f, l1.y, l1.x, l1.y, 1.0f, nk_rgb(100, 100, 100));
+                }
             }
 
             if (updated) {
