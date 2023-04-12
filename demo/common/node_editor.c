@@ -36,7 +36,7 @@ struct node {
     struct node *prev; /* Z ordering only */
 
     void* (*evalFunc)(struct node*, int oIndex);
-    void (*displayFunc)(struct node*, struct nk_context *ctx);
+    void (*displayFunc)(struct nk_context*, struct node*);
 };
 
 struct node_link {
@@ -71,6 +71,8 @@ struct node_editor {
     struct node_linking linking;
 };
 static struct node_editor nodeEditor;
+
+#include "nodeeditor/node_type_color.c"
 
 static void
 node_editor_push(struct node_editor *editor, struct node *node)
@@ -135,23 +137,43 @@ static void
 node_editor_add(struct node_editor *editor, const char *name, struct nk_rect bounds,
     struct nk_color col, int in_count, int out_count)
 {
+
+    /*
+
+    Handle generic node creation things such as:
+    - create panel
+    - create connectors
+    - add node to node tree
+
+    This should probably be called by the node type-specific init function?
+    */
+
     static int IDs = 0;  /* static duration */
     struct node *node;
     NK_ASSERT((nk_size)editor->node_count < NK_LEN(editor->node_buf));
     node = &editor->node_buf[editor->node_count++]; /* next node in buffer */
     node->ID = IDs++; /* increment IDs and set as node ID */
+    
     node->value = 0; /* unused? */
     node->color = nk_rgb(255, 0, 0);
+    
     node->input_count = in_count;
     node->output_count = out_count;
 
     node->inputs = (struct node_connector*)malloc(node->input_count * sizeof(struct node_connector));
     node->outputs = (struct node_connector*)malloc(node->output_count * sizeof(struct node_connector));
 
-    for (int i = 0; i < node->input_count; i++)
+    for (int i = 0; i < node->input_count; i++) {
         node->inputs[i].isConnected = nk_false;
-    for (i = 0; i < node->output_count; i++)
+        node->inputs[i].type = fValue;
+    }
+    for (i = 0; i < node->output_count; i++) {
         node->outputs[i].isConnected = nk_false;
+        node->outputs[i].type = fValue;
+    }
+
+    // this should be in the node type-specific initializer
+    node->displayFunc = node_color_draw;
 
     node->color = col;
     node->bounds = bounds;
@@ -249,14 +271,10 @@ node_editor_main(struct nk_context *ctx)
                         updated = it;
                     }
 
-                    /* ================= NODE CONTENT =====================*/
-                    nk_layout_row_dynamic(ctx, 25, 1);
-                    nk_button_color(ctx, it->color);
-                    it->color.r = (nk_byte)nk_propertyi(ctx, "#R:", 0, it->color.r, 255, 1,1);
-                    it->color.g = (nk_byte)nk_propertyi(ctx, "#G:", 0, it->color.g, 255, 1,1);
-                    it->color.b = (nk_byte)nk_propertyi(ctx, "#B:", 0, it->color.b, 255, 1,1);
-                    it->color.a = (nk_byte)nk_propertyi(ctx, "#A:", 0, it->color.a, 255, 1,1);
-                    /* ====================================================*/
+                    /* ================= NODE CONTENT ===================== */
+                    it->displayFunc(ctx, it);
+                    /* ==================================================== */
+                    
                     nk_group_end(ctx);
                 }
                 {
