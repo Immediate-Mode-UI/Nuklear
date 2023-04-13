@@ -40,27 +40,7 @@ static void node_color_draw(struct nk_context *ctx, struct node* node)
     /* ====================================================*/
 }
 
-/*
-struct node* node_color_init()
+void node_color_create(struct node_editor* editor, struct nk_vec2 position)
 {
-    struct node_type_color *colornode = (struct node_type_color*)malloc(sizeof(struct node_type_color));
-    colornode->node.input_count = 4;
-    colornode->node.output_count = 1;
-
-    colornode->node.inputs = (struct node_connector*)malloc(colornode->node.input_count * sizeof(struct node_connector));
-    for (int i = 0; i < colornode->node.input_count; i++) {
-        colornode->node.inputs[i].type = fValue;
-    }
-    colornode->inputVal = (float*)malloc(colornode->node.input_count * sizeof(float));
-
-
-    colornode->node.outputs = (struct node_connector*)malloc(colornode->node.output_count * sizeof(struct node_connector));
-    colornode->node.outputs->type = fColor;
-    colornode->outputVal = (struct nk_colorf*)malloc(colornode->node.input_count * sizeof(struct nk_colorf));
-
-    colornode->node.displayFunc = node_color_draw;
-    //colornode->node.evalFunc = get_nodetypes_color;
-
-    return (struct node*)colornode; // does this need to return (node*)(&colornode->node) ??
+    struct node *node = node_editor_add(editor, "Color", nk_rect(position.x, position.y, 180, 220), nk_rgb(255, 255, 255), 4, 1);
 }
-*/

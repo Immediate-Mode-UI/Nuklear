@@ -72,6 +72,14 @@ struct node_editor {
 };
 static struct node_editor nodeEditor;
 
+/* === PROTOTYPES === */
+
+static struct node* node_editor_add(struct node_editor *editor, const char *name, struct nk_rect bounds,
+    struct nk_color col, int in_count, int out_count);
+
+/* ================== */
+
+
 #include "nodeeditor/node_type_color.c"
 
 static void
@@ -133,7 +141,7 @@ node_editor_find_link_by_output(struct node_editor *editor, struct node *output_
     return NULL;
 }
 
-static void
+static struct node*
 node_editor_add(struct node_editor *editor, const char *name, struct nk_rect bounds,
     struct nk_color col, int in_count, int out_count)
 {
@@ -179,6 +187,7 @@ node_editor_add(struct node_editor *editor, const char *name, struct nk_rect bou
     node->bounds = bounds;
     strcpy(node->name, name);
     node_editor_push(editor, node);
+    return node;
 }
 
 static void
@@ -204,9 +213,9 @@ node_editor_init(struct node_editor *editor)
     memset(editor, 0, sizeof(*editor));
     editor->begin = NULL;
     editor->end = NULL;
-    node_editor_add(editor, "Source", nk_rect(40, 10, 180, 220), nk_rgb(255, 0, 0), 0, 1);
-    node_editor_add(editor, "Source", nk_rect(40, 260, 180, 220), nk_rgb(0, 255, 0), 0, 1);
-    node_editor_add(editor, "Combine", nk_rect(400, 100, 180, 220), nk_rgb(0,0,255), 2, 2);
+    node_editor_add(editor, "Dummy1", nk_rect(40, 10, 180, 220), nk_rgb(255, 0, 0), 0, 1);
+    node_editor_add(editor, "Dummy2", nk_rect(40, 260, 180, 220), nk_rgb(0, 255, 0), 0, 1);
+    node_editor_add(editor, "Dummy3", nk_rect(400, 100, 180, 220), nk_rgb(0,0,255), 2, 2);
     //node_editor_link(editor, node_editor_find(&nodeEditor, 0), 0, node_editor_find(&nodeEditor, 2), 0);
     //node_editor_link(editor, node_editor_find(&nodeEditor, 1), 0, node_editor_find(&nodeEditor, 2), 1);
     editor->show_grid = nk_true;
@@ -407,12 +416,14 @@ node_editor_main(struct nk_context *ctx)
             }
 
             /* contextual menu */
-            if (nk_contextual_begin(ctx, 0, nk_vec2(100, 220), nk_window_get_bounds(ctx))) {
+            if (nk_contextual_begin(ctx, 0, nk_vec2(150, 220), nk_window_get_bounds(ctx))) {
                 const char *grid_option[] = {"Show Grid", "Hide Grid"};
                 nk_layout_row_dynamic(ctx, 25, 1);
                 if (nk_contextual_item_label(ctx, "New", NK_TEXT_CENTERED))
-                    node_editor_add(nodedit, "New", nk_rect(400, 260, 180, 220),
+                    node_editor_add(nodedit, "New", nk_rect(in->mouse.pos.x, in->mouse.pos.y, 180, 220),
                             nk_rgb(255, 255, 255), 1, 2);
+                if (nk_contextual_item_label(ctx, "Add Color node", NK_TEXT_CENTERED))
+                    node_color_create(nodedit, in->mouse.pos);
                 if (nk_contextual_item_label(ctx, grid_option[nodedit->show_grid],NK_TEXT_CENTERED))
                     nodedit->show_grid = !nodedit->show_grid;
                 nk_contextual_end(ctx);
