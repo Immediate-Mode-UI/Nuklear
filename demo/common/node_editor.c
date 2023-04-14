@@ -32,6 +32,12 @@ struct node {
     int output_count;
     struct node_connector *inputs;      /* These could be made into arrays to get rid of the allocation at node creation. */
     struct node_connector *outputs;     /* For this demo we probably only need a max of four inputs and one output.   */
+    struct {
+        float in_top;
+        float in_space;
+        float out_top;
+        float out_space;
+    } slot_spacing; /* not sure what to call this really... */
     struct node *next; /* Z ordering only */
     struct node *prev; /* Z ordering only */
 
@@ -163,7 +169,10 @@ node_editor_add(struct node_editor *editor, const char *name, struct nk_rect bou
     node->ID = IDs++; /* increment IDs and set as node ID */
     
     node->value = 0; /* unused? */
-    node->color = nk_rgb(255, 0, 0);
+    node->color = nk_rgb(255, 0, 0); /* to be removed */
+    node->color = col; /* to be removed */
+
+    node->bounds = bounds;
     
     node->input_count = in_count;
     node->output_count = out_count;
@@ -173,20 +182,24 @@ node_editor_add(struct node_editor *editor, const char *name, struct nk_rect bou
 
     for (int i = 0; i < node->input_count; i++) {
         node->inputs[i].isConnected = nk_false;
-        node->inputs[i].type = fValue;
+        node->inputs[i].type = fValue; 
     }
     for (i = 0; i < node->output_count; i++) {
         node->outputs[i].isConnected = nk_false;
         node->outputs[i].type = fValue;
     }
 
-    // this should be in the node type-specific initializer
-    node->displayFunc = node_color_draw;
 
-    node->color = col;
-    node->bounds = bounds;
+    /* default connector spacing */ 
+    node->slot_spacing.in_top = node->slot_spacing.in_space = node->bounds.h / (float)((node->input_count) + 1);
+    node->slot_spacing.out_top = node->slot_spacing.out_space = node->bounds.h / (float)((node->output_count) + 1);
+
     strcpy(node->name, name);
     node_editor_push(editor, node);
+
+    /* this should be in the node type-specific initializer */ 
+    node->displayFunc = node_color_draw;
+
     return node;
 }
 
@@ -288,7 +301,6 @@ node_editor_main(struct nk_context *ctx)
                 }
                 {
                     /* node connector and linking */
-                    float space;  /* space between output circles */
                     struct nk_rect bounds;
                     bounds = nk_layout_space_rect_to_local(ctx, nodePanel->bounds);
                     bounds.x += nodedit->scrolling.x;
@@ -296,13 +308,12 @@ node_editor_main(struct nk_context *ctx)
                     it->bounds = bounds;
 
                     /* output connector */
-                    space = nodePanel->bounds.h / (float)((it->output_count) + 1);
                     
                     /* (loop through outputs) */
                     for (n = 0; n < it->output_count; ++n) {
                         struct nk_rect circle;
                         circle.x = nodePanel->bounds.x + nodePanel->bounds.w-4;
-                        circle.y = nodePanel->bounds.y + space * (float)(n+1);
+                        circle.y = nodePanel->bounds.y + it->slot_spacing.out_top + it->slot_spacing.out_space * (float)n;
                         circle.w = 8; circle.h = 8;
                         nk_fill_circle(canvas, circle, nk_rgb(100, 100, 100));
 
@@ -327,11 +338,10 @@ node_editor_main(struct nk_context *ctx)
                     }
 
                     /* input connector */
-                    space = nodePanel->bounds.h / (float)((it->input_count) + 1);
                     for (n = 0; n < it->input_count; ++n) {
                         struct nk_rect circle;
                         circle.x = nodePanel->bounds.x-4;
-                        circle.y = nodePanel->bounds.y + space * (float)(n+1);
+                        circle.y = nodePanel->bounds.y + it->slot_spacing.in_top + it->slot_spacing.in_space * (float)n;
                         circle.w = 8; circle.h = 8;
                         nk_fill_circle(canvas, circle, nk_rgb(100, 100, 100));
 
@@ -378,12 +388,10 @@ node_editor_main(struct nk_context *ctx)
                 if (link->isActive == nk_true){
                     struct node *ni = link->input_node;//node_editor_find(nodedit, link->input_id);
                     struct node *no = link->output_node;//node_editor_find(nodedit, link->output_id);
-                    float spacei = nodePanel->bounds.h / (float)((ni->output_count) + 1);
-                    float spaceo = nodePanel->bounds.h / (float)((no->input_count) + 1);
                     struct nk_vec2 l0 = nk_layout_space_to_screen(ctx,
-                        nk_vec2(ni->bounds.x + ni->bounds.w, 3.0f + ni->bounds.y + spacei * (float)(link->input_slot+1)));
+                        nk_vec2(ni->bounds.x + ni->bounds.w, 3.0f + ni->bounds.y + ni->slot_spacing.out_top + ni->slot_spacing.out_space * (float)(link->input_slot)));
                     struct nk_vec2 l1 = nk_layout_space_to_screen(ctx,
-                        nk_vec2(no->bounds.x, 3.0f + no->bounds.y + spaceo * (float)(link->output_slot+1)));
+                        nk_vec2(no->bounds.x, 3.0f + no->bounds.y + no->slot_spacing.in_top + no->slot_spacing.in_space * (float)(link->output_slot)));
 
                     l0.x -= nodedit->scrolling.x;
                     l0.y -= nodedit->scrolling.y;

@@ -43,4 +43,8 @@ static void node_color_draw(struct nk_context *ctx, struct node* node)
 void node_color_create(struct node_editor* editor, struct nk_vec2 position)
 {
     struct node *node = node_editor_add(editor, "Color", nk_rect(position.x, position.y, 180, 220), nk_rgb(255, 255, 255), 4, 1);
+    node->slot_spacing.in_top = 72.0f;
+    node->slot_spacing.in_space = 29.0f;
+    node->slot_spacing.out_top = 42.0f;
+    node->slot_spacing.out_space = 0.0f;
 }
