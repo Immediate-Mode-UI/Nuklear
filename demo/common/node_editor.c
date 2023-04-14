@@ -183,6 +183,7 @@ node_editor_add(struct node_editor *editor, const char *name, struct nk_rect bou
     for (int i = 0; i < node->input_count; i++) {
         node->inputs[i].isConnected = nk_false;
         node->inputs[i].type = fValue; 
+        if (i == 0) node->inputs[i].type = fColor; /* for testing */ 
     }
     for (i = 0; i < node->output_count; i++) {
         node->outputs[i].isConnected = nk_false;
@@ -312,10 +313,14 @@ node_editor_main(struct nk_context *ctx)
                     /* (loop through outputs) */
                     for (n = 0; n < it->output_count; ++n) {
                         struct nk_rect circle;
+                        struct nk_color color;
                         circle.x = nodePanel->bounds.x + nodePanel->bounds.w-4;
                         circle.y = nodePanel->bounds.y + it->slot_spacing.out_top + it->slot_spacing.out_space * (float)n;
                         circle.w = 8; circle.h = 8;
-                        nk_fill_circle(canvas, circle, nk_rgb(100, 100, 100));
+                        if (it->outputs[n].type == fColor)
+                            color = nk_rgb(200, 200, 0);
+                        else color = nk_rgb(100, 100, 100);
+                        nk_fill_circle(canvas, circle, color);
 
                         /* start linking process */
                         /* (set linking active) */
@@ -340,10 +345,14 @@ node_editor_main(struct nk_context *ctx)
                     /* input connector */
                     for (n = 0; n < it->input_count; ++n) {
                         struct nk_rect circle;
+                        struct nk_color color;
                         circle.x = nodePanel->bounds.x-4;
                         circle.y = nodePanel->bounds.y + it->slot_spacing.in_top + it->slot_spacing.in_space * (float)n;
                         circle.w = 8; circle.h = 8;
-                        nk_fill_circle(canvas, circle, nk_rgb(100, 100, 100));
+                        if (it->inputs[n].type == fColor)
+                            color = nk_rgb(200, 200, 0);
+                        else color = nk_rgb(100, 100, 100);
+                        nk_fill_circle(canvas, circle, color);
 
                         /* Detach link */
                         if (nk_input_has_mouse_click_down_in_rect(in, NK_BUTTON_LEFT, circle, nk_true) &&
@@ -364,6 +373,7 @@ node_editor_main(struct nk_context *ctx)
                             nk_input_is_mouse_hovering_rect(in, circle) &&
                             nodedit->linking.active && 
                             nodedit->linking.node != it &&
+                            it->inputs[n].type == nodedit->linking.node->outputs[nodedit->linking.input_slot].type &&
                             it->inputs[n].isConnected != nk_true) {
                             nodedit->linking.active = nk_false;
                             

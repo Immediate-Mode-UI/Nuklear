@@ -47,4 +47,8 @@ void node_color_create(struct node_editor* editor, struct nk_vec2 position)
     node->slot_spacing.in_space = 29.0f;
     node->slot_spacing.out_top = 42.0f;
     node->slot_spacing.out_space = 0.0f;
+    
+    for (int i = 0; i < node->input_count; i++)
+        node->inputs[i].type = fValue;
+    node->outputs[0].type = fColor;
 }
