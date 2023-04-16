@@ -264,7 +264,7 @@ nk_gdi_rect_multi_color(HDC dc, short x, short y, unsigned short w,
     gTri[1].Vertex2 = 1;
     gTri[1].Vertex3 = 3;
     GdiGradientFill(dc, vt, 4, gTri, 2 , GRADIENT_FILL_TRIANGLE);
-    AlphaBlend(gdi.window_dc,  x, y, x+w, y+h,gdi.memory_dc, x, y, x+w, y+h,alphaFunction);
+    //AlphaBlend(gdi.window_dc,  x, y, x+w, y+h,gdi.memory_dc, x, y, x+w, y+h,alphaFunction);
 
 }
 
