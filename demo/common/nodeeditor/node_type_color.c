@@ -2,7 +2,6 @@ struct node_type_color {
     struct node node;
     float inputVal[4];
     struct nk_colorf outputVal;
-
 };
 
 /*
@@ -28,7 +27,7 @@ static void* node_color_get(struct node* self, int oIndex)
 }*/
 
 
-static void node_color_draw(struct nk_context *ctx, struct node* node)
+static void node_color_draw(struct nk_context *ctx, struct node *node)
 {
     struct node_type_color *colornode = (struct node_type_color*)node;
     nk_layout_row_dynamic(ctx, 25, 1);
@@ -39,7 +38,7 @@ static void node_color_draw(struct nk_context *ctx, struct node* node)
     colornode->inputVal[1] = colornode->node.inputs[1].isConnected ?
         nk_propertyf(ctx, "#G:", colornode->inputVal[1], colornode->inputVal[1], colornode->inputVal[1], 0.05f, 0.05f) :
         nk_propertyf(ctx, "#G:", 0.0f, colornode->inputVal[1], 1.0f, 0.01f, 0.01f);
-    colornode->inputVal[2] = colornode->node.inputs[0].isConnected ?
+    colornode->inputVal[2] = colornode->node.inputs[2].isConnected ?
         nk_propertyf(ctx, "#B:", colornode->inputVal[2], colornode->inputVal[2], colornode->inputVal[2], 0.05f, 0.05f) :
         nk_propertyf(ctx, "#B:", 0.0f, colornode->inputVal[2], 1.0f, 0.01f, 0.01f);
     colornode->inputVal[3] = colornode->node.inputs[3].isConnected ?
@@ -47,12 +46,9 @@ static void node_color_draw(struct nk_context *ctx, struct node* node)
         nk_propertyf(ctx, "#A:", 0.0f, colornode->inputVal[3], 1.0f, 0.01f, 0.01f);
 }
 
-void node_color_create(struct node_editor* editor, struct nk_vec2 position)
+void node_color_create(struct node_editor *editor, struct nk_vec2 position)
 {
-    /* Not sure if this allocation should be in node_editor_add. Maybe just pass the size, and get the pointer back? */
-    struct node_type_color *colornode = (struct node_type_color*)malloc(sizeof(struct node_type_color));
-
-    node_editor_add(editor, (struct node*)colornode, "Color", nk_rect(position.x, position.y, 180, 220), 4, 1);
+    struct node_type_color *colornode = (struct node_type_color*)node_editor_add(editor, sizeof(struct node_type_color), "Color", nk_rect(position.x, position.y, 180, 220), 4, 1);
     colornode->node.slot_spacing.in_top = 72.0f;
     colornode->node.slot_spacing.in_space = 29.0f;
     colornode->node.slot_spacing.out_top = 42.0f;

@@ -27,9 +27,7 @@ struct node {
     int ID;
     char name[32];
     struct nk_rect bounds;
-    enum node_type type;
-    float value; /* unused */
-    struct nk_color color;
+    /* enum node_type type; */
     int input_count;
     int output_count;
     struct node_connector *inputs;      /* These could be made into arrays to get rid of the allocation at node creation. */
@@ -82,13 +80,15 @@ static struct node_editor nodeEditor;
 
 /* === PROTOTYPES === */
 
-static struct node* node_editor_add(struct node_editor *editor, struct node *node, const char *name, struct nk_rect bounds,
+static struct node* node_editor_add(struct node_editor *editor, size_t nodeSize, const char *name, struct nk_rect bounds,
     int in_count, int out_count);
 
 /* ================== */
 
 
 #include "nodeeditor/node_type_color.c"
+#include "nodeeditor/node_type_float.c"
+#include "nodeeditor/node_type_output.c"
 
 static void
 node_editor_push(struct node_editor *editor, struct node *node)
@@ -150,11 +150,12 @@ node_editor_find_link_by_output(struct node_editor *editor, struct node *output_
 }
 
 static struct node*
-node_editor_add(struct node_editor *editor, struct node *node, const char *name, struct nk_rect bounds, 
+node_editor_add(struct node_editor *editor, size_t nodeSize, const char *name, struct nk_rect bounds, 
 int in_count, int out_count)
 {
     static int IDs = 0;  /* static duration */
     NK_ASSERT((nk_size)editor->node_count < NK_LEN(editor->node_buf));
+    struct node *node = malloc(nodeSize);
     editor->node_buf[editor->node_count++] = node; /* next node in buffer */
     node->ID = IDs++; /* increment IDs and set as node ID */
 
@@ -163,8 +164,8 @@ int in_count, int out_count)
     node->input_count = in_count;
     node->output_count = out_count;
 
-    node->inputs = (struct node_connector*)malloc(node->input_count * sizeof(struct node_connector));
-    node->outputs = (struct node_connector*)malloc(node->output_count * sizeof(struct node_connector));
+    node->inputs = malloc(node->input_count * sizeof(struct node_connector));
+    node->outputs = malloc(node->output_count * sizeof(struct node_connector));
 
     for (int i = 0; i < node->input_count; i++) {
         node->inputs[i].isConnected = nk_false;
@@ -209,6 +210,7 @@ node_editor_init(struct node_editor *editor)
     editor->begin = NULL;
     editor->end = NULL;
     node_color_create(editor, (struct nk_vec2){40, 10});
+    node_output_create(editor, (struct nk_vec2){200, 200});
     editor->show_grid = nk_true;
 }
 
@@ -419,6 +421,8 @@ node_editor_main(struct nk_context *ctx)
                             nk_rgb(255, 255, 255), 1, 2); */
                 if (nk_contextual_item_label(ctx, "Add Color node", NK_TEXT_CENTERED))
                     node_color_create(nodedit, in->mouse.pos);
+                if (nk_contextual_item_label(ctx, "Add Float node", NK_TEXT_CENTERED))
+                    node_float_create(nodedit, in->mouse.pos);
                 if (nk_contextual_item_label(ctx, grid_option[nodedit->show_grid],NK_TEXT_CENTERED))
                     nodedit->show_grid = !nodedit->show_grid;
                 nk_contextual_end(ctx);
