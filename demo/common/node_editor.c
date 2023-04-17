@@ -19,6 +19,8 @@ enum node_type {color, mix};
 struct node_connector {
     enum node_connector_type type;
     nk_bool isConnected;
+    struct node* connectedNode;
+    int connectedSlot;
 };
 
 struct node {
@@ -64,7 +66,7 @@ struct node_linking {
 
 struct node_editor {
     int initialized;
-    struct node node_buf[32];
+    struct node *node_buf[32];
     struct node_link links[64];
     struct node *begin;
     struct node *end;
@@ -80,8 +82,8 @@ static struct node_editor nodeEditor;
 
 /* === PROTOTYPES === */
 
-static struct node* node_editor_add(struct node_editor *editor, const char *name, struct nk_rect bounds,
-    struct nk_color col, int in_count, int out_count);
+static struct node* node_editor_add(struct node_editor *editor, struct node *node, const char *name, struct nk_rect bounds,
+    int in_count, int out_count);
 
 /* ================== */
 
@@ -148,29 +150,13 @@ node_editor_find_link_by_output(struct node_editor *editor, struct node *output_
 }
 
 static struct node*
-node_editor_add(struct node_editor *editor, const char *name, struct nk_rect bounds,
-    struct nk_color col, int in_count, int out_count)
+node_editor_add(struct node_editor *editor, struct node *node, const char *name, struct nk_rect bounds, 
+int in_count, int out_count)
 {
-
-    /*
-
-    Handle generic node creation things such as:
-    - create panel
-    - create connectors
-    - add node to node tree
-
-    This should probably be called by the node type-specific init function?
-    */
-
     static int IDs = 0;  /* static duration */
-    struct node *node;
     NK_ASSERT((nk_size)editor->node_count < NK_LEN(editor->node_buf));
-    node = &editor->node_buf[editor->node_count++]; /* next node in buffer */
+    editor->node_buf[editor->node_count++] = node; /* next node in buffer */
     node->ID = IDs++; /* increment IDs and set as node ID */
-    
-    node->value = 0; /* unused? */
-    node->color = nk_rgb(255, 0, 0); /* to be removed */
-    node->color = col; /* to be removed */
 
     node->bounds = bounds;
     
@@ -182,14 +168,12 @@ node_editor_add(struct node_editor *editor, const char *name, struct nk_rect bou
 
     for (int i = 0; i < node->input_count; i++) {
         node->inputs[i].isConnected = nk_false;
-        node->inputs[i].type = fValue; 
-        if (i == 0) node->inputs[i].type = fColor; /* for testing */ 
+        node->inputs[i].type = fValue;  
     }
     for (i = 0; i < node->output_count; i++) {
         node->outputs[i].isConnected = nk_false;
         node->outputs[i].type = fValue;
     }
-
 
     /* default connector spacing */ 
     node->slot_spacing.in_top = node->slot_spacing.in_space = node->bounds.h / (float)((node->input_count) + 1);
@@ -197,9 +181,6 @@ node_editor_add(struct node_editor *editor, const char *name, struct nk_rect bou
 
     strcpy(node->name, name);
     node_editor_push(editor, node);
-
-    /* this should be in the node type-specific initializer */ 
-    node->displayFunc = node_color_draw;
 
     return node;
 }
@@ -227,11 +208,7 @@ node_editor_init(struct node_editor *editor)
     memset(editor, 0, sizeof(*editor));
     editor->begin = NULL;
     editor->end = NULL;
-    node_editor_add(editor, "Dummy1", nk_rect(40, 10, 180, 220), nk_rgb(255, 0, 0), 0, 1);
-    node_editor_add(editor, "Dummy2", nk_rect(40, 260, 180, 220), nk_rgb(0, 255, 0), 0, 1);
-    node_editor_add(editor, "Dummy3", nk_rect(400, 100, 180, 220), nk_rgb(0,0,255), 2, 2);
-    //node_editor_link(editor, node_editor_find(&nodeEditor, 0), 0, node_editor_find(&nodeEditor, 2), 0);
-    //node_editor_link(editor, node_editor_find(&nodeEditor, 1), 0, node_editor_find(&nodeEditor, 2), 1);
+    node_color_create(editor, (struct nk_vec2){40, 10});
     editor->show_grid = nk_true;
 }
 
@@ -437,9 +414,9 @@ node_editor_main(struct nk_context *ctx)
             if (nk_contextual_begin(ctx, 0, nk_vec2(150, 220), nk_window_get_bounds(ctx))) {
                 const char *grid_option[] = {"Show Grid", "Hide Grid"};
                 nk_layout_row_dynamic(ctx, 25, 1);
-                if (nk_contextual_item_label(ctx, "New", NK_TEXT_CENTERED))
+                /* if (nk_contextual_item_label(ctx, "New", NK_TEXT_CENTERED))
                     node_editor_add(nodedit, "New", nk_rect(in->mouse.pos.x, in->mouse.pos.y, 180, 220),
-                            nk_rgb(255, 255, 255), 1, 2);
+                            nk_rgb(255, 255, 255), 1, 2); */
                 if (nk_contextual_item_label(ctx, "Add Color node", NK_TEXT_CENTERED))
                     node_color_create(nodedit, in->mouse.pos);
                 if (nk_contextual_item_label(ctx, grid_option[nodedit->show_grid],NK_TEXT_CENTERED))
