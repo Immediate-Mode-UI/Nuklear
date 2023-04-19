@@ -66,6 +66,7 @@ struct node_editor {
     int initialized;
     struct node *node_buf[32];
     struct node_link links[64];
+    struct node *outputNode;
     struct node *begin;
     struct node *end;
     int node_count;
@@ -196,6 +197,9 @@ node_editor_link(struct node_editor *editor, struct node *in_node, int in_slot,
     link = &editor->links[editor->link_count++];
     out_node->inputs[out_slot].isConnected = nk_true;
     in_node->outputs[in_slot].isConnected = nk_true;
+    out_node->inputs[out_slot].connectedNode = in_node;
+    out_node->inputs[out_slot].connectedSlot = in_slot;
+    
     link->input_node = in_node;
     link->input_slot = in_slot;
     link->output_node = out_node;
@@ -209,8 +213,10 @@ node_editor_init(struct node_editor *editor)
     memset(editor, 0, sizeof(*editor));
     editor->begin = NULL;
     editor->end = NULL;
+
+    editor->outputNode = node_output_create(editor, (struct nk_vec2){600, 400});
+
     node_color_create(editor, (struct nk_vec2){40, 10});
-    node_output_create(editor, (struct nk_vec2){200, 200});
     editor->show_grid = nk_true;
 }
 

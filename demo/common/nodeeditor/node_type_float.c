@@ -3,6 +3,12 @@ struct node_type_float {
     float outputVal;
 };
 
+static float *node_float_eval(struct node* node, int oIndex) {
+    NK_ASSERT(oIndex == 0);
+    struct node_type_float *floatnode = (struct node_type_float*)node;
+    return &floatnode->outputVal;
+}
+
 static void node_float_draw(struct nk_context *ctx, struct node *node) {
     struct node_type_float *floatnode = (struct node_type_float*)node;
     nk_layout_row_dynamic(ctx, 25, 1);
@@ -14,4 +20,5 @@ void node_float_create(struct node_editor *editor, struct nk_vec2 position) {
 
     floatnode->outputVal = 1.0f;
     floatnode->node.displayFunc = node_float_draw;
+    floatnode->node.evalFunc = node_float_eval;
 }
