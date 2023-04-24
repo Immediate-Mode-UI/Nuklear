@@ -27,17 +27,16 @@ struct node {
     int ID;
     char name[32];
     struct nk_rect bounds;
-    /* enum node_type type; */
     int input_count;
     int output_count;
-    struct node_connector *inputs;      /* These could be made into arrays to get rid of the allocation at node creation. */
-    struct node_connector *outputs;     /* For this demo we probably only need a max of four inputs and one output.   */
+    struct node_connector *inputs;
+    struct node_connector *outputs;
     struct {
         float in_top;
         float in_space;
         float out_top;
         float out_space;
-    } slot_spacing; /* not sure what to call this really... */
+    } slot_spacing; /* Maybe this should be called "node_layout" and include the bounds? */
     struct node *next; /* Z ordering only */
     struct node *prev; /* Z ordering only */
 
@@ -51,8 +50,6 @@ struct node_link {
     struct node* output_node;
     int output_slot;
     nk_bool isActive;
-    /* struct nk_vec2 in;
-    struct nk_vec2 out; */
 };
 
 struct node_linking {
@@ -80,12 +77,11 @@ struct node_editor {
 static struct node_editor nodeEditor;
 
 /* === PROTOTYPES === */
-
-static struct node* node_editor_add(struct node_editor *editor, size_t nodeSize, const char *name, struct nk_rect bounds,
+/* These should go in a header file along with the node struct */
+struct node* node_editor_add(struct node_editor *editor, size_t nodeSize, const char *name, struct nk_rect bounds,
     int in_count, int out_count);
-
+void* node_editor_eval_connected(struct node *node, int inputSlot);
 /* ================== */
-
 
 #include "nodeeditor/node_type_color.c"
 #include "nodeeditor/node_type_float.c"
@@ -150,15 +146,15 @@ node_editor_find_link_by_output(struct node_editor *editor, struct node *output_
     return NULL;
 }
 
-static struct node*
+struct node*
 node_editor_add(struct node_editor *editor, size_t nodeSize, const char *name, struct nk_rect bounds, 
 int in_count, int out_count)
 {
-    static int IDs = 0;  /* static duration */
+    static int IDs = 0;
     NK_ASSERT((nk_size)editor->node_count < NK_LEN(editor->node_buf));
     struct node *node = malloc(nodeSize);
-    editor->node_buf[editor->node_count++] = node; /* next node in buffer */
-    node->ID = IDs++; /* increment IDs and set as node ID */
+    editor->node_buf[editor->node_count++] = node;
+    node->ID = IDs++;
 
     node->bounds = bounds;
     
@@ -170,11 +166,11 @@ int in_count, int out_count)
 
     for (int i = 0; i < node->input_count; i++) {
         node->inputs[i].isConnected = nk_false;
-        node->inputs[i].type = fValue;  
+        node->inputs[i].type = fValue; /* default connector type */
     }
     for (i = 0; i < node->output_count; i++) {
         node->outputs[i].isConnected = nk_false;
-        node->outputs[i].type = fValue;
+        node->outputs[i].type = fValue; /* default connector type */
     }
 
     /* default connector spacing */ 
@@ -185,6 +181,12 @@ int in_count, int out_count)
     node_editor_push(editor, node);
 
     return node;
+}
+
+void *
+node_editor_eval_connected(struct node* node, int inputSlot) {
+    NK_ASSERT(node->inputs[inputSlot].isConnected);
+    return node->inputs[inputSlot].connectedNode->evalFunc(node->inputs[inputSlot].connectedNode, node->inputs[inputSlot].connectedSlot);
 }
 
 static void
@@ -381,8 +383,8 @@ node_editor_main(struct nk_context *ctx)
             for (n = 0; n < nodedit->link_count; ++n) {
                 struct node_link *link = &nodedit->links[n];
                 if (link->isActive == nk_true){
-                    struct node *ni = link->input_node;//node_editor_find(nodedit, link->input_id);
-                    struct node *no = link->output_node;//node_editor_find(nodedit, link->output_id);
+                    struct node *ni = link->input_node;
+                    struct node *no = link->output_node;
                     struct nk_vec2 l0 = nk_layout_space_to_screen(ctx,
                         nk_vec2(ni->bounds.x + ni->bounds.w, 3.0f + ni->bounds.y + ni->slot_spacing.out_top + ni->slot_spacing.out_space * (float)(link->input_slot)));
                     struct nk_vec2 l1 = nk_layout_space_to_screen(ctx,
@@ -422,9 +424,6 @@ node_editor_main(struct nk_context *ctx)
             if (nk_contextual_begin(ctx, 0, nk_vec2(150, 220), nk_window_get_bounds(ctx))) {
                 const char *grid_option[] = {"Show Grid", "Hide Grid"};
                 nk_layout_row_dynamic(ctx, 25, 1);
-                /* if (nk_contextual_item_label(ctx, "New", NK_TEXT_CENTERED))
-                    node_editor_add(nodedit, "New", nk_rect(in->mouse.pos.x, in->mouse.pos.y, 180, 220),
-                            nk_rgb(255, 255, 255), 1, 2); */
                 if (nk_contextual_item_label(ctx, "Add Color node", NK_TEXT_CENTERED))
                     node_color_create(nodedit, in->mouse.pos);
                 if (nk_contextual_item_label(ctx, "Add Float node", NK_TEXT_CENTERED))

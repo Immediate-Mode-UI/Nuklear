@@ -3,11 +3,19 @@ struct node_type_output {
     struct nk_colorf inputVal;
 };
 
+struct nk_colorf *node_output_get(struct node* node) {
+    struct node_type_output *outputnode = (struct node_type_output*)node;
+    if (!node->inputs[0].isConnected)
+        outputnode->inputVal = (struct nk_colorf){0.0f, 0.0f, 0.0f, 0.0f};
+    return &outputnode->inputVal;
+}
+
 static void node_output_display(struct nk_context *ctx, struct node *node) {
     if (node->inputs[0].isConnected) {
-        struct nk_colorf inputVal = *(struct nk_colorf*)(node->inputs[0].connectedNode->evalFunc(node->inputs[0].connectedNode, node->inputs[0].connectedSlot));
-        nk_layout_row_dynamic(ctx, 25, 1);
-        nk_button_color(ctx, nk_rgba_cf(inputVal));
+        struct node_type_output *outputnode = (struct node_type_output*)node;
+        outputnode->inputVal = *(struct nk_colorf*)node_editor_eval_connected(node, 0);
+        nk_layout_row_dynamic(ctx, 60, 1);
+        nk_button_color(ctx, nk_rgba_cf(outputnode->inputVal)); 
     }
 }
 

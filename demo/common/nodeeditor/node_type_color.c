@@ -6,7 +6,7 @@ struct node_type_color {
 
 static struct nk_colorf *node_color_eval(struct node* node, int oIndex)
 {
-    NK_ASSERT(oIndex == 0); /* only one output node */
+    NK_ASSERT(oIndex == 0); /* only one output connector */
     struct node_type_color *colornode = (struct node_type_color*)node;
 
     return &colornode->outputVal;
@@ -24,12 +24,12 @@ static void node_color_draw(struct nk_context *ctx, struct node *node)
     
     for (int i = 0; i < 4; i++) {
         if (colornode->node.inputs[i].isConnected) {
-            evalResult = *(float*)node->inputs[i].connectedNode->evalFunc(node->inputs[i].connectedNode, node->inputs[i].connectedSlot);
-            evalResult = nk_propertyf(ctx, labels[i], evalResult, evalResult, evalResult, 0.05f, 0.05f);
+            evalResult = *(float*)node_editor_eval_connected(node, i);
+            evalResult = nk_propertyf(ctx, labels[i], evalResult, evalResult, evalResult, 0.01f, 0.01f);
             colorVals[i] = evalResult;
         }
         else {
-            colornode->inputVal[i] = nk_propertyf(ctx, labels[i], 0.0f, colornode->inputVal[i], 1.0f, 0.05f, 0.05f);
+            colornode->inputVal[i] = nk_propertyf(ctx, labels[i], 0.0f, colornode->inputVal[i], 1.0f, 0.01f, 0.01f);
             colorVals[i] = colornode->inputVal[i];
         }
     }
@@ -39,7 +39,7 @@ static void node_color_draw(struct nk_context *ctx, struct node *node)
 
 void node_color_create(struct node_editor *editor, struct nk_vec2 position)
 {
-    struct node_type_color *colornode = (struct node_type_color*)node_editor_add(editor, sizeof(struct node_type_color), "Color", nk_rect(position.x, position.y, 180, 220), 4, 1);
+    struct node_type_color *colornode = (struct node_type_color*)node_editor_add(editor, sizeof(struct node_type_color), "Color", nk_rect(position.x, position.y, 180, 190), 4, 1);
     colornode->node.slot_spacing.in_top = 72.0f;
     colornode->node.slot_spacing.in_space = 29.0f;
     colornode->node.slot_spacing.out_top = 42.0f;
