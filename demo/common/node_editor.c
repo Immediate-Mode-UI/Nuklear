@@ -146,6 +146,21 @@ node_editor_find_link_by_output(struct node_editor *editor, struct node *output_
     return NULL;
 }
 
+static struct node_link*
+node_editor_find_link_by_input(struct node_editor *editor, struct node *input_node, int node_output_connector)
+{
+    for (int i = 0; i < editor->link_count; i++)
+    {
+        if (editor->links[i].input_node == input_node &&
+            editor->links[i].input_slot == node_output_connector &&
+            editor->links[i].isActive == nk_true)
+            {
+                return &editor->links[i];
+            }
+    }
+    return NULL;
+}
+
 struct node*
 node_editor_add(struct node_editor *editor, size_t nodeSize, const char *name, struct nk_rect bounds, 
 int in_count, int out_count)
@@ -267,8 +282,12 @@ node_editor_main(struct nk_context *ctx)
                 nk_layout_space_push(ctx, nk_rect(it->bounds.x - nodedit->scrolling.x,
                     it->bounds.y - nodedit->scrolling.y, it->bounds.w, it->bounds.h));
 
+                /* Output node window should not have a close button */
+                nk_flags nodePanel_flags = NK_WINDOW_MOVABLE|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BORDER|NK_WINDOW_TITLE;
+                if (it != nodeEditor.outputNode) nodePanel_flags |= NK_WINDOW_CLOSABLE;
+                
                 /* execute node window */
-                if (nk_group_begin(ctx, it->name, NK_WINDOW_MOVABLE|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BORDER|NK_WINDOW_TITLE))
+                if (nk_group_begin(ctx, it->name, nodePanel_flags))
                 {
                     /* always have last selected node on top */
 
@@ -281,12 +300,43 @@ node_editor_main(struct nk_context *ctx)
                         updated = it;
                     }
 
-                    /* ================= NODE CONTENT ===================== */
-                    it->displayFunc(ctx, it);
-                    /* ==================================================== */
-                    
+                    if (!(nodePanel->flags & NK_WINDOW_HIDDEN)) { /* Node close button has not been clicked */
+                        /* ================= NODE CONTENT ===================== */
+                        it->displayFunc(ctx, it);
+                        /* ==================================================== */
+                    }
+                    else {
+                        /* Delete node */
+                        node_editor_pop(nodedit, it);
+                        struct node_link *link_remove;
+                        for (n = 0; n < it->input_count; n++)
+                        {
+                            if ((link_remove = node_editor_find_link_by_output(nodedit, it, n)))
+                            {
+                                link_remove->isActive = nk_false;
+                                link_remove->input_node->outputs[link_remove->input_slot].isConnected = nk_false;
+                                link_remove->output_node->inputs[link_remove->output_slot].isConnected = nk_false;
+                            }
+                        }
+                        for (n = 0; n < it -> output_count; n++)
+                        {
+                            while((link_remove = node_editor_find_link_by_input(nodedit, it, n)))
+                            {
+                                link_remove->isActive = nk_false;
+                                link_remove->input_node->outputs[link_remove->input_slot].isConnected = nk_false;
+                                link_remove->output_node->inputs[link_remove->output_slot].isConnected = nk_false;
+                            }
+                        }
+                    NK_ASSERT(nodedit->node_buf[it->ID] == it);
+                    nodedit->node_buf[it->ID] = 0;
+                    free(it->inputs);
+                    free(it->outputs);
+                    free(it);
+                    }
+
                     nk_group_end(ctx);
                 }
+                if (!(nodePanel->flags & NK_WINDOW_HIDDEN)) 
                 {
                     /* node connector and linking */
                     struct nk_rect bounds;
@@ -295,9 +345,7 @@ node_editor_main(struct nk_context *ctx)
                     bounds.y += nodedit->scrolling.y;
                     it->bounds = bounds;
 
-                    /* output connector */
-                    
-                    /* (loop through outputs) */
+                    /* output connectors */
                     for (n = 0; n < it->output_count; ++n) {
                         struct nk_rect circle;
                         struct nk_color color;
@@ -329,7 +377,7 @@ node_editor_main(struct nk_context *ctx)
                         }
                     }
 
-                    /* input connector */
+                    /* input connectors */
                     for (n = 0; n < it->input_count; ++n) {
                         struct nk_rect circle;
                         struct nk_color color;
