@@ -77,7 +77,7 @@ struct node_editor {
 static struct node_editor nodeEditor;
 
 /* === PROTOTYPES === */
-/* These should go in a header file along with the node struct */
+/* These could/should go in a header file along with the node and node_connector structs and be #included with every node type */
 struct node* node_editor_add(struct node_editor *editor, size_t nodeSize, const char *name, struct nk_rect bounds,
     int in_count, int out_count);
 void* node_editor_eval_connected(struct node *node, int inputSlot);
@@ -134,7 +134,8 @@ node_editor_find(struct node_editor *editor, int ID)
 static struct node_link*
 node_editor_find_link_by_output(struct node_editor *editor, struct node *output_node, int node_input_connector)
 {
-    for (int i = 0; i < editor->link_count; i++)
+    int i;
+    for (i = 0; i < editor->link_count; i++)
     {
         if (editor->links[i].output_node == output_node &&
             editor->links[i].output_slot == node_input_connector &&
@@ -149,7 +150,8 @@ node_editor_find_link_by_output(struct node_editor *editor, struct node *output_
 static struct node_link*
 node_editor_find_link_by_input(struct node_editor *editor, struct node *input_node, int node_output_connector)
 {
-    for (int i = 0; i < editor->link_count; i++)
+    int i;
+    for (i = 0; i < editor->link_count; i++)
     {
         if (editor->links[i].input_node == input_node &&
             editor->links[i].input_slot == node_output_connector &&
@@ -161,15 +163,43 @@ node_editor_find_link_by_input(struct node_editor *editor, struct node *input_no
     return NULL;
 }
 
+static void
+node_editor_delete_link(struct node_link *link)
+{
+    link->isActive = nk_false;
+    link->input_node->outputs[link->input_slot].isConnected = nk_false;
+    link->output_node->inputs[link->output_slot].isConnected = nk_false;
+}
+
 struct node*
 node_editor_add(struct node_editor *editor, size_t nodeSize, const char *name, struct nk_rect bounds, 
 int in_count, int out_count)
 {
+    int i;
     static int IDs = 0;
-    NK_ASSERT((nk_size)editor->node_count < NK_LEN(editor->node_buf));
-    struct node *node = malloc(nodeSize);
-    editor->node_buf[editor->node_count++] = node;
-    node->ID = IDs++;
+    struct node *node = NULL;
+    /* NK_ASSERT((nk_size)editor->node_count < NK_LEN(editor->node_buf)); */
+    if ((nk_size)editor->node_count < NK_LEN(editor->node_buf))
+    {  
+        node = malloc(nodeSize);
+        editor->node_buf[editor->node_count++] = node;
+        node->ID = IDs++;
+    }
+    else {
+        for (i = 0; i < editor->node_count; i++)
+        {
+            if (editor->node_buf[i] == NULL) {
+                node = malloc(nodeSize);
+                editor->node_buf[i] = node;
+                node->ID = i;
+                break;
+            }
+        }
+    }
+    if (node == NULL) {
+        printf("Node creation failed\n");
+        return NULL;
+    }
 
     node->bounds = bounds;
     
@@ -179,7 +209,7 @@ int in_count, int out_count)
     node->inputs = malloc(node->input_count * sizeof(struct node_connector));
     node->outputs = malloc(node->output_count * sizeof(struct node_connector));
 
-    for (int i = 0; i < node->input_count; i++) {
+    for (i = 0; i < node->input_count; i++) {
         node->inputs[i].isConnected = nk_false;
         node->inputs[i].type = fValue; /* default connector type */
     }
@@ -227,13 +257,14 @@ node_editor_link(struct node_editor *editor, struct node *in_node, int in_slot,
 static void
 node_editor_init(struct node_editor *editor)
 {
+    struct nk_vec2 outputNode_position = {600, 400};
+    struct nk_vec2 colorNode_position = {40, 10};
     memset(editor, 0, sizeof(*editor));
     editor->begin = NULL;
     editor->end = NULL;
 
-    editor->outputNode = node_output_create(editor, (struct nk_vec2){600, 400});
-
-    node_color_create(editor, (struct nk_vec2){40, 10});
+    editor->outputNode = node_output_create(editor, outputNode_position);
+    node_color_create(editor, colorNode_position);
     editor->show_grid = nk_true;
 }
 
@@ -278,14 +309,15 @@ node_editor_main(struct nk_context *ctx)
             /* execute each node as a movable group */
             /* (loop through nodes) */ 
             while (it) {
+                /* Output node window should not have a close button */
+                nk_flags nodePanel_flags = NK_WINDOW_MOVABLE|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BORDER|NK_WINDOW_TITLE;
+                if (it != nodeEditor.outputNode) 
+                    nodePanel_flags |= NK_WINDOW_CLOSABLE;
+                
                 /* calculate scrolled node window position and size */
                 nk_layout_space_push(ctx, nk_rect(it->bounds.x - nodedit->scrolling.x,
                     it->bounds.y - nodedit->scrolling.y, it->bounds.w, it->bounds.h));
 
-                /* Output node window should not have a close button */
-                nk_flags nodePanel_flags = NK_WINDOW_MOVABLE|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BORDER|NK_WINDOW_TITLE;
-                if (it != nodeEditor.outputNode) nodePanel_flags |= NK_WINDOW_CLOSABLE;
-                
                 /* execute node window */
                 if (nk_group_begin(ctx, it->name, nodePanel_flags))
                 {
@@ -307,28 +339,24 @@ node_editor_main(struct nk_context *ctx)
                     }
                     else {
                         /* Delete node */
-                        node_editor_pop(nodedit, it);
                         struct node_link *link_remove;
+                        node_editor_pop(nodedit, it);
                         for (n = 0; n < it->input_count; n++)
                         {
                             if ((link_remove = node_editor_find_link_by_output(nodedit, it, n)))
                             {
-                                link_remove->isActive = nk_false;
-                                link_remove->input_node->outputs[link_remove->input_slot].isConnected = nk_false;
-                                link_remove->output_node->inputs[link_remove->output_slot].isConnected = nk_false;
+                                node_editor_delete_link(link_remove);
                             }
                         }
                         for (n = 0; n < it -> output_count; n++)
                         {
                             while((link_remove = node_editor_find_link_by_input(nodedit, it, n)))
                             {
-                                link_remove->isActive = nk_false;
-                                link_remove->input_node->outputs[link_remove->input_slot].isConnected = nk_false;
-                                link_remove->output_node->inputs[link_remove->output_slot].isConnected = nk_false;
+                                node_editor_delete_link(link_remove);
                             }
                         }
                     NK_ASSERT(nodedit->node_buf[it->ID] == it);
-                    nodedit->node_buf[it->ID] = 0;
+                    nodedit->node_buf[it->ID] = NULL;
                     free(it->inputs);
                     free(it->outputs);
                     free(it);
@@ -393,14 +421,12 @@ node_editor_main(struct nk_context *ctx)
                         if (nk_input_has_mouse_click_down_in_rect(in, NK_BUTTON_LEFT, circle, nk_true) &&
                         nodedit->linking.active == nk_false &&
                         it->inputs[n].isConnected == nk_true) {
-                            nodedit->linking.active = nk_true;  
                             struct node_link *node_relink = node_editor_find_link_by_output(nodedit, it, n);
+                            nodedit->linking.active = nk_true;  
                             nodedit->linking.node = node_relink->input_node;
                             nodedit->linking.input_id = node_relink->input_node->ID;
                             nodedit->linking.input_slot = node_relink->input_slot;
-                            node_relink->isActive = nk_false;
-                            it->inputs[n].isConnected = nk_false;
-                            node_relink->input_node->inputs[node_relink->input_slot].isConnected = nk_false;
+                            node_editor_delete_link(node_relink);
                         }
 
                         /* (Create link) */
