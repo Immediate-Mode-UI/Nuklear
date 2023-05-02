@@ -178,7 +178,7 @@ int in_count, int out_count)
     int i;
     static int IDs = 0;
     struct node *node = NULL;
-    /* NK_ASSERT((nk_size)editor->node_count < NK_LEN(editor->node_buf)); */
+
     if ((nk_size)editor->node_count < NK_LEN(editor->node_buf))
     {  
         node = malloc(nodeSize);
@@ -197,7 +197,7 @@ int in_count, int out_count)
         }
     }
     if (node == NULL) {
-        printf("Node creation failed\n");
+        fprintf(stdout, "Node creation failed\n");
         return NULL;
     }
 
@@ -239,19 +239,34 @@ node_editor_link(struct node_editor *editor, struct node *in_node, int in_slot,
     struct node *out_node, int out_slot)
 {
     /* Confusingly, in and out nodes/slots here refer to the inputs and outputs OF THE LINK ITSELF, not the nodes */
-    struct node_link *link;
-    NK_ASSERT((nk_size)editor->link_count < NK_LEN(editor->links));
-    link = &editor->links[editor->link_count++];
-    out_node->inputs[out_slot].isConnected = nk_true;
-    in_node->outputs[in_slot].isConnected = nk_true;
-    out_node->inputs[out_slot].connectedNode = in_node;
-    out_node->inputs[out_slot].connectedSlot = in_slot;
+    struct node_link *link = NULL;
     
-    link->input_node = in_node;
-    link->input_slot = in_slot;
-    link->output_node = out_node;
-    link->output_slot = out_slot;
-    link->isActive = nk_true;
+    if ((nk_size)editor->link_count < NK_LEN(editor->links))
+        link = &editor->links[editor->link_count++];
+    else {
+        int i;
+        for (i = 0; i < (int)NK_LEN(editor->links); i++)
+        {
+            if (editor->links[i].isActive == nk_false) {
+                link = &editor->links[i];
+                break;
+            }
+        }
+    }
+    if (link) {
+        out_node->inputs[out_slot].isConnected = nk_true;
+        in_node->outputs[in_slot].isConnected = nk_true;
+        out_node->inputs[out_slot].connectedNode = in_node;
+        out_node->inputs[out_slot].connectedSlot = in_slot;
+        
+        link->input_node = in_node;
+        link->input_slot = in_slot;
+        link->output_node = out_node;
+        link->output_slot = out_slot;
+        link->isActive = nk_true;
+    }
+    else
+        fprintf(stdout, "Too many links\n");
 }
 
 static void
