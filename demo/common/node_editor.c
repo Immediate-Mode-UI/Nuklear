@@ -86,6 +86,7 @@ void* node_editor_eval_connected(struct node *node, int inputSlot);
 #include "nodeeditor/node_type_color.c"
 #include "nodeeditor/node_type_float.c"
 #include "nodeeditor/node_type_output.c"
+#include "nodeeditor/node_type_blend.c"
 
 static void
 node_editor_push(struct node_editor *editor, struct node *node)
@@ -180,12 +181,14 @@ int in_count, int out_count)
     struct node *node = NULL;
 
     if ((nk_size)editor->node_count < NK_LEN(editor->node_buf))
-    {  
+    {
+        /* node_buf has unused slots */
         node = malloc(nodeSize);
         editor->node_buf[editor->node_count++] = node;
         node->ID = IDs++;
     }
     else {
+        /* check for freed up slots in node_buf */
         for (i = 0; i < editor->node_count; i++)
         {
             if (editor->node_buf[i] == NULL) {
@@ -229,7 +232,8 @@ int in_count, int out_count)
 }
 
 void *
-node_editor_eval_connected(struct node* node, int inputSlot) {
+node_editor_eval_connected(struct node* node, int inputSlot) 
+{
     NK_ASSERT(node->inputs[inputSlot].isConnected);
     return node->inputs[inputSlot].connectedNode->evalFunc(node->inputs[inputSlot].connectedNode, node->inputs[inputSlot].connectedSlot);
 }
@@ -240,7 +244,7 @@ node_editor_link(struct node_editor *editor, struct node *in_node, int in_slot,
 {
     /* Confusingly, in and out nodes/slots here refer to the inputs and outputs OF THE LINK ITSELF, not the nodes */
     struct node_link *link = NULL;
-    
+
     if ((nk_size)editor->link_count < NK_LEN(editor->links))
         link = &editor->links[editor->link_count++];
     else {
@@ -517,6 +521,8 @@ node_editor_main(struct nk_context *ctx)
                     node_color_create(nodedit, in->mouse.pos);
                 if (nk_contextual_item_label(ctx, "Add Float node", NK_TEXT_CENTERED))
                     node_float_create(nodedit, in->mouse.pos);
+                if (nk_contextual_item_label(ctx, "Add Blend Node", NK_TEXT_CENTERED))
+                    node_blend_create(nodedit, in->mouse.pos);
                 if (nk_contextual_item_label(ctx, grid_option[nodedit->show_grid],NK_TEXT_CENTERED))
                     nodedit->show_grid = !nodedit->show_grid;
                 nk_contextual_end(ctx);
