@@ -17,7 +17,7 @@ static void node_color_draw(struct nk_context *ctx, struct node *node)
 {
     struct node_type_color *colornode = (struct node_type_color*)node;
     float evalResult; /* Get the values from connected nodes into this so the inputs revert on disconnect */
-    char* labels[4] = {"#R:","#G:","B:","A:"};
+    const char* labels[4] = {"#R:","#G:","#B:","#A:"};
     float colorVals[4]; /* Because we can't just loop through the struct... */
     int i;
     nk_layout_row_dynamic(ctx, 25, 1);
@@ -47,7 +47,8 @@ void node_color_create(struct node_editor *editor, struct nk_vec2 position)
     if (colornode)
     {
         int i;
-        struct nk_colorf white = {1.0f, 1.0f, 1.0f, 1.0f};
+        const struct nk_colorf white = {1.0f, 1.0f, 1.0f, 1.0f};
+        
         colornode->node.slot_spacing.in_top = 72.0f;
         colornode->node.slot_spacing.in_space = 29.0f;
         colornode->node.slot_spacing.out_top = 42.0f;
