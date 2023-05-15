@@ -67,7 +67,7 @@
 #ifdef INCLUDE_OVERVIEW
   #include "../../demo/common/overview.c"
 #endif
-#ifdef INCLUDE_OVERVIEW
+#ifdef INCLUDE_CONFIGURATOR
   #include "../../demo/common/style_configurator.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
