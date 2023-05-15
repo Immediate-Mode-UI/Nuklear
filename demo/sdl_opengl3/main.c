@@ -42,7 +42,6 @@
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
-/*#define INCLUDE_OVERVIEW */
 #define INCLUDE_OVERVIEW
 #define INCLUDE_CONFIGURATOR
 /*#define INCLUDE_NODE_EDITOR */
@@ -68,7 +67,7 @@
 #ifdef INCLUDE_OVERVIEW
   #include "../../demo/common/overview.c"
 #endif
-#ifdef INCLUDE_OVERVIEW
+#ifdef INCLUDE_CONFIGURATOR
   #include "../../demo/common/style_configurator.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
