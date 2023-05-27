@@ -52,10 +52,15 @@ nk_color_picker_behavior(nk_flags *state,
     /* set color picker widget state */
     if (nk_input_is_mouse_hovering_rect(in, *bounds))
         *state = NK_WIDGET_STATE_HOVERED;
-    if (*state & NK_WIDGET_STATE_HOVER && !nk_input_is_mouse_prev_hovering_rect(in, *bounds))
-        *state |= NK_WIDGET_STATE_ENTERED;
-    else if (nk_input_is_mouse_prev_hovering_rect(in, *bounds))
-        *state |= NK_WIDGET_STATE_LEFT;
+
+    if (*state & NK_WIDGET_STATE_HOVER) {
+        if (!nk_input_is_mouse_prev_hovering_rect(in, *bounds)
+            *state |= NK_WIDGET_STATE_ENTERED;
+    } else {
+        if (nk_input_is_mouse_prev_hovering_rect(in, *bounds))
+            *state |= NK_WIDGET_STATE_LEFT;
+    }
+
     return value_changed;
 }
 NK_LIB void
