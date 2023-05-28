@@ -72,7 +72,7 @@ struct node_editor {
     struct nk_vec2 scrolling;
     struct node_linking linking;
 };
-static struct node_editor node_editor;
+static struct node_editor nodeEditor;
 
 /* === PROTOTYPES === */
 /* Each type of node needs these two functions. */
@@ -287,18 +287,18 @@ node_editor_init(struct node_editor *editor)
 }
 
 static int
-node_editor_main(struct nk_context *ctx)
+node_editor(struct nk_context *ctx)
 {
     int n = 0;
     struct nk_rect total_space;
     const struct nk_input *in = &ctx->input;
     struct nk_command_buffer *canvas;
     struct node *updated = 0;
-    struct node_editor *editor = &node_editor;
+    struct node_editor *editor = &nodeEditor;
 
-    if (!node_editor.initialized) {
-        node_editor_init(&node_editor);
-        node_editor.initialized = 1;
+    if (!nodeEditor.initialized) {
+        node_editor_init(&nodeEditor);
+        nodeEditor.initialized = 1;
     }
 
     if (nk_begin(ctx, "NodeEdit", nk_rect(0, 0, 800, 600),
