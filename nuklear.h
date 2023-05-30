@@ -8095,7 +8095,6 @@ NK_API void nk_map_name_color_init(struct nk_map_name_color *c, const struct nk_
 NK_API void nk_map_name_color_init_colors(struct nk_map_name_color *c, const struct nk_allocator *a, const char **nv, struct nk_color *cv, int cc)
 {
     nk_size size;
-    struct nk_name_color ct;
     struct nk_name_color *m;
     int i;
 
@@ -8120,10 +8119,8 @@ NK_API void nk_map_name_color_init_colors(struct nk_map_name_color *c, const str
     nk_buffer_init(&c->buffer, a, size);
     nk_buffer_alloc(&c->buffer, NK_BUFFER_FRONT, size, sizeof(nk_hash));
     m = c->buffer.memory.ptr;
-    for (i = 0; i < cc; ++i) {
-        nk_name_color_init(&ct, nv[i], cv[i]);
-        NK_MEMCPY(&m[i], &ct, sizeof(struct nk_name_color));
-    }
+    for (i = 0; i < cc; ++i)
+        nk_name_color_init(&m[i], nv[i], cv[i]);
     c->count = cc;
 }
 
@@ -8245,7 +8242,6 @@ NK_API void nk_map_name_color_push_colors(struct nk_map_name_color *c, const cha
 {
     nk_size size;
     void *mem;
-    struct nk_name_color ct;
     struct nk_name_color *m;
     int i;
 
@@ -8266,10 +8262,8 @@ NK_API void nk_map_name_color_push_colors(struct nk_map_name_color *c, const cha
     if (!mem)
         return;
     m = mem;
-    for (i = 0; i < cc; ++i) {
-        nk_name_color_init(&ct, nv[i], cv[i]);
-        NK_MEMCPY(&m[i], &ct, sizeof(struct nk_name_color));
-    }
+    for (i = 0; i < cc; ++i)
+        nk_name_color_init(&m[i], nv[i], cv[i]);
     c->count += cc;
 }
 
