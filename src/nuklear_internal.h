@@ -13,6 +13,10 @@
 #define NK_BUFFER_DEFAULT_INITIAL_SIZE (4*1024)
 #endif
 
+#ifndef NK_DEFAULT_MAP_NAME_COLOR_BUFFER_SIZE
+#define NK_DEFAULT_MAP_NAME_COLOR_BUFFER_SIZE (4*sizeof(struct nk_name_color))
+#endif
+
 /* standard library headers */
 #ifdef NK_INCLUDE_DEFAULT_ALLOCATOR
 #include <stdlib.h> /* malloc, free */
