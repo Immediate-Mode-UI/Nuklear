@@ -54,7 +54,7 @@ nk_color_picker_behavior(nk_flags *state,
         *state = NK_WIDGET_STATE_HOVERED;
 
     if (*state & NK_WIDGET_STATE_HOVER) {
-        if (!nk_input_is_mouse_prev_hovering_rect(in, *bounds)
+        if (!nk_input_is_mouse_prev_hovering_rect(in, *bounds))
             *state |= NK_WIDGET_STATE_ENTERED;
     } else {
         if (nk_input_is_mouse_prev_hovering_rect(in, *bounds))
