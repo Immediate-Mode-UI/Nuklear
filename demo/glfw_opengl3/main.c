@@ -9,8 +9,7 @@
 #include <limits.h>
 #include <time.h>
 
-#define GL_SILENCE_DEPRECATION
-/* #include <GL/glew.h> */
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #define NK_INCLUDE_FIXED_TYPES
@@ -43,8 +42,8 @@
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
-/*#define INCLUDE_OVERVIEW */
-#define INCLUDE_NODE_EDITOR */
+#define INCLUDE_OVERVIEW
+/*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
   #define INCLUDE_STYLE
@@ -105,11 +104,11 @@ int main(void)
 
     /* OpenGL */
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-    /*glewExperimental = 1;
+    glewExperimental = 1;
     if (glewInit() != GLEW_OK) {
         fprintf(stderr, "Failed to setup GLEW\n");
         exit(1);
-    }*/
+    }
 
     ctx = nk_glfw3_init(&glfw, win, NK_GLFW3_INSTALL_CALLBACKS);
     /* Load Fonts: if none of these are loaded a default font will be used  */
@@ -192,7 +191,7 @@ int main(void)
           overview(ctx);
         #endif
         #ifdef INCLUDE_NODE_EDITOR
-          node_editor_main(ctx);
+          node_editor(ctx);
         #endif
         /* ----------------------------------------- */
 
