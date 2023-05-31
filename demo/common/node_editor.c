@@ -75,17 +75,21 @@ struct node_editor {
 static struct node_editor nodeEditor;
 
 /* === PROTOTYPES === */
-/* Each type of node needs these two functions. */
+/* The node implementations need these two functions. */
 /* These could/should go in a header file along with the node and node_connector structs and be #included in the node implementations */
+
 struct node* node_editor_add(struct node_editor *editor, size_t nodeSize, const char *name, struct nk_rect bounds,
     int in_count, int out_count);
 void* node_editor_eval_connected(struct node *node, int inputSlot);
 /* ================== */
 
+/* === NODE TYPE IMPLEMENTATIONS === */
+
 #include "nodeeditor/node_type_float.c"
 #include "nodeeditor/node_type_color.c"
 #include "nodeeditor/node_type_blend.c"
 #include "nodeeditor/node_type_output.c"
+/* ================================= */
 
 static void
 node_editor_push(struct node_editor *editor, struct node *node)
@@ -350,12 +354,8 @@ node_editor(struct nk_context *ctx)
                         updated = it;
                     }
 
-                    if (!(nodePanel->flags & NK_WINDOW_HIDDEN)) { /* Node close button has not been clicked */
-                        /* ================= NODE CONTENT ===================== */
-                        it->display_func(ctx, it);
-                        /* ==================================================== */
-                    }
-                    else {
+                    if ((nodePanel->flags & NK_WINDOW_HIDDEN)) /* Node close button has been clicked */
+                    { 
                         /* Delete node */
                         struct node_link *link_remove;
                         node_editor_pop(editor, it);
@@ -373,14 +373,23 @@ node_editor(struct nk_context *ctx)
                                 node_editor_delete_link(link_remove);
                             }
                         }
-                    NK_ASSERT(editor->node_buf[it->ID] == it);
-                    editor->node_buf[it->ID] = NULL;
-                    free(it->inputs);
-                    free(it->outputs);
-                    free(it);
+                        NK_ASSERT(editor->node_buf[it->ID] == it);
+                        editor->node_buf[it->ID] = NULL;
+                        free(it->inputs);
+                        free(it->outputs);
+                        free(it);
                     }
+                    else {
 
+                        /* ================= NODE CONTENT ===================== */
+                        
+                        it->display_func(ctx, it);
+                        
+                        /* ==================================================== */
+                        
+                    }
                     nk_group_end(ctx);
+
                 }
                 if (!(nodePanel->flags & NK_WINDOW_HIDDEN)) 
                 {
