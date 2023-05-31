@@ -38,10 +38,10 @@ static void node_blend_display(struct nk_context *ctx, struct node *node) {
     
     
     if(node->inputs[0].is_connected && node->inputs[1].is_connected) {
-        blend_node->output_val.r = blend_node->input_val[0].r * blend_amnt + blend_node->input_val[1].r * (1.0f-blend_amnt);
-        blend_node->output_val.g = blend_node->input_val[0].g * blend_amnt + blend_node->input_val[1].g * (1.0f-blend_amnt);
-        blend_node->output_val.b = blend_node->input_val[0].b * blend_amnt + blend_node->input_val[1].b * (1.0f-blend_amnt);
-        blend_node->output_val.a = blend_node->input_val[0].a * blend_amnt + blend_node->input_val[1].a * (1.0f-blend_amnt);
+        blend_node->output_val.r = blend_node->input_val[0].r * (1.0f-blend_amnt) + blend_node->input_val[1].r * blend_amnt;
+        blend_node->output_val.g = blend_node->input_val[0].g * (1.0f-blend_amnt) + blend_node->input_val[1].g * blend_amnt;
+        blend_node->output_val.b = blend_node->input_val[0].b * (1.0f-blend_amnt) + blend_node->input_val[1].b * blend_amnt;
+        blend_node->output_val.a = blend_node->input_val[0].a * (1.0f-blend_amnt) + blend_node->input_val[1].a * blend_amnt;
     }
     else {
         blend_node->output_val = blank;
