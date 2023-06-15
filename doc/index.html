@@ -1,6 +1,5 @@
 <meta charset='utf-8' emacsmode='-*- markdown -*-'>
 <link rel='stylesheet' href='https://casual-effects.com/markdeep/latest/apidoc.css?'>
-<title>Nuklear</title>      <!--Page Title-->
 # Nuklear
 ![](https://cloud.githubusercontent.com/assets/8057201/11761525/ae06f0ca-a0c6-11e5-819d-5610b25f6ef4.gif)
 ## Contents
@@ -47,6 +46,7 @@ render backends it only focuses on the actual UI.
 - No global or hidden state
 - Customizable library modules (you can compile and use only what you need)
 - Optional font baker and vertex buffer output
+- [Code available on github](https://github.com/Immediate-Mode-UI/Nuklear/)
 ## Features
 - Absolutely no platform dependent code
 - Memory management control ranging from/to
@@ -90,7 +90,8 @@ NK_PRIVATE                      | If defined declares all functions as static, s
 NK_INCLUDE_FIXED_TYPES          | If defined it will include header `<stdint.h>` for fixed sized types otherwise nuklear tries to select the correct type. If that fails it will throw a compiler error and you have to select the correct types yourself.
 NK_INCLUDE_DEFAULT_ALLOCATOR    | If defined it will include header `<stdlib.h>` and provide additional functions to use this library without caring for memory allocation control and therefore ease memory management.
 NK_INCLUDE_STANDARD_IO          | If defined it will include header `<stdio.h>` and provide additional functions depending on file loading.
-NK_INCLUDE_STANDARD_VARARGS     | If defined it will include header <stdio.h> and provide additional functions depending on file loading.
+NK_INCLUDE_STANDARD_VARARGS     | If defined it will include header <stdarg.h> and provide additional functions depending on file loading.
+NK_INCLUDE_STANDARD_BOOL        | If defined it will include header `<stdbool.h>` for nk_bool otherwise nuklear defines nk_bool as int.
 NK_INCLUDE_VERTEX_BUFFER_OUTPUT | Defining this adds a vertex draw command list backend to this library, which allows you to convert queue commands into vertex draw commands. This is mainly if you need a hardware accessible format for OpenGL, DirectX, Vulkan, Metal,...
 NK_INCLUDE_FONT_BAKING          | Defining this adds `stb_truetype` and `stb_rect_pack` implementation to this library and provides font baking and rendering. If you already have font handling or do not want to use this font handler you don't have to define it.
 NK_INCLUDE_DEFAULT_FONT         | Defining this adds the default font: ProggyClean.ttf into this library which can be loaded into a font atlas and allows using this library without having a truetype font
@@ -109,6 +110,7 @@ NK_KEYSTATE_BASED_INPUT         | Define this if your backend uses key state for
     - NK_INCLUDE_FIXED_TYPES
     - NK_INCLUDE_DEFAULT_ALLOCATOR
     - NK_INCLUDE_STANDARD_VARARGS
+    - NK_INCLUDE_STANDARD_BOOL
     - NK_INCLUDE_VERTEX_BUFFER_OUTPUT
     - NK_INCLUDE_FONT_BAKING
     - NK_INCLUDE_DEFAULT_FONT
@@ -132,7 +134,7 @@ Function    | Description
 NK_ASSERT   | If you don't define this, nuklear will use <assert.h> with assert().
 NK_MEMSET   | You can define this to 'memset' or your own memset implementation replacement. If not nuklear will use its own version.
 NK_MEMCPY   | You can define this to 'memcpy' or your own memcpy implementation replacement. If not nuklear will use its own version.
-NK_SQRT     | You can define this to 'sqrt' or your own sqrt implementation replacement. If not nuklear will use its own slow and not highly accurate version.
+NK_INV_SQRT | You can define this to your own inverse sqrt implementation replacement. If not nuklear will use its own slow and not highly accurate version.
 NK_SIN      | You can define this to 'sinf' or your own sine implementation replacement. If not nuklear will use its own approximation implementation.
 NK_COS      | You can define this to 'cosf' or your own cosine implementation replacement. If not nuklear will use its own approximation implementation.
 NK_STRTOD   | You can define this to `strtod` or your own string to double conversion implementation replacement. If not defined nuklear will use its own imprecise and possibly unsafe version (does not handle nan or infinity!).
@@ -221,7 +223,7 @@ __nk_set_user_data__| Utility function to pass user data to draw command
 Initializes a `nk_context` struct with a default standard library allocator.
 Should be used if you don't want to be bothered with memory management in nuklear.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_init_default(struct nk_context *ctx, const struct nk_user_font *font);
+nk_bool nk_init_default(struct nk_context *ctx, const struct nk_user_font *font);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|---------------------------------------------------------------
@@ -235,7 +237,7 @@ Especially recommended for system with little memory or systems with virtual mem
 For the later case you can just allocate for example 16MB of virtual memory
 and only the required amount of memory will actually be committed.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_init_fixed(struct nk_context *ctx, void *memory, nk_size size, const struct nk_user_font *font);
+nk_bool nk_init_fixed(struct nk_context *ctx, void *memory, nk_size size, const struct nk_user_font *font);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 !!! Warning
     make sure the passed memory block is aligned correctly for `nk_draw_commands`.
@@ -251,7 +253,7 @@ Initializes a `nk_context` struct with memory allocation callbacks for nuklear t
 memory from. Used internally for `nk_init_default` and provides a kitchen sink allocation
 interface to nuklear. Can be useful for cases like monitoring memory consumption.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_init(struct nk_context *ctx, struct nk_allocator *alloc, const struct nk_user_font *font);
+nk_bool nk_init(struct nk_context *ctx, struct nk_allocator *alloc, const struct nk_user_font *font);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|---------------------------------------------------------------
@@ -264,7 +266,7 @@ Initializes a `nk_context` struct from two different either fixed or growing
 buffers. The first buffer is for allocating draw commands while the second buffer is
 used for allocating windows, panels and state tables.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_init_custom(struct nk_context *ctx, struct nk_buffer *cmds, struct nk_buffer *pool, const struct nk_user_font *font);
+nk_bool nk_init_custom(struct nk_context *ctx, struct nk_buffer *cmds, struct nk_buffer *pool, const struct nk_user_font *font);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|---------------------------------------------------------------
@@ -379,7 +381,7 @@ __y__       | Must hold an integer describing the current mouse cursor y-positio
 #### nk_input_key
 Mirrors the state of a specific key to nuklear
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-void nk_input_key(struct nk_context*, enum nk_keys key, int down);
+void nk_input_key(struct nk_context*, enum nk_keys key, nk_bool down);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -389,7 +391,7 @@ __down__    | Must be 0 for key is up and 1 for key is down
 #### nk_input_button
 Mirrors the state of a specific mouse button to nuklear
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-void nk_input_button(struct nk_context *ctx, enum nk_buttons btn, int x, int y, int down);
+void nk_input_button(struct nk_context *ctx, enum nk_buttons btn, int x, int y, nk_bool down);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -891,7 +893,7 @@ __NK_MAXIMIZED__| UI section is extended and visible until minimized
 Starts a new window; needs to be called every frame for every
 window (unless hidden) or otherwise the window gets removed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
+nk_bool nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -905,7 +907,7 @@ until `nk_end` or `false(0)` otherwise for example if minimized
 Extended window start with separated title and identifier to allow multiple
 windows with same title but not name
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_begin_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags);
+nk_bool nk_begin_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -1086,7 +1088,7 @@ Returns if the currently processed window is currently active
 !!! WARNING
     Only call this function between calls `nk_begin_xxx` and `nk_end`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_window_has_focus(const struct nk_context *ctx);
+nk_bool nk_window_has_focus(const struct nk_context *ctx);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -1097,7 +1099,7 @@ Return if the current window is being hovered
 !!! WARNING
     Only call this function between calls `nk_begin_xxx` and `nk_end`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_window_is_hovered(struct nk_context *ctx);
+nk_bool nk_window_is_hovered(struct nk_context *ctx);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -1106,7 +1108,7 @@ Returns `true(1)` if current window is hovered or `false(0)` otherwise
 #### nk_window_is_collapsed
 Returns if the window with given name is currently minimized/collapsed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_window_is_collapsed(struct nk_context *ctx, const char *name);
+nk_bool nk_window_is_collapsed(struct nk_context *ctx, const char *name);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -1117,7 +1119,7 @@ found or is not minimized
 #### nk_window_is_closed
 Returns if the window with given name was closed by calling `nk_close`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_window_is_closed(struct nk_context *ctx, const char *name);
+nk_bool nk_window_is_closed(struct nk_context *ctx, const char *name);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -1127,7 +1129,7 @@ Returns `true(1)` if current window was closed or `false(0)` window not found or
 #### nk_window_is_hidden
 Returns if the window with given name is hidden
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_window_is_hidden(struct nk_context *ctx, const char *name);
+nk_bool nk_window_is_hidden(struct nk_context *ctx, const char *name);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -1137,7 +1139,7 @@ Returns `true(1)` if current window is hidden or `false(0)` window not found or 
 #### nk_window_is_active
 Same as nk_window_has_focus for some reason
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_window_is_active(struct nk_context *ctx, const char *name);
+nk_bool nk_window_is_active(struct nk_context *ctx, const char *name);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -1147,7 +1149,7 @@ Returns `true(1)` if current window is active or `false(0)` window not found or 
 #### nk_window_is_any_hovered
 Returns if the any window is being hovered
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_window_is_any_hovered(struct nk_context*);
+nk_bool nk_window_is_any_hovered(struct nk_context*);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -1158,7 +1160,7 @@ Returns if the any window is being hovered or any widget is currently active.
 Can be used to decide if input should be processed by UI or your specific input handling.
 Example could be UI and 3D camera to move inside a 3D space.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_item_is_any_active(struct nk_context*);
+nk_bool nk_item_is_any_active(struct nk_context*);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -1731,6 +1733,14 @@ Parameter   | Description
 __ctx__     | Must point to an previously initialized `nk_context` struct after call `nk_layout_space_begin`
 __bounds__  | Rectangle to convert from layout space into screen space
 Returns transformed `nk_rect` in layout space coordinates
+#### nk_spacer
+Spacer is a dummy widget that consumes space as usual but doesn't draw anything
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+void nk_spacer(struct nk_context* );
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Parameter   | Description
+------------|-----------------------------------------------------------
+__ctx__     | Must point to an previously initialized `nk_context` struct after call `nk_layout_space_begin`
 ### Groups
 Groups are basically windows inside windows. They allow to subdivide space
 in a window to layout widgets as a group. Almost all more complex widget
@@ -1812,7 +1822,7 @@ nk_group_set_scroll             | Sets the scroll offset for the given group
 #### nk_group_begin
 Starts a new widget group. Requires a previous layouting function to specify a pos/size.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_group_begin(struct nk_context*, const char *title, nk_flags);
+nk_bool nk_group_begin(struct nk_context*, const char *title, nk_flags);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -1823,7 +1833,7 @@ Returns `true(1)` if visible and fillable with widgets or `false(0)` otherwise
 #### nk_group_begin_titled
 Starts a new widget group. Requires a previous layouting function to specify a pos/size.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_group_begin_titled(struct nk_context*, const char *name, const char *title, nk_flags);
+nk_bool nk_group_begin_titled(struct nk_context*, const char *name, const char *title, nk_flags);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -1844,7 +1854,7 @@ __ctx__     | Must point to an previously initialized `nk_context` struct
 starts a new widget group. requires a previous layouting function to specify
 a size. Does not keep track of scrollbar.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_group_scrolled_offset_begin(struct nk_context*, nk_uint *x_offset, nk_uint *y_offset, const char *title, nk_flags flags);
+nk_bool nk_group_scrolled_offset_begin(struct nk_context*, nk_uint *x_offset, nk_uint *y_offset, const char *title, nk_flags flags);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -1858,7 +1868,7 @@ Returns `true(1)` if visible and fillable with widgets or `false(0)` otherwise
 Starts a new widget group. requires a previous
 layouting function to specify a size. Does not keep track of scrollbar.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_group_scrolled_begin(struct nk_context*, struct nk_scroll *off, const char *title, nk_flags);
+nk_bool nk_group_scrolled_begin(struct nk_context*, struct nk_scroll *off, const char *title, nk_flags);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -1986,7 +1996,7 @@ Returns `true(1)` if visible and fillable with widgets or `false(0)` otherwise
 Start a collapsible UI section with internal state management with full
 control over internal unique ID used to store state
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states initial_state, const char *hash, int len,int seed);
+nk_bool nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states initial_state, const char *hash, int len,int seed);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -2035,7 +2045,7 @@ Returns `true(1)` if visible and fillable with widgets or `false(0)` otherwise
 Start a collapsible UI section with internal state management with full
 control over internal unique ID used to store state
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_tree_image_push_hashed(struct nk_context*, enum nk_tree_type, struct nk_image, const char *title, enum nk_collapse_states initial_state, const char *hash, int len,int seed);
+nk_bool nk_tree_image_push_hashed(struct nk_context*, enum nk_tree_type, struct nk_image, const char *title, enum nk_collapse_states initial_state, const char *hash, int len,int seed);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -2059,7 +2069,7 @@ __ctx__     | Must point to an previously initialized `nk_context` struct after 
 #### nk_tree_state_push
 Start a collapsible UI section with external state management
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_tree_state_push(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states *state);
+nk_bool nk_tree_state_push(struct nk_context*, enum nk_tree_type, const char *title, enum nk_collapse_states *state);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -2071,7 +2081,7 @@ Returns `true(1)` if visible and fillable with widgets or `false(0)` otherwise
 #### nk_tree_state_image_push
 Start a collapsible UI section with image and label header and external state management
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-int nk_tree_state_image_push(struct nk_context*, enum nk_tree_type, struct nk_image, const char *title, enum nk_collapse_states *state);
+nk_bool nk_tree_state_image_push(struct nk_context*, enum nk_tree_type, struct nk_image, const char *title, enum nk_collapse_states *state);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Parameter   | Description
 ------------|-----------------------------------------------------------
@@ -2260,6 +2270,302 @@ __max__             | Maximum value not allowed to be overflown
 __step__            | Increment added and subtracted on increment and decrement button
 __inc_per_pixel__   | Value per pixel added or subtracted on dragging
 Returns the new modified double value
+### Font
+Font handling in this library was designed to be quite customizable and lets
+you decide what you want to use and what you want to provide. There are three
+different ways to use the font atlas. The first two will use your font
+handling scheme and only requires essential data to run nuklear. The next
+slightly more advanced features is font handling with vertex buffer output.
+Finally the most complex API wise is using nuklear's font baking API.
+#### Using your own implementation without vertex buffer output
+
+So first up the easiest way to do font handling is by just providing a
+`nk_user_font` struct which only requires the height in pixel of the used
+font and a callback to calculate the width of a string. This way of handling
+fonts is best fitted for using the normal draw shape command API where you
+do all the text drawing yourself and the library does not require any kind
+of deeper knowledge about which font handling mechanism you use.
+IMPORTANT: the `nk_user_font` pointer provided to nuklear has to persist
+over the complete life time! I know this sucks but it is currently the only
+way to switch between fonts.
+```c
+    float your_text_width_calculation(nk_handle handle, float height, const char *text, int len)
+    {
+        your_font_type *type = handle.ptr;
+        float text_width = ...;
+        return text_width;
+    }
+    struct nk_user_font font;
+    font.userdata.ptr = &your_font_class_or_struct;
+    font.height = your_font_height;
+    font.width = your_text_width_calculation;
+
+    struct nk_context ctx;
+    nk_init_default(&ctx, &font);
+```
+#### Using your own implementation with vertex buffer output
+
+While the first approach works fine if you don't want to use the optional
+vertex buffer output it is not enough if you do. To get font handling working
+for these cases you have to provide two additional parameters inside the
+`nk_user_font`. First a texture atlas handle used to draw text as subimages
+of a bigger font atlas texture and a callback to query a character's glyph
+information (offset, size, ...). So it is still possible to provide your own
+font and use the vertex buffer output.
+```c
+    float your_text_width_calculation(nk_handle handle, float height, const char *text, int len)
+    {
+        your_font_type *type = handle.ptr;
+        float text_width = ...;
+        return text_width;
+    }
+    void query_your_font_glyph(nk_handle handle, float font_height, struct nk_user_font_glyph *glyph, nk_rune codepoint, nk_rune next_codepoint)
+    {
+        your_font_type *type = handle.ptr;
+        glyph.width = ...;
+        glyph.height = ...;
+        glyph.xadvance = ...;
+        glyph.uv[0].x = ...;
+        glyph.uv[0].y = ...;
+        glyph.uv[1].x = ...;
+        glyph.uv[1].y = ...;
+        glyph.offset.x = ...;
+        glyph.offset.y = ...;
+    }
+
+    struct nk_user_font font;
+    font.userdata.ptr = &your_font_class_or_struct;
+    font.height = your_font_height;
+    font.width = your_text_width_calculation;
+    font.query = query_your_font_glyph;
+    font.texture.id = your_font_texture;
+
+    struct nk_context ctx;
+    nk_init_default(&ctx, &font);
+```
+#### Nuklear font baker
+
+The final approach if you do not have a font handling functionality or don't
+want to use it in this library is by using the optional font baker.
+The font baker APIs can be used to create a font plus font atlas texture
+and can be used with or without the vertex buffer output.
+
+It still uses the `nk_user_font` struct and the two different approaches
+previously stated still work. The font baker is not located inside
+`nk_context` like all other systems since it can be understood as more of
+an extension to nuklear and does not really depend on any `nk_context` state.
+
+Font baker need to be initialized first by one of the nk_font_atlas_init_xxx
+functions. If you don't care about memory just call the default version
+`nk_font_atlas_init_default` which will allocate all memory from the standard library.
+If you want to control memory allocation but you don't care if the allocated
+memory is temporary and therefore can be freed directly after the baking process
+is over or permanent you can call `nk_font_atlas_init`.
+
+After successfully initializing the font baker you can add Truetype(.ttf) fonts from
+different sources like memory or from file by calling one of the `nk_font_atlas_add_xxx`.
+functions. Adding font will permanently store each font, font config and ttf memory block(!)
+inside the font atlas and allows to reuse the font atlas. If you don't want to reuse
+the font baker by for example adding additional fonts you can call
+`nk_font_atlas_cleanup` after the baking process is over (after calling nk_font_atlas_end).
+
+As soon as you added all fonts you wanted you can now start the baking process
+for every selected glyph to image by calling `nk_font_atlas_bake`.
+The baking process returns image memory, width and height which can be used to
+either create your own image object or upload it to any graphics library.
+No matter which case you finally have to call `nk_font_atlas_end` which
+will free all temporary memory including the font atlas image so make sure
+you created our texture beforehand. `nk_font_atlas_end` requires a handle
+to your font texture or object and optionally fills a `struct nk_draw_null_texture`
+which can be used for the optional vertex output. If you don't want it just
+set the argument to `NULL`.
+
+At this point you are done and if you don't want to reuse the font atlas you
+can call `nk_font_atlas_cleanup` to free all truetype blobs and configuration
+memory. Finally if you don't use the font atlas and any of it's fonts anymore
+you need to call `nk_font_atlas_clear` to free all memory still being used.
+
+```c
+    struct nk_font_atlas atlas;
+    nk_font_atlas_init_default(&atlas);
+    nk_font_atlas_begin(&atlas);
+    nk_font *font = nk_font_atlas_add_from_file(&atlas, "Path/To/Your/TTF_Font.ttf", 13, 0);
+    nk_font *font2 = nk_font_atlas_add_from_file(&atlas, "Path/To/Your/TTF_Font2.ttf", 16, 0);
+    const void* img = nk_font_atlas_bake(&atlas, &img_width, &img_height, NK_FONT_ATLAS_RGBA32);
+    nk_font_atlas_end(&atlas, nk_handle_id(texture), 0);
+
+    struct nk_context ctx;
+    nk_init_default(&ctx, &font->handle);
+    while (1) {
+
+    }
+    nk_font_atlas_clear(&atlas);
+```
+The font baker API is probably the most complex API inside this library and
+I would suggest reading some of my examples `example/` to get a grip on how
+to use the font atlas. There are a number of details I left out. For example
+how to merge fonts, configure a font with `nk_font_config` to use other languages,
+use another texture coordinate format and a lot more:
+```c
+    struct nk_font_config cfg = nk_font_config(font_pixel_height);
+    cfg.merge_mode = nk_false or nk_true;
+    cfg.range = nk_font_korean_glyph_ranges();
+    cfg.coord_type = NK_COORD_PIXEL;
+    nk_font *font = nk_font_atlas_add_from_file(&atlas, "Path/To/Your/TTF_Font.ttf", 13, &cfg);
+```
+### Memory Buffer
+A basic (double)-buffer with linear allocation and resetting as only
+freeing policy. The buffer's main purpose is to control all memory management
+inside the GUI toolkit and still leave memory control as much as possible in
+the hand of the user while also making sure the library is easy to use if
+not as much control is needed.
+In general all memory inside this library can be provided from the user in
+three different ways.
+
+The first way and the one providing most control is by just passing a fixed
+size memory block. In this case all control lies in the hand of the user
+since he can exactly control where the memory comes from and how much memory
+the library should consume. Of course using the fixed size API removes the
+ability to automatically resize a buffer if not enough memory is provided so
+you have to take over the resizing. While being a fixed sized buffer sounds
+quite limiting, it is very effective in this library since the actual memory
+consumption is quite stable and has a fixed upper bound for a lot of cases.
+
+If you don't want to think about how much memory the library should allocate
+at all time or have a very dynamic UI with unpredictable memory consumption
+habits but still want control over memory allocation you can use the dynamic
+allocator based API. The allocator consists of two callbacks for allocating
+and freeing memory and optional userdata so you can plugin your own allocator.
+
+The final and easiest way can be used by defining
+NK_INCLUDE_DEFAULT_ALLOCATOR which uses the standard library memory
+allocation functions malloc and free and takes over complete control over
+memory in this library.
+### Text Editor
+Editing text in this library is handled by either `nk_edit_string` or
+`nk_edit_buffer`. But like almost everything in this library there are multiple
+ways of doing it and a balance between control and ease of use with memory
+as well as functionality controlled by flags.
+This library generally allows three different levels of memory control:
+First of is the most basic way of just providing a simple char array with
+string length. This method is probably the easiest way of handling simple
+user text input. Main upside is complete control over memory while the biggest
+downside in comparison with the other two approaches is missing undo/redo.
+For UIs that require undo/redo the second way was created. It is based on
+a fixed size nk_text_edit struct, which has an internal undo/redo stack.
+This is mainly useful if you want something more like a text editor but don't want
+to have a dynamically growing buffer.
+The final way is using a dynamically growing nk_text_edit struct, which
+has both a default version if you don't care where memory comes from and an
+allocator version if you do. While the text editor is quite powerful for its
+complexity I would not recommend editing gigabytes of data with it.
+It is rather designed for uses cases which make sense for a GUI library not for
+an full blown text editor.
+### Drawing
+This library was designed to be render backend agnostic so it does
+not draw anything to screen. Instead all drawn shapes, widgets
+are made of, are buffered into memory and make up a command queue.
+Each frame therefore fills the command buffer with draw commands
+that then need to be executed by the user and his own render backend.
+After that the command buffer needs to be cleared and a new frame can be
+started. It is probably important to note that the command buffer is the main
+drawing API and the optional vertex buffer API only takes this format and
+converts it into a hardware accessible format.
+
+To use the command queue to draw your own widgets you can access the
+command buffer of each window by calling `nk_window_get_canvas` after
+previously having called `nk_begin`:
+
+```c
+    void draw_red_rectangle_widget(struct nk_context *ctx)
+    {
+        struct nk_command_buffer *canvas;
+        struct nk_input *input = &ctx->input;
+        canvas = nk_window_get_canvas(ctx);
+
+        struct nk_rect space;
+        enum nk_widget_layout_states state;
+        state = nk_widget(&space, ctx);
+        if (!state) return;
+
+        if (state != NK_WIDGET_ROM)
+            update_your_widget_by_user_input(...);
+        nk_fill_rect(canvas, space, 0, nk_rgb(255,0,0));
+    }
+
+    if (nk_begin(...)) {
+        nk_layout_row_dynamic(ctx, 25, 1);
+        draw_red_rectangle_widget(ctx);
+    }
+    nk_end(..)
+
+```
+Important to know if you want to create your own widgets is the `nk_widget`
+call. It allocates space on the panel reserved for this widget to be used,
+but also returns the state of the widget space. If your widget is not seen and does
+not have to be updated it is '0' and you can just return. If it only has
+to be drawn the state will be `NK_WIDGET_ROM` otherwise you can do both
+update and draw your widget. The reason for separating is to only draw and
+update what is actually necessary which is crucial for performance.
+Draw List
+The optional vertex buffer draw list provides a 2D drawing context
+with antialiasing functionality which takes basic filled or outlined shapes
+or a path and outputs vertexes, elements and draw commands.
+The actual draw list API is not required to be used directly while using this
+library since converting the default library draw command output is done by
+just calling `nk_convert` but I decided to still make this library accessible
+since it can be useful.
+
+The draw list is based on a path buffering and polygon and polyline
+rendering API which allows a lot of ways to draw 2D content to screen.
+In fact it is probably more powerful than needed but allows even more crazy
+things than this library provides by default.
+### Stack
+The style modifier stack can be used to temporarily change a
+property inside `nk_style`. For example if you want a special
+red button you can temporarily push the old button color onto a stack
+draw the button with a red color and then you just pop the old color
+back from the stack:
+
+    nk_style_push_style_item(ctx, &ctx->style.button.normal, nk_style_item_color(nk_rgb(255,0,0)));
+    nk_style_push_style_item(ctx, &ctx->style.button.hover, nk_style_item_color(nk_rgb(255,0,0)));
+    nk_style_push_style_item(ctx, &ctx->style.button.active, nk_style_item_color(nk_rgb(255,0,0)));
+    nk_style_push_vec2(ctx, &cx->style.button.padding, nk_vec2(2,2));
+
+    nk_button(...);
+
+    nk_style_pop_style_item(ctx);
+    nk_style_pop_style_item(ctx);
+    nk_style_pop_style_item(ctx);
+    nk_style_pop_vec2(ctx);
+
+Nuklear has a stack for style_items, float properties, vector properties,
+flags, colors, fonts and for button_behavior. Each has it's own fixed size stack
+which can be changed at compile time.
+### Math
+ Since nuklear is supposed to work on all systems providing floating point
+ math without any dependencies I also had to implement my own math functions
+ for sqrt, sin and cos. Since the actual highly accurate implementations for
+ the standard library functions are quite complex and I do not need high
+ precision for my use cases I use approximations.
+ Sqrt
+ ----
+ For square root nuklear uses the famous fast inverse square root:
+ https://en.wikipedia.org/wiki/Fast_inverse_square_root with
+ slightly tweaked magic constant. While on today's hardware it is
+ probably not faster it is still fast and accurate enough for
+ nuklear's use cases. IMPORTANT: this requires float format IEEE 754
+ Sine/Cosine
+ -----------
+ All constants inside both function are generated Remez's minimax
+ approximations for value range 0...2*PI. The reason why I decided to
+ approximate exactly that range is that nuklear only needs sine and
+ cosine to generate circles which only requires that exact range.
+ In addition I used Remez instead of Taylor for additional precision:
+ www.lolengine.net/blog/2011/12/21/better-function-approximations.
+ The tool I used to generate constants for both sine and cosine
+ (it can actually approximate a lot more functions) can be
+ found here: www.lolengine.net/wiki/oss/lolremez
         -XXX.XXX-  X...X  -         X...X         -X....X           -           X....X"
 X...XXXXXXXXXXXXX...X -           "
 ## License
@@ -2306,13 +2612,55 @@ X...XXXXXXXXXXXXX...X -           "
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Changelog
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~none
-[date][x.yy.zz]-[description]
--[date]: date on which the change has been pushed
--[x.yy.zz]: Numerical version string representation. Each version number on the right
-            resets back to zero if version on the left is incremented.
-   - [x]: Major version with API and library breaking changes
-   - [yy]: Minor version with non-breaking API and library changes
-   - [zz]: Bug fix version with no direct changes to API
+[date] ([x.y.z]) - [description]
+- [date]: date on which the change has been pushed
+- [x.y.z]: Version string, represented in Semantic Versioning format
+  - [x]: Major version with API and library breaking changes
+  - [y]: Minor version with non-breaking API and library changes
+  - [z]: Patch version with no direct changes to the API
+- 2022/12/17 (4.10.5) - Fix nk_font_bake_pack() using TTC font offset incorrectly
+- 2022/10/24 (4.10.4) - Fix nk_str_{append,insert}_str_utf8 always returning 0
+- 2022/09/03 (4.10.3) - Renamed the `null` texture variable to `tex_null`
+- 2022/08/01 (4.10.2) - Fix Apple Silicon with incorrect NK_SITE_TYPE and NK_POINTER_TYPE
+- 2022/08/01 (4.10.1) - Fix cursor jumping back to beginning of text when typing more than
+                        nk_edit_xxx limit
+- 2022/05/27 (4.10.0) - Add nk_input_has_mouse_click_in_button_rect() to fix window move bug
+- 2022/04/18 (4.9.7)  - Change button behavior when NK_BUTTON_TRIGGER_ON_RELEASE is defined to
+                        only trigger when the mouse position was inside the same button on down
+- 2022/02/03 (4.9.6)  - Allow overriding the NK_INV_SQRT function, similar to NK_SIN and NK_COS
+- 2021/12/22 (4.9.5)  - Revert layout bounds not accounting for padding due to regressions
+- 2021/12/22 (4.9.4)  - Fix checking hovering when window is minimized
+- 2021/12/22 (4.09.3) - Fix layout bounds not accounting for padding
+- 2021/12/19 (4.09.2) - Update to stb_rect_pack.h v1.01 and stb_truetype.h v1.26
+- 2021/12/16 (4.09.1) - Fix the majority of GCC warnings
+- 2021/10/16 (4.09.0) - Added nk_spacer() widget
+- 2021/09/22 (4.08.6) - Fix "may be used uninitialized" warnings in nk_widget
+- 2021/09/22 (4.08.5) - GCC __builtin_offsetof only exists in version 4 and later
+- 2021/09/15 (4.08.4) - Fix "'num_len' may be used uninitialized" in nk_do_property
+- 2021/09/15 (4.08.3) - Fix "Templates cannot be declared to have 'C' Linkage"
+- 2021/09/08 (4.08.2) - Fix warnings in C89 builds
+- 2021/09/08 (4.08.1) - Use compiler builtins for NK_OFFSETOF when possible
+- 2021/08/17 (4.08.0) - Implemented 9-slice scaling support for widget styles
+- 2021/08/16 (4.07.5) - Replace usage of memset in nk_font_atlas_bake with NK_MEMSET
+- 2021/08/15 (4.07.4) - Fix conversion and sign conversion warnings
+- 2021/08/08 (4.07.3) - Fix crash when baking merged fonts
+- 2021/08/08 (4.07.2) - Fix Multiline Edit wrong offset
+- 2021/03/17 (4.07.1) - Fix warning about unused parameter
+- 2021/03/17 (4.07.0) - Fix nk_property hover bug
+- 2021/03/15 (4.06.4) - Change nk_propertyi back to int
+- 2021/03/15 (4.06.3) - Update documentation for functions that now return nk_bool
+- 2020/12/19 (4.06.2) - Fix additional C++ style comments which are not allowed in ISO C90.
+- 2020/10/11 (4.06.1) - Fix C++ style comments which are not allowed in ISO C90.
+- 2020/10/07 (4.06.0) - Fix nk_combo return type wrongly changed to nk_bool
+- 2020/09/05 (4.05.0) - Use the nk_font_atlas allocator for stb_truetype memory management.
+- 2020/09/04 (4.04.1) - Replace every boolean int by nk_bool
+- 2020/09/04 (4.04.0) - Add nk_bool with NK_INCLUDE_STANDARD_BOOL
+- 2020/06/13 (4.03.1) - Fix nk_pool allocation sizes.
+- 2020/06/04 (4.03.0) - Made nk_combo header symbols optional.
+- 2020/05/27 (4.02.5) - Fix nk_do_edit: Keep scroll position when re-activating edit widget.
+- 2020/05/09 (4.02.4) - Fix nk_menubar height calculation bug
+- 2020/05/08 (4.02.3) - Fix missing stdarg.h with NK_INCLUDE_STANDARD_VARARGS
+- 2020/04/30 (4.02.2) - Fix nk_edit border drawing bug
 - 2020/04/09 (4.02.1) - Removed unused nk_sqrt function to fix compiler warnings
                       - Fixed compiler warnings if you bring your own methods for
                        nk_cos/nk_sin/nk_strtod/nk_memset/nk_memcopy/nk_dtoa
