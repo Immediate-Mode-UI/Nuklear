@@ -1,7 +1,7 @@
 #ifndef NK_GDI_WINDOW
 #define NK_GDI_WINDOW
 
-#define NK_GDI_WINDOW_CLS L"WNDCLS_NkGdi"
+#define NK_GDI_WINDOW_CLS TEXT("WNDCLS_NkGdi")
 
 #include <windows.h>
 
@@ -77,7 +77,7 @@ LRESULT CALLBACK nkgdi_window_proc_run(HWND wnd, UINT msg, WPARAM wParam, LPARAM
 void nkgdi_window_init(void)
 {
     /* Describe the window class */
-    WNDCLASSEXW cls;
+    WNDCLASSEX cls;
     cls.cbSize = sizeof(WNDCLASSEXW);
     cls.style = CS_OWNDC | CS_DBLCLKS;
     cls.lpfnWndProc = &nkgdi_window_proc_setup;
@@ -92,13 +92,13 @@ void nkgdi_window_init(void)
     cls.hIconSm = NULL;
 
     /* Register the window class */
-    RegisterClassExW(&cls);
+    RegisterClassEx(&cls);
 }
 
 void nkgdi_window_shutdown(void)
 {
     /* Windows class no longer required, unregister it */
-    UnregisterClassW(NK_GDI_WINDOW_CLS, GetModuleHandle(NULL));
+    UnregisterClass(NK_GDI_WINDOW_CLS, GetModuleHandle(NULL));
 }
 
 void nkgdi_window_create(struct nkgdi_window* wnd, unsigned int width, unsigned int height, const char* name, int posX, int posY)
@@ -115,15 +115,15 @@ void nkgdi_window_create(struct nkgdi_window* wnd, unsigned int width, unsigned 
     AdjustWindowRectEx(&cr, style, FALSE, styleEx);
 
     /* Create the new window */
-    wnd->_internal.window_handle = CreateWindowExW(
+    wnd->_internal.window_handle = CreateWindowEx(
         styleEx,
         NK_GDI_WINDOW_CLS,
-        L"NkGdi",
+        TEXT("NkGdi"),
         style | WS_VISIBLE,
         posX, posY,
         cr.right - cr.left, cr.bottom - cr.top,
         NULL, NULL,
-        GetModuleHandleW(NULL),
+        GetModuleHandle(NULL),
         wnd
     );
 
@@ -183,7 +183,7 @@ int nkgdi_window_update(struct nkgdi_window* wnd)
         while (PeekMessage(&msg, wnd->_internal.window_handle, 0, 0, PM_REMOVE))
         {
             TranslateMessage(&msg);
-            DispatchMessageW(&msg);
+            DispatchMessage(&msg);
         }
         nk_input_end(wnd->_internal.nk_ctx);
 
@@ -256,7 +256,7 @@ LRESULT CALLBACK nkgdi_window_proc_setup(HWND wnd, UINT msg, WPARAM wParam, LPAR
 LRESULT CALLBACK nkgdi_window_proc_run(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     /* The window context is extracted from the window data */
-    struct nkgdi_window* nkwnd = (struct nkgdi_window*)GetWindowLongPtrW(wnd, GWLP_USERDATA);
+    struct nkgdi_window* nkwnd = (struct nkgdi_window*)GetWindowLongPtr(wnd, GWLP_USERDATA);
 
     /* Switch on the message code to handle all required messages */
     switch (msg)
@@ -289,7 +289,7 @@ LRESULT CALLBACK nkgdi_window_proc_run(HWND wnd, UINT msg, WPARAM wParam, LPARAM
                 HMONITOR monitor = MonitorFromWindow(wnd, MONITOR_DEFAULTTOPRIMARY);
                 MONITORINFO monitorInfo;
                 monitorInfo.cbSize = sizeof(MONITORINFO);
-                if (GetMonitorInfoW(monitor, &monitorInfo))
+                if (GetMonitorInfo(monitor, &monitorInfo))
                 {
                     /* Adjust the window size and position by the monitor working area (without taskbar) */
                     nkwnd->_internal.height = monitorInfo.rcWork.bottom - monitorInfo.rcWork.top;

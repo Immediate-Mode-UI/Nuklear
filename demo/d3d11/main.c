@@ -90,7 +90,7 @@ set_swap_chain_size(int width, int height)
     if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET || hr == DXGI_ERROR_DRIVER_INTERNAL_ERROR)
     {
         /* to recover from this, you'll need to recreate device and all the resources */
-        MessageBoxW(NULL, L"DXGI device is removed or reset!", L"Error", 0);
+        MessageBox(NULL, TEXT("DXGI device is removed or reset!"), TEXT("Error"), 0);
         exit(0);
     }
     assert(SUCCEEDED(hr));
@@ -131,7 +131,7 @@ WindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     if (nk_d3d11_handle_event(wnd, msg, wparam, lparam))
         return 0;
 
-    return DefWindowProcW(wnd, msg, wparam, lparam);
+    return DefWindowProc(wnd, msg, wparam, lparam);
 }
 
 int main(void)
@@ -139,7 +139,7 @@ int main(void)
     struct nk_context *ctx;
     struct nk_colorf bg;
 
-    WNDCLASSW wc;
+    WNDCLASS wc;
     RECT rect = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
     DWORD style = WS_OVERLAPPEDWINDOW;
     DWORD exstyle = WS_EX_APPWINDOW;
@@ -153,15 +153,15 @@ int main(void)
     memset(&wc, 0, sizeof(wc));
     wc.style = CS_DBLCLKS;
     wc.lpfnWndProc = WindowProc;
-    wc.hInstance = GetModuleHandleW(0);
+    wc.hInstance = GetModuleHandle(0);
     wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.lpszClassName = L"NuklearWindowClass";
-    RegisterClassW(&wc);
+    wc.lpszClassName = TEXT("NuklearWindowClass");
+    RegisterClass(&wc);
 
     AdjustWindowRectEx(&rect, style, FALSE, exstyle);
 
-    wnd = CreateWindowExW(exstyle, wc.lpszClassName, L"Nuklear Direct3D 11 Demo",
+    wnd = CreateWindowEx(exstyle, wc.lpszClassName, TEXT("Nuklear Direct3D 11 Demo"),
         style | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT,
         rect.right - rect.left, rect.bottom - rect.top,
         NULL, NULL, wc.hInstance, NULL);
@@ -228,12 +228,12 @@ int main(void)
         /* Input */
         MSG msg;
         nk_input_begin(ctx);
-        while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
+        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
             if (msg.message == WM_QUIT)
                 running = 0;
             TranslateMessage(&msg);
-            DispatchMessageW(&msg);
+            DispatchMessage(&msg);
         }
         nk_input_end(ctx);
 
@@ -293,7 +293,7 @@ int main(void)
         hr = IDXGISwapChain_Present(swap_chain, 1, 0);
         if (hr == DXGI_ERROR_DEVICE_RESET || hr == DXGI_ERROR_DEVICE_REMOVED) {
             /* to recover from this, you'll need to recreate device and all the resources */
-            MessageBoxW(NULL, L"D3D11 device is lost or removed!", L"Error", 0);
+            MessageBox(NULL, TEXT("D3D11 device is lost or removed!"), TEXT("Error"), 0);
             break;
         } else if (hr == DXGI_STATUS_OCCLUDED) {
             /* window is not visible, so vsync won't work. Let's sleep a bit to reduce CPU usage */
@@ -308,6 +308,6 @@ int main(void)
     ID3D11DeviceContext_Release(context);
     ID3D11Device_Release(device);
     IDXGISwapChain_Release(swap_chain);
-    UnregisterClassW(wc.lpszClassName, wc.hInstance);
+    UnregisterClass(wc.lpszClassName, wc.hInstance);
     return 0;
 }
