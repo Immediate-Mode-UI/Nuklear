@@ -55,6 +55,10 @@ nk_draw_selectable(struct nk_command_buffer *out,
             text.background = background->data.color;
             nk_fill_rect(out, *bounds, style->rounding, background->data.color);
             break;
+        default:
+            NK_ASSERT(0);
+            text.background = nk_rgba(0, 0, 0, 0);
+            break;
     }
     if (icon) {
         if (img) nk_draw_image(out, *icon, img, nk_white);

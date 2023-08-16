@@ -298,6 +298,10 @@ nk_combo_begin_symbol(struct nk_context *ctx, enum nk_symbol_type symbol, struct
             nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
             nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
             break;
+        default:
+            NK_ASSERT(0);
+            sym_background = nk_rgba(0, 0, 0, 0);
+            break;
     }
     {
         struct nk_rect bounds = {0,0,0,0};
@@ -394,6 +398,10 @@ nk_combo_begin_symbol_text(struct nk_context *ctx, const char *selected, int len
             text.background = background->data.color;
             nk_fill_rect(&win->buffer, header, style->combo.rounding, background->data.color);
             nk_stroke_rect(&win->buffer, header, style->combo.rounding, style->combo.border, style->combo.border_color);
+            break;
+        default:
+            NK_ASSERT(0);
+            text.background = nk_rgba(0, 0, 0, 0);
             break;
     }
     {
