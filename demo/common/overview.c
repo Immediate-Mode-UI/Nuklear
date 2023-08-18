@@ -3,30 +3,19 @@ overview(struct nk_context *ctx)
 {
     /* window flags */
     static int show_menu = nk_true;
-    static int titlebar = nk_true;
-    static int border = nk_true;
-    static int resize = nk_true;
-    static int movable = nk_true;
-    static int no_scrollbar = nk_false;
-    static int scale_left = nk_false;
-    static nk_flags window_flags = 0;
-    static int minimizable = nk_true;
+    static nk_flags window_flags = NK_WINDOW_TITLE|NK_WINDOW_BORDER|NK_WINDOW_SCALABLE|NK_WINDOW_MOVABLE|NK_WINDOW_MINIMIZABLE;
+    nk_flags actual_window_flags;
 
     /* popups */
     static enum nk_style_header_align header_align = NK_HEADER_RIGHT;
     static int show_app_about = nk_false;
 
-    /* window flags */
-    window_flags = 0;
     ctx->style.window.header.align = header_align;
-    if (border) window_flags |= NK_WINDOW_BORDER;
-    if (resize) window_flags |= NK_WINDOW_SCALABLE;
-    if (movable) window_flags |= NK_WINDOW_MOVABLE;
-    if (no_scrollbar) window_flags |= NK_WINDOW_NO_SCROLLBAR;
-    if (scale_left) window_flags |= NK_WINDOW_SCALE_LEFT;
-    if (minimizable) window_flags |= NK_WINDOW_MINIMIZABLE;
 
-    if (nk_begin(ctx, "Overview", nk_rect(10, 10, 400, 600), window_flags))
+    actual_window_flags = window_flags;
+    if (!(actual_window_flags & NK_WINDOW_TITLE))
+        actual_window_flags &= ~(NK_WINDOW_MINIMIZABLE|NK_WINDOW_CLOSABLE);
+    if (nk_begin(ctx, "Overview", nk_rect(10, 10, 400, 600), actual_window_flags))
     {
         if (show_menu)
         {
@@ -132,14 +121,14 @@ overview(struct nk_context *ctx)
         /* window flags */
         if (nk_tree_push(ctx, NK_TREE_TAB, "Window", NK_MINIMIZED)) {
             nk_layout_row_dynamic(ctx, 30, 2);
-            nk_checkbox_label(ctx, "Titlebar", &titlebar);
             nk_checkbox_label(ctx, "Menu", &show_menu);
-            nk_checkbox_label(ctx, "Border", &border);
-            nk_checkbox_label(ctx, "Resizable", &resize);
-            nk_checkbox_label(ctx, "Movable", &movable);
-            nk_checkbox_label(ctx, "No Scrollbar", &no_scrollbar);
-            nk_checkbox_label(ctx, "Minimizable", &minimizable);
-            nk_checkbox_label(ctx, "Scale Left", &scale_left);
+            nk_checkbox_flags_label(ctx, "Titlebar", &window_flags, NK_WINDOW_TITLE);
+            nk_checkbox_flags_label(ctx, "Border", &window_flags, NK_WINDOW_BORDER);
+            nk_checkbox_flags_label(ctx, "Resizable", &window_flags, NK_WINDOW_SCALABLE);
+            nk_checkbox_flags_label(ctx, "Movable", &window_flags, NK_WINDOW_MOVABLE);
+            nk_checkbox_flags_label(ctx, "No Scrollbar", &window_flags, NK_WINDOW_NO_SCROLLBAR);
+            nk_checkbox_flags_label(ctx, "Minimizable", &window_flags, NK_WINDOW_MINIMIZABLE);
+            nk_checkbox_flags_label(ctx, "Scale Left", &window_flags, NK_WINDOW_SCALE_LEFT);
             nk_tree_pop(ctx);
         }
 

@@ -5,6 +5,7 @@ example/bin/*
 docs/xml
 docs/build
 docs/src
+doc/doc*
 *.tmp
 *.swo
 *.swp
