@@ -4414,6 +4414,21 @@ struct nk_command_buffer {
     struct nk_draw_config *draw_config;
 };
 
+#ifndef NK_INLINE_TAG_STACK_SIZE
+#define NK_INLINE_TAG_STACK_SIZE 16
+#endif
+
+enum nk_inline_tag_color {
+    NK_INLINE_TAG_COLOR,
+    NK_INLINE_TAG_BGCOLOR,
+    NK_INLINE_TAG_MAX
+};
+
+struct nk_inline_tag_stack {
+    nk_size head[NK_INLINE_TAG_MAX];
+    struct nk_color colors[NK_INLINE_TAG_MAX][NK_INLINE_TAG_STACK_SIZE];
+};
+
 /* shape outlines */
 NK_API void nk_stroke_line(struct nk_command_buffer *b, float x0, float y0, float x1, float y1, float line_thickness, struct nk_color);
 NK_API void nk_stroke_curve(struct nk_command_buffer*, float, float, float, float, float, float, float, float, float line_thickness, struct nk_color);
@@ -4436,7 +4451,8 @@ NK_API void nk_fill_polygon(struct nk_command_buffer*, float*, int point_count, 
 NK_API void nk_draw_image(struct nk_command_buffer*, struct nk_rect, const struct nk_image*, struct nk_color);
 NK_API void nk_draw_nine_slice(struct nk_command_buffer*, struct nk_rect, const struct nk_nine_slice*, struct nk_color);
 NK_API void nk_draw_text(struct nk_command_buffer*, struct nk_rect, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color);
-NK_API int nk_draw_raw_text(struct nk_command_buffer*, struct nk_rect, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color, float *w);
+NK_API int nk_draw_coded_text(struct nk_command_buffer*, struct nk_rect*, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color, nk_bool wrap, struct nk_inline_tag_stack *stack);
+NK_API int nk_draw_raw_text(struct nk_command_buffer*, struct nk_rect*, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color, nk_bool wrap, float *w);
 NK_API void nk_push_scissor(struct nk_command_buffer*, struct nk_rect);
 NK_API void nk_push_custom(struct nk_command_buffer*, struct nk_rect, nk_command_custom_callback, nk_handle usr);
 

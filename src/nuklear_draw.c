@@ -657,13 +657,14 @@ NK_API struct nk_name_color *nk_draw_get_name_color(struct nk_map_name_color_sta
     return 0;
 }
 NK_API int
-nk_draw_raw_text(struct nk_command_buffer *b, struct nk_rect r,
+nk_draw_raw_text(struct nk_command_buffer *b, struct nk_rect *r,
     const char *text, int len, const struct nk_user_font *font,
-    struct nk_color bg, struct nk_color fg, float *w)
+    struct nk_color bg, struct nk_color fg, nk_bool wrap, float *w)
 {
     struct nk_command_text *cmd = 0;
     enum nk_color_inline_type color_inline;
-    int i, j;
+    int i, j, len_esc = len;
+    const char *text_esc = text;
     float font_width;
 
     NK_ASSERT(b);
@@ -682,17 +683,31 @@ nk_draw_raw_text(struct nk_command_buffer *b, struct nk_rect r,
             nk_command_buffer_push(b, NK_COMMAND_TEXT, sizeof(*cmd) + (nk_size)(len + 1));
         if (!cmd) return 0;
 
-        for (i = 0, j = 0; j < len; ++i)
+        for (i = 0, j = 0; i < len; ++i)
             if (text[i] != NK_ESC_CHAR)
                 cmd->string[j++] = text[i];
         text = cmd->string;
+        len = j;
     }
 
     /* make sure text fits inside bounds */
     font_width = font->width(font->userdata, font->height, text, len);
-    if (font_width > r.w){
-        int glyphs = 0;
-        len = nk_text_clamp(font, text, len, r.w, &glyphs, &font_width, 0,0);
+    if (font_width > r->w) {
+        NK_INTERN nk_rune seperator[] = {' '};
+        int glyphs = 0, draw_len;
+
+        if (wrap)
+            draw_len = nk_text_clamp(font, text, len, r->w, &glyphs, &font_width, seperator, NK_LEN(seperator));
+        else
+            draw_len = nk_text_clamp(font, text, len, r->w, &glyphs, &font_width, 0, 0);
+
+        if (draw_len != len) {
+            len = draw_len;
+            for (i = 0, j = 0; j < len; ++i)
+                if (text_esc[i] != NK_ESC_CHAR)
+                    ++j;
+            len_esc = j;
+        }
     }
     if (w)
         *w = font_width;
@@ -708,10 +723,10 @@ nk_draw_raw_text(struct nk_command_buffer *b, struct nk_rect r,
         NK_MEMCPY(cmd->string, text, (nk_size)len);
     }
 
-    cmd->x = (short)r.x;
-    cmd->y = (short)r.y;
-    cmd->w = (unsigned short)r.w;
-    cmd->h = (unsigned short)r.h;
+    cmd->x = (short)r->x;
+    cmd->y = (short)r->y;
+    cmd->w = (unsigned short)r->w;
+    cmd->h = (unsigned short)r->h;
     cmd->background = bg;
     cmd->foreground = fg;
     cmd->font = font;
@@ -719,7 +734,10 @@ nk_draw_raw_text(struct nk_command_buffer *b, struct nk_rect r,
     cmd->string[len] = '\0';
     cmd->height = font->height;
 
-    return len;
+    r->x += font_width;
+    r->w -= font_width;
+
+    return len_esc;
 }
 #define NK_COLOR_INLINE_HEX_CODE_READ_LOOP(N) do { \
     if ((color_name_end = k++) >= length) \
@@ -728,32 +746,23 @@ nk_draw_raw_text(struct nk_command_buffer *b, struct nk_rect r,
     NK_CHAR_IS_HEX_DIGIT(c = string[color_name_end]) && ++found < N \
 )
 #define NK_COLOR_INLINE_GET_COLOR_FROM_STACK(DST, TAG_INDEX, DEF) do { \
-    DST = stack_index[TAG_INDEX] > 0 && \
-        stack_index[TAG_INDEX] <= NK_LEN(stack[TAG_INDEX]) ? \
-        stack[TAG_INDEX][stack_index[TAG_INDEX] - 1] : DEF; \
+    DST = stack->head[TAG_INDEX] > 0 && \
+        stack->head[TAG_INDEX] <= NK_INLINE_TAG_STACK_SIZE ? \
+        stack->colors[TAG_INDEX][stack->head[TAG_INDEX] - 1] : DEF; \
 } while (0)
 #define NK_COLOR_INLINE_DRAW_TEXT() do { if (j + esc_count < i) { \
     NK_COLOR_INLINE_GET_COLOR_FROM_STACK(current_bg, NK_INLINE_TAG_BGCOLOR, bg); \
     NK_COLOR_INLINE_GET_COLOR_FROM_STACK(current_fg, NK_INLINE_TAG_COLOR, fg); \
-    len = i - j - esc_count; \
-    draw_len = nk_draw_raw_text(b, r, string + j, len, font, current_bg, current_fg, &w); \
+    len = i - j; \
+    draw_len = nk_draw_raw_text(b, r, string + j, len, font, current_bg, current_fg, wrap, &w); \
     if (draw_len < len) \
-        return; \
-    r.x += w; \
-    r.w -= w; \
+        return j + draw_len; \
 } esc_count = 0; } while (0)
-enum {
-    NK_INLINE_TAG_COLOR,
-    NK_INLINE_TAG_BGCOLOR,
-    NK_INLINE_TAG_MAX
-};
-NK_API void
-nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
+NK_API int
+nk_draw_coded_text(struct nk_command_buffer *b, struct nk_rect *r,
     const char *string, int length, const struct nk_user_font *font,
-    struct nk_color bg, struct nk_color fg)
+    struct nk_color bg, struct nk_color fg, nk_bool wrap, struct nk_inline_tag_stack *stack)
 {
-    struct nk_color stack[NK_INLINE_TAG_MAX][16];
-    nk_size stack_index[NK_INLINE_TAG_MAX] = {0};
     struct nk_name_color *name_color;
     struct nk_color color, current_fg, current_bg;
     enum nk_color_inline_type color_inline;
@@ -767,11 +776,11 @@ nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
 
     NK_ASSERT(b);
     NK_ASSERT(font);
-    if (!b || !font || !string || !length || (bg.a == 0 && fg.a == 0)) return;
+    if (!b || !font || !string || !length || (bg.a == 0 && fg.a == 0)) return 0;
     if (b->use_clipping) {
         const struct nk_rect *c = &b->clip;
-        if (c->w == 0 || c->h == 0 || !NK_INTERSECT(r.x, r.y, r.w, r.h, c->x, c->y, c->w, c->h))
-            return;
+        if (c->w == 0 || c->h == 0 || !NK_INTERSECT(r->x, r->y, r->w, r->h, c->x, c->y, c->w, c->h))
+            return 0;
     }
 
     if (b->draw_config) {
@@ -869,10 +878,10 @@ begin:
                     i = j = k + 1;
                     if (i >= length)
                         goto end;
-                    if (stack_index[l] < NK_LEN(stack[l])) {
-                        stack[l][stack_index[l]] = color;
+                    if (stack->head[l] < NK_INLINE_TAG_STACK_SIZE) {
+                        stack->colors[l][stack->head[l]] = color;
                     }
-                    ++stack_index[l];
+                    ++stack->head[l];
                     found = 0;
                     goto begin;
                 }
@@ -882,9 +891,9 @@ end_branch:
             if (length - i >= nk_strlen(tag_end[l]) &&
                 nk_stricmpn(&string[i], tag_end[l], nk_strlen(tag_end[l])) == 0
             ) {
-                if (stack_index[l] > 0) {
+                if (stack->head[l] > 0) {
                     NK_COLOR_INLINE_DRAW_TEXT();
-                    --stack_index[l];
+                    --stack->head[l];
                     j = i += nk_strlen(tag_end[l]);
                     if (i < length)
                         goto begin;
@@ -896,7 +905,16 @@ end_branch:
     } /* for i */
 end:
     NK_COLOR_INLINE_DRAW_TEXT();
+    return i;
 }
 #undef NK_COLOR_INLINE_DRAW_TEXT
 #undef NK_COLOR_INLINE_GET_COLOR_FROM_STACK
 #undef NK_COLOR_INLINE_HEX_CODE_READ_LOOP
+NK_API void
+nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
+    const char *string, int length, const struct nk_user_font *font,
+    struct nk_color bg, struct nk_color fg)
+{
+    struct nk_inline_tag_stack stack = {0};
+    nk_draw_coded_text(b, &r, string, length, font, bg, fg, nk_false, &stack);
+}
