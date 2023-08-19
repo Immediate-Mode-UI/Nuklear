@@ -23,6 +23,13 @@ extern "C" {
 #ifndef NK_SCROLLBAR_HIDING_TIMEOUT
   #define NK_SCROLLBAR_HIDING_TIMEOUT 4.0f
 #endif
+/* for use in inline color code escape */
+#ifndef NK_ESC
+  #define NK_ESC "\033"
+#endif
+#ifndef NK_ESC_CHAR
+  #define NK_ESC_CHAR (NK_ESC[0])
+#endif
 /*
  * ==============================================================
  *

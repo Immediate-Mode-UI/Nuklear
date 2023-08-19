@@ -565,13 +565,15 @@ nk_draw_pop_color_inline(struct nk_context *ctx)
 }
 NK_API nk_bool nk_draw_push_map_name_color(struct nk_context *ctx, struct nk_map_name_color *c)
 {
+    struct nk_map_name_color_stack *stack;
+
     NK_ASSERT(ctx);
     NK_ASSERT(c);
 
     if (!ctx || !c)
         return 0;
 
-    struct nk_map_name_color_stack *stack = &ctx->draw_config.map_name_color;
+    stack = &ctx->draw_config.map_name_color;
     NK_ASSERT(stack->head < (int)NK_LEN(stack->elements));
     if (stack->head >= (int)NK_LEN(stack->elements))
         return 0;
@@ -582,10 +584,12 @@ NK_API nk_bool nk_draw_push_map_name_color(struct nk_context *ctx, struct nk_map
 }
 NK_API struct nk_map_name_color *nk_draw_get_map_name_color(struct nk_context* ctx, int index)
 {
+    struct nk_map_name_color_stack *stack;
+
     NK_ASSERT(ctx);
     if (!ctx) return 0;
 
-    struct nk_map_name_color_stack *stack = &ctx->draw_config.map_name_color;
+    stack = &ctx->draw_config.map_name_color;
     NK_ASSERT(stack->head > index);
     if (stack->head <= index)
         return 0;
@@ -594,20 +598,24 @@ NK_API struct nk_map_name_color *nk_draw_get_map_name_color(struct nk_context* c
 }
 NK_API int nk_draw_get_map_name_color_index_range(struct nk_context *ctx)
 {
+    struct nk_map_name_color_stack *stack;
+
     NK_ASSERT(ctx);
     if (!ctx) return 0;
 
-    struct nk_map_name_color_stack *stack = &ctx->draw_config.map_name_color;
+    stack = &ctx->draw_config.map_name_color;
     return stack->head;
 }
 NK_API struct nk_map_name_color *nk_draw_pop_map_name_color(struct nk_context *ctx)
 {
+    struct nk_map_name_color_stack *stack;
+
     NK_ASSERT(ctx);
 
     if (!ctx)
         return 0;
 
-    struct nk_map_name_color_stack *stack = &ctx->draw_config.map_name_color;
+    stack = &ctx->draw_config.map_name_color;
     NK_ASSERT(stack->head > 0);
     if (stack->head < 1)
         return 0;
@@ -675,7 +683,7 @@ nk_draw_raw_text(struct nk_command_buffer *b, struct nk_rect r,
         if (!cmd) return 0;
 
         for (i = 0, j = 0; j < len; ++i)
-            if (text[i] != '\e')
+            if (text[i] != NK_ESC_CHAR)
                 cmd->string[j++] = text[i];
         text = cmd->string;
     }
@@ -737,7 +745,7 @@ nk_draw_raw_text(struct nk_command_buffer *b, struct nk_rect r,
 enum {
     NK_INLINE_TAG_COLOR,
     NK_INLINE_TAG_BGCOLOR,
-    NK_INLINE_TAG_MAX,
+    NK_INLINE_TAG_MAX
 };
 NK_API void
 nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
@@ -782,7 +790,7 @@ nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
         found = 0;
     for (i = 0; i < length; ++i) {
 begin:
-        if (string[i] == '\e') {
+        if (string[i] == NK_ESC_CHAR) {
             ++esc_count;
             if (color_inline == NK_COLOR_INLINE_TAG) {
                 if (++i < length) {
