@@ -1044,12 +1044,12 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
 
         for (i = 0; i < sep_count; ++i) {
             if (unicode != sep_list[i]) continue;
-            sep_len = len;
+            sep_len = len + glyph_len;
             sep_width = last_width = width;
-            sep_g = g;
+            sep_g = g + 1;
             break;
         }
-        if (i == sep_count){
+        if (i == sep_count) {
             last_width = s;
             sep_g = g + 1;
         }
@@ -1063,6 +1063,22 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
         *text_width = last_width;
         return len;
     } else {
+        /* Skip trailing separators */
+        while (len + glyph_len <= text_len) {
+            for (i = 0; i < sep_count; ++i) {
+                if (unicode != sep_list[i]) continue;
+                sep_len = len + glyph_len;
+                sep_g = g + 1;
+                break;
+            }
+            if (i == sep_count)
+                break;
+
+            len += glyph_len;
+            g++;
+            glyph_len = nk_utf_decode(&text[len], &unicode, text_len - len);
+        }
+
         *glyphs = sep_g;
         *text_width = sep_width;
         return (!sep_len) ? len: sep_len;

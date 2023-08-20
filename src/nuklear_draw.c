@@ -693,11 +693,11 @@ nk_draw_raw_text(struct nk_command_buffer *b, struct nk_rect *r,
     /* make sure text fits inside bounds */
     font_width = font->width(font->userdata, font->height, text, len);
     if (font_width > r->w) {
-        NK_INTERN nk_rune seperator[] = {' '};
+        NK_INTERN nk_rune separator[] = {' '};
         int glyphs = 0, draw_len;
 
         if (wrap)
-            draw_len = nk_text_clamp(font, text, len, r->w, &glyphs, &font_width, seperator, NK_LEN(seperator));
+            draw_len = nk_text_clamp(font, text, len, r->w, &glyphs, &font_width, separator, NK_LEN(separator));
         else
             draw_len = nk_text_clamp(font, text, len, r->w, &glyphs, &font_width, 0, 0);
 
