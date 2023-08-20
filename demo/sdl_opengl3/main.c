@@ -44,7 +44,7 @@
 /*#define INCLUDE_CANVAS */
 /*#define INCLUDE_OVERVIEW */
 /*#define INCLUDE_NODE_EDITOR */
-#define INCLUDE_WEB_COLORS
+/*#define INCLUDE_WEB_COLORS */
 
 #ifdef INCLUDE_ALL
   #define INCLUDE_STYLE
