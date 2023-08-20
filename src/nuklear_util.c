@@ -1020,7 +1020,7 @@ nk_file_load(const char* path, nk_size* siz, struct nk_allocator *alloc)
 NK_LIB int
 nk_text_clamp(const struct nk_user_font *font, const char *text,
     int text_len, float space, int *glyphs, float *text_width,
-    nk_rune *sep_list, int sep_count)
+    nk_rune *sep_list, int sep_count, nk_bool *clamped_at_sep)
 {
     int i = 0;
     int glyph_len = 0;
@@ -1035,6 +1035,9 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
     int sep_g = 0;
     float sep_width = 0;
     sep_count = NK_MAX(sep_count,0);
+
+    if (sep_count > 0 && !sep_list)
+        return 0;
 
     glyph_len = nk_utf_decode(text, &unicode, text_len);
     while (glyph_len && (width < space) && (len + glyph_len <= text_len)) {
@@ -1051,7 +1054,6 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
         }
         if (i == sep_count) {
             last_width = s;
-            sep_g = g + 1;
         }
         len += glyph_len;
         width = s;
@@ -1061,10 +1063,12 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
     if (len >= text_len) {
         *glyphs = g;
         *text_width = last_width;
+        if (clamped_at_sep)
+            *clamped_at_sep = nk_false;
         return len;
     } else {
         /* Skip trailing separators */
-        while (len + glyph_len <= text_len) {
+        while (glyph_len && (len + glyph_len <= text_len)) {
             for (i = 0; i < sep_count; ++i) {
                 if (unicode != sep_list[i]) continue;
                 sep_len = len + glyph_len;
@@ -1079,9 +1083,19 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
             glyph_len = nk_utf_decode(&text[len], &unicode, text_len - len);
         }
 
-        *glyphs = sep_g;
-        *text_width = sep_width;
-        return (!sep_len) ? len: sep_len;
+        if (!sep_len) {
+            *glyphs = g;
+            *text_width = last_width;
+            if (clamped_at_sep)
+                *clamped_at_sep = nk_false;
+            return len;
+        } else {
+            *glyphs = sep_g;
+            *text_width = sep_width;
+            if (clamped_at_sep)
+                *clamped_at_sep = nk_true;
+            return sep_len;
+        }
     }
 }
 NK_LIB struct nk_vec2

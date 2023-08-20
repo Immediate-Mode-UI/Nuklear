@@ -659,7 +659,8 @@ NK_API struct nk_name_color *nk_draw_get_name_color(struct nk_map_name_color_sta
 NK_API int
 nk_draw_raw_text(struct nk_command_buffer *b, struct nk_rect *r,
     const char *text, int len, const struct nk_user_font *font,
-    struct nk_color bg, struct nk_color fg, nk_bool wrap, float *w)
+    struct nk_color bg, struct nk_color fg, nk_bool wrap,
+    nk_bool wrap_at_sep_only, float *w)
 {
     struct nk_command_text *cmd = 0;
     enum nk_color_inline_type color_inline;
@@ -695,11 +696,15 @@ nk_draw_raw_text(struct nk_command_buffer *b, struct nk_rect *r,
     if (font_width > r->w) {
         NK_INTERN nk_rune separator[] = {' '};
         int glyphs = 0, draw_len;
+        nk_bool clamped_at_sep;
 
-        if (wrap)
-            draw_len = nk_text_clamp(font, text, len, r->w, &glyphs, &font_width, separator, NK_LEN(separator));
-        else
-            draw_len = nk_text_clamp(font, text, len, r->w, &glyphs, &font_width, 0, 0);
+        if (wrap) {
+            draw_len = nk_text_clamp(font, text, len, r->w, &glyphs, &font_width, separator, NK_LEN(separator), &clamped_at_sep);
+            if (wrap_at_sep_only && !clamped_at_sep)
+                draw_len = 0;
+        } else {
+            draw_len = nk_text_clamp(font, text, len, r->w, &glyphs, &font_width, 0, 0, 0);
+        }
 
         if (draw_len != len) {
             len = draw_len;
@@ -754,7 +759,8 @@ nk_draw_raw_text(struct nk_command_buffer *b, struct nk_rect *r,
     NK_COLOR_INLINE_GET_COLOR_FROM_STACK(current_bg, NK_INLINE_TAG_BGCOLOR, bg); \
     NK_COLOR_INLINE_GET_COLOR_FROM_STACK(current_fg, NK_INLINE_TAG_COLOR, fg); \
     len = i - j; \
-    draw_len = nk_draw_raw_text(b, r, string + j, len, font, current_bg, current_fg, wrap, &w); \
+    draw_len = nk_draw_raw_text(b, r, string + j, len, font, current_bg, current_fg, wrap, wrap_at_sep_only, &w); \
+    wrap_at_sep_only = nk_true; \
     if (draw_len < len) \
         return j + draw_len; \
 } esc_count = 0; } while (0)
@@ -773,6 +779,7 @@ nk_draw_coded_text(struct nk_command_buffer *b, struct nk_rect *r,
     int i, j = 0, k, l, esc_count = 0, len, draw_len, found, color_name_begin, color_name_end;
     char c;
     float w;
+    nk_bool wrap_at_sep_only = nk_false;
 
     NK_ASSERT(b);
     NK_ASSERT(font);

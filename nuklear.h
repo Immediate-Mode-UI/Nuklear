@@ -4674,7 +4674,7 @@ NK_API void nk_draw_image(struct nk_command_buffer*, struct nk_rect, const struc
 NK_API void nk_draw_nine_slice(struct nk_command_buffer*, struct nk_rect, const struct nk_nine_slice*, struct nk_color);
 NK_API void nk_draw_text(struct nk_command_buffer*, struct nk_rect, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color);
 NK_API int nk_draw_coded_text(struct nk_command_buffer*, struct nk_rect*, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color, nk_bool wrap, struct nk_inline_tag_stack *stack);
-NK_API int nk_draw_raw_text(struct nk_command_buffer*, struct nk_rect*, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color, nk_bool wrap, float *w);
+NK_API int nk_draw_raw_text(struct nk_command_buffer*, struct nk_rect*, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color, nk_bool wrap, nk_bool wrap_at_sep_only, float *w);
 NK_API void nk_push_scissor(struct nk_command_buffer*, struct nk_rect);
 NK_API void nk_push_custom(struct nk_command_buffer*, struct nk_rect, nk_command_custom_callback, nk_handle usr);
 
@@ -5997,7 +5997,7 @@ NK_LIB int nk_string_float_limit(char *string, int prec);
 #ifndef NK_DTOA
 NK_LIB char *nk_dtoa(char *s, double n);
 #endif
-NK_LIB int nk_text_clamp(const struct nk_user_font *font, const char *text, int text_len, float space, int *glyphs, float *text_width, nk_rune *sep_list, int sep_count);
+NK_LIB int nk_text_clamp(const struct nk_user_font *font, const char *text, int text_len, float space, int *glyphs, float *text_width, nk_rune *sep_list, int sep_count, nk_bool *clamped_at_sep);
 NK_LIB struct nk_vec2 nk_text_calculate_text_bounds(const struct nk_user_font *font, const char *begin, int byte_len, float row_height, const char **remaining, struct nk_vec2 *out_offset, int *glyphs, int op);
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 NK_LIB int nk_strfmt(char *buf, int buf_size, const char *fmt, va_list args);
@@ -7547,7 +7547,7 @@ nk_file_load(const char* path, nk_size* siz, struct nk_allocator *alloc)
 NK_LIB int
 nk_text_clamp(const struct nk_user_font *font, const char *text,
     int text_len, float space, int *glyphs, float *text_width,
-    nk_rune *sep_list, int sep_count)
+    nk_rune *sep_list, int sep_count, nk_bool *clamped_at_sep)
 {
     int i = 0;
     int glyph_len = 0;
@@ -7562,6 +7562,9 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
     int sep_g = 0;
     float sep_width = 0;
     sep_count = NK_MAX(sep_count,0);
+
+    if (sep_count > 0 && !sep_list)
+        return 0;
 
     glyph_len = nk_utf_decode(text, &unicode, text_len);
     while (glyph_len && (width < space) && (len + glyph_len <= text_len)) {
@@ -7578,7 +7581,6 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
         }
         if (i == sep_count) {
             last_width = s;
-            sep_g = g + 1;
         }
         len += glyph_len;
         width = s;
@@ -7588,10 +7590,12 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
     if (len >= text_len) {
         *glyphs = g;
         *text_width = last_width;
+        if (clamped_at_sep)
+            *clamped_at_sep = nk_false;
         return len;
     } else {
         /* Skip trailing separators */
-        while (len + glyph_len <= text_len) {
+        while (glyph_len && (len + glyph_len <= text_len)) {
             for (i = 0; i < sep_count; ++i) {
                 if (unicode != sep_list[i]) continue;
                 sep_len = len + glyph_len;
@@ -7606,9 +7610,19 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
             glyph_len = nk_utf_decode(&text[len], &unicode, text_len - len);
         }
 
-        *glyphs = sep_g;
-        *text_width = sep_width;
-        return (!sep_len) ? len: sep_len;
+        if (!sep_len) {
+            *glyphs = g;
+            *text_width = last_width;
+            if (clamped_at_sep)
+                *clamped_at_sep = nk_false;
+            return len;
+        } else {
+            *glyphs = sep_g;
+            *text_width = sep_width;
+            if (clamped_at_sep)
+                *clamped_at_sep = nk_true;
+            return sep_len;
+        }
     }
 }
 NK_LIB struct nk_vec2
@@ -9963,7 +9977,8 @@ NK_API struct nk_name_color *nk_draw_get_name_color(struct nk_map_name_color_sta
 NK_API int
 nk_draw_raw_text(struct nk_command_buffer *b, struct nk_rect *r,
     const char *text, int len, const struct nk_user_font *font,
-    struct nk_color bg, struct nk_color fg, nk_bool wrap, float *w)
+    struct nk_color bg, struct nk_color fg, nk_bool wrap,
+    nk_bool wrap_at_sep_only, float *w)
 {
     struct nk_command_text *cmd = 0;
     enum nk_color_inline_type color_inline;
@@ -9999,11 +10014,15 @@ nk_draw_raw_text(struct nk_command_buffer *b, struct nk_rect *r,
     if (font_width > r->w) {
         NK_INTERN nk_rune separator[] = {' '};
         int glyphs = 0, draw_len;
+        nk_bool clamped_at_sep;
 
-        if (wrap)
-            draw_len = nk_text_clamp(font, text, len, r->w, &glyphs, &font_width, separator, NK_LEN(separator));
-        else
-            draw_len = nk_text_clamp(font, text, len, r->w, &glyphs, &font_width, 0, 0);
+        if (wrap) {
+            draw_len = nk_text_clamp(font, text, len, r->w, &glyphs, &font_width, separator, NK_LEN(separator), &clamped_at_sep);
+            if (wrap_at_sep_only && !clamped_at_sep)
+                draw_len = 0;
+        } else {
+            draw_len = nk_text_clamp(font, text, len, r->w, &glyphs, &font_width, 0, 0, 0);
+        }
 
         if (draw_len != len) {
             len = draw_len;
@@ -10058,7 +10077,8 @@ nk_draw_raw_text(struct nk_command_buffer *b, struct nk_rect *r,
     NK_COLOR_INLINE_GET_COLOR_FROM_STACK(current_bg, NK_INLINE_TAG_BGCOLOR, bg); \
     NK_COLOR_INLINE_GET_COLOR_FROM_STACK(current_fg, NK_INLINE_TAG_COLOR, fg); \
     len = i - j; \
-    draw_len = nk_draw_raw_text(b, r, string + j, len, font, current_bg, current_fg, wrap, &w); \
+    draw_len = nk_draw_raw_text(b, r, string + j, len, font, current_bg, current_fg, wrap, wrap_at_sep_only, &w); \
+    wrap_at_sep_only = nk_true; \
     if (draw_len < len) \
         return j + draw_len; \
 } esc_count = 0; } while (0)
@@ -10077,6 +10097,7 @@ nk_draw_coded_text(struct nk_command_buffer *b, struct nk_rect *r,
     int i, j = 0, k, l, esc_count = 0, len, draw_len, found, color_name_begin, color_name_end;
     char c;
     float w;
+    nk_bool wrap_at_sep_only = nk_false;
 
     NK_ASSERT(b);
     NK_ASSERT(font);
