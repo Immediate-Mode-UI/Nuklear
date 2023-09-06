@@ -516,7 +516,6 @@ static void
 nk_gdi_draw_text(HDC dc, short x, short y, unsigned short w, unsigned short h,
     const char *text, int len, GdiFont *font, struct nk_color cbg, struct nk_color cfg)
 {
-   
     int wsize;
     WCHAR* wstr;
 
@@ -525,8 +524,9 @@ nk_gdi_draw_text(HDC dc, short x, short y, unsigned short w, unsigned short h,
     wsize = MultiByteToWideChar(CP_UTF8, 0, text, len, NULL, 0);
     wstr = (WCHAR*)_alloca(wsize * sizeof(wchar_t));
     MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
-    // Transparent Text Background 
-    SetBkMode(dc, TRANSPARENT);
+    
+    SetBkMode(dc, TRANSPARENT); // Transparent Text Background 
+    SetBkColor(dc, convert_color(cbg));
     SetTextColor(dc, convert_color(cfg));
 
     SelectObject(dc, font->handle);
