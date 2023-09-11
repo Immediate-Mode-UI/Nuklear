@@ -8189,7 +8189,7 @@ NK_API void nk_map_name_color_init_colors(struct nk_map_name_color *c, const str
     size = sizeof(struct nk_name_color) * cc;
     nk_buffer_init(&c->buffer, a, size);
     nk_buffer_alloc(&c->buffer, NK_BUFFER_FRONT, size, sizeof(nk_hash));
-    m = c->buffer.memory.ptr;
+    m = (struct nk_name_color *)c->buffer.memory.ptr;
     for (i = 0; i < cc; ++i)
         nk_name_color_init(&m[i], nv[i], cv[i]);
     c->count = cc;
@@ -8217,7 +8217,7 @@ NK_API void nk_map_name_color_init_map_name_color(struct nk_map_name_color *c0, 
     }
 
     size = sizeof(struct nk_name_color) * c1->count;
-    cv1 = c1->buffer.memory.ptr;
+    cv1 = (struct nk_name_color *)c1->buffer.memory.ptr;
 
     if (count == 0) {
         nk_buffer_init(&c0->buffer, a, size);
@@ -8332,7 +8332,7 @@ NK_API void nk_map_name_color_push_colors(struct nk_map_name_color *c, const cha
     mem = nk_buffer_alloc(&c->buffer, NK_BUFFER_FRONT, size, sizeof(nk_hash));
     if (!mem)
         return;
-    m = mem;
+    m = (struct nk_name_color *)mem;
     for (i = 0; i < cc; ++i)
         nk_name_color_init(&m[i], nv[i], cv[i]);
     c->count += cc;
@@ -8377,7 +8377,7 @@ NK_API void nk_map_name_color_delete(struct nk_map_name_color *c, const char **f
     if (!filter_out)
         return;
 
-    cv = c->buffer.memory.ptr;
+    cv = (struct nk_name_color *)c->buffer.memory.ptr;
     while (count > 0) {
         hashes_count = NK_MIN((int)NK_LEN(hashes), count);
 
@@ -9961,7 +9961,7 @@ NK_API struct nk_name_color *nk_draw_get_name_color(struct nk_map_name_color_sta
     hash = nk_murmur_hash(name, len, NK_COLOR_INLINE_TAG);
     do {
         c = stack->elements[--i];
-        cv = c->buffer.memory.ptr;
+        cv = (struct nk_name_color *)c->buffer.memory.ptr;
         /* more recently pushed are on the back, so we start from the back */
         for (j = c->count; j > 0;) {
             --j;

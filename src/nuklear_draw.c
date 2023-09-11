@@ -643,7 +643,7 @@ NK_API struct nk_name_color *nk_draw_get_name_color(struct nk_map_name_color_sta
     hash = nk_murmur_hash(name, len, NK_COLOR_INLINE_TAG);
     do {
         c = stack->elements[--i];
-        cv = c->buffer.memory.ptr;
+        cv = (struct nk_name_color *)c->buffer.memory.ptr;
         /* more recently pushed are on the back, so we start from the back */
         for (j = c->count; j > 0;) {
             --j;
