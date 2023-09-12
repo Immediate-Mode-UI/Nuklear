@@ -192,11 +192,6 @@ web_colors_preview(struct nk_context *ctx)
         static nk_bool field_init = nk_false;
         static int field_len = 0;
         char text_count[32];
-        struct nk_vec2 wnd_size;
-        int wnd_cnt_width;
-
-        wnd_size = nk_window_get_size(ctx);
-        wnd_cnt_width = NK_MAX(40, wnd_size.x) - 40;
 
         if (!field_init)
         {
@@ -208,15 +203,15 @@ web_colors_preview(struct nk_context *ctx)
         if (nk_button_label(ctx, "Show Web Colors"))
             show_web_colors = !show_web_colors;
 
-        nk_layout_row_static(ctx, 30, wnd_cnt_width / 2, 2);
+        nk_layout_row_dynamic(ctx, 30, 2);
         nk_checkbox_label(ctx, "Wrap Text", &wrap_text);
         snprintf(text_count, NK_LEN(text_count), "%d/%d", field_len, (int)NK_LEN(field_buffer) - 1);
         nk_label(ctx, text_count, NK_TEXT_RIGHT);
 
-        nk_layout_row_static(ctx, 30, wnd_cnt_width, 1);
+        nk_layout_row_dynamic(ctx, 30, 1);
         nk_edit_string(ctx, NK_EDIT_SIMPLE, field_buffer, &field_len, NK_LEN(field_buffer), nk_filter_default);
 
-        nk_layout_row_static(ctx, 150, wnd_cnt_width, 1);
+        nk_layout_row_dynamic(ctx, 150, 1);
         nk_draw_push_color_inline(ctx, NK_COLOR_INLINE_TAG);
         if (wrap_text)
             nk_text_wrap(ctx, field_buffer, field_len);
@@ -233,7 +228,7 @@ web_colors_preview(struct nk_context *ctx)
             NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
         {
             for (i = 0; i < NK_LEN(web_colors_name_color_rgb); ++i) {
-                nk_layout_row_static(ctx, 20, 160, 2);
+                nk_layout_row_dynamic(ctx, 20, 2);
                 nk_label(ctx, web_colors_name_color_rgb[i].name, NK_TEXT_LEFT);
                 color = nk_rgb_hex(web_colors_name_color_rgb[i].color_rgb);
                 nk_label_colored(ctx, web_colors_name_color_rgb[i].color_rgb, NK_TEXT_LEFT, color);
