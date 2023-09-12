@@ -525,7 +525,7 @@ nk_gdi_draw_text(HDC dc, short x, short y, unsigned short w, unsigned short h,
     wstr = (WCHAR*)_alloca(wsize * sizeof(wchar_t));
     MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
     
-    SetBkMode(dc, TRANSPARENT); // Transparent Text Background 
+    SetBkMode(dc, TRANSPARENT); /* Transparent Text Background */
     SetBkColor(dc, convert_color(cbg));
     SetTextColor(dc, convert_color(cfg));
 
