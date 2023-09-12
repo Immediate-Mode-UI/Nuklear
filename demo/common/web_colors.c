@@ -208,11 +208,11 @@ web_colors_preview(struct nk_context *ctx)
         snprintf(text_count, NK_LEN(text_count), "%d/%d", field_len, (int)NK_LEN(field_buffer) - 1);
         nk_label(ctx, text_count, NK_TEXT_RIGHT);
 
+        nk_draw_push_color_inline(ctx, NK_COLOR_INLINE_TAG);
         nk_layout_row_dynamic(ctx, 30, 1);
         nk_edit_string(ctx, NK_EDIT_SIMPLE, field_buffer, &field_len, NK_LEN(field_buffer), nk_filter_default);
 
         nk_layout_row_dynamic(ctx, 150, 1);
-        nk_draw_push_color_inline(ctx, NK_COLOR_INLINE_TAG);
         if (wrap_text)
             nk_text_wrap(ctx, field_buffer, field_len);
         else
