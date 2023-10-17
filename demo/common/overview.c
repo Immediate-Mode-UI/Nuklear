@@ -590,6 +590,18 @@ overview(struct nk_context *ctx)
                 }
                 nk_tree_pop(ctx);
             }
+            
+            if (nk_tree_push(ctx, NK_TREE_NODE, "Horizontal Rule", NK_MINIMIZED))
+            {
+                nk_layout_row_dynamic(ctx, 12, 1);
+                nk_label(ctx, "Use this to subdivide spaces visually", NK_TEXT_LEFT);
+                nk_layout_row_dynamic(ctx, 4, 1);
+                nk_rule_horizontal(ctx, nk_white, nk_true);
+                nk_layout_row_dynamic(ctx, 75, 1);
+                nk_label_wrap(ctx, "Best used in 'Card'-like layouts, with a bigger title font on top. Takes on the size of the previous layout definition. Rounding optional.");
+                nk_tree_pop(ctx);
+            }
+
             nk_tree_pop(ctx);
         }
 
