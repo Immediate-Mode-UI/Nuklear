@@ -329,14 +329,22 @@ NK_LIB void nk_property(struct nk_context *ctx, const char *name, struct nk_prop
 #ifdef NK_INCLUDE_FONT_BAKING
 
 /**
- * NK_FONT_BAKING_SKIP_STB_IMPLEMENTATION
+ * @def NK_NO_STB_RECT_PACK_IMPLEMENTATION
  *
- * Allows skipping defining STB_RECT_PACK_IMPLEMENTATION and STB_TRUETYPE_IMPLEMENTATION.
+ * When defined, will avoid enabling STB_RECT_PACK_IMPLEMENTATION for when stb_rect_pack.h is already implemented elsewhere.
  */
-#ifndef NK_FONT_BAKING_SKIP_STB_IMPLEMENTATION
+#ifndef NK_NO_STB_RECT_PACK_IMPLEMENTATION
 #define STB_RECT_PACK_IMPLEMENTATION
+#endif /* NK_NO_STB_RECT_PACK_IMPLEMENTATION */
+
+/**
+ * @def NK_NO_STB_TRUETYPE_IMPLEMENTATION
+ *
+ * When defined, will avoid enabling STB_TRUETYPE_IMPLEMENTATION for when stb_truetype.h is already implemented elsewhere.
+ */
+#ifndef NK_NO_STB_TRUETYPE_IMPLEMENTATION
 #define STB_TRUETYPE_IMPLEMENTATION
-#endif  /* NK_FONT_BAKING_SKIP_STB_IMPLEMENTATION */
+#endif /* NK_NO_STB_TRUETYPE_IMPLEMENTATION */
 
 /* Allow consumer to define own STBTT_malloc/STBTT_free, and use the font atlas' allocator otherwise */
 #ifndef STBTT_malloc
