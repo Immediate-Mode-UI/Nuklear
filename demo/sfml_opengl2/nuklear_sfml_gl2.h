@@ -34,7 +34,7 @@ NK_API void                 nk_sfml_shutdown(void);
 
 struct nk_sfml_device {
     struct nk_buffer cmds;
-    struct nk_draw_null_texture null;
+    struct nk_draw_null_texture tex_null;
     GLuint font_tex;
 };
 
@@ -59,7 +59,7 @@ nk_sfml_device_upload_atlas(const void* image, int width, int height)
     glBindTexture(GL_TEXTURE_2D, dev->font_tex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)width, (GLsizei)height, 0, 
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)width, (GLsizei)height, 0,
                 GL_RGBA, GL_UNSIGNED_BYTE, image);
 }
 
@@ -118,7 +118,7 @@ nk_sfml_render(enum nk_anti_aliasing AA)
         config.vertex_layout = vertex_layout;
         config.vertex_size = sizeof(struct nk_sfml_vertex);
         config.vertex_alignment = NK_ALIGNOF(struct nk_sfml_vertex);
-        config.null = dev->null;
+        config.tex_null = dev->tex_null;
         config.circle_segment_count = 22;
         config.curve_segment_count = 22;
         config.arc_segment_count = 22;
@@ -245,7 +245,7 @@ nk_sfml_font_stash_end()
     const void* img;
     img = nk_font_atlas_bake(&sfml.atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
     nk_sfml_device_upload_atlas(img, w, h);
-    nk_font_atlas_end(&sfml.atlas, nk_handle_id((int)sfml.ogl.font_tex), &sfml.ogl.null);
+    nk_font_atlas_end(&sfml.atlas, nk_handle_id((int)sfml.ogl.font_tex), &sfml.ogl.tex_null);
     if(sfml.atlas.default_font)
         nk_style_set_font(&sfml.ctx, &sfml.atlas.default_font->handle);
 }

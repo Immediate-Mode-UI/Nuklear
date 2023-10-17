@@ -13,12 +13,14 @@ LIBS =
 else
 	UNAME_S := $(shell uname -s)
 	ifeq ($(UNAME_S),Darwin)
-		LIBS = 
+		LIBS =
 	else
 		LIBS =
 	endif
 endif
 
-$(BIN):
-	rm -f $(BIN) $(OBJS)
+$(BIN): clean
 	$(CC) $(SRC) $(CFLAGS) -o $(BIN)
+
+clean:
+	rm -f $(BIN) $(OBJS)

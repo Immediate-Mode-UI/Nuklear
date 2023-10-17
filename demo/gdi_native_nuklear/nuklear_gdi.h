@@ -2,31 +2,43 @@
  * Nuklear - 1.32.0 - public domain
  * no warrenty implied; use at your own risk.
  * authored from 2015-2016 by Micha Mettke
+ * 
+ * Modified GDI backend 2022
+ * Now based on a context that is required for each API function call.
+ * Removes the global state --> you can have multiple windows :-)
+ * 
  */
-/*
- * ==============================================================
- *
- *                              API
- *
- * ===============================================================
- */
+ /*
+  * ==============================================================
+  *
+  *                              API
+  *
+  * ===============================================================
+  */
 #ifndef NK_GDI_H_
 #define NK_GDI_H_
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <wingdi.h>
+#ifdef __cplusplus
+extern "C"{
+#endif
 
 typedef struct GdiFont GdiFont;
-NK_API struct nk_context* nk_gdi_init(GdiFont *font, HDC window_dc, unsigned int width, unsigned int height);
-NK_API int nk_gdi_handle_event(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-NK_API void nk_gdi_render(struct nk_color clear);
-NK_API void nk_gdi_shutdown(void);
+struct _nk_gdi_ctx;
+typedef struct _nk_gdi_ctx* nk_gdi_ctx;
+
+NK_API struct nk_context* nk_gdi_init(nk_gdi_ctx* gdi, GdiFont* font, HDC window_dc, unsigned int width, unsigned int height);
+NK_API int nk_gdi_handle_event(nk_gdi_ctx gdi, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+NK_API void nk_gdi_render(nk_gdi_ctx gdi, struct nk_color clear);
+NK_API void nk_gdi_shutdown(nk_gdi_ctx gdi);
 
 /* font */
-NK_API GdiFont* nk_gdifont_create(const char *name, int size);
-NK_API void nk_gdifont_del(GdiFont *font);
-NK_API void nk_gdi_set_font(GdiFont *font);
+NK_API GdiFont* nk_gdifont_create(const char* name, int size);
+NK_API void nk_gdifont_del(GdiFont* font);
+NK_API void nk_gdi_set_font(nk_gdi_ctx gdi, GdiFont* font);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
@@ -49,21 +61,21 @@ struct GdiFont {
     HDC dc;
 };
 
-static struct {
+struct _nk_gdi_ctx {
     HBITMAP bitmap;
     HDC window_dc;
     HDC memory_dc;
     unsigned int width;
     unsigned int height;
     struct nk_context ctx;
-} gdi;
+};
 
 static void
-nk_create_image(struct nk_image * image, const char * frame_buffer, const int width, const int height)
+nk_create_image(struct nk_image* image, const char* frame_buffer, const int width, const int height)
 {
     if (image && frame_buffer && (width > 0) && (height > 0))
     {
-        const unsigned char * src = (const unsigned char *)frame_buffer;
+        const unsigned char* src = (const unsigned char*)frame_buffer;
         INT row = ((width * 3 + 3) & ~3);
         LPBYTE lpBuf, pb = NULL;
         BITMAPINFO bi = { 0 };
@@ -76,7 +88,7 @@ nk_create_image(struct nk_image * image, const char * frame_buffer, const int wi
         image->region[1] = 0;
         image->region[2] = width;
         image->region[3] = height;
-        
+
         bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
         bi.bmiHeader.biWidth = width;
         bi.bmiHeader.biHeight = height;
@@ -84,9 +96,9 @@ nk_create_image(struct nk_image * image, const char * frame_buffer, const int wi
         bi.bmiHeader.biBitCount = 24;
         bi.bmiHeader.biCompression = BI_RGB;
         bi.bmiHeader.biSizeImage = row * height;
-        
+
         hbm = CreateDIBSection(NULL, &bi, DIB_RGB_COLORS, (void**)&lpBuf, NULL, 0);
-        
+
         pb = lpBuf + row * height;
         for (v = 0; v < height; v++)
         {
@@ -98,14 +110,14 @@ nk_create_image(struct nk_image * image, const char * frame_buffer, const int wi
                 pb[i + 2] = src[2];
                 src += 3;
             }
-        }        
+        }
         SetDIBits(NULL, hbm, 0, height, lpBuf, &bi, DIB_RGB_COLORS);
         image->handle.ptr = hbm;
     }
 }
 
 static void
-nk_delete_image(struct nk_image * image)
+nk_delete_image(struct nk_image* image)
 {
     if (image && image->handle.id != 0)
     {
@@ -116,20 +128,20 @@ nk_delete_image(struct nk_image * image)
 }
 
 static void
-nk_gdi_draw_image(short x, short y, unsigned short w, unsigned short h,
+nk_gdi_draw_image(nk_gdi_ctx gdi, short x, short y, unsigned short w, unsigned short h,
     struct nk_image img, struct nk_color col)
 {
     HBITMAP hbm = (HBITMAP)img.handle.ptr;
     HDC     hDCBits;
     BITMAP  bitmap;
-    
-    if (!gdi.memory_dc || !hbm)
+
+    if (!gdi->memory_dc || !hbm)
         return;
-    
-    hDCBits = CreateCompatibleDC(gdi.memory_dc);
+
+    hDCBits = CreateCompatibleDC(gdi->memory_dc);
     GetObject(hbm, sizeof(BITMAP), (LPSTR)&bitmap);
     SelectObject(hDCBits, hbm);
-    StretchBlt(gdi.memory_dc, x, y, w, h, hDCBits, 0, 0, bitmap.bmWidth, bitmap.bmHeight, SRCCOPY);
+    StretchBlt(gdi->memory_dc, x, y, w, h, hDCBits, 0, 0, bitmap.bmWidth, bitmap.bmHeight, SRCCOPY);
     DeleteDC(hDCBits);
 }
 
@@ -155,7 +167,8 @@ nk_gdi_stroke_line(HDC dc, short x0, short y0, short x1,
     HPEN pen = NULL;
     if (line_thickness == 1) {
         SetDCPenColor(dc, color);
-    } else {
+    }
+    else {
         pen = CreatePen(PS_SOLID, line_thickness, color);
         SelectObject(dc, pen);
     }
@@ -179,7 +192,8 @@ nk_gdi_stroke_rect(HDC dc, short x, short y, unsigned short w,
 
     if (line_thickness == 1) {
         SetDCPenColor(dc, color);
-    } else {
+    }
+    else {
         pen = CreatePen(PS_SOLID, line_thickness, color);
         SelectObject(dc, pen);
     }
@@ -187,12 +201,13 @@ nk_gdi_stroke_rect(HDC dc, short x, short y, unsigned short w,
     br = SelectObject(dc, GetStockObject(NULL_BRUSH));
     if (r == 0) {
         Rectangle(dc, x, y, x + w, y + h);
-    } else {
+    }
+    else {
         RoundRect(dc, x, y, x + w, y + h, r, r);
     }
     SelectObject(dc, br);
 
-    if (pen) { 
+    if (pen) {
         SelectObject(dc, GetStockObject(DC_PEN));
         DeleteObject(pen);
     }
@@ -209,7 +224,8 @@ nk_gdi_fill_rect(HDC dc, short x, short y, unsigned short w,
         SetRect(&rect, x, y, x + w, y + h);
         SetBkColor(dc, color);
         ExtTextOutW(dc, 0, 0, ETO_OPAQUE, &rect, NULL, 0, NULL);
-    } else {
+    }
+    else {
         SetDCPenColor(dc, color);
         SetDCBrushColor(dc, color);
         RoundRect(dc, x, y, x + w, y + h, r, r);
@@ -218,19 +234,19 @@ nk_gdi_fill_rect(HDC dc, short x, short y, unsigned short w,
 static void
 nk_gdi_set_vertexColor(PTRIVERTEX tri, struct nk_color col)
 {
-    tri->Red   = col.r << 8;
+    tri->Red = col.r << 8;
     tri->Green = col.g << 8;
-    tri->Blue  = col.b << 8;
+    tri->Blue = col.b << 8;
     tri->Alpha = 0xff << 8;
 }
 
 static void
-nk_gdi_rect_multi_color(HDC dc, short x, short y, unsigned short w,
+nk_gdi_rect_multi_color(nk_gdi_ctx gdi, HDC dc, short x, short y, unsigned short w,
     unsigned short h, struct nk_color left, struct nk_color top,
     struct nk_color right, struct nk_color bottom)
 {
     BLENDFUNCTION alphaFunction;
-    GRADIENT_RECT gRect;
+    // GRADIENT_RECT gRect;
     GRADIENT_TRIANGLE gTri[2];
     TRIVERTEX vt[4];
     alphaFunction.BlendOp = AC_SRC_OVER;
@@ -240,21 +256,21 @@ nk_gdi_rect_multi_color(HDC dc, short x, short y, unsigned short w,
 
     /* TODO: This Case Needs Repair.*/
     /* Top Left Corner */
-    vt[0].x     = x;
-    vt[0].y     = y;
+    vt[0].x = x;
+    vt[0].y = y;
     nk_gdi_set_vertexColor(&vt[0], left);
     /* Top Right Corner */
-    vt[1].x     = x+w;
-    vt[1].y     = y;
+    vt[1].x = x + w;
+    vt[1].y = y;
     nk_gdi_set_vertexColor(&vt[1], top);
     /* Bottom Left Corner */
-    vt[2].x     = x;
-    vt[2].y     = y+h;
+    vt[2].x = x;
+    vt[2].y = y + h;
     nk_gdi_set_vertexColor(&vt[2], right);
 
     /* Bottom Right Corner */
-    vt[3].x     = x+w;
-    vt[3].y     = y+h;
+    vt[3].x = x + w;
+    vt[3].y = y + h;
     nk_gdi_set_vertexColor(&vt[3], bottom);
 
     gTri[0].Vertex1 = 0;
@@ -263,13 +279,13 @@ nk_gdi_rect_multi_color(HDC dc, short x, short y, unsigned short w,
     gTri[1].Vertex1 = 2;
     gTri[1].Vertex2 = 1;
     gTri[1].Vertex3 = 3;
-    GdiGradientFill(dc, vt, 4, gTri, 2 , GRADIENT_FILL_TRIANGLE);
-    AlphaBlend(gdi.window_dc,  x, y, x+w, y+h,gdi.memory_dc, x, y, x+w, y+h,alphaFunction);
+    GdiGradientFill(dc, vt, 4, gTri, 2, GRADIENT_FILL_TRIANGLE);
+    AlphaBlend(gdi->window_dc, x, y, x + w, y + h, gdi->memory_dc, x, y, x + w, y + h, alphaFunction);
 
 }
 
 static BOOL
-SetPoint(POINT *p, LONG x, LONG y)
+SetPoint(POINT* p, LONG x, LONG y)
 {
     if (!p)
         return FALSE;
@@ -309,7 +325,8 @@ nk_gdi_stroke_triangle(HDC dc, short x0, short y0, short x1,
 
     if (line_thickness == 1) {
         SetDCPenColor(dc, color);
-    } else {
+    }
+    else {
         pen = CreatePen(PS_SOLID, line_thickness, color);
         SelectObject(dc, pen);
     }
@@ -323,10 +340,10 @@ nk_gdi_stroke_triangle(HDC dc, short x0, short y0, short x1,
 }
 
 static void
-nk_gdi_fill_polygon(HDC dc, const struct nk_vec2i *pnts, int count, struct nk_color col)
+nk_gdi_fill_polygon(HDC dc, const struct nk_vec2i* pnts, int count, struct nk_color col)
 {
     int i = 0;
-    #define MAX_POINTS 64
+#define MAX_POINTS 64
     POINT points[MAX_POINTS];
     COLORREF color = convert_color(col);
     SetDCBrushColor(dc, color);
@@ -336,18 +353,19 @@ nk_gdi_fill_polygon(HDC dc, const struct nk_vec2i *pnts, int count, struct nk_co
         points[i].y = pnts[i].y;
     }
     Polygon(dc, points, i);
-    #undef MAX_POINTS
+#undef MAX_POINTS
 }
 
 static void
-nk_gdi_stroke_polygon(HDC dc, const struct nk_vec2i *pnts, int count,
+nk_gdi_stroke_polygon(HDC dc, const struct nk_vec2i* pnts, int count,
     unsigned short line_thickness, struct nk_color col)
 {
     COLORREF color = convert_color(col);
     HPEN pen = NULL;
     if (line_thickness == 1) {
         SetDCPenColor(dc, color);
-    } else {
+    }
+    else {
         pen = CreatePen(PS_SOLID, line_thickness, color);
         SelectObject(dc, pen);
     }
@@ -367,14 +385,15 @@ nk_gdi_stroke_polygon(HDC dc, const struct nk_vec2i *pnts, int count,
 }
 
 static void
-nk_gdi_stroke_polyline(HDC dc, const struct nk_vec2i *pnts,
+nk_gdi_stroke_polyline(HDC dc, const struct nk_vec2i* pnts,
     int count, unsigned short line_thickness, struct nk_color col)
 {
     COLORREF color = convert_color(col);
     HPEN pen = NULL;
     if (line_thickness == 1) {
         SetDCPenColor(dc, color);
-    } else {
+    }
+    else {
         pen = CreatePen(PS_SOLID, line_thickness, color);
         SelectObject(dc, pen);
     }
@@ -390,62 +409,6 @@ nk_gdi_stroke_polyline(HDC dc, const struct nk_vec2i *pnts,
         SelectObject(dc, GetStockObject(DC_PEN));
         DeleteObject(pen);
     }
-}
-
-static void
-nk_gdi_stroke_arc(HDC dc, short cx, short cy, unsigned short r, float amin, float adelta, unsigned short line_thickness, struct nk_color col)
-{
-    COLORREF color = convert_color(col);
-
-    /* setup pen */
-    HPEN pen = NULL;
-    if (line_thickness == 1)
-        SetDCPenColor(dc, color);
-    else
-    {
-        /* the flat endcap makes thick arcs look better */
-        DWORD pen_style = PS_SOLID | PS_ENDCAP_FLAT | PS_GEOMETRIC;
-
-        LOGBRUSH brush;
-        brush.lbStyle = BS_SOLID;
-        brush.lbColor = color;
-        brush.lbHatch = 0;
-
-        pen = ExtCreatePen(pen_style, line_thickness, &brush, 0, NULL);
-        SelectObject(dc, pen);
-    }
-
-    /* calculate arc and draw */
-    int start_x = cx + (int) ((float)r*nk_cos(amin+adelta)),
-        start_y = cy + (int) ((float)r*nk_sin(amin+adelta)),
-        end_x = cx + (int) ((float)r*nk_cos(amin)),
-        end_y = cy + (int) ((float)r*nk_sin(amin));
-
-    HGDIOBJ br = SelectObject(dc, GetStockObject(NULL_BRUSH));
-    SetArcDirection(dc, AD_COUNTERCLOCKWISE);
-    Pie(dc, cx-r, cy-r, cx+r, cy+r, start_x, start_y, end_x, end_y);
-    SelectObject(dc, br);
-
-    if (pen)
-    {
-        SelectObject(dc, GetStockObject(DC_PEN));
-        DeleteObject(pen);
-    }
-}
-
-static void
-nk_gdi_fill_arc(HDC dc, short cx, short cy, unsigned short r, float amin, float adelta, struct nk_color col)
-{
-    COLORREF color = convert_color(col);
-    SetDCBrushColor(dc, color);
-    SetDCPenColor(dc, color);
-
-    int start_x = cx + (int) ((float)r*nk_cos(amin+adelta)),
-        start_y = cy + (int) ((float)r*nk_sin(amin+adelta)),
-        end_x = cx + (int) ((float)r*nk_cos(amin)),
-        end_y = cy + (int) ((float)r*nk_sin(amin));
-
-    Pie(dc, cx-r, cy-r, cx+r, cy+r, start_x, start_y, end_x, end_y);
 }
 
 static void
@@ -466,15 +429,14 @@ nk_gdi_stroke_circle(HDC dc, short x, short y, unsigned short w,
     HPEN pen = NULL;
     if (line_thickness == 1) {
         SetDCPenColor(dc, color);
-    } else {
+    }
+    else {
         pen = CreatePen(PS_SOLID, line_thickness, color);
         SelectObject(dc, pen);
     }
-    
-    HGDIOBJ br = SelectObject(dc, GetStockObject(NULL_BRUSH));
+
     SetDCBrushColor(dc, OPAQUE);
     Ellipse(dc, x, y, x + w, y + h);
-    SelectObject(dc, br);
 
     if (pen) {
         SelectObject(dc, GetStockObject(DC_PEN));
@@ -498,7 +460,8 @@ nk_gdi_stroke_curve(HDC dc, struct nk_vec2i p1,
 
     if (line_thickness == 1) {
         SetDCPenColor(dc, color);
-    } else {
+    }
+    else {
         pen = CreatePen(PS_SOLID, line_thickness, color);
         SelectObject(dc, pen);
     }
@@ -514,18 +477,17 @@ nk_gdi_stroke_curve(HDC dc, struct nk_vec2i p1,
 
 static void
 nk_gdi_draw_text(HDC dc, short x, short y, unsigned short w, unsigned short h,
-    const char *text, int len, GdiFont *font, struct nk_color cbg, struct nk_color cfg)
+    const char* text, int len, GdiFont* font, struct nk_color cbg, struct nk_color cfg)
 {
     int wsize;
     WCHAR* wstr;
 
-    if(!text || !font || !len) return;
+    if (!text || !font || !len) return;
 
     wsize = MultiByteToWideChar(CP_UTF8, 0, text, len, NULL, 0);
     wstr = (WCHAR*)_alloca(wsize * sizeof(wchar_t));
     MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
-    
-    SetBkMode(dc, TRANSPARENT); /* Transparent Text Background */
+
     SetBkColor(dc, convert_color(cbg));
     SetTextColor(dc, convert_color(cfg));
 
@@ -534,28 +496,28 @@ nk_gdi_draw_text(HDC dc, short x, short y, unsigned short w, unsigned short h,
 }
 
 static void
-nk_gdi_clear(HDC dc, struct nk_color col)
+nk_gdi_clear(nk_gdi_ctx gdi, HDC dc, struct nk_color col)
 {
     COLORREF color = convert_color(col);
     RECT rect;
-    SetRect(&rect, 0, 0, gdi.width, gdi.height);
+    SetRect(&rect, 0, 0, gdi->width, gdi->height);
     SetBkColor(dc, color);
 
     ExtTextOutW(dc, 0, 0, ETO_OPAQUE, &rect, NULL, 0, NULL);
 }
 
 static void
-nk_gdi_blit(HDC dc)
+nk_gdi_blit(nk_gdi_ctx gdi, HDC dc)
 {
-    BitBlt(dc, 0, 0, gdi.width, gdi.height, gdi.memory_dc, 0, 0, SRCCOPY);
+    BitBlt(dc, 0, 0, gdi->width, gdi->height, gdi->memory_dc, 0, 0, SRCCOPY);
 
 }
 
 GdiFont*
-nk_gdifont_create(const char *name, int size)
+nk_gdifont_create(const char* name, int size)
 {
     TEXTMETRICW metric;
-    GdiFont *font = (GdiFont*)calloc(1, sizeof(GdiFont));
+    GdiFont* font = (GdiFont*)calloc(1, sizeof(GdiFont));
     if (!font)
         return NULL;
     font->dc = CreateCompatibleDC(0);
@@ -567,9 +529,9 @@ nk_gdifont_create(const char *name, int size)
 }
 
 static float
-nk_gdifont_get_text_width(nk_handle handle, float height, const char *text, int len)
+nk_gdifont_get_text_width(nk_handle handle, float height, const char* text, int len)
 {
-    GdiFont *font = (GdiFont*)handle.ptr;
+    GdiFont* font = (GdiFont*)handle.ptr;
     SIZE size;
     int wsize;
     WCHAR* wstr;
@@ -585,28 +547,28 @@ nk_gdifont_get_text_width(nk_handle handle, float height, const char *text, int 
 }
 
 void
-nk_gdifont_del(GdiFont *font)
+nk_gdifont_del(GdiFont* font)
 {
-    if(!font) return;
+    if (!font) return;
     DeleteObject(font->handle);
     DeleteDC(font->dc);
     free(font);
 }
 
 static void
-nk_gdi_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
+nk_gdi_clipboard_paste(nk_handle usr, struct nk_text_edit* edit)
 {
     (void)usr;
     if (IsClipboardFormatAvailable(CF_UNICODETEXT) && OpenClipboard(NULL))
     {
-        HGLOBAL mem = GetClipboardData(CF_UNICODETEXT); 
+        HGLOBAL mem = GetClipboardData(CF_UNICODETEXT);
         if (mem)
         {
             SIZE_T size = GlobalSize(mem) - 1;
             if (size)
             {
                 LPCWSTR wstr = (LPCWSTR)GlobalLock(mem);
-                if (wstr) 
+                if (wstr)
                 {
                     int utf8size = WideCharToMultiByte(CP_UTF8, 0, wstr, (int)(size / sizeof(wchar_t)), NULL, 0, NULL, NULL);
                     if (utf8size)
@@ -619,7 +581,7 @@ nk_gdi_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
                             free(utf8);
                         }
                     }
-                    GlobalUnlock(mem); 
+                    GlobalUnlock(mem);
                 }
             }
         }
@@ -628,7 +590,7 @@ nk_gdi_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
 }
 
 static void
-nk_gdi_clipboard_copy(nk_handle usr, const char *text, int len)
+nk_gdi_clipboard_copy(nk_handle usr, const char* text, int len)
 {
     if (OpenClipboard(NULL))
     {
@@ -643,9 +605,9 @@ nk_gdi_clipboard_copy(nk_handle usr, const char *text, int len)
                 {
                     MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
                     wstr[wsize] = 0;
-                    GlobalUnlock(mem); 
+                    GlobalUnlock(mem);
 
-                    SetClipboardData(CF_UNICODETEXT, mem); 
+                    SetClipboardData(CF_UNICODETEXT, mem);
                 }
             }
         }
@@ -654,38 +616,40 @@ nk_gdi_clipboard_copy(nk_handle usr, const char *text, int len)
 }
 
 NK_API struct nk_context*
-nk_gdi_init(GdiFont *gdifont, HDC window_dc, unsigned int width, unsigned int height)
+nk_gdi_init(nk_gdi_ctx* gdi, GdiFont* gdifont, HDC window_dc, unsigned int width, unsigned int height)
 {
-    struct nk_user_font *font = &gdifont->nk;
+    *gdi = (nk_gdi_ctx)malloc(sizeof(struct _nk_gdi_ctx));
+
+    struct nk_user_font* font = &gdifont->nk;
     font->userdata = nk_handle_ptr(gdifont);
     font->height = (float)gdifont->height;
     font->width = nk_gdifont_get_text_width;
 
-    gdi.bitmap = CreateCompatibleBitmap(window_dc, width, height);
-    gdi.window_dc = window_dc;
-    gdi.memory_dc = CreateCompatibleDC(window_dc);
-    gdi.width = width;
-    gdi.height = height;
-    SelectObject(gdi.memory_dc, gdi.bitmap);
+    (*gdi)->bitmap = CreateCompatibleBitmap(window_dc, width, height);
+    (*gdi)->window_dc = window_dc;
+    (*gdi)->memory_dc = CreateCompatibleDC(window_dc);
+    (*gdi)->width = width;
+    (*gdi)->height = height;
+    SelectObject((*gdi)->memory_dc, (*gdi)->bitmap);
 
-    nk_init_default(&gdi.ctx, font);
-    gdi.ctx.clip.copy = nk_gdi_clipboard_copy;
-    gdi.ctx.clip.paste = nk_gdi_clipboard_paste;
-    return &gdi.ctx;
+    nk_init_default(&(*gdi)->ctx, font);
+    (*gdi)->ctx.clip.copy = nk_gdi_clipboard_copy;
+    (*gdi)->ctx.clip.paste = nk_gdi_clipboard_paste;
+    return &(*gdi)->ctx;
 }
 
 NK_API void
-nk_gdi_set_font(GdiFont *gdifont)
+nk_gdi_set_font(nk_gdi_ctx gdi, GdiFont* gdifont)
 {
-    struct nk_user_font *font = &gdifont->nk;
+    struct nk_user_font* font = &gdifont->nk;
     font->userdata = nk_handle_ptr(gdifont);
     font->height = (float)gdifont->height;
     font->width = nk_gdifont_get_text_width;
-    nk_style_set_font(&gdi.ctx, font);
+    nk_style_set_font(&gdi->ctx, font);
 }
 
 NK_API int
-nk_gdi_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
+nk_gdi_handle_event(nk_gdi_ctx gdi, HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg)
     {
@@ -693,13 +657,13 @@ nk_gdi_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
         unsigned width = LOWORD(lparam);
         unsigned height = HIWORD(lparam);
-        if (width != gdi.width || height != gdi.height)
+        if (width != gdi->width || height != gdi->height)
         {
-            DeleteObject(gdi.bitmap);
-            gdi.bitmap = CreateCompatibleBitmap(gdi.window_dc, width, height);
-            gdi.width = width;
-            gdi.height = height;
-            SelectObject(gdi.memory_dc, gdi.bitmap);
+            DeleteObject(gdi->bitmap);
+            gdi->bitmap = CreateCompatibleBitmap(gdi->window_dc, width, height);
+            gdi->width = width;
+            gdi->height = height;
+            SelectObject(gdi->memory_dc, gdi->bitmap);
         }
         break;
     }
@@ -708,7 +672,7 @@ nk_gdi_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
         PAINTSTRUCT paint;
         HDC dc = BeginPaint(wnd, &paint);
-        nk_gdi_blit(dc);
+        nk_gdi_blit(gdi, dc);
         EndPaint(wnd, &paint);
         return 1;
     }
@@ -726,95 +690,88 @@ nk_gdi_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case VK_SHIFT:
         case VK_LSHIFT:
         case VK_RSHIFT:
-            nk_input_key(&gdi.ctx, NK_KEY_SHIFT, down);
+            nk_input_key(&gdi->ctx, NK_KEY_SHIFT, down);
             return 1;
 
         case VK_DELETE:
-            nk_input_key(&gdi.ctx, NK_KEY_DEL, down);
+            nk_input_key(&gdi->ctx, NK_KEY_DEL, down);
             return 1;
 
         case VK_RETURN:
-            nk_input_key(&gdi.ctx, NK_KEY_ENTER, down);
+            nk_input_key(&gdi->ctx, NK_KEY_ENTER, down);
             return 1;
 
         case VK_TAB:
-            nk_input_key(&gdi.ctx, NK_KEY_TAB, down);
+            nk_input_key(&gdi->ctx, NK_KEY_TAB, down);
             return 1;
 
         case VK_LEFT:
             if (ctrl)
-                nk_input_key(&gdi.ctx, NK_KEY_TEXT_WORD_LEFT, down);
+                nk_input_key(&gdi->ctx, NK_KEY_TEXT_WORD_LEFT, down);
             else
-                nk_input_key(&gdi.ctx, NK_KEY_LEFT, down);
+                nk_input_key(&gdi->ctx, NK_KEY_LEFT, down);
             return 1;
 
         case VK_RIGHT:
             if (ctrl)
-                nk_input_key(&gdi.ctx, NK_KEY_TEXT_WORD_RIGHT, down);
+                nk_input_key(&gdi->ctx, NK_KEY_TEXT_WORD_RIGHT, down);
             else
-                nk_input_key(&gdi.ctx, NK_KEY_RIGHT, down);
+                nk_input_key(&gdi->ctx, NK_KEY_RIGHT, down);
             return 1;
 
         case VK_BACK:
-            nk_input_key(&gdi.ctx, NK_KEY_BACKSPACE, down);
+            nk_input_key(&gdi->ctx, NK_KEY_BACKSPACE, down);
             return 1;
 
         case VK_HOME:
-            nk_input_key(&gdi.ctx, NK_KEY_TEXT_START, down);
-            nk_input_key(&gdi.ctx, NK_KEY_SCROLL_START, down);
+            nk_input_key(&gdi->ctx, NK_KEY_TEXT_START, down);
+            nk_input_key(&gdi->ctx, NK_KEY_SCROLL_START, down);
             return 1;
 
         case VK_END:
-            nk_input_key(&gdi.ctx, NK_KEY_TEXT_END, down);
-            nk_input_key(&gdi.ctx, NK_KEY_SCROLL_END, down);
+            nk_input_key(&gdi->ctx, NK_KEY_TEXT_END, down);
+            nk_input_key(&gdi->ctx, NK_KEY_SCROLL_END, down);
             return 1;
 
         case VK_NEXT:
-            nk_input_key(&gdi.ctx, NK_KEY_SCROLL_DOWN, down);
+            nk_input_key(&gdi->ctx, NK_KEY_SCROLL_DOWN, down);
             return 1;
 
         case VK_PRIOR:
-            nk_input_key(&gdi.ctx, NK_KEY_SCROLL_UP, down);
+            nk_input_key(&gdi->ctx, NK_KEY_SCROLL_UP, down);
             return 1;
-                
-        case 'A':
-            if (ctrl) {
-                nk_input_key(&gdi.ctx, NK_KEY_TEXT_SELECT_ALL, down);
-                return 1;
-            }
-            break;
 
         case 'C':
             if (ctrl) {
-                nk_input_key(&gdi.ctx, NK_KEY_COPY, down);
+                nk_input_key(&gdi->ctx, NK_KEY_COPY, down);
                 return 1;
             }
             break;
 
         case 'V':
             if (ctrl) {
-                nk_input_key(&gdi.ctx, NK_KEY_PASTE, down);
+                nk_input_key(&gdi->ctx, NK_KEY_PASTE, down);
                 return 1;
             }
             break;
 
         case 'X':
             if (ctrl) {
-                nk_input_key(&gdi.ctx, NK_KEY_CUT, down);
+                nk_input_key(&gdi->ctx, NK_KEY_CUT, down);
                 return 1;
             }
             break;
 
         case 'Z':
             if (ctrl) {
-                nk_input_key(&gdi.ctx, NK_KEY_TEXT_UNDO, down);
+                nk_input_key(&gdi->ctx, NK_KEY_TEXT_UNDO, down);
                 return 1;
             }
             break;
 
         case 'R':
             if (ctrl) {
-                nk_input_key(&gdi.ctx, NK_KEY_TEXT_REDO, down);
+                nk_input_key(&gdi->ctx, NK_KEY_TEXT_REDO, down);
                 return 1;
             }
             break;
@@ -825,52 +782,52 @@ nk_gdi_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_CHAR:
         if (wparam >= 32)
         {
-            nk_input_unicode(&gdi.ctx, (nk_rune)wparam);
+            nk_input_unicode(&gdi->ctx, (nk_rune)wparam);
             return 1;
         }
         break;
 
     case WM_LBUTTONDOWN:
-        nk_input_button(&gdi.ctx, NK_BUTTON_LEFT, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
+        nk_input_button(&gdi->ctx, NK_BUTTON_LEFT, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
         SetCapture(wnd);
         return 1;
 
     case WM_LBUTTONUP:
-        nk_input_button(&gdi.ctx, NK_BUTTON_DOUBLE, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
-        nk_input_button(&gdi.ctx, NK_BUTTON_LEFT, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
+        nk_input_button(&gdi->ctx, NK_BUTTON_DOUBLE, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
+        nk_input_button(&gdi->ctx, NK_BUTTON_LEFT, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
         ReleaseCapture();
         return 1;
 
     case WM_RBUTTONDOWN:
-        nk_input_button(&gdi.ctx, NK_BUTTON_RIGHT, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
+        nk_input_button(&gdi->ctx, NK_BUTTON_RIGHT, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
         SetCapture(wnd);
         return 1;
 
     case WM_RBUTTONUP:
-        nk_input_button(&gdi.ctx, NK_BUTTON_RIGHT, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
+        nk_input_button(&gdi->ctx, NK_BUTTON_RIGHT, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
         ReleaseCapture();
         return 1;
 
     case WM_MBUTTONDOWN:
-        nk_input_button(&gdi.ctx, NK_BUTTON_MIDDLE, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
+        nk_input_button(&gdi->ctx, NK_BUTTON_MIDDLE, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
         SetCapture(wnd);
         return 1;
 
     case WM_MBUTTONUP:
-        nk_input_button(&gdi.ctx, NK_BUTTON_MIDDLE, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
+        nk_input_button(&gdi->ctx, NK_BUTTON_MIDDLE, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
         ReleaseCapture();
         return 1;
 
     case WM_MOUSEWHEEL:
-        nk_input_scroll(&gdi.ctx, nk_vec2(0,(float)(short)HIWORD(wparam) / WHEEL_DELTA));
+        nk_input_scroll(&gdi->ctx, nk_vec2(0, (float)(short)HIWORD(wparam) / WHEEL_DELTA));
         return 1;
 
     case WM_MOUSEMOVE:
-        nk_input_motion(&gdi.ctx, (short)LOWORD(lparam), (short)HIWORD(lparam));
+        nk_input_motion(&gdi->ctx, (short)LOWORD(lparam), (short)HIWORD(lparam));
         return 1;
 
     case WM_LBUTTONDBLCLK:
-        nk_input_button(&gdi.ctx, NK_BUTTON_DOUBLE, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
+        nk_input_button(&gdi->ctx, NK_BUTTON_DOUBLE, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
         return 1;
     }
 
@@ -878,111 +835,103 @@ nk_gdi_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 NK_API void
-nk_gdi_shutdown(void)
+nk_gdi_shutdown(nk_gdi_ctx gdi)
 {
-    DeleteObject(gdi.memory_dc);
-    DeleteObject(gdi.bitmap);
-    nk_free(&gdi.ctx);
+    DeleteObject(gdi->memory_dc);
+    DeleteObject(gdi->bitmap);
+    nk_free(&gdi->ctx);
 }
 
 NK_API void
-nk_gdi_render(struct nk_color clear)
+nk_gdi_render(nk_gdi_ctx gdi, struct nk_color clear)
 {
-    const struct nk_command *cmd;
+    const struct nk_command* cmd;
 
-    HDC memory_dc = gdi.memory_dc;
+    HDC memory_dc = gdi->memory_dc;
     SelectObject(memory_dc, GetStockObject(DC_PEN));
     SelectObject(memory_dc, GetStockObject(DC_BRUSH));
-    nk_gdi_clear(memory_dc, clear);
+    nk_gdi_clear(gdi, memory_dc, clear);
 
-    nk_foreach(cmd, &gdi.ctx)
+    nk_foreach(cmd, &gdi->ctx)
     {
         switch (cmd->type) {
         case NK_COMMAND_NOP: break;
         case NK_COMMAND_SCISSOR: {
-            const struct nk_command_scissor *s =(const struct nk_command_scissor*)cmd;
+            const struct nk_command_scissor* s = (const struct nk_command_scissor*)cmd;
             nk_gdi_scissor(memory_dc, s->x, s->y, s->w, s->h);
         } break;
         case NK_COMMAND_LINE: {
-            const struct nk_command_line *l = (const struct nk_command_line *)cmd;
+            const struct nk_command_line* l = (const struct nk_command_line*)cmd;
             nk_gdi_stroke_line(memory_dc, l->begin.x, l->begin.y, l->end.x,
                 l->end.y, l->line_thickness, l->color);
         } break;
         case NK_COMMAND_RECT: {
-            const struct nk_command_rect *r = (const struct nk_command_rect *)cmd;
+            const struct nk_command_rect* r = (const struct nk_command_rect*)cmd;
             nk_gdi_stroke_rect(memory_dc, r->x, r->y, r->w, r->h,
                 (unsigned short)r->rounding, r->line_thickness, r->color);
         } break;
         case NK_COMMAND_RECT_FILLED: {
-            const struct nk_command_rect_filled *r = (const struct nk_command_rect_filled *)cmd;
+            const struct nk_command_rect_filled* r = (const struct nk_command_rect_filled*)cmd;
             nk_gdi_fill_rect(memory_dc, r->x, r->y, r->w, r->h,
                 (unsigned short)r->rounding, r->color);
         } break;
         case NK_COMMAND_CIRCLE: {
-            const struct nk_command_circle *c = (const struct nk_command_circle *)cmd;
+            const struct nk_command_circle* c = (const struct nk_command_circle*)cmd;
             nk_gdi_stroke_circle(memory_dc, c->x, c->y, c->w, c->h, c->line_thickness, c->color);
         } break;
         case NK_COMMAND_CIRCLE_FILLED: {
-            const struct nk_command_circle_filled *c = (const struct nk_command_circle_filled *)cmd;
+            const struct nk_command_circle_filled* c = (const struct nk_command_circle_filled*)cmd;
             nk_gdi_fill_circle(memory_dc, c->x, c->y, c->w, c->h, c->color);
         } break;
-        case NK_COMMAND_ARC: {
-            const struct nk_command_arc *q = (const struct nk_command_arc *)cmd;
-            nk_gdi_stroke_arc(memory_dc, q->cx, q->cy, q->r, q->a[0], q->a[1], q->line_thickness, q->color);
-        } break;
-        case NK_COMMAND_ARC_FILLED: {
-            const struct nk_command_arc_filled *q = (const struct nk_command_arc_filled *)cmd;
-            nk_gdi_fill_arc(memory_dc, q->cx, q->cy, q->r, q->a[0], q->a[1], q->color);
-        } break;
         case NK_COMMAND_TRIANGLE: {
-            const struct nk_command_triangle*t = (const struct nk_command_triangle*)cmd;
+            const struct nk_command_triangle* t = (const struct nk_command_triangle*)cmd;
             nk_gdi_stroke_triangle(memory_dc, t->a.x, t->a.y, t->b.x, t->b.y,
                 t->c.x, t->c.y, t->line_thickness, t->color);
         } break;
         case NK_COMMAND_TRIANGLE_FILLED: {
-            const struct nk_command_triangle_filled *t = (const struct nk_command_triangle_filled *)cmd;
+            const struct nk_command_triangle_filled* t = (const struct nk_command_triangle_filled*)cmd;
             nk_gdi_fill_triangle(memory_dc, t->a.x, t->a.y, t->b.x, t->b.y,
                 t->c.x, t->c.y, t->color);
         } break;
         case NK_COMMAND_POLYGON: {
-            const struct nk_command_polygon *p =(const struct nk_command_polygon*)cmd;
-            nk_gdi_stroke_polygon(memory_dc, p->points, p->point_count, p->line_thickness,p->color);
+            const struct nk_command_polygon* p = (const struct nk_command_polygon*)cmd;
+            nk_gdi_stroke_polygon(memory_dc, p->points, p->point_count, p->line_thickness, p->color);
         } break;
         case NK_COMMAND_POLYGON_FILLED: {
-            const struct nk_command_polygon_filled *p = (const struct nk_command_polygon_filled *)cmd;
+            const struct nk_command_polygon_filled* p = (const struct nk_command_polygon_filled*)cmd;
             nk_gdi_fill_polygon(memory_dc, p->points, p->point_count, p->color);
         } break;
         case NK_COMMAND_POLYLINE: {
-            const struct nk_command_polyline *p = (const struct nk_command_polyline *)cmd;
+            const struct nk_command_polyline* p = (const struct nk_command_polyline*)cmd;
             nk_gdi_stroke_polyline(memory_dc, p->points, p->point_count, p->line_thickness, p->color);
         } break;
         case NK_COMMAND_TEXT: {
-            const struct nk_command_text *t = (const struct nk_command_text*)cmd;
+            const struct nk_command_text* t = (const struct nk_command_text*)cmd;
             nk_gdi_draw_text(memory_dc, t->x, t->y, t->w, t->h,
                 (const char*)t->string, t->length,
                 (GdiFont*)t->font->userdata.ptr,
                 t->background, t->foreground);
         } break;
         case NK_COMMAND_CURVE: {
-            const struct nk_command_curve *q = (const struct nk_command_curve *)cmd;
+            const struct nk_command_curve* q = (const struct nk_command_curve*)cmd;
             nk_gdi_stroke_curve(memory_dc, q->begin, q->ctrl[0], q->ctrl[1],
                 q->end, q->line_thickness, q->color);
         } break;
         case NK_COMMAND_RECT_MULTI_COLOR: {
-            const struct nk_command_rect_multi_color *r = (const struct nk_command_rect_multi_color *)cmd;
-            nk_gdi_rect_multi_color(memory_dc, r->x, r->y,r->w, r->h, r->left, r->top, r->right, r->bottom);
+            const struct nk_command_rect_multi_color* r = (const struct nk_command_rect_multi_color*)cmd;
+            nk_gdi_rect_multi_color(gdi, memory_dc, r->x, r->y, r->w, r->h, r->left, r->top, r->right, r->bottom);
         } break;
         case NK_COMMAND_IMAGE: {
-            const struct nk_command_image *i = (const struct nk_command_image *)cmd;
-            nk_gdi_draw_image(i->x, i->y, i->w, i->h, i->img, i->col);
+            const struct nk_command_image* i = (const struct nk_command_image*)cmd;
+            nk_gdi_draw_image(gdi, i->x, i->y, i->w, i->h, i->img, i->col);
         } break;
-        case NK_COMMAND_CUSTOM:
+        case NK_COMMAND_ARC:
+        case NK_COMMAND_ARC_FILLED:
         default: break;
         }
     }
-    nk_gdi_blit(gdi.window_dc);
-    nk_clear(&gdi.ctx);
+    nk_gdi_blit(gdi, gdi->window_dc);
+    nk_clear(&gdi->ctx);
 }
 
 #endif
-

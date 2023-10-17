@@ -761,7 +761,7 @@ nk_gdipfont_get_text_width(nk_handle handle, float height, const char *text, int
 
     (void)height;
     wsize = MultiByteToWideChar(CP_UTF8, 0, text, len, NULL, 0);
-    wstr = (WCHAR*)_alloca(wsize * sizeof(wchar_t));
+    wstr = (WCHAR*)_malloca(wsize * sizeof(wchar_t));
     MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
 
     GdipMeasureString(gdip.memory, wstr, wsize, font->handle, &layout, gdip.format, &bbox, NULL, NULL);
@@ -777,93 +777,63 @@ nk_gdipfont_del(GdipFont *font)
 }
 
 static void
-nk_gdip_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
+nk_gdip_clipboard_paste(nk_handle usr, struct nk_text_edit* edit)
 {
-    HGLOBAL mem;
-    SIZE_T size;
-    LPCWSTR wstr;
-    int utf8size;
-    char* utf8;
     (void)usr;
-
-    if (!IsClipboardFormatAvailable(CF_UNICODETEXT) && OpenClipboard(NULL))
-        return;
-
-    mem = (HGLOBAL)GetClipboardData(CF_UNICODETEXT);
-    if (!mem) {
+    if (IsClipboardFormatAvailable(CF_UNICODETEXT) && OpenClipboard(NULL))
+    {
+        HGLOBAL mem = GetClipboardData(CF_UNICODETEXT);
+        if (mem)
+        {
+            SIZE_T size = GlobalSize(mem) - 1;
+            if (size)
+            {
+                LPCWSTR wstr = (LPCWSTR)GlobalLock(mem);
+                if (wstr)
+                {
+                    int utf8size = WideCharToMultiByte(CP_UTF8, 0, wstr, (int)(size / sizeof(wchar_t)), NULL, 0, NULL, NULL);
+                    if (utf8size)
+                    {
+                        char* utf8 = (char*)malloc(utf8size);
+                        if (utf8)
+                        {
+                            WideCharToMultiByte(CP_UTF8, 0, wstr, (int)(size / sizeof(wchar_t)), utf8, utf8size, NULL, NULL);
+                            nk_textedit_paste(edit, utf8, utf8size);
+                            free(utf8);
+                        }
+                    }
+                    GlobalUnlock(mem);
+                }
+            }
+        }
         CloseClipboard();
-        return;
     }
-
-    size = GlobalSize(mem) - 1;
-    if (!size) {
-        CloseClipboard();
-        return;
-    }
-
-    wstr = (LPCWSTR)GlobalLock(mem);
-    if (!wstr) {
-        CloseClipboard();
-        return;
-    }
-
-    utf8size = WideCharToMultiByte(CP_UTF8, 0, wstr, (int)(size / sizeof(wchar_t)), NULL, 0, NULL, NULL);
-    if (!utf8size) {
-        GlobalUnlock(mem);
-        CloseClipboard();
-        return;
-    }
-
-    utf8 = (char*)malloc(utf8size);
-    if (!utf8) {
-        GlobalUnlock(mem);
-        CloseClipboard();
-        return;
-    }
-
-    WideCharToMultiByte(CP_UTF8, 0, wstr, (int)(size / sizeof(wchar_t)), utf8, utf8size, NULL, NULL);
-    nk_textedit_paste(edit, utf8, utf8size);
-    free(utf8);
-    GlobalUnlock(mem);
-    CloseClipboard();
 }
 
 static void
-nk_gdip_clipboard_copy(nk_handle usr, const char *text, int len)
+nk_gdip_clipboard_copy(nk_handle usr, const char* text, int len)
 {
-    HGLOBAL mem;
-    wchar_t* wstr;
-    int wsize;
-    (void)usr;
+    if (OpenClipboard(NULL))
+    {
+        int wsize = MultiByteToWideChar(CP_UTF8, 0, text, len, NULL, 0);
+        if (wsize)
+        {
+            HGLOBAL mem = (HGLOBAL)GlobalAlloc(GMEM_MOVEABLE, (wsize + 1) * sizeof(wchar_t));
+            if (mem)
+            {
+                wchar_t* wstr = (wchar_t*)GlobalLock(mem);
+                if (wstr)
+                {
+                    MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
+                    wstr[wsize] = 0;
+                    GlobalUnlock(mem);
 
-    if (!OpenClipboard(NULL))
-        return;
-
-    wsize = MultiByteToWideChar(CP_UTF8, 0, text, len, NULL, 0);
-    if (!wsize) {
+                    SetClipboardData(CF_UNICODETEXT, mem);
+                }
+            }
+        }
         CloseClipboard();
-        return;
     }
-
-    mem = (HGLOBAL)GlobalAlloc(GMEM_MOVEABLE, (wsize + 1) * sizeof(wchar_t));
-    if (!mem) {
-        CloseClipboard();
-        return;
-    }
-
-    wstr = (wchar_t*)GlobalLock(mem);
-    if (!wstr) {
-        GlobalFree(mem);
-        CloseClipboard();
-        return;
-    }
-
-    MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
-    wstr[wsize] = 0;
-    GlobalUnlock(mem);
-    if (!SetClipboardData(CF_UNICODETEXT, mem))
-        GlobalFree(mem);
-    CloseClipboard();
 }
 
 NK_API struct nk_context*
@@ -996,6 +966,13 @@ nk_gdip_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case VK_PRIOR:
             nk_input_key(&gdip.ctx, NK_KEY_SCROLL_UP, down);
             return 1;
+
+        case 'A':
+            if (ctrl) {
+                nk_input_key(&gdip.ctx, NK_KEY_TEXT_SELECT_ALL, down);
+                return 1;
+            }
+            break;
 
         case 'C':
             if (ctrl) {
