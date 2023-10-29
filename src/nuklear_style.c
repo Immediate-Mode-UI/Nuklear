@@ -119,25 +119,26 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     /* default button */
     button = &style->button;
     nk_zero_struct(*button);
-    button->normal          = nk_style_item_color(table[NK_COLOR_BUTTON]);
-    button->hover           = nk_style_item_color(table[NK_COLOR_BUTTON_HOVER]);
-    button->active          = nk_style_item_color(table[NK_COLOR_BUTTON_ACTIVE]);
-    button->border_color    = table[NK_COLOR_BORDER];
-    button->text_background = table[NK_COLOR_BUTTON];
-    button->text_normal     = table[NK_COLOR_TEXT];
-    button->text_hover      = table[NK_COLOR_TEXT];
-    button->text_active     = table[NK_COLOR_TEXT];
-    button->padding         = nk_vec2(2.0f,2.0f);
-    button->image_padding   = nk_vec2(0.0f,0.0f);
-    button->touch_padding   = nk_vec2(0.0f, 0.0f);
-    button->userdata        = nk_handle_ptr(0);
-    button->text_alignment  = NK_TEXT_CENTERED;
-    button->border          = 1.0f;
-    button->rounding        = 4.0f;
-    button->color_factor    = 1.0f;
-    button->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
-    button->draw_begin      = 0;
-    button->draw_end        = 0;
+    button->normal                     = nk_style_item_color(table[NK_COLOR_BUTTON]);
+    button->hover                      = nk_style_item_color(table[NK_COLOR_BUTTON_HOVER]);
+    button->active                     = nk_style_item_color(table[NK_COLOR_BUTTON_ACTIVE]);
+    button->border_color               = table[NK_COLOR_BORDER];
+    button->text_background            = table[NK_COLOR_BUTTON];
+    button->text_normal                = table[NK_COLOR_TEXT];
+    button->text_hover                 = table[NK_COLOR_TEXT];
+    button->text_active                = table[NK_COLOR_TEXT];
+    button->padding                    = nk_vec2(2.0f,2.0f);
+    button->image_padding              = nk_vec2(0.0f,0.0f);
+    button->touch_padding              = nk_vec2(0.0f, 0.0f);
+    button->userdata                   = nk_handle_ptr(0);
+    button->text_alignment             = NK_TEXT_CENTERED;
+    button->border                     = 1.0f;
+    button->rounding                   = 4.0f;
+    button->color_factor_text          = 1.0f;
+    button->color_factor_background    = 1.0f;
+    button->disabled_factor            = NK_WIDGET_DISABLED_FACTOR;
+    button->draw_begin                 = 0;
+    button->draw_end                   = 0;
 
     /* contextual button */
     button = &style->contextual_button;
@@ -156,7 +157,8 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     button->text_alignment  = NK_TEXT_CENTERED;
     button->border          = 0.0f;
     button->rounding        = 0.0f;
-    button->color_factor    = 1.0f;
+    button->color_factor_text    = 1.0f;
+    button->color_factor_background = 1.0f;
     button->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
     button->draw_begin      = 0;
     button->draw_end        = 0;
@@ -178,7 +180,8 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     button->text_alignment  = NK_TEXT_CENTERED;
     button->border          = 0.0f;
     button->rounding        = 1.0f;
-    button->color_factor    = 1.0f;
+    button->color_factor_text    = 1.0f;
+    button->color_factor_background = 1.0f;
     button->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
     button->draw_begin      = 0;
     button->draw_end        = 0;
@@ -293,7 +296,8 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     button->text_alignment  = NK_TEXT_CENTERED;
     button->border          = 1.0f;
     button->rounding        = 0.0f;
-    button->color_factor    = 1.0f;
+    button->color_factor_text    = 1.0f;
+    button->color_factor_background = 1.0f;
     button->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
     button->draw_begin      = 0;
     button->draw_end        = 0;
@@ -363,7 +367,8 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     button->text_alignment  = NK_TEXT_CENTERED;
     button->border          = 1.0f;
     button->rounding        = 0.0f;
-    button->color_factor    = 1.0f;
+    button->color_factor_text    = 1.0f;
+    button->color_factor_background = 1.0f;
     button->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
     button->draw_begin      = 0;
     button->draw_end        = 0;
@@ -437,7 +442,8 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     button->text_alignment  = NK_TEXT_CENTERED;
     button->border          = 0.0f;
     button->rounding        = 0.0f;
-    button->color_factor    = 1.0f;
+    button->color_factor_text    = 1.0f;
+    button->color_factor_background = 1.0f;
     button->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
     button->draw_begin      = 0;
     button->draw_end        = 0;
@@ -518,7 +524,8 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     button->text_alignment  = NK_TEXT_CENTERED;
     button->border          = 0.0f;
     button->rounding        = 0.0f;
-    button->color_factor    = 1.0f;
+    button->color_factor_text    = 1.0f;
+    button->color_factor_background = 1.0f;
     button->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
     button->draw_begin      = 0;
     button->draw_end        = 0;
@@ -555,7 +562,8 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     button->text_alignment  = NK_TEXT_CENTERED;
     button->border          = 0.0f;
     button->rounding        = 0.0f;
-    button->color_factor    = 1.0f;
+    button->color_factor_text    = 1.0f;
+    button->color_factor_background = 1.0f;
     button->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
     button->draw_begin      = 0;
     button->draw_end        = 0;
@@ -578,7 +586,8 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     button->text_alignment  = NK_TEXT_CENTERED;
     button->border          = 0.0f;
     button->rounding        = 0.0f;
-    button->color_factor    = 1.0f;
+    button->color_factor_text    = 1.0f;
+    button->color_factor_background = 1.0f;
     button->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
     button->draw_begin      = 0;
     button->draw_end        = 0;
@@ -617,7 +626,8 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     button->text_alignment  = NK_TEXT_CENTERED;
     button->border          = 0.0f;
     button->rounding        = 0.0f;
-    button->color_factor    = 1.0f;
+    button->color_factor_text    = 1.0f;
+    button->color_factor_background = 1.0f;
     button->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
     button->draw_begin      = 0;
     button->draw_end        = 0;
@@ -639,7 +649,8 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     button->text_alignment  = NK_TEXT_CENTERED;
     button->border          = 0.0f;
     button->rounding        = 0.0f;
-    button->color_factor    = 1.0f;
+    button->color_factor_text    = 1.0f;
+    button->color_factor_background = 1.0f;
     button->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
     button->draw_begin      = 0;
     button->draw_end        = 0;
