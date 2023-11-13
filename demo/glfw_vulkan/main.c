@@ -102,7 +102,7 @@ void swap_chain_support_details_free(
 struct vulkan_demo {
     GLFWwindow *win;
     VkInstance instance;
-    VkDebugUtilsMessengerEXT debugMessenger;
+    VkDebugUtilsMessengerEXT debug_messenger;
     VkSurfaceKHR surface;
     VkPhysicalDevice physical_device;
     struct queue_family_indices indices;
@@ -193,6 +193,43 @@ cleanup:
     return ret;
 }
 
+VkResult create_debug_utils_messenger_ext(
+    VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
+    const VkAllocationCallbacks *pAllocator,
+    VkDebugUtilsMessengerEXT *pDebugMessenger) {
+    PFN_vkCreateDebugUtilsMessengerEXT func =
+        (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
+            instance, "vkCreateDebugUtilsMessengerEXT");
+    if (func != NULL) {
+        return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
+    } else {
+        return VK_ERROR_EXTENSION_NOT_PRESENT;
+    }
+}
+
+bool create_debug_callback(struct vulkan_demo *demo) {
+    VkResult result;
+
+    VkDebugUtilsMessengerCreateInfoEXT create_info;
+    memset(&create_info, 0, sizeof(VkDebugUtilsMessengerCreateInfoEXT));
+    create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    create_info.messageSeverity =
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+                              VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                              VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    create_info.pfnUserCallback = vulkan_debug_callback;
+
+    result = create_debug_utils_messenger_ext(demo->instance, &create_info,
+                                              NULL, &demo->debug_messenger);
+    if (result != VK_SUCCESS) {
+        fprintf(stderr, "create_debug_utils_messenger_ext failed %d\n", result);
+        return false;
+    }
+    return true;
+}
+
 bool create_instance(struct vulkan_demo *demo) {
     uint32_t i;
     uint32_t available_instance_extension_count;
@@ -205,11 +242,15 @@ bool create_instance(struct vulkan_demo *demo) {
     const char **glfw_extensions;
     uint32_t enabled_extension_count;
     const char **enabled_extensions = NULL;
+    bool validation_layers_installed;
 
-    if (!check_validation_layer_support()) {
-        fprintf(stderr, "Couldn't find validation layer %s\n",
+    validation_layers_installed = check_validation_layer_support();
+
+    if (!validation_layers_installed) {
+        fprintf(stdout,
+                "Couldn't find validation layer %s. Continuing without "
+                "validation layers.\n",
                 validation_layer_name);
-        return ret;
     }
     result = vkEnumerateInstanceExtensionProperties(
         NULL, &available_instance_extension_count, NULL);
@@ -239,12 +280,19 @@ bool create_instance(struct vulkan_demo *demo) {
 
     glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
 
-    enabled_extension_count = glfw_extension_count + 1;
-    enabled_extensions = malloc(enabled_extension_count * sizeof(char *));
-    memcpy(enabled_extensions, glfw_extensions,
-           glfw_extension_count * sizeof(char *));
-    enabled_extensions[glfw_extension_count] =
-        VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+    enabled_extension_count = glfw_extension_count;
+    if (validation_layers_installed) {
+        enabled_extension_count += 1;
+        enabled_extensions = malloc(enabled_extension_count * sizeof(char *));
+        memcpy(enabled_extensions, glfw_extensions,
+               glfw_extension_count * sizeof(char *));
+        enabled_extensions[glfw_extension_count] =
+            VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+    } else {
+        enabled_extensions = malloc(enabled_extension_count * sizeof(char *));
+        memcpy(enabled_extensions, glfw_extensions,
+               glfw_extension_count * sizeof(char *));
+    }
 
     printf("Trying to enable the following instance extensions: ");
     for (i = 0; i < enabled_extension_count; i++) {
@@ -283,15 +331,20 @@ bool create_instance(struct vulkan_demo *demo) {
     create_info.pApplicationInfo = &app_info;
     create_info.enabledExtensionCount = enabled_extension_count;
     create_info.ppEnabledExtensionNames = enabled_extensions;
-    create_info.enabledLayerCount = 1;
-    create_info.ppEnabledLayerNames = &validation_layer_name;
+    if (validation_layers_installed) {
+        create_info.enabledLayerCount = 1;
+        create_info.ppEnabledLayerNames = &validation_layer_name;
+    }
     result = vkCreateInstance(&create_info, NULL, &demo->instance);
     if (result != VK_SUCCESS) {
         fprintf(stderr, "vkCreateInstance result %d\n", result);
         return ret;
     }
-    ret = true;
-
+    if (validation_layers_installed) {
+        ret = create_debug_callback(demo);
+    } else {
+        ret = true;
+    }
 cleanup:
     if (available_instance_extensions) {
         free(available_instance_extensions);
@@ -301,43 +354,6 @@ cleanup:
     }
 
     return ret;
-}
-
-VkResult create_debug_utils_messenger_ext(
-    VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
-    const VkAllocationCallbacks *pAllocator,
-    VkDebugUtilsMessengerEXT *pDebugMessenger) {
-    PFN_vkCreateDebugUtilsMessengerEXT func =
-        (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
-            instance, "vkCreateDebugUtilsMessengerEXT");
-    if (func != NULL) {
-        return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-    } else {
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
-    }
-}
-
-bool create_debug_callback(struct vulkan_demo *demo) {
-    VkResult result;
-
-    VkDebugUtilsMessengerCreateInfoEXT create_info;
-    memset(&create_info, 0, sizeof(VkDebugUtilsMessengerCreateInfoEXT));
-    create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    create_info.messageSeverity =
-        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                              VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                              VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    create_info.pfnUserCallback = vulkan_debug_callback;
-
-    result = create_debug_utils_messenger_ext(demo->instance, &create_info,
-                                              NULL, &demo->debugMessenger);
-    if (result != VK_SUCCESS) {
-        fprintf(stderr, "create_debug_utils_messenger_ext failed %d\n", result);
-        return false;
-    }
-    return true;
 }
 
 bool create_surface(struct vulkan_demo *demo) {
@@ -1817,9 +1833,6 @@ bool create_vulkan_demo(struct vulkan_demo *demo) {
     if (!create_instance(demo)) {
         return false;
     }
-    if (!create_debug_callback(demo)) {
-        return false;
-    }
     if (!create_surface(demo)) {
         return false;
     }
@@ -2014,11 +2027,13 @@ bool cleanup(struct vulkan_demo *demo) {
     vkDestroyDevice(demo->device, NULL);
     vkDestroySurfaceKHR(demo->instance, demo->surface, NULL);
 
-    result = destroy_debug_utils_messenger_ext(demo->instance,
-                                               demo->debugMessenger, NULL);
-    if (result != VK_SUCCESS) {
-        fprintf(stderr, "Couldn't destroy debug messenger: %d\n", result);
-        return false;
+    if (demo->debug_messenger) {
+        result = destroy_debug_utils_messenger_ext(demo->instance,
+                                                   demo->debug_messenger, NULL);
+        if (result != VK_SUCCESS) {
+            fprintf(stderr, "Couldn't destroy debug messenger: %d\n", result);
+            return false;
+        }
     }
     vkDestroyInstance(demo->instance, NULL);
     if (demo->swap_chain_images) {
