@@ -91,6 +91,7 @@ nk_draw_button(struct nk_command_buffer *out,
     const struct nk_rect *bounds, nk_flags state,
     const struct nk_style_button *style)
 {
+    struct nk_rect stroke_rect;
     const struct nk_style_item *background;
     if (state & NK_WIDGET_STATE_HOVER)
         background = &style->hover;
@@ -107,7 +108,16 @@ nk_draw_button(struct nk_command_buffer *out,
             break;
         case NK_STYLE_ITEM_COLOR:
             nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-            nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+
+            /*
+            To ensure the stroke used for the border does not end up outside the bounds of the button, the rectangle
+            used for the border stroke needs to be pulled in by half the border width.
+            */
+            stroke_rect.x = bounds->x + style->border*0.5f;
+            stroke_rect.y = bounds->y + style->border*0.5f;
+            stroke_rect.w = bounds->w - style->border;
+            stroke_rect.h = bounds->h - style->border;
+            nk_stroke_rect(out, stroke_rect, style->rounding, style->border, style->border_color);
             break;
     }
     return background;
