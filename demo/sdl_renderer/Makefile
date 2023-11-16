@@ -3,7 +3,7 @@ BIN = demo
 
 # Flags
 CFLAGS += -std=c89 -pedantic -O0
-CFLAGS += `sdl2-config --cflags`
+CFLAGS += `sdl2-config --cflags` -DUSE_SDL_IMAGE
 
 SRC = main.c
 OBJ = $(SRC:.c=.o)
@@ -17,7 +17,7 @@ else
 	ifeq ($(UNAME_S),Darwin)
 #TODO		LIBS = -lSDL2 -framework OpenGL -lm
 	else
-		LIBS += -lm -ldl `sdl2-config --libs`
+		LIBS += -lSDL2_image `sdl2-config --libs` -lm
 	endif
 endif
 

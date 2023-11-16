@@ -1,4 +1,4 @@
-#include <string.h> // strcpy, strlen
+#include <string.h> /* strcpy, strlen */
 
 #ifdef __unix__
 #include <dirent.h>
@@ -394,11 +394,11 @@ file_browser_run(struct file_browser *browser, struct nk_context *ctx)
                 size_t i = 0, j = 0;
                 size_t rows = 0, cols = 0;
                 size_t count = browser->dir_count + browser->file_count;
+                static float ratio2[] = {0.08f, NK_UNDEFINED};
 
                 /* File icons layout */
                 cols = 2;
                 rows = count / cols;
-                static float ratio2[] = {0.08f, NK_UNDEFINED};
                 nk_layout_row(ctx, NK_DYNAMIC, 30, 2, ratio2);
                 for (i = 0; i <= rows; i += 1) {
                     size_t n = j + cols;
