@@ -151,8 +151,10 @@ extern "C" {
     #elif (defined(_WIN32) || defined(WIN32)) && defined(_MSC_VER)
       #define NK_SIZE_TYPE unsigned __int32
     #elif defined(__GNUC__) || defined(__clang__)
-      #if defined(__x86_64__) || defined(__ppc64__) || defined(__PPC64__) || defined(__aarch64__)
+      #ifdef __LP64__
         #define NK_SIZE_TYPE unsigned long
+      #elif defined(_WIN64)
+        #define NK_SIZE_TYPE unsigned long long
       #else
         #define NK_SIZE_TYPE unsigned int
       #endif
@@ -166,8 +168,10 @@ extern "C" {
     #elif (defined(_WIN32) || defined(WIN32)) && defined(_MSC_VER)
       #define NK_POINTER_TYPE unsigned __int32
     #elif defined(__GNUC__) || defined(__clang__)
-      #if defined(__x86_64__) || defined(__ppc64__) || defined(__PPC64__) || defined(__aarch64__)
+      #ifdef __LP64__
         #define NK_POINTER_TYPE unsigned long
+      #elif defined(_WIN64)
+        #define NK_POINTER_TYPE unsigned long long
       #else
         #define NK_POINTER_TYPE unsigned int
       #endif
