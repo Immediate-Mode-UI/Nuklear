@@ -41,6 +41,7 @@
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
+/*#define INCLUDE_FILE_BROWSER */
 #define INCLUDE_OVERVIEW
 /*#define INCLUDE_NODE_EDITOR */
 
@@ -48,6 +49,7 @@
   #define INCLUDE_STYLE
   #define INCLUDE_CALCULATOR
   #define INCLUDE_CANVAS
+  #define INCLUDE_FILE_BROWSER
   #define INCLUDE_OVERVIEW
   #define INCLUDE_NODE_EDITOR
 #endif
@@ -61,6 +63,9 @@
 #ifdef INCLUDE_CANVAS
   #include "../../demo/common/canvas.c"
 #endif
+#ifdef INCLUDE_FILE_BROWSER
+  #include "../../demo/common/file_browser.c"
+#endif
 #ifdef INCLUDE_OVERVIEW
   #include "../../demo/common/overview.c"
 #endif
@@ -73,6 +78,26 @@
  *                          DEMO
  *
  * ===============================================================*/
+
+static void
+die(const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(stderr, fmt, ap);
+    va_end(ap);
+    fputs("\n", stderr);
+    exit(EXIT_FAILURE);
+}
+
+static struct nk_image
+icon_load(const char *filename)
+{
+    ALLEGRO_BITMAP *bitmap = al_load_bitmap(filename);
+    if (!bitmap) die("[SDL]: failed to load image: %s", filename);
+    return nk_image_ptr(bitmap);
+}
+
 int main(void)
 {
     /* Platform */
@@ -81,8 +106,18 @@ int main(void)
     NkAllegro5Font *font;
     struct nk_context *ctx;
 
+#ifdef INCLUDE_FILE_BROWSER
+    struct file_browser browser;
+    struct media media;
+#endif
+
     if (!al_init()) {
         fprintf(stdout, "failed to initialize allegro5!\n");
+        exit(1);
+    }
+
+    if (!al_init_image_addon()) {
+        fprintf(stdout, "Unable to initialize required allegro5 image addon\n");
         exit(1);
     }
 
@@ -110,7 +145,7 @@ int main(void)
     al_register_event_source(event_queue, al_get_mouse_event_source());
     al_register_event_source(event_queue, al_get_keyboard_event_source());
 
-    font = nk_allegro5_font_create_from_file("../../../extra_font/Roboto-Regular.ttf", 12, 0);
+    font = nk_allegro5_font_create_from_file("../../extra_font/Roboto-Regular.ttf", 12, 0);
 
     ctx = nk_allegro5_init(font, display, WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -126,6 +161,23 @@ int main(void)
     #elif defined(STYLE_DARK)
     set_style(ctx, THEME_DARK);
     #endif
+    #endif
+
+    #ifdef INCLUDE_FILE_BROWSER
+    /* icons */
+    media.icons.home = icon_load("../../demo/common/filebrowser/icon/home.png");
+    media.icons.directory = icon_load("../../demo/common/filebrowser/icon/directory.png");
+    media.icons.computer = icon_load("../../demo/common/filebrowser/icon/computer.png");
+    media.icons.desktop = icon_load("../../demo/common/filebrowser/icon/desktop.png");
+    media.icons.default_file = icon_load("../../demo/common/filebrowser/icon/default.png");
+    media.icons.text_file = icon_load("../../demo/common/filebrowser/icon/text.png");
+    media.icons.music_file = icon_load("../../demo/common/filebrowser/icon/music.png");
+    media.icons.font_file =  icon_load("../../demo/common/filebrowser/icon/font.png");
+    media.icons.img_file = icon_load("../../demo/common/filebrowser/icon/img.png");
+    media.icons.movie_file = icon_load("../../demo/common/filebrowser/icon/movie.png");
+    media_init(&media);
+
+    file_browser_init(&browser, &media);
     #endif
 
     while(1)
@@ -179,6 +231,9 @@ int main(void)
         #ifdef INCLUDE_CANVAS
           canvas(ctx);
         #endif
+        #ifdef INCLUDE_FILE_BROWSER
+          file_browser_run(&browser, ctx);
+        #endif
         #ifdef INCLUDE_OVERVIEW
           overview(ctx);
         #endif
@@ -195,6 +250,21 @@ int main(void)
         nk_allegro5_render();
         al_flip_display();
     }
+
+    #ifdef INCLUDE_FILE_BROWSER
+    al_destroy_bitmap(media.icons.home.handle.ptr);
+    al_destroy_bitmap(media.icons.directory.handle.ptr);
+    al_destroy_bitmap(media.icons.computer.handle.ptr);
+    al_destroy_bitmap(media.icons.desktop.handle.ptr);
+    al_destroy_bitmap(media.icons.default_file.handle.ptr);
+    al_destroy_bitmap(media.icons.text_file.handle.ptr);
+    al_destroy_bitmap(media.icons.music_file.handle.ptr);
+    al_destroy_bitmap(media.icons.font_file.handle.ptr);
+    al_destroy_bitmap(media.icons.img_file.handle.ptr);
+    al_destroy_bitmap(media.icons.movie_file.handle.ptr);
+
+    file_browser_free(&browser);
+    #endif
 
     nk_allegro5_font_del(font);
     nk_allegro5_shutdown();
