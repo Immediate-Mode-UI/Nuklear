@@ -22827,7 +22827,15 @@ nk_group_begin_titled(struct nk_context *ctx, const char *id,
         NK_ASSERT(y_offset);
         if (!x_offset || !y_offset) return 0;
         *x_offset = *y_offset = 0;
-    } else y_offset = nk_find_value(win, id_hash+1);
+    } else {
+        y_offset = nk_find_value(win, id_hash+1);
+        if (!y_offset) {
+            y_offset = nk_add_value(ctx, win, id_hash+1, 0);
+            NK_ASSERT(y_offset);
+            if (!y_offset) return 0;
+            *y_offset = 0;
+        }
+    }
     return nk_group_scrolled_offset_begin(ctx, x_offset, y_offset, title, flags);
 }
 NK_API nk_bool
@@ -22869,7 +22877,15 @@ nk_group_get_scroll(struct nk_context *ctx, const char *id, nk_uint *x_offset, n
         NK_ASSERT(y_offset_ptr);
         if (!x_offset_ptr || !y_offset_ptr) return;
         *x_offset_ptr = *y_offset_ptr = 0;
-    } else y_offset_ptr = nk_find_value(win, id_hash+1);
+    } else {
+        y_offset_ptr = nk_find_value(win, id_hash+1);
+        if (!y_offset_ptr) {
+            y_offset_ptr = nk_add_value(ctx, win, id_hash+1, 0);
+            NK_ASSERT(y_offset_ptr);
+            if (!y_offset_ptr) return;
+            *y_offset_ptr = 0;
+        }
+    }
     if (x_offset)
       *x_offset = *x_offset_ptr;
     if (y_offset)
@@ -22904,7 +22920,15 @@ nk_group_set_scroll(struct nk_context *ctx, const char *id, nk_uint x_offset, nk
         NK_ASSERT(y_offset_ptr);
         if (!x_offset_ptr || !y_offset_ptr) return;
         *x_offset_ptr = *y_offset_ptr = 0;
-    } else y_offset_ptr = nk_find_value(win, id_hash+1);
+    } else {
+        y_offset_ptr = nk_find_value(win, id_hash+1);
+        if (!y_offset_ptr) {
+            y_offset_ptr = nk_add_value(ctx, win, id_hash+1, 0);
+            NK_ASSERT(y_offset_ptr);
+            if (!y_offset_ptr) return;
+            *y_offset_ptr = 0;
+        }
+    }
     *x_offset_ptr = x_offset;
     *y_offset_ptr = y_offset;
 }
@@ -22954,7 +22978,15 @@ nk_list_view_begin(struct nk_context *ctx, struct nk_list_view *view,
         NK_ASSERT(y_offset);
         if (!x_offset || !y_offset) return 0;
         *x_offset = *y_offset = 0;
-    } else y_offset = nk_find_value(win, title_hash+1);
+    } else {
+        y_offset = nk_find_value(win, title_hash+1);
+        if (!y_offset) {
+            y_offset = nk_add_value(ctx, win, title_hash+1, 0);
+            NK_ASSERT(y_offset);
+            if (!y_offset) return 0;
+            *y_offset = 0;
+        }
+    }
     view->scroll_value = *y_offset;
     view->scroll_pointer = y_offset;
 
@@ -29709,6 +29741,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2023/11/03 (4.10.7) - Fix null pointer dereference with nk_group and nk_listview scroll offsets
 /// - 2022/12/23 (4.10.6) - Fix incorrect glyph index in nk_font_bake()
 /// - 2022/12/17 (4.10.5) - Fix nk_font_bake_pack() using TTC font offset incorrectly
 /// - 2022/10/24 (4.10.4) - Fix nk_str_{append,insert}_str_utf8 always returning 0

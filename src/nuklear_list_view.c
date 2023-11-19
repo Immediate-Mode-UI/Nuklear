@@ -43,7 +43,15 @@ nk_list_view_begin(struct nk_context *ctx, struct nk_list_view *view,
         NK_ASSERT(y_offset);
         if (!x_offset || !y_offset) return 0;
         *x_offset = *y_offset = 0;
-    } else y_offset = nk_find_value(win, title_hash+1);
+    } else {
+        y_offset = nk_find_value(win, title_hash+1);
+        if (!y_offset) {
+            y_offset = nk_add_value(ctx, win, title_hash+1, 0);
+            NK_ASSERT(y_offset);
+            if (!y_offset) return 0;
+            *y_offset = 0;
+        }
+    }
     view->scroll_value = *y_offset;
     view->scroll_pointer = y_offset;
 
