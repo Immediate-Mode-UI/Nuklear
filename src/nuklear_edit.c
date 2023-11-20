@@ -89,13 +89,13 @@ nk_edit_draw_text(struct nk_command_buffer *out,
     float line_offset = 0;
     int line_count = 0;
 
-    foreground = nk_rgb_factor(foreground, style->color_factor);
-    background = nk_rgb_factor(background, style->color_factor);
-
     struct nk_text txt;
     txt.padding = nk_vec2(0,0);
     txt.background = background;
     txt.text = foreground;
+
+    foreground = nk_rgb_factor(foreground, style->color_factor);
+    background = nk_rgb_factor(background, style->color_factor);
 
     glyph_len = nk_utf_decode(text+text_len, &unicode, byte_len-text_len);
     if (!glyph_len) return;
