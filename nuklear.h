@@ -25062,7 +25062,7 @@ nk_draw_selectable(struct nk_command_buffer *out,
             break;
         case NK_STYLE_ITEM_COLOR:
             text.background = background->data.color;
-            nk_fill_rect(out, *bounds, style->rounding, nk_rgb_factor(background->data.color, style->color_factor));
+            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
             break;
     }
     if (icon) {
