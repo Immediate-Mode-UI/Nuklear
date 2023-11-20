@@ -12,6 +12,8 @@ overview(struct nk_context *ctx)
 
     ctx->style.window.header.align = header_align;
 
+	static nk_bool disable_widgets = nk_false;
+
     actual_window_flags = window_flags;
     if (!(actual_window_flags & NK_WINDOW_TITLE))
         actual_window_flags &= ~(NK_WINDOW_MINIMIZABLE|NK_WINDOW_CLOSABLE);
@@ -129,14 +131,19 @@ overview(struct nk_context *ctx)
             nk_checkbox_flags_label(ctx, "No Scrollbar", &window_flags, NK_WINDOW_NO_SCROLLBAR);
             nk_checkbox_flags_label(ctx, "Minimizable", &window_flags, NK_WINDOW_MINIMIZABLE);
             nk_checkbox_flags_label(ctx, "Scale Left", &window_flags, NK_WINDOW_SCALE_LEFT);
+            nk_checkbox_label(ctx, "Disable widgets", &disable_widgets);
             nk_tree_pop(ctx);
         }
+
+        if (disable_widgets)
+        	nk_widget_disable_begin(ctx);
 
         if (nk_tree_push(ctx, NK_TREE_TAB, "Widgets", NK_MINIMIZED))
         {
             enum options {A,B,C};
             static int checkbox;
             static int option;
+
             if (nk_tree_push(ctx, NK_TREE_NODE, "Text", NK_MINIMIZED))
             {
                 /* Text Widgets */
@@ -1283,6 +1290,8 @@ overview(struct nk_context *ctx)
             }
             nk_tree_pop(ctx);
         }
+        if (disable_widgets)
+     		nk_widget_disable_end(ctx);
     }
     nk_end(ctx);
     return !nk_window_is_closed(ctx, "Overview");
