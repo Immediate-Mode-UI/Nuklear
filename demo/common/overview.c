@@ -135,8 +135,10 @@ overview(struct nk_context *ctx)
         if (nk_tree_push(ctx, NK_TREE_TAB, "Widgets", NK_MINIMIZED))
         {
             enum options {A,B,C};
-            static int checkbox;
-            static int option;
+            static int checkbox_left;
+            static int checkbox_right;
+            static int option_left;
+            static int option_right;
             if (nk_tree_push(ctx, NK_TREE_NODE, "Text", NK_MINIMIZED))
             {
                 /* Text Widgets */
@@ -201,14 +203,19 @@ overview(struct nk_context *ctx)
                 static int range_int_max = 4096;
                 static const float ratio[] = {120, 150};
 
-                nk_layout_row_dynamic(ctx, 0, 2);
-                nk_checkbox_label(ctx, "Checkbox Left", &checkbox, NK_WIDGET_LEFT);
-                nk_checkbox_label(ctx, "Checkbox Right", &checkbox, NK_WIDGET_RIGHT);
+                nk_layout_row_dynamic(ctx, 0, 1);
+                nk_checkbox_label(ctx, "Checkbox Left", &checkbox_left, NK_WIDGET_LEFT);
+                nk_checkbox_label(ctx, "Checkbox Right", &checkbox_right, NK_WIDGET_RIGHT);
 
                 nk_layout_row_static(ctx, 30, 80, 3);
-                option = nk_option_label(ctx, "optionA", option == A, NK_WIDGET_LEFT) ? A : option;
-                option = nk_option_label(ctx, "optionB", option == B, NK_WIDGET_LEFT) ? B : option;
-                option = nk_option_label(ctx, "optionC", option == C, NK_WIDGET_LEFT) ? C : option;
+                option_left = nk_option_label(ctx, "optionA", option_left == A, NK_WIDGET_LEFT) ? A : option_left;
+                option_left = nk_option_label(ctx, "optionB", option_left == B, NK_WIDGET_LEFT) ? B : option_left;
+                option_left = nk_option_label(ctx, "optionC", option_left == C, NK_WIDGET_LEFT) ? C : option_left;
+
+                nk_layout_row_static(ctx, 30, 80, 3);
+                option_right = nk_option_label(ctx, "optionA", option_right == A, NK_WIDGET_RIGHT) ? A : option_right;
+                option_right = nk_option_label(ctx, "optionB", option_right == B, NK_WIDGET_RIGHT) ? B : option_right;
+                option_right = nk_option_label(ctx, "optionC", option_right == C, NK_WIDGET_RIGHT) ? C : option_right;
 
                 nk_layout_row(ctx, NK_STATIC, 30, 2, ratio);
                 nk_labelf(ctx, NK_TEXT_LEFT, "Slider int");
