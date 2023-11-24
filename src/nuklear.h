@@ -2993,10 +2993,10 @@ NK_API nk_bool nk_checkbox_flags_text(struct nk_context*, const char*, int, unsi
  *                                  RADIO BUTTON
  *
  * ============================================================================= */
-NK_API nk_bool nk_radio_label(struct nk_context*, const char*, nk_bool *active);
-NK_API nk_bool nk_radio_text(struct nk_context*, const char*, int, nk_bool *active);
-NK_API nk_bool nk_option_label(struct nk_context*, const char*, nk_bool active);
-NK_API nk_bool nk_option_text(struct nk_context*, const char*, int, nk_bool active);
+NK_API nk_bool nk_radio_label(struct nk_context*, const char*, nk_bool *active, nk_flags alignment);
+NK_API nk_bool nk_radio_text(struct nk_context*, const char*, int, nk_bool *active, nk_flags alignment);
+NK_API nk_bool nk_option_label(struct nk_context*, const char*, nk_bool active, nk_flags alignment);
+NK_API nk_bool nk_option_text(struct nk_context*, const char*, int, nk_bool active, nk_flags alignment);
 /* =============================================================================
  *
  *                                  SELECTABLE

@@ -201,13 +201,14 @@ overview(struct nk_context *ctx)
                 static int range_int_max = 4096;
                 static const float ratio[] = {120, 150};
 
-                nk_layout_row_dynamic(ctx, 0, 1);
-                nk_checkbox_label(ctx, "HTESTH", &checkbox, NK_WIDGET_RIGHT);
+                nk_layout_row_dynamic(ctx, 0, 2);
+                nk_checkbox_label(ctx, "Checkbox Left", &checkbox, NK_WIDGET_LEFT);
+                nk_checkbox_label(ctx, "Checkbox Right", &checkbox, NK_WIDGET_RIGHT);
 
                 nk_layout_row_static(ctx, 30, 80, 3);
-                option = nk_option_label(ctx, "optionA", option == A) ? A : option;
-                option = nk_option_label(ctx, "optionB", option == B) ? B : option;
-                option = nk_option_label(ctx, "optionC", option == C) ? C : option;
+                option = nk_option_label(ctx, "optionA", option == A, NK_WIDGET_LEFT) ? A : option;
+                option = nk_option_label(ctx, "optionB", option == B, NK_WIDGET_LEFT) ? B : option;
+                option = nk_option_label(ctx, "optionC", option == C, NK_WIDGET_LEFT) ? C : option;
 
                 nk_layout_row(ctx, NK_STATIC, 30, 2, ratio);
                 nk_labelf(ctx, NK_TEXT_LEFT, "Slider int");
@@ -367,8 +368,8 @@ overview(struct nk_context *ctx)
                     #endif
 
                     nk_layout_row_dynamic(ctx, 25, 2);
-                    col_mode = nk_option_label(ctx, "RGB", col_mode == COL_RGB) ? COL_RGB : col_mode;
-                    col_mode = nk_option_label(ctx, "HSV", col_mode == COL_HSV) ? COL_HSV : col_mode;
+                    col_mode = nk_option_label(ctx, "RGB", col_mode == COL_RGB, NK_WIDGET_LEFT) ? COL_RGB : col_mode;
+                    col_mode = nk_option_label(ctx, "HSV", col_mode == COL_HSV, NK_WIDGET_LEFT) ? COL_HSV : col_mode;
 
                     nk_layout_row_dynamic(ctx, 25, 1);
                     if (col_mode == COL_RGB) {
