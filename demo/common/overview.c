@@ -12,6 +12,8 @@ overview(struct nk_context *ctx)
 
     ctx->style.window.header.align = header_align;
 
+	static nk_bool disable_widgets = nk_false;
+
     actual_window_flags = window_flags;
     if (!(actual_window_flags & NK_WINDOW_TITLE))
         actual_window_flags &= ~(NK_WINDOW_MINIMIZABLE|NK_WINDOW_CLOSABLE);
@@ -129,8 +131,12 @@ overview(struct nk_context *ctx)
             nk_checkbox_flags_label(ctx, "No Scrollbar", &window_flags, NK_WINDOW_NO_SCROLLBAR, NK_WIDGET_LEFT);
             nk_checkbox_flags_label(ctx, "Minimizable", &window_flags, NK_WINDOW_MINIMIZABLE, NK_WIDGET_LEFT);
             nk_checkbox_flags_label(ctx, "Scale Left", &window_flags, NK_WINDOW_SCALE_LEFT, NK_WIDGET_LEFT);
+			nk_checkbox_label(ctx, "Disable widgets", &disable_widgets, NK_WIDGET_LEFT);
             nk_tree_pop(ctx);
         }
+
+        if (disable_widgets)
+        	nk_widget_disable_begin(ctx);
 
         if (nk_tree_push(ctx, NK_TREE_TAB, "Widgets", NK_MINIMIZED))
         {
@@ -182,6 +188,7 @@ overview(struct nk_context *ctx)
                 nk_layout_row_static(ctx, 30, 100, 2);
                 nk_button_symbol_label(ctx, NK_SYMBOL_TRIANGLE_LEFT, "prev", NK_TEXT_RIGHT);
                 nk_button_symbol_label(ctx, NK_SYMBOL_TRIANGLE_RIGHT, "next", NK_TEXT_LEFT);
+
                 nk_tree_pop(ctx);
             }
 
@@ -256,23 +263,16 @@ overview(struct nk_context *ctx)
 
                 nk_layout_row_static(ctx, 30, 80, 1);
                 if (inactive) {
-                    struct nk_style_button button;
-                    button = ctx->style.button;
-                    ctx->style.button.normal = nk_style_item_color(nk_rgb(40,40,40));
-                    ctx->style.button.hover = nk_style_item_color(nk_rgb(40,40,40));
-                    ctx->style.button.active = nk_style_item_color(nk_rgb(40,40,40));
-                    ctx->style.button.border_color = nk_rgb(60,60,60);
-                    ctx->style.button.text_background = nk_rgb(60,60,60);
-                    ctx->style.button.text_normal = nk_rgb(60,60,60);
-                    ctx->style.button.text_hover = nk_rgb(60,60,60);
-                    ctx->style.button.text_active = nk_rgb(60,60,60);
-                    nk_button_label(ctx, "button");
-                    ctx->style.button = button;
-                } else if (nk_button_label(ctx, "button"))
+                    nk_widget_disable_begin(ctx);
+                }
+                    
+                if (nk_button_label(ctx, "button"))
                     fprintf(stdout, "button pressed\n");
+
+                nk_widget_disable_end(ctx);
+
                 nk_tree_pop(ctx);
             }
-
 
             if (nk_tree_push(ctx, NK_TREE_NODE, "Selectable", NK_MINIMIZED))
             {
@@ -1297,6 +1297,8 @@ overview(struct nk_context *ctx)
             }
             nk_tree_pop(ctx);
         }
+        if (disable_widgets)
+     		nk_widget_disable_end(ctx);
     }
     nk_end(ctx);
     return !nk_window_is_closed(ctx, "Overview");

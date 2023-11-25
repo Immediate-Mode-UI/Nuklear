@@ -48,7 +48,7 @@ nk_chart_begin_colored(struct nk_context *ctx, enum nk_chart_type type,
     {struct nk_chart_slot *slot = &chart->slots[chart->slot++];
     slot->type = type;
     slot->count = count;
-    slot->color = color;
+    slot->color = nk_rgb_factor(color, style->color_factor);
     slot->highlight = highlight;
     slot->min = NK_MIN(min_value, max_value);
     slot->max = NK_MAX(min_value, max_value);
@@ -59,15 +59,15 @@ nk_chart_begin_colored(struct nk_context *ctx, enum nk_chart_type type,
 
     switch(background->type) {
         case NK_STYLE_ITEM_IMAGE:
-            nk_draw_image(&win->buffer, bounds, &background->data.image, nk_white);
+            nk_draw_image(&win->buffer, bounds, &background->data.image, nk_rgb_factor(nk_white, style->color_factor));
             break;
         case NK_STYLE_ITEM_NINE_SLICE:
-            nk_draw_nine_slice(&win->buffer, bounds, &background->data.slice, nk_white);
+            nk_draw_nine_slice(&win->buffer, bounds, &background->data.slice, nk_rgb_factor(nk_white, style->color_factor));
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(&win->buffer, bounds, style->rounding, style->border_color);
+            nk_fill_rect(&win->buffer, bounds, style->rounding, nk_rgb_factor(style->border_color, style->color_factor));
             nk_fill_rect(&win->buffer, nk_shrink_rect(bounds, style->border),
-                style->rounding, style->background.data.color);
+                style->rounding, nk_rgb_factor(style->background.data.color, style->color_factor));
             break;
     }
     return 1;
@@ -84,6 +84,8 @@ nk_chart_add_slot_colored(struct nk_context *ctx, const enum nk_chart_type type,
     struct nk_color color, struct nk_color highlight,
     int count, float min_value, float max_value)
 {
+    const struct nk_style_chart* style;
+
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
     NK_ASSERT(ctx->current->layout);
@@ -91,12 +93,14 @@ nk_chart_add_slot_colored(struct nk_context *ctx, const enum nk_chart_type type,
     if (!ctx || !ctx->current || !ctx->current->layout) return;
     if (ctx->current->layout->chart.slot >= NK_CHART_MAX_SLOT) return;
 
+    style = &ctx->style.chart;
+
     /* add another slot into the graph */
     {struct nk_chart *chart = &ctx->current->layout->chart;
     struct nk_chart_slot *slot = &chart->slots[chart->slot++];
     slot->type = type;
     slot->count = count;
-    slot->color = color;
+    slot->color = nk_rgb_factor(color, style->color_factor);
     slot->highlight = highlight;
     slot->min = NK_MIN(min_value, max_value);
     slot->max = NK_MAX(min_value, max_value);
@@ -114,7 +118,7 @@ nk_chart_push_line(struct nk_context *ctx, struct nk_window *win,
     struct nk_chart *g, float value, int slot)
 {
     struct nk_panel *layout = win->layout;
-    const struct nk_input *i = &ctx->input;
+    const struct nk_input *i = ctx->current->widgets_disabled ? 0 : &ctx->input;
     struct nk_command_buffer *out = &win->buffer;
 
     nk_flags ret = 0;
@@ -140,7 +144,7 @@ nk_chart_push_line(struct nk_context *ctx, struct nk_window *win,
         bounds.w = bounds.h = 4;
 
         color = g->slots[slot].color;
-        if (!(layout->flags & NK_WINDOW_ROM) &&
+        if (!(layout->flags & NK_WINDOW_ROM) && i &&
             NK_INBOX(i->mouse.pos.x,i->mouse.pos.y, g->slots[slot].last.x-3, g->slots[slot].last.y-3, 6, 6)){
             ret = nk_input_is_mouse_hovering_rect(i, bounds) ? NK_CHART_HOVERING : 0;
             ret |= (i->mouse.buttons[NK_BUTTON_LEFT].down &&
@@ -184,7 +188,7 @@ nk_chart_push_column(const struct nk_context *ctx, struct nk_window *win,
     struct nk_chart *chart, float value, int slot)
 {
     struct nk_command_buffer *out = &win->buffer;
-    const struct nk_input *in = &ctx->input;
+    const struct nk_input *in = ctx->current->widgets_disabled ? 0 : &ctx->input;
     struct nk_panel *layout = win->layout;
 
     float ratio;
@@ -214,7 +218,7 @@ nk_chart_push_column(const struct nk_context *ctx, struct nk_window *win,
     item.x = item.x + ((float)chart->slots[slot].index);
 
     /* user chart bar selection */
-    if (!(layout->flags & NK_WINDOW_ROM) &&
+    if (!(layout->flags & NK_WINDOW_ROM) && in &&
         NK_INBOX(in->mouse.pos.x,in->mouse.pos.y,item.x,item.y,item.w,item.h)) {
         ret = NK_CHART_HOVERING;
         ret |= (!in->mouse.buttons[NK_BUTTON_LEFT].down &&

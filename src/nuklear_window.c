@@ -180,6 +180,7 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
         NK_MEMCPY(win->name_string, name, name_length);
         win->name_string[name_length] = 0;
         win->popup.win = 0;
+        win->widgets_disabled = nk_false;
         if (!ctx->active)
             ctx->active = win;
     } else {
