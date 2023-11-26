@@ -142,7 +142,7 @@ overview(struct nk_context *ctx)
         {
             enum options {A,B,C};
             static int checkbox_left_text_left;
-            static int checkbox_left_text_right;
+            static int checkbox_centered_text_right;
             static int checkbox_right_text_right;
             static int checkbox_right_text_left;
             static int option_left;
@@ -213,10 +213,10 @@ overview(struct nk_context *ctx)
                 static const float ratio[] = {120, 150};
 
                 nk_layout_row_dynamic(ctx, 0, 1);
-                nk_checkbox_label(ctx, "Checkbox Left Text Left", &checkbox_left_text_left, NK_WIDGET_LEFT, NK_TEXT_LEFT);
-                nk_checkbox_label(ctx, "Checkbox Left Text Right", &checkbox_left_text_right, NK_WIDGET_LEFT, NK_TEXT_RIGHT);
-                nk_checkbox_label(ctx, "Checkbox Right Text Right", &checkbox_right_text_right, NK_WIDGET_RIGHT, NK_TEXT_RIGHT);
-                nk_checkbox_label(ctx, "Checkbox Right Text Left", &checkbox_right_text_left, NK_WIDGET_RIGHT, NK_TEXT_LEFT);
+                nk_checkbox_label(ctx, "CheckLeft TextLeft", &checkbox_left_text_left, NK_WIDGET_LEFT, NK_TEXT_LEFT);
+                nk_checkbox_label(ctx, "CheckCenter TextRight", &checkbox_centered_text_right, NK_WIDGET_ALIGN_CENTERED | NK_WIDGET_ALIGN_MIDDLE, NK_TEXT_RIGHT);
+                nk_checkbox_label(ctx, "CheckRight TextRight", &checkbox_right_text_right, NK_WIDGET_LEFT, NK_TEXT_RIGHT);
+                nk_checkbox_label(ctx, "CheckRight TextLeft", &checkbox_right_text_left, NK_WIDGET_RIGHT, NK_TEXT_LEFT);
 
                 nk_layout_row_static(ctx, 30, 80, 3);
                 option_left = nk_option_label(ctx, "optionA", option_left == A, NK_WIDGET_LEFT, NK_TEXT_LEFT) ? A : option_left;

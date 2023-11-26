@@ -115,7 +115,6 @@ nk_do_toggle(nk_flags *state,
     const struct nk_user_font *font, nk_flags widget_alignment, nk_flags text_alignment)
 {
     int was_active;
-    struct nk_rect allocated_space;
     struct nk_rect bounds;
     struct nk_rect select;
     struct nk_rect cursor;
@@ -130,13 +129,6 @@ nk_do_toggle(nk_flags *state,
     r.w = NK_MAX(r.w, font->height + 2 * style->padding.x);
     r.h = NK_MAX(r.h, font->height + 2 * style->padding.y);
 
-    allocated_space = r;
-
-    if (widget_alignment & NK_WIDGET_ALIGN_RIGHT) {
-        r.x = r.x + r.w - font->height - style->padding.x;
-        r.w = font->height;
-    }
-
     /* add additional touch padding for touch screen devices */
     bounds.x = r.x - style->touch_padding.x;
     bounds.y = r.y - style->touch_padding.y;
@@ -146,26 +138,43 @@ nk_do_toggle(nk_flags *state,
     /* calculate the selector space */
     select.w = font->height;
     select.h = select.w;
-    select.y = r.y + r.h/2.0f - select.h/2.0f;
-    select.x = r.x;
+
+    if (widget_alignment & NK_WIDGET_ALIGN_RIGHT) {
+        select.x = r.x + r.w - font->height;
+
+        /* label in front of the selector */
+        label.x = r.x;
+        label.w = r.w - select.w - style->spacing * 2;
+    } else if (widget_alignment & NK_WIDGET_ALIGN_CENTERED) {
+        select.x = (r.x + r.w) / 2;
+
+        /* label in front of selector */
+        label.x = r.x;
+        label.w = r.w / 2 - select.w - style->spacing * 2;
+    } else { /* Default: NK_WIDGET_ALIGN_LEFT */
+        select.x = r.x;
+
+        /* label behind the selector */
+        label.x = select.x + select.w + style->spacing;
+        label.w = NK_MAX(r.x + r.w, label.x) - label.x;
+    }
+
+    if (widget_alignment & NK_WIDGET_ALIGN_TOP) {
+        select.y = r.y;
+    } else if (widget_alignment & NK_WIDGET_ALIGN_BOTTOM) {
+        select.y = r.y + r.h - select.h - 2 * style->padding.y;
+    } else { /* Default: NK_WIDGET_ALIGN_MIDDLE */
+        select.y = r.y + r.h/2.0f - select.h/2.0f;
+    }
+
+    label.y = select.y;
+    label.h = select.w;
 
     /* calculate the bounds of the cursor inside the selector */
     cursor.x = select.x + style->padding.x + style->border;
     cursor.y = select.y + style->padding.y + style->border;
     cursor.w = select.w - (2 * style->padding.x + 2 * style->border);
     cursor.h = select.h - (2 * style->padding.y + 2 * style->border);
-
-    label.y = select.y;
-    label.h = select.w;
-    if (widget_alignment & NK_WIDGET_ALIGN_RIGHT) {
-        /* label in front of the selector */
-        label.x = allocated_space.x;
-        label.w = allocated_space.w - select.w - style->spacing * 2;
-    } else {
-        /* label behind the selector */
-        label.x = select.x + select.w + style->spacing;
-        label.w = NK_MAX(r.x + r.w, label.x) - label.x;
-    }
 
     /* update selector */
     was_active = *active;
