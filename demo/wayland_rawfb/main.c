@@ -533,8 +533,8 @@ int main ()
                 printf("button pressed\n");
             }
             nk_layout_row_dynamic(&(nk_wayland_ctx.ctx), 30, 2);
-            if (nk_option_label(&(nk_wayland_ctx.ctx), "easy", op == EASY)) op = EASY;
-            if (nk_option_label(&(nk_wayland_ctx.ctx), "hard", op == HARD)) op = HARD;
+            if (nk_option_label(&(nk_wayland_ctx.ctx), "easy", op == EASY, NK_WIDGET_LEFT, NK_TEXT_LEFT)) op = EASY;
+            if (nk_option_label(&(nk_wayland_ctx.ctx), "hard", op == HARD, NK_WIDGET_LEFT, NK_TEXT_LEFT)) op = HARD;
             nk_layout_row_dynamic(&(nk_wayland_ctx.ctx), 25, 1);
             nk_property_int(&(nk_wayland_ctx.ctx), "Compression:", 0, &property, 100, 10, 1);
         }
