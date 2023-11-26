@@ -146,11 +146,11 @@ nk_do_toggle(nk_flags *state,
         label.x = r.x;
         label.w = r.w - select.w - style->spacing * 2;
     } else if (widget_alignment & NK_WIDGET_ALIGN_CENTERED) {
-        select.x = (r.x + r.w) / 2;
+        select.x = r.x + (r.w - select.w) / 2;
 
         /* label in front of selector */
         label.x = r.x;
-        label.w = r.w / 2 - select.w - style->spacing * 2;
+        label.w = (r.w - select.w - style->spacing * 2) / 2;
     } else { /* Default: NK_WIDGET_ALIGN_LEFT */
         select.x = r.x;
 
