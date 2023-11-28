@@ -754,10 +754,10 @@ int main(int argc, char *argv[])
             nk_layout_row_dynamic(&ctx, 20, 1);
             nk_label(&ctx, "Label", NK_TEXT_LEFT);
             nk_layout_row_dynamic(&ctx, 30, 2);
-            nk_check_label(&ctx, "inactive", 0, NK_WIDGET_LEFT, NK_TEXT_LEFT);
-            nk_check_label(&ctx, "active", 1, NK_WIDGET_LEFT, NK_TEXT_LEFT);
-            nk_option_label(&ctx, "active", 1, NK_WIDGET_LEFT, NK_TEXT_LEFT);
-            nk_option_label(&ctx, "inactive", 0, NK_WIDGET_LEFT, NK_TEXT_LEFT);
+            nk_check_label(&ctx, "inactive", 0);
+            nk_check_label(&ctx, "active", 1);
+            nk_option_label(&ctx, "active", 1);
+            nk_option_label(&ctx, "inactive", 0);
 
             nk_layout_row_dynamic(&ctx, 30, 1);
             nk_slider_int(&ctx, 0, &slider, 16, 1);

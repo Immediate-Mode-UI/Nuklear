@@ -43,7 +43,7 @@ overview(struct nk_context *ctx)
                     show_app_about = nk_true;
                 nk_progress(ctx, &prog, 100, NK_MODIFIABLE);
                 nk_slider_int(ctx, 0, &slider, 16, 1);
-                nk_checkbox_label(ctx, "check", &check, NK_WIDGET_LEFT, NK_TEXT_LEFT);
+                nk_checkbox_label(ctx, "check", &check);
                 nk_menu_end(ctx);
             }
             /* menu #2 */
@@ -102,7 +102,7 @@ overview(struct nk_context *ctx)
             nk_layout_row_push(ctx, 70);
             nk_progress(ctx, &mprog, 100, NK_MODIFIABLE);
             nk_slider_int(ctx, 0, &mslider, 16, 1);
-            nk_checkbox_label(ctx, "check", &mcheck, NK_WIDGET_LEFT, NK_TEXT_LEFT);
+            nk_checkbox_label(ctx, "check", &mcheck);
             nk_menubar_end(ctx);
         }
 
@@ -123,15 +123,15 @@ overview(struct nk_context *ctx)
         /* window flags */
         if (nk_tree_push(ctx, NK_TREE_TAB, "Window", NK_MINIMIZED)) {
             nk_layout_row_dynamic(ctx, 30, 2);
-            nk_checkbox_label(ctx, "Menu", &show_menu, NK_WIDGET_LEFT, NK_TEXT_LEFT);
-            nk_checkbox_flags_label(ctx, "Titlebar", &window_flags, NK_WINDOW_TITLE, NK_WIDGET_LEFT, NK_TEXT_LEFT);
-            nk_checkbox_flags_label(ctx, "Border", &window_flags, NK_WINDOW_BORDER, NK_WIDGET_LEFT, NK_TEXT_LEFT);
-            nk_checkbox_flags_label(ctx, "Resizable", &window_flags, NK_WINDOW_SCALABLE, NK_WIDGET_LEFT, NK_TEXT_LEFT);
-            nk_checkbox_flags_label(ctx, "Movable", &window_flags, NK_WINDOW_MOVABLE, NK_WIDGET_LEFT, NK_TEXT_LEFT);
-            nk_checkbox_flags_label(ctx, "No Scrollbar", &window_flags, NK_WINDOW_NO_SCROLLBAR, NK_WIDGET_LEFT, NK_TEXT_LEFT);
-            nk_checkbox_flags_label(ctx, "Minimizable", &window_flags, NK_WINDOW_MINIMIZABLE, NK_WIDGET_LEFT, NK_TEXT_LEFT);
-            nk_checkbox_flags_label(ctx, "Scale Left", &window_flags, NK_WINDOW_SCALE_LEFT, NK_WIDGET_LEFT, NK_TEXT_LEFT);
-			nk_checkbox_label(ctx, "Disable widgets", &disable_widgets, NK_WIDGET_LEFT, NK_TEXT_LEFT);
+            nk_checkbox_label(ctx, "Menu", &show_menu);
+            nk_checkbox_flags_label(ctx, "Titlebar", &window_flags, NK_WINDOW_TITLE);
+            nk_checkbox_flags_label(ctx, "Border", &window_flags, NK_WINDOW_BORDER);
+            nk_checkbox_flags_label(ctx, "Resizable", &window_flags, NK_WINDOW_SCALABLE);
+            nk_checkbox_flags_label(ctx, "Movable", &window_flags, NK_WINDOW_MOVABLE);
+            nk_checkbox_flags_label(ctx, "No Scrollbar", &window_flags, NK_WINDOW_NO_SCROLLBAR);
+            nk_checkbox_flags_label(ctx, "Minimizable", &window_flags, NK_WINDOW_MINIMIZABLE);
+            nk_checkbox_flags_label(ctx, "Scale Left", &window_flags, NK_WINDOW_SCALE_LEFT);
+			nk_checkbox_label(ctx, "Disable widgets", &disable_widgets);
             nk_tree_pop(ctx);
         }
 
@@ -213,20 +213,20 @@ overview(struct nk_context *ctx)
                 static const float ratio[] = {120, 150};
 
                 nk_layout_row_dynamic(ctx, 0, 1);
-                nk_checkbox_label(ctx, "CheckLeft TextLeft", &checkbox_left_text_left, NK_WIDGET_LEFT, NK_TEXT_LEFT);
-                nk_checkbox_label(ctx, "CheckCenter TextRight", &checkbox_centered_text_right, NK_WIDGET_ALIGN_CENTERED | NK_WIDGET_ALIGN_MIDDLE, NK_TEXT_RIGHT);
-                nk_checkbox_label(ctx, "CheckRight TextRight", &checkbox_right_text_right, NK_WIDGET_LEFT, NK_TEXT_RIGHT);
-                nk_checkbox_label(ctx, "CheckRight TextLeft", &checkbox_right_text_left, NK_WIDGET_RIGHT, NK_TEXT_LEFT);
+                nk_checkbox_label(ctx, "CheckLeft TextLeft", &checkbox_left_text_left);
+                nk_checkbox_label_align(ctx, "CheckCenter TextRight", &checkbox_centered_text_right, NK_WIDGET_ALIGN_CENTERED | NK_WIDGET_ALIGN_MIDDLE, NK_TEXT_RIGHT);
+                nk_checkbox_label_align(ctx, "CheckRight TextRight", &checkbox_right_text_right, NK_WIDGET_LEFT, NK_TEXT_RIGHT);
+                nk_checkbox_label_align(ctx, "CheckRight TextLeft", &checkbox_right_text_left, NK_WIDGET_RIGHT, NK_TEXT_LEFT);
 
                 nk_layout_row_static(ctx, 30, 80, 3);
-                option_left = nk_option_label(ctx, "optionA", option_left == A, NK_WIDGET_LEFT, NK_TEXT_LEFT) ? A : option_left;
-                option_left = nk_option_label(ctx, "optionB", option_left == B, NK_WIDGET_LEFT, NK_TEXT_LEFT) ? B : option_left;
-                option_left = nk_option_label(ctx, "optionC", option_left == C, NK_WIDGET_LEFT, NK_TEXT_LEFT) ? C : option_left;
+                option_left = nk_option_label(ctx, "optionA", option_left == A) ? A : option_left;
+                option_left = nk_option_label(ctx, "optionB", option_left == B) ? B : option_left;
+                option_left = nk_option_label(ctx, "optionC", option_left == C) ? C : option_left;
 
                 nk_layout_row_static(ctx, 30, 80, 3);
-                option_right = nk_option_label(ctx, "optionA", option_right == A, NK_WIDGET_RIGHT, NK_TEXT_RIGHT) ? A : option_right;
-                option_right = nk_option_label(ctx, "optionB", option_right == B, NK_WIDGET_RIGHT, NK_TEXT_RIGHT) ? B : option_right;
-                option_right = nk_option_label(ctx, "optionC", option_right == C, NK_WIDGET_RIGHT, NK_TEXT_RIGHT) ? C : option_right;
+                option_right = nk_option_label_align(ctx, "optionA", option_right == A, NK_WIDGET_RIGHT, NK_TEXT_RIGHT) ? A : option_right;
+                option_right = nk_option_label_align(ctx, "optionB", option_right == B, NK_WIDGET_RIGHT, NK_TEXT_RIGHT) ? B : option_right;
+                option_right = nk_option_label_align(ctx, "optionC", option_right == C, NK_WIDGET_RIGHT, NK_TEXT_RIGHT) ? C : option_right;
 
                 nk_layout_row(ctx, NK_STATIC, 30, 2, ratio);
                 nk_labelf(ctx, NK_TEXT_LEFT, "Slider int");
@@ -263,7 +263,7 @@ overview(struct nk_context *ctx)
             {
                 static int inactive = 1;
                 nk_layout_row_dynamic(ctx, 30, 1);
-                nk_checkbox_label(ctx, "Inactive", &inactive, NK_WIDGET_LEFT, NK_TEXT_LEFT);
+                nk_checkbox_label(ctx, "Inactive", &inactive);
 
                 nk_layout_row_static(ctx, 30, 80, 1);
                 if (inactive) {
@@ -379,8 +379,8 @@ overview(struct nk_context *ctx)
                     #endif
 
                     nk_layout_row_dynamic(ctx, 25, 2);
-                    col_mode = nk_option_label(ctx, "RGB", col_mode == COL_RGB, NK_WIDGET_LEFT, NK_TEXT_LEFT) ? COL_RGB : col_mode;
-                    col_mode = nk_option_label(ctx, "HSV", col_mode == COL_HSV, NK_WIDGET_LEFT, NK_TEXT_LEFT) ? COL_HSV : col_mode;
+                    col_mode = nk_option_label(ctx, "RGB", col_mode == COL_RGB) ? COL_RGB : col_mode;
+                    col_mode = nk_option_label(ctx, "HSV", col_mode == COL_HSV) ? COL_HSV : col_mode;
 
                     nk_layout_row_dynamic(ctx, 25, 1);
                     if (col_mode == COL_RGB) {
@@ -416,10 +416,10 @@ overview(struct nk_context *ctx)
                 sprintf(buffer, "%lu", sum);
                 if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
                     nk_layout_row_dynamic(ctx, 30, 1);
-                    nk_checkbox_label(ctx, weapons[0], &check_values[0], NK_WIDGET_LEFT, NK_TEXT_LEFT);
-                    nk_checkbox_label(ctx, weapons[1], &check_values[1], NK_WIDGET_LEFT, NK_TEXT_LEFT);
-                    nk_checkbox_label(ctx, weapons[2], &check_values[2], NK_WIDGET_LEFT, NK_TEXT_LEFT);
-                    nk_checkbox_label(ctx, weapons[3], &check_values[3], NK_WIDGET_LEFT, NK_TEXT_LEFT);
+                    nk_checkbox_label(ctx, weapons[0], &check_values[0]);
+                    nk_checkbox_label(ctx, weapons[1], &check_values[1]);
+                    nk_checkbox_label(ctx, weapons[2], &check_values[2]);
+                    nk_checkbox_label(ctx, weapons[3], &check_values[3]);
                     nk_combo_end(ctx);
                 }
 
@@ -728,7 +728,7 @@ overview(struct nk_context *ctx)
                 static int slider = 10;
 
                 nk_layout_row_dynamic(ctx, 25, 1);
-                nk_checkbox_label(ctx, "Menu", &show_menu, NK_WIDGET_LEFT, NK_TEXT_LEFT);
+                nk_checkbox_label(ctx, "Menu", &show_menu);
                 nk_progress(ctx, &prog, 100, NK_MODIFIABLE);
                 nk_slider_int(ctx, 0, &slider, 16, 1);
                 if (nk_contextual_item_label(ctx, "About", NK_TEXT_CENTERED))
@@ -895,9 +895,9 @@ overview(struct nk_context *ctx)
                 if (group_titlebar) group_flags |= NK_WINDOW_TITLE;
 
                 nk_layout_row_dynamic(ctx, 30, 3);
-                nk_checkbox_label(ctx, "Titlebar", &group_titlebar, NK_WIDGET_LEFT, NK_TEXT_LEFT);
-                nk_checkbox_label(ctx, "Border", &group_border, NK_WIDGET_LEFT, NK_TEXT_LEFT);
-                nk_checkbox_label(ctx, "No Scrollbar", &group_no_scrollbar, NK_WIDGET_LEFT, NK_TEXT_LEFT);
+                nk_checkbox_label(ctx, "Titlebar", &group_titlebar);
+                nk_checkbox_label(ctx, "Border", &group_border);
+                nk_checkbox_label(ctx, "No Scrollbar", &group_no_scrollbar);
 
                 nk_layout_row_begin(ctx, NK_STATIC, 22, 3);
                 nk_layout_row_push(ctx, 50);

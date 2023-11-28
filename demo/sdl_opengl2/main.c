@@ -154,8 +154,8 @@ main(int argc, char *argv[])
             if (nk_button_label(ctx, "button"))
                 fprintf(stdout, "button pressed\n");
             nk_layout_row_dynamic(ctx, 30, 2);
-            if (nk_option_label(ctx, "easy", op == EASY, NK_WIDGET_LEFT, NK_TEXT_LEFT)) op = EASY;
-            if (nk_option_label(ctx, "hard", op == HARD, NK_WIDGET_LEFT, NK_TEXT_LEFT)) op = HARD;
+            if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
+            if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
             nk_layout_row_dynamic(ctx, 25, 1);
             nk_property_int(ctx, "Compression:", 0, &property, 100, 10, 1);
 

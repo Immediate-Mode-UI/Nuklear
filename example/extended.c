@@ -201,7 +201,7 @@ grid_demo(struct nk_context *ctx, struct media *media)
         nk_label(ctx, "Binary:", NK_TEXT_RIGHT);
         nk_edit_string(ctx, NK_EDIT_FIELD, text[2], &text_len[2], 64, nk_filter_binary);
         nk_label(ctx, "Checkbox:", NK_TEXT_RIGHT);
-        nk_checkbox_label(ctx, "Check me", &check, NK_WIDGET_LEFT, NK_TEXT_LEFT);
+        nk_checkbox_label(ctx, "Check me", &check);
         nk_label(ctx, "Combobox:", NK_TEXT_RIGHT);
         if (nk_combo_begin_label(ctx, items[selected_item], nk_vec2(nk_widget_width(ctx), 200))) {
             nk_layout_row_dynamic(ctx, 25, 1);
@@ -433,9 +433,9 @@ basic_demo(struct nk_context *ctx, struct media *media)
      *------------------------------------------------*/
     ui_header(ctx, media, "Checkbox");
     ui_widget(ctx, media, 30);
-    nk_checkbox_label(ctx, "Flag 1", &check0, NK_WIDGET_LEFT, NK_TEXT_LEFT);
+    nk_checkbox_label(ctx, "Flag 1", &check0);
     ui_widget(ctx, media, 30);
-    nk_checkbox_label(ctx, "Flag 2", &check1, NK_WIDGET_LEFT, NK_TEXT_LEFT);
+    nk_checkbox_label(ctx, "Flag 2", &check1);
 
     /*------------------------------------------------
      *                  PROGRESSBAR

@@ -216,8 +216,8 @@ int main(int argc, char **argv)
                 printf("button pressed\n");
             }
             nk_layout_row_dynamic(&(context->ctx), 40, 2);
-            if (nk_option_label(&(context->ctx), "easy", op == EASY, NK_WIDGET_LEFT, NK_TEXT_LEFT)) op = EASY;
-            if (nk_option_label(&(context->ctx), "hard", op == HARD, NK_WIDGET_LEFT, NK_TEXT_LEFT)) op = HARD;
+            if (nk_option_label(&(context->ctx), "easy", op == EASY)) op = EASY;
+            if (nk_option_label(&(context->ctx), "hard", op == HARD)) op = HARD;
             nk_layout_row_dynamic(&(context->ctx), 45, 1);
             nk_property_int(&(context->ctx), "Compression:", 0, &property, 100, 10, 1);
         }
