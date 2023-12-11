@@ -279,14 +279,15 @@ node_editor_link(struct node_editor *editor, struct node *in_node, int in_slot,
 static void
 node_editor_init(struct node_editor *editor)
 {
-    struct nk_vec2 output_node_position = {600, 400};
-    struct nk_vec2 color_node_position = {40, 10};
+    struct nk_vec2 output_node_position = {500, 300};
+    struct nk_vec2 color_node_position = {200, 200};
     memset(editor, 0, sizeof(*editor));
     editor->begin = NULL;
     editor->end = NULL;
 
     editor->output_node = node_output_create(editor, output_node_position);
     node_color_create(editor, color_node_position);
+    node_editor_link(editor, editor->node_buf[1], 0, editor->output_node, 0);
     editor->show_grid = nk_true;
 }
 
