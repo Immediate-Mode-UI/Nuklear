@@ -6180,14 +6180,14 @@ NK_LIB void nk_property(struct nk_context *ctx, const char *name, struct nk_prop
 #ifndef STBTT_malloc
 static void*
 nk_stbtt_malloc(nk_size size, void *user_data) {
-	struct nk_allocator *alloc = (struct nk_allocator *) user_data;
-	return alloc->alloc(alloc->userdata, 0, size);
+    struct nk_allocator *alloc = (struct nk_allocator *) user_data;
+    return alloc->alloc(alloc->userdata, 0, size);
 }
 
 static void
 nk_stbtt_free(void *ptr, void *user_data) {
-	struct nk_allocator *alloc = (struct nk_allocator *) user_data;
-	alloc->free(alloc->userdata, ptr);
+    struct nk_allocator *alloc = (struct nk_allocator *) user_data;
+    alloc->free(alloc->userdata, ptr);
 }
 
 #define STBTT_malloc(x,u)  nk_stbtt_malloc(x,u)
@@ -24750,7 +24750,7 @@ nk_draw_checkbox(struct nk_command_buffer *out,
         text.text = style->text_normal;
     }
 
-	text.text = nk_rgb_factor(text.text, style->color_factor);
+    text.text = nk_rgb_factor(text.text, style->color_factor);
     text.padding.x = 0;
     text.padding.y = 0;
     text.background = style->text_background;
@@ -24793,7 +24793,7 @@ nk_draw_option(struct nk_command_buffer *out,
         text.text = style->text_normal;
     }
 
-	text.text = nk_rgb_factor(text.text, style->color_factor);
+    text.text = nk_rgb_factor(text.text, style->color_factor);
     text.padding.x = 0;
     text.padding.y = 0;
     text.background = style->text_background;
