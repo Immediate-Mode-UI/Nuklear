@@ -131,7 +131,7 @@ overview(struct nk_context *ctx)
             nk_checkbox_flags_label(ctx, "No Scrollbar", &window_flags, NK_WINDOW_NO_SCROLLBAR);
             nk_checkbox_flags_label(ctx, "Minimizable", &window_flags, NK_WINDOW_MINIMIZABLE);
             nk_checkbox_flags_label(ctx, "Scale Left", &window_flags, NK_WINDOW_SCALE_LEFT);
-            nk_checkbox_label(ctx, "Disable widgets", &disable_widgets);
+			nk_checkbox_label(ctx, "Disable widgets", &disable_widgets);
             nk_tree_pop(ctx);
         }
 
@@ -141,9 +141,12 @@ overview(struct nk_context *ctx)
         if (nk_tree_push(ctx, NK_TREE_TAB, "Widgets", NK_MINIMIZED))
         {
             enum options {A,B,C};
-            static int checkbox;
-            static int option;
-
+            static int checkbox_left_text_left;
+            static int checkbox_centered_text_right;
+            static int checkbox_right_text_right;
+            static int checkbox_right_text_left;
+            static int option_left;
+            static int option_right;
             if (nk_tree_push(ctx, NK_TREE_NODE, "Text", NK_MINIMIZED))
             {
                 /* Text Widgets */
@@ -209,13 +212,21 @@ overview(struct nk_context *ctx)
                 static int range_int_max = 4096;
                 static const float ratio[] = {120, 150};
 
-                nk_layout_row_static(ctx, 30, 100, 1);
-                nk_checkbox_label(ctx, "Checkbox", &checkbox);
+                nk_layout_row_dynamic(ctx, 0, 1);
+                nk_checkbox_label(ctx, "CheckLeft TextLeft", &checkbox_left_text_left);
+                nk_checkbox_label_align(ctx, "CheckCenter TextRight", &checkbox_centered_text_right, NK_WIDGET_ALIGN_CENTERED | NK_WIDGET_ALIGN_MIDDLE, NK_TEXT_RIGHT);
+                nk_checkbox_label_align(ctx, "CheckRight TextRight", &checkbox_right_text_right, NK_WIDGET_LEFT, NK_TEXT_RIGHT);
+                nk_checkbox_label_align(ctx, "CheckRight TextLeft", &checkbox_right_text_left, NK_WIDGET_RIGHT, NK_TEXT_LEFT);
 
                 nk_layout_row_static(ctx, 30, 80, 3);
-                option = nk_option_label(ctx, "optionA", option == A) ? A : option;
-                option = nk_option_label(ctx, "optionB", option == B) ? B : option;
-                option = nk_option_label(ctx, "optionC", option == C) ? C : option;
+                option_left = nk_option_label(ctx, "optionA", option_left == A) ? A : option_left;
+                option_left = nk_option_label(ctx, "optionB", option_left == B) ? B : option_left;
+                option_left = nk_option_label(ctx, "optionC", option_left == C) ? C : option_left;
+
+                nk_layout_row_static(ctx, 30, 80, 3);
+                option_right = nk_option_label_align(ctx, "optionA", option_right == A, NK_WIDGET_RIGHT, NK_TEXT_RIGHT) ? A : option_right;
+                option_right = nk_option_label_align(ctx, "optionB", option_right == B, NK_WIDGET_RIGHT, NK_TEXT_RIGHT) ? B : option_right;
+                option_right = nk_option_label_align(ctx, "optionC", option_right == C, NK_WIDGET_RIGHT, NK_TEXT_RIGHT) ? C : option_right;
 
                 nk_layout_row(ctx, NK_STATIC, 30, 2, ratio);
                 nk_labelf(ctx, NK_TEXT_LEFT, "Slider int");

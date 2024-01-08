@@ -2290,6 +2290,21 @@ NK_API void nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, nk
 /// nk_layout_space_rect_to_screen          | Converts rectangle from nk_layout_space coordinate space into screen space
 /// nk_layout_space_rect_to_local           | Converts rectangle from screen space into nk_layout_space coordinates
 */
+
+enum nk_widget_align {
+    NK_WIDGET_ALIGN_LEFT        = 0x01,
+    NK_WIDGET_ALIGN_CENTERED    = 0x02,
+    NK_WIDGET_ALIGN_RIGHT       = 0x04,
+    NK_WIDGET_ALIGN_TOP         = 0x08,
+    NK_WIDGET_ALIGN_MIDDLE      = 0x10,
+    NK_WIDGET_ALIGN_BOTTOM      = 0x20
+};
+enum nk_widget_alignment {
+    NK_WIDGET_LEFT        = NK_WIDGET_ALIGN_MIDDLE|NK_WIDGET_ALIGN_LEFT,
+    NK_WIDGET_CENTERED    = NK_WIDGET_ALIGN_MIDDLE|NK_WIDGET_ALIGN_CENTERED,
+    NK_WIDGET_RIGHT       = NK_WIDGET_ALIGN_MIDDLE|NK_WIDGET_ALIGN_RIGHT
+};
+
 /*/// #### nk_layout_set_min_row_height
 /// Sets the currently used minimum row height.
 /// !!! WARNING
@@ -3192,10 +3207,13 @@ NK_API nk_bool nk_button_pop_behavior(struct nk_context*);
  * ============================================================================= */
 NK_API nk_bool nk_check_label(struct nk_context*, const char*, nk_bool active);
 NK_API nk_bool nk_check_text(struct nk_context*, const char*, int, nk_bool active);
+NK_API nk_bool nk_check_text_align(struct nk_context*, const char*, int, nk_bool active, nk_flags widget_alignment, nk_flags text_alignment);
 NK_API unsigned nk_check_flags_label(struct nk_context*, const char*, unsigned int flags, unsigned int value);
 NK_API unsigned nk_check_flags_text(struct nk_context*, const char*, int, unsigned int flags, unsigned int value);
 NK_API nk_bool nk_checkbox_label(struct nk_context*, const char*, nk_bool *active);
+NK_API nk_bool nk_checkbox_label_align(struct nk_context *ctx, const char *label, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment);
 NK_API nk_bool nk_checkbox_text(struct nk_context*, const char*, int, nk_bool *active);
+NK_API nk_bool nk_checkbox_text_align(struct nk_context *ctx, const char *text, int len, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment);
 NK_API nk_bool nk_checkbox_flags_label(struct nk_context*, const char*, unsigned int *flags, unsigned int value);
 NK_API nk_bool nk_checkbox_flags_text(struct nk_context*, const char*, int, unsigned int *flags, unsigned int value);
 /* =============================================================================
@@ -3204,9 +3222,13 @@ NK_API nk_bool nk_checkbox_flags_text(struct nk_context*, const char*, int, unsi
  *
  * ============================================================================= */
 NK_API nk_bool nk_radio_label(struct nk_context*, const char*, nk_bool *active);
+NK_API nk_bool nk_radio_label_align(struct nk_context *ctx, const char *label, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment);
 NK_API nk_bool nk_radio_text(struct nk_context*, const char*, int, nk_bool *active);
+NK_API nk_bool nk_radio_text_align(struct nk_context *ctx, const char *text, int len, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment);
 NK_API nk_bool nk_option_label(struct nk_context*, const char*, nk_bool active);
+NK_API nk_bool nk_option_label_align(struct nk_context *ctx, const char *label, nk_bool active, nk_flags widget_alignment, nk_flags text_alignment);
 NK_API nk_bool nk_option_text(struct nk_context*, const char*, int, nk_bool active);
+NK_API nk_bool nk_option_text_align(struct nk_context *ctx, const char *text, int len, nk_bool is_active, nk_flags widget_alignment, nk_flags text_alignment);
 /* =============================================================================
  *
  *                                  SELECTABLE
@@ -6063,9 +6085,9 @@ enum nk_toggle_type {
     NK_TOGGLE_OPTION
 };
 NK_LIB nk_bool nk_toggle_behavior(const struct nk_input *in, struct nk_rect select, nk_flags *state, nk_bool active);
-NK_LIB void nk_draw_checkbox(struct nk_command_buffer *out, nk_flags state, const struct nk_style_toggle *style, nk_bool active, const struct nk_rect *label, const struct nk_rect *selector, const struct nk_rect *cursors, const char *string, int len, const struct nk_user_font *font);
-NK_LIB void nk_draw_option(struct nk_command_buffer *out, nk_flags state, const struct nk_style_toggle *style, nk_bool active, const struct nk_rect *label, const struct nk_rect *selector, const struct nk_rect *cursors, const char *string, int len, const struct nk_user_font *font);
-NK_LIB nk_bool nk_do_toggle(nk_flags *state, struct nk_command_buffer *out, struct nk_rect r, nk_bool *active, const char *str, int len, enum nk_toggle_type type, const struct nk_style_toggle *style, const struct nk_input *in, const struct nk_user_font *font);
+NK_LIB void nk_draw_checkbox(struct nk_command_buffer *out, nk_flags state, const struct nk_style_toggle *style, nk_bool active, const struct nk_rect *label, const struct nk_rect *selector, const struct nk_rect *cursors, const char *string, int len, const struct nk_user_font *font, nk_flags text_alignment);
+NK_LIB void nk_draw_option(struct nk_command_buffer *out, nk_flags state, const struct nk_style_toggle *style, nk_bool active, const struct nk_rect *label, const struct nk_rect *selector, const struct nk_rect *cursors, const char *string, int len, const struct nk_user_font *font, nk_flags text_alignment);
+NK_LIB nk_bool nk_do_toggle(nk_flags *state, struct nk_command_buffer *out, struct nk_rect r, nk_bool *active, const char *str, int len, enum nk_toggle_type type, const struct nk_style_toggle *style, const struct nk_input *in, const struct nk_user_font *font, nk_flags widget_alignment, nk_flags text_alignment);
 
 /* progress */
 NK_LIB nk_size nk_progress_behavior(nk_flags *state, struct nk_input *in, struct nk_rect r, struct nk_rect cursor, nk_size max, nk_size value, nk_bool modifiable);
@@ -6158,14 +6180,14 @@ NK_LIB void nk_property(struct nk_context *ctx, const char *name, struct nk_prop
 #ifndef STBTT_malloc
 static void*
 nk_stbtt_malloc(nk_size size, void *user_data) {
-	struct nk_allocator *alloc = (struct nk_allocator *) user_data;
-	return alloc->alloc(alloc->userdata, 0, size);
+    struct nk_allocator *alloc = (struct nk_allocator *) user_data;
+    return alloc->alloc(alloc->userdata, 0, size);
 }
 
 static void
 nk_stbtt_free(void *ptr, void *user_data) {
-	struct nk_allocator *alloc = (struct nk_allocator *) user_data;
-	alloc->free(alloc->userdata, ptr);
+    struct nk_allocator *alloc = (struct nk_allocator *) user_data;
+    alloc->free(alloc->userdata, ptr);
 }
 
 #define STBTT_malloc(x,u)  nk_stbtt_malloc(x,u)
@@ -24707,7 +24729,7 @@ nk_draw_checkbox(struct nk_command_buffer *out,
     nk_flags state, const struct nk_style_toggle *style, nk_bool active,
     const struct nk_rect *label, const struct nk_rect *selector,
     const struct nk_rect *cursors, const char *string, int len,
-    const struct nk_user_font *font)
+    const struct nk_user_font *font, nk_flags text_alignment)
 {
     const struct nk_style_item *background;
     const struct nk_style_item *cursor;
@@ -24729,6 +24751,10 @@ nk_draw_checkbox(struct nk_command_buffer *out,
     }
 
     text.text = nk_rgb_factor(text.text, style->color_factor);
+    text.padding.x = 0;
+    text.padding.y = 0;
+    text.background = style->text_background;
+    nk_widget_text(out, *label, string, len, &text, text_alignment, font);
 
     /* draw background and cursor */
     if (background->type == NK_STYLE_ITEM_COLOR) {
@@ -24740,18 +24766,13 @@ nk_draw_checkbox(struct nk_command_buffer *out,
             nk_draw_image(out, *cursors, &cursor->data.image, nk_rgb_factor(nk_white, style->color_factor));
         else nk_fill_rect(out, *cursors, 0, cursor->data.color);
     }
-
-    text.padding.x = 0;
-    text.padding.y = 0;
-    text.background = style->text_background;
-    nk_widget_text(out, *label, string, len, &text, NK_TEXT_LEFT, font);
 }
 NK_LIB void
 nk_draw_option(struct nk_command_buffer *out,
     nk_flags state, const struct nk_style_toggle *style, nk_bool active,
     const struct nk_rect *label, const struct nk_rect *selector,
     const struct nk_rect *cursors, const char *string, int len,
-    const struct nk_user_font *font)
+    const struct nk_user_font *font, nk_flags text_alignment)
 {
     const struct nk_style_item *background;
     const struct nk_style_item *cursor;
@@ -24773,6 +24794,10 @@ nk_draw_option(struct nk_command_buffer *out,
     }
 
     text.text = nk_rgb_factor(text.text, style->color_factor);
+    text.padding.x = 0;
+    text.padding.y = 0;
+    text.background = style->text_background;
+    nk_widget_text(out, *label, string, len, &text, text_alignment, font);
 
     /* draw background and cursor */
     if (background->type == NK_STYLE_ITEM_COLOR) {
@@ -24784,18 +24809,13 @@ nk_draw_option(struct nk_command_buffer *out,
             nk_draw_image(out, *cursors, &cursor->data.image, nk_rgb_factor(nk_white, style->color_factor));
         else nk_fill_circle(out, *cursors, cursor->data.color);
     }
-
-    text.padding.x = 0;
-    text.padding.y = 0;
-    text.background = style->text_background;
-    nk_widget_text(out, *label, string, len, &text, NK_TEXT_LEFT, font);
 }
 NK_LIB nk_bool
 nk_do_toggle(nk_flags *state,
     struct nk_command_buffer *out, struct nk_rect r,
     nk_bool *active, const char *str, int len, enum nk_toggle_type type,
     const struct nk_style_toggle *style, const struct nk_input *in,
-    const struct nk_user_font *font)
+    const struct nk_user_font *font, nk_flags widget_alignment, nk_flags text_alignment)
 {
     int was_active;
     struct nk_rect bounds;
@@ -24821,20 +24841,43 @@ nk_do_toggle(nk_flags *state,
     /* calculate the selector space */
     select.w = font->height;
     select.h = select.w;
-    select.y = r.y + r.h/2.0f - select.h/2.0f;
-    select.x = r.x;
+
+    if (widget_alignment & NK_WIDGET_ALIGN_RIGHT) {
+        select.x = r.x + r.w - font->height;
+
+        /* label in front of the selector */
+        label.x = r.x;
+        label.w = r.w - select.w - style->spacing * 2;
+    } else if (widget_alignment & NK_WIDGET_ALIGN_CENTERED) {
+        select.x = r.x + (r.w - select.w) / 2;
+
+        /* label in front of selector */
+        label.x = r.x;
+        label.w = (r.w - select.w - style->spacing * 2) / 2;
+    } else { /* Default: NK_WIDGET_ALIGN_LEFT */
+        select.x = r.x;
+
+        /* label behind the selector */
+        label.x = select.x + select.w + style->spacing;
+        label.w = NK_MAX(r.x + r.w, label.x) - label.x;
+    }
+
+    if (widget_alignment & NK_WIDGET_ALIGN_TOP) {
+        select.y = r.y;
+    } else if (widget_alignment & NK_WIDGET_ALIGN_BOTTOM) {
+        select.y = r.y + r.h - select.h - 2 * style->padding.y;
+    } else { /* Default: NK_WIDGET_ALIGN_MIDDLE */
+        select.y = r.y + r.h/2.0f - select.h/2.0f;
+    }
+
+    label.y = select.y;
+    label.h = select.w;
 
     /* calculate the bounds of the cursor inside the selector */
     cursor.x = select.x + style->padding.x + style->border;
     cursor.y = select.y + style->padding.y + style->border;
     cursor.w = select.w - (2 * style->padding.x + 2 * style->border);
     cursor.h = select.h - (2 * style->padding.y + 2 * style->border);
-
-    /* label behind the selector */
-    label.x = select.x + select.w + style->spacing;
-    label.y = select.y;
-    label.w = NK_MAX(r.x + r.w, label.x) - label.x;
-    label.h = select.w;
 
     /* update selector */
     was_active = *active;
@@ -24844,9 +24887,9 @@ nk_do_toggle(nk_flags *state,
     if (style->draw_begin)
         style->draw_begin(out, style->userdata);
     if (type == NK_TOGGLE_CHECK) {
-        nk_draw_checkbox(out, *state, style, *active, &label, &select, &cursor, str, len, font);
+        nk_draw_checkbox(out, *state, style, *active, &label, &select, &cursor, str, len, font, text_alignment);
     } else {
-        nk_draw_option(out, *state, style, *active, &label, &select, &cursor, str, len, font);
+        nk_draw_option(out, *state, style, *active, &label, &select, &cursor, str, len, font, text_alignment);
     }
     if (style->draw_end)
         style->draw_end(out, style->userdata);
@@ -24882,7 +24925,35 @@ nk_check_text(struct nk_context *ctx, const char *text, int len, nk_bool active)
     if (!state) return active;
     in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
     nk_do_toggle(&ctx->last_widget_state, &win->buffer, bounds, &active,
-        text, len, NK_TOGGLE_CHECK, &style->checkbox, in, style->font);
+        text, len, NK_TOGGLE_CHECK, &style->checkbox, in, style->font, NK_WIDGET_LEFT, NK_TEXT_LEFT);
+    return active;
+}
+NK_API nk_bool
+nk_check_text_align(struct nk_context *ctx, const char *text, int len, nk_bool active, nk_flags widget_alignment, nk_flags text_alignment)
+{
+    struct nk_window *win;
+    struct nk_panel *layout;
+    const struct nk_input *in;
+    const struct nk_style *style;
+
+    struct nk_rect bounds;
+    enum nk_widget_layout_states state;
+
+    NK_ASSERT(ctx);
+    NK_ASSERT(ctx->current);
+    NK_ASSERT(ctx->current->layout);
+    if (!ctx || !ctx->current || !ctx->current->layout)
+        return active;
+
+    win = ctx->current;
+    style = &ctx->style;
+    layout = win->layout;
+
+    state = nk_widget(&bounds, ctx);
+    if (!state) return active;
+    in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
+    nk_do_toggle(&ctx->last_widget_state, &win->buffer, bounds, &active,
+        text, len, NK_TOGGLE_CHECK, &style->checkbox, in, style->font, widget_alignment, text_alignment);
     return active;
 }
 NK_API unsigned int
@@ -24909,6 +24980,18 @@ nk_checkbox_text(struct nk_context *ctx, const char *text, int len, nk_bool *act
     if (!ctx || !text || !active) return 0;
     old_val = *active;
     *active = nk_check_text(ctx, text, len, *active);
+    return old_val != *active;
+}
+NK_API nk_bool
+nk_checkbox_text_align(struct nk_context *ctx, const char *text, int len, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment)
+{
+    int old_val;
+    NK_ASSERT(ctx);
+    NK_ASSERT(text);
+    NK_ASSERT(active);
+    if (!ctx || !text || !active) return 0;
+    old_val = *active;
+    *active = nk_check_text_align(ctx, text, len, *active, widget_alignment, text_alignment);
     return old_val != *active;
 }
 NK_API nk_bool
@@ -24941,6 +25024,10 @@ NK_API unsigned int nk_check_flags_label(struct nk_context *ctx, const char *lab
 NK_API nk_bool nk_checkbox_label(struct nk_context *ctx, const char *label, nk_bool *active)
 {
     return nk_checkbox_text(ctx, label, nk_strlen(label), active);
+}
+NK_API nk_bool nk_checkbox_label_align(struct nk_context *ctx, const char *label, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment)
+{
+    return nk_checkbox_text_align(ctx, label, nk_strlen(label), active, widget_alignment, text_alignment);
 }
 NK_API nk_bool nk_checkbox_flags_label(struct nk_context *ctx, const char *label,
     unsigned int *flags, unsigned int value)
@@ -24977,7 +25064,35 @@ nk_option_text(struct nk_context *ctx, const char *text, int len, nk_bool is_act
     if (!state) return (int)state;
     in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
     nk_do_toggle(&ctx->last_widget_state, &win->buffer, bounds, &is_active,
-        text, len, NK_TOGGLE_OPTION, &style->option, in, style->font);
+        text, len, NK_TOGGLE_OPTION, &style->option, in, style->font, NK_WIDGET_LEFT, NK_TEXT_LEFT);
+    return is_active;
+}
+NK_API nk_bool
+nk_option_text_align(struct nk_context *ctx, const char *text, int len, nk_bool is_active, nk_flags widget_alignment, nk_flags text_alignment)
+{
+    struct nk_window *win;
+    struct nk_panel *layout;
+    const struct nk_input *in;
+    const struct nk_style *style;
+
+    struct nk_rect bounds;
+    enum nk_widget_layout_states state;
+
+    NK_ASSERT(ctx);
+    NK_ASSERT(ctx->current);
+    NK_ASSERT(ctx->current->layout);
+    if (!ctx || !ctx->current || !ctx->current->layout)
+        return is_active;
+
+    win = ctx->current;
+    style = &ctx->style;
+    layout = win->layout;
+
+    state = nk_widget(&bounds, ctx);
+    if (!state) return (int)state;
+    in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
+    nk_do_toggle(&ctx->last_widget_state, &win->buffer, bounds, &is_active,
+        text, len, NK_TOGGLE_OPTION, &style->option, in, style->font, widget_alignment, text_alignment);
     return is_active;
 }
 NK_API nk_bool
@@ -24993,14 +25108,36 @@ nk_radio_text(struct nk_context *ctx, const char *text, int len, nk_bool *active
     return old_value != *active;
 }
 NK_API nk_bool
+nk_radio_text_align(struct nk_context *ctx, const char *text, int len, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment)
+{
+    int old_value;
+    NK_ASSERT(ctx);
+    NK_ASSERT(text);
+    NK_ASSERT(active);
+    if (!ctx || !text || !active) return 0;
+    old_value = *active;
+    *active = nk_option_text_align(ctx, text, len, old_value, widget_alignment, text_alignment);
+    return old_value != *active;
+}
+NK_API nk_bool
 nk_option_label(struct nk_context *ctx, const char *label, nk_bool active)
 {
     return nk_option_text(ctx, label, nk_strlen(label), active);
 }
 NK_API nk_bool
+nk_option_label_align(struct nk_context *ctx, const char *label, nk_bool active, nk_flags widget_alignment, nk_flags text_alignment)
+{
+    return nk_option_text_align(ctx, label, nk_strlen(label), active, widget_alignment, text_alignment);
+}
+NK_API nk_bool
 nk_radio_label(struct nk_context *ctx, const char *label, nk_bool *active)
 {
     return nk_radio_text(ctx, label, nk_strlen(label), active);
+}
+NK_API nk_bool
+nk_radio_label_align(struct nk_context *ctx, const char *label, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment)
+{
+    return nk_radio_text_align(ctx, label, nk_strlen(label), active, widget_alignment, text_alignment);
 }
 
 
@@ -29986,6 +30123,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2023/11/26 (4.12.0) - Added an alignment option to checkboxes and radio buttons.
 /// - 2023/10/11 (4.11.0) - Added nk_widget_disable_begin() and nk_widget_disable_end()
 /// - 2022/12/23 (4.10.6) - Fix incorrect glyph index in nk_font_bake()
 /// - 2022/12/17 (4.10.5) - Fix nk_font_bake_pack() using TTC font offset incorrectly
