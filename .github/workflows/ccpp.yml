@@ -11,11 +11,39 @@ jobs:
     - uses: actions/checkout@v4
     - name: apt-update
       run: sudo apt-get update -qq
-    - name: apt get glfw
-      run: sudo apt-get install -y --no-install-recommends libglfw3 libglfw3-dev libglew-dev
-    - name: build opengl2
+    - name: apt get demo-libs
+      run: sudo apt-get install -y --no-install-recommends liballegro5-dev liballegro-image5-dev liballegro-ttf5-dev libglfw3 libglfw3-dev libglew-dev libsdl2-dev libwayland-dev libx11-dev libxft-dev wayland-protocols
+    - name: build allegro5
+      run: make -C demo/allegro5
+    - name: build glfw_opengl2
       run: make -C demo/glfw_opengl2
-    - name: build opengl3
+    - name: build glfw_opengl3
       run: make -C demo/glfw_opengl3
+    - name: build glfw_opengl4
+      run: make -C demo/glfw_opengl4
+#    - name: build glfw_vulkan
+#      run: make -C demo/glfw_vulkan
+    - name: build sdl_opengl2
+      run: make -C demo/sdl_opengl2
+    - name: build sdl_opengl3
+      run: make -C demo/sdl_opengl3
+    - name: build sdl_opengles2
+      run: make -C demo/sdl_opengles2
+    - name: build sdl_renderer
+      run: make -C demo/sdl_renderer
+    - name: build sdl2surface_rawfb
+      run: make -C demo/sdl2surface_rawfb
+    - name: build wayland_rawfb
+      run: make -C demo/wayland_rawfb
+    - name: build x11
+      run: make -C demo/x11
+    - name: build x11_opengl2
+      run: make -C demo/x11_opengl2
+    - name: build x11_opengl3
+      run: make -C demo/x11_opengl3
+    - name: build x11_rawfb
+      run: make -C demo/x11_rawfb
+    - name: build x11_xft
+      run: make -C demo/x11_xft
     - name: build example
       run: make -C example
