@@ -50,6 +50,9 @@ NK_API void                 nk_glfw3_destroy_texture(int tex_index);
  */
 #ifdef NK_GLFW_GL4_IMPLEMENTATION
 #undef NK_GLFW_GL4_IMPLEMENTATION
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
 
 #ifndef NK_GLFW_TEXT_MAX
 #define NK_GLFW_TEXT_MAX 256

@@ -71,6 +71,8 @@ NK_API void nk_glfw3_mouse_button_callback(GLFWwindow *win, int button,
  */
 #ifdef NK_GLFW_VULKAN_IMPLEMENTATION
 #undef NK_GLFW_VULKAN_IMPLEMENTATION
+#include <assert.h>
+#include <stdlib.h>
 
 #ifndef NK_GLFW_TEXT_MAX
 #define NK_GLFW_TEXT_MAX 256
