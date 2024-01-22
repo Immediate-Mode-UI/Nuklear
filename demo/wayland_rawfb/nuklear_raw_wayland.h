@@ -1,6 +1,10 @@
 #ifndef NK_RAW_WAYLAND_H_
 #define NK_RAW_WAYLAND_H_
 
+#include <assert.h>
+#include <stdio.h>
+#include <string.h>
+
 #define WIDTH 800
 #define HEIGHT 600
 

@@ -49,6 +49,10 @@ void                  nk_sdlsurface_shutdown(struct sdlsurface_context *sdlsurfa
  * ===============================================================
  */
 #ifdef NK_SDLSURFACE_IMPLEMENTATION
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
+
 struct sdlsurface_context {
     struct nk_context ctx;
     struct nk_rect scissors;

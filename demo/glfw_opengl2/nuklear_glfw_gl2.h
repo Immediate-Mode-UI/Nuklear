@@ -40,6 +40,8 @@ NK_API void                 nk_gflw3_scroll_callback(GLFWwindow *win, double xof
  * ===============================================================
  */
 #ifdef NK_GLFW_GL2_IMPLEMENTATION
+#include <string.h>
+#include <stdlib.h>
 
 #ifndef NK_GLFW_TEXT_MAX
 #define NK_GLFW_TEXT_MAX 256

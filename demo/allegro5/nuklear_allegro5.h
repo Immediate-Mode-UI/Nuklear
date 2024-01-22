@@ -46,6 +46,7 @@ NK_API void                   nk_allegro5_font_set_font(NkAllegro5Font *font);
  * ===============================================================
  */
 #ifdef NK_ALLEGRO5_IMPLEMENTATION
+#include <stdio.h>
 
 #ifndef NK_ALLEGRO5_TEXT_MAX
 #define NK_ALLEGRO5_TEXT_MAX 256
