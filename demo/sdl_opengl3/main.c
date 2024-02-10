@@ -149,7 +149,9 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&evt)) {
             if (evt.type == SDL_QUIT) goto cleanup;
             nk_sdl_handle_event(&evt);
-        } nk_input_end(ctx);
+        }
+        nk_sdl_handle_grab(); /* optional grabbing behavior */
+        nk_input_end(ctx);
 
         /* GUI */
         if (nk_begin(ctx, "Demo", nk_rect(50, 50, 230, 250),
