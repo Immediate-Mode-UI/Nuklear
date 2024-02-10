@@ -271,8 +271,8 @@ nk_sdl_handle_grab(void)
     if (ctx->input.mouse.grab) {
         SDL_SetRelativeMouseMode(SDL_TRUE);
     } else if (ctx->input.mouse.ungrab) {
-        SDL_WarpMouseInWindow(sdl.win, (int)ctx->input.mouse.prev.x, (int)ctx->input.mouse.prev.y);
         SDL_SetRelativeMouseMode(SDL_FALSE);
+        SDL_WarpMouseInWindow(sdl.win, (int)ctx->input.mouse.prev.x, (int)ctx->input.mouse.prev.y);
     } else if (ctx->input.mouse.grabbed) {
         ctx->input.mouse.pos.x = ctx->input.mouse.prev.x;
         ctx->input.mouse.pos.y = ctx->input.mouse.prev.y;
