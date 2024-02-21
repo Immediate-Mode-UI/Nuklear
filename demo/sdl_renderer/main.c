@@ -63,6 +63,10 @@
   #include "../../demo/common/node_editor.c"
 #endif
 
+SDL_Surface *hammer_surface;
+SDL_Texture *hammer_texture;
+struct nk_image hammer_image;
+
 /* ===============================================================
  *
  *                          DEMO
@@ -167,6 +171,20 @@ main(int argc, char *argv[])
     #endif
     #endif
 
+    /* Create an SDL_Texture from an SDL_Surface, then convert it to an nk_image */
+    hammer_surface = SDL_LoadBMP("../../example/icon/hammer.bmp");
+    if (hammer_surface == NULL) {
+        printf("Error SDL_LoadBMP %s\n (ensure you are running the binary from the demo/sdl_renderer/ folder)\n", SDL_GetError());
+        exit(-1);
+    }
+    hammer_texture = SDL_CreateTextureFromSurface(renderer, hammer_surface);
+    if (hammer_texture == NULL) {
+        printf("Error SDL_CreateTextureFromSurface %s\n", SDL_GetError());
+        exit(-1);
+    }
+    hammer_image = nk_image_ptr(hammer_texture);
+    SDL_FreeSurface(hammer_surface);
+
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
     while (running)
     {
@@ -191,6 +209,9 @@ main(int argc, char *argv[])
             nk_layout_row_static(ctx, 30, 80, 1);
             if (nk_button_label(ctx, "button"))
                 fprintf(stdout, "button pressed\n");
+            nk_layout_row_dynamic(ctx, 50, 1);
+            if (nk_button_image_label(ctx, hammer_image, "icon button", NK_TEXT_CENTERED))
+                fprintf(stdout, "icon button pressed\n");
             nk_layout_row_dynamic(ctx, 30, 2);
             if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
             if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
@@ -237,6 +258,7 @@ main(int argc, char *argv[])
     }
 
 cleanup:
+    SDL_DestroyTexture(hammer_texture);
     nk_sdl_shutdown();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(win);
