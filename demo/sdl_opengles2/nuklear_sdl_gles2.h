@@ -349,6 +349,7 @@ nk_sdl_handle_grab(void)
     if (ctx->input.mouse.grab) {
         SDL_SetRelativeMouseMode(SDL_TRUE);
     } else if (ctx->input.mouse.ungrab) {
+        /* better support for older SDL by setting mode first; causes an extra mouse motion event */
         SDL_SetRelativeMouseMode(SDL_FALSE);
         SDL_WarpMouseInWindow(sdl.win, (int)ctx->input.mouse.prev.x, (int)ctx->input.mouse.prev.y);
     } else if (ctx->input.mouse.grabbed) {
