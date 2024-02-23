@@ -886,7 +886,7 @@ NK_WINDOW_NO_INPUT          | Prevents window of scaling, moving or getting focu
 #### nk_collapse_states
 State           | Description
 ----------------|-----------------------------------------------------------
-__NK_MINIMIZED__| UI section is collased and not visible until maximized
+__NK_MINIMIZED__| UI section is collapsed and not visible until maximized
 __NK_MAXIMIZED__| UI section is extended and visible until minimized
 <br /><br />
 #### nk_begin
@@ -1267,7 +1267,7 @@ Parameter   | Description
 __ctx__     | Must point to an previously initialized `nk_context` struct
 __name__    | Identifier of the window to either hide or show
 __state__   | state with either visible or hidden to modify the window with
-__cond__    | condition that has to be met to actually commit the visbility state change
+__cond__    | condition that has to be met to actually commit the visibility state change
 ### Layouting
 Layouting in general describes placing widget inside a window with position and size.
 While in this particular implementation there are five different APIs for layouting
@@ -1306,7 +1306,7 @@ functions should be fine.
     if the owning window grows in width. So the number of columns dictates
     the size of each widget dynamically by formula:
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-    widget_width = (window_width - padding - spacing) * (1/colum_count)
+    widget_width = (window_width - padding - spacing) * (1/column_count)
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Just like all other layouting APIs if you define more widget than columns this
     library will allocate a new row and keep all layouting parameters previously
@@ -2760,7 +2760,7 @@ X...XXXXXXXXXXXXX...X -           "
                        dynamic and static widgets.
 - 2016/12/31 (1.30.0) - Extended scrollbar offset from 16-bit to 32-bit.
 - 2016/12/31 (1.29.2) - Fixed closing window bug of minimized windows.
-- 2016/12/03 (1.29.1) - Fixed wrapped text with no seperator and C89 error.
+- 2016/12/03 (1.29.1) - Fixed wrapped text with no separator and C89 error.
 - 2016/12/03 (1.29.0) - Changed text wrapping to process words not characters.
 - 2016/11/22 (1.28.6) - Fixed window minimized closing bug.
 - 2016/11/19 (1.28.5) - Fixed abstract combo box closing behavior.
@@ -2898,7 +2898,7 @@ X...XXXXXXXXXXXXX...X -           "
                        precision.
 - 2016/08/08 (1.07.2) - Fixed compiling error without define `NK_INCLUDE_FIXED_TYPE`.
 - 2016/08/08 (1.07.1) - Fixed possible floating point error inside `nk_widget` leading
-                       to wrong wiget width calculation which results in widgets falsely
+                       to wrong widget width calculation which results in widgets falsely
                        becoming tagged as not inside window and cannot be accessed.
 - 2016/08/08 (1.07.0) - Nuklear now differentiates between hiding a window (NK_WINDOW_HIDDEN) and
                        closing a window (NK_WINDOW_CLOSED). A window can be hidden/shown
