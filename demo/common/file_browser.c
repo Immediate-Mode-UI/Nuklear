@@ -468,6 +468,7 @@ file_browser_run(struct file_browser *browser, struct nk_context *ctx)
                                 strncpy(browser->file, browser->directory, MAX_PATH_LEN);
                                 n = strlen(browser->file);
                                 strncpy(browser->file + n, browser->files[fileIndex], MAX_PATH_LEN - n);
+                                puts(browser->file);                                
                                 ret = 1;
                             }
                         }
