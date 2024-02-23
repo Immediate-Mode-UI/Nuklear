@@ -1309,6 +1309,11 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
             const struct nk_command_custom *c = (const struct nk_command_custom*)cmd;
             c->callback(&ctx->draw_list, c->x, c->y, c->w, c->h, c->callback_data);
         } break;
+        case NK_COMMAND_STROKE_BUFFER: {
+            const struct nk_command_stroke_buffer *c = (const struct nk_command_stroke_buffer*)cmd;
+            nk_draw_list_stroke_vertex_buffer(&ctx->draw_list, c->vertex_buffer, c->vertex_size, c->vertex_count,
+                c->index_buffer, c->index_size, c->index_count);
+        } break;
         default: break;
         }
     }
