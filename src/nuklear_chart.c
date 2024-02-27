@@ -53,7 +53,7 @@ nk_chart_begin_colored(struct nk_context *ctx, enum nk_chart_type type,
     slot->min = NK_MIN(min_value, max_value);
     slot->max = NK_MAX(min_value, max_value);
     slot->range = slot->max - slot->min;
-    slot->hide_markers = style->hide_markers;}
+    slot->show_markers = style->show_markers;}
 
     /* draw chart background */
     background = &style->background;
@@ -106,7 +106,7 @@ nk_chart_add_slot_colored(struct nk_context *ctx, const enum nk_chart_type type,
     slot->min = NK_MIN(min_value, max_value);
     slot->max = NK_MAX(min_value, max_value);
     slot->range = slot->max - slot->min;
-    slot->hide_markers = style->hide_markers;}
+    slot->show_markers = style->show_markers;}
 }
 NK_API void
 nk_chart_add_slot(struct nk_context *ctx, const enum nk_chart_type type,
@@ -153,7 +153,7 @@ nk_chart_push_line(struct nk_context *ctx, struct nk_window *win,
                 i->mouse.buttons[NK_BUTTON_LEFT].clicked) ? NK_CHART_CLICKED: 0;
             color = g->slots[slot].highlight;
         }
-        if (!g->slots[slot].hide_markers) {
+        if (g->slots[slot].show_markers) {
             nk_fill_rect(out, bounds, 0, color);
         }
         g->slots[slot].index += 1;
@@ -179,7 +179,7 @@ nk_chart_push_line(struct nk_context *ctx, struct nk_window *win,
             color = g->slots[slot].highlight;
         }
     }
-    if (!g->slots[slot].hide_markers) {
+    if (g->slots[slot].show_markers) {
         nk_fill_rect(out, nk_rect(cur.x - 2, cur.y - 2, 4, 4), 0, color);
     }
 

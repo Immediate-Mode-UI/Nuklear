@@ -621,7 +621,7 @@ overview(struct nk_context *ctx)
             float id = 0;
             static int col_index = -1;
             static int line_index = -1;
-            static int hide_markers = nk_false;
+            static int show_markers = nk_true;
             float step = (2*3.141592654f) / 32;
 
             int i;
@@ -631,9 +631,9 @@ overview(struct nk_context *ctx)
             id = 0;
             index = -1;
             nk_layout_row_dynamic(ctx, 15, 1);
-            nk_checkbox_label(ctx, "Hide markers", &hide_markers);
+            nk_checkbox_label(ctx, "Show markers", &show_markers);
             nk_layout_row_dynamic(ctx, 100, 1);
-            ctx->style.chart.hide_markers = hide_markers;
+            ctx->style.chart.show_markers = show_markers;
             if (nk_chart_begin(ctx, NK_CHART_LINES, 32, -1.0f, 1.0f)) {
                 for (i = 0; i < 32; ++i) {
                     nk_flags res = nk_chart_push(ctx, (float)cos(id));

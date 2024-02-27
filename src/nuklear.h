@@ -4976,7 +4976,7 @@ struct nk_style_chart {
     struct nk_vec2 padding;
     float color_factor;
     float disabled_factor;
-    nk_bool hide_markers;
+    nk_bool show_markers;
 };
 
 struct nk_style_combo {
@@ -5167,7 +5167,7 @@ struct nk_chart_slot {
     int count;
     struct nk_vec2 last;
     int index;
-    nk_bool hide_markers;
+    nk_bool show_markers;
 };
 
 struct nk_chart {
