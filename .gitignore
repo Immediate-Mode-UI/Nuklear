@@ -10,3 +10,4 @@ doc/doc*
 *.swo
 *.swp
 /private/
+*.DS_Store

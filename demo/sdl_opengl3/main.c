@@ -149,6 +149,11 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&evt)) {
             if (evt.type == SDL_QUIT) goto cleanup;
             nk_sdl_handle_event(&evt);
+
+            /* We don't want to compress key up/down nor mouse button up/down buttons,
+               because MacOS generates two events per Trackpad tap, and they could be lost. */
+            if((evt.type==SDL_MOUSEBUTTONUP)||(evt.type==SDL_MOUSEBUTTONDOWN)||
+               (evt.type==SDL_KEYUP)||(evt.type==SDL_KEYDOWN)) break;
         } nk_input_end(ctx);
 
         /* GUI */
