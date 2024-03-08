@@ -2219,7 +2219,7 @@ int main(void) {
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             continue;
         }
-        if (result != VK_SUCCESS) {
+        if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
             fprintf(stderr, "vkAcquireNextImageKHR failed: %d\n", result);
             return false;
         }
