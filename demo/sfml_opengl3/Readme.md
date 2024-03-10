@@ -8,4 +8,4 @@ This backend uses Glad to handle OpenGL extensions. You can download the Glad fi
 
 Once SFML and Glad have been installed on your system you have to edit the Makefile provided so that you can build the demo. There are two variables that need to be edited: SFML_DIR and GLAD_DIR. Make these point to your SFML root folder and Glad root folder respectively.
 
-On Linux there is an extra step. You need to install the the udev development files.
+On Linux there is an extra step. You need to install the udev development files.

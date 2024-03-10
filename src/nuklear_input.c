@@ -83,6 +83,10 @@ nk_input_button(struct nk_context *ctx, enum nk_buttons id, int x, int y, nk_boo
     btn->clicked_pos.y = (float)y;
     btn->down = down;
     btn->clicked++;
+
+    /* Fix Click-Drag for touch events. */
+    in->mouse.delta.x = 0;
+    in->mouse.delta.y = 0;
 #ifdef NK_BUTTON_TRIGGER_ON_RELEASE
     if (down == 1 && id == NK_BUTTON_LEFT)
     {

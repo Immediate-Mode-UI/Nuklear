@@ -55,6 +55,10 @@ NK_API void                  nk_rawfb_resize_fb(struct rawfb_context *rawfb, voi
  * ===============================================================
  */
 #ifdef NK_RAWFB_IMPLEMENTATION
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
+
 struct rawfb_image {
     void *pixels;
     int w, h, pitch;

@@ -98,16 +98,16 @@ nk_draw_button(struct nk_command_buffer *out,
         background = &style->active;
     else background = &style->normal;
 
-    switch(background->type) {
+    switch (background->type) {
         case NK_STYLE_ITEM_IMAGE:
-            nk_draw_image(out, *bounds, &background->data.image, nk_white);
+            nk_draw_image(out, *bounds, &background->data.image, nk_rgb_factor(nk_white, style->color_factor_background));
             break;
         case NK_STYLE_ITEM_NINE_SLICE:
-            nk_draw_nine_slice(out, *bounds, &background->data.slice, nk_white);
+            nk_draw_nine_slice(out, *bounds, &background->data.slice, nk_rgb_factor(nk_white, style->color_factor_background));
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-            nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, *bounds, style->rounding, nk_rgb_factor(background->data.color, style->color_factor_background));
+            nk_stroke_rect(out, *bounds, style->rounding, style->border, nk_rgb_factor(style->border_color, style->color_factor_background));
             break;
     }
     return background;
@@ -127,8 +127,8 @@ nk_do_button(nk_flags *state, struct nk_command_buffer *out, struct nk_rect r,
     /* calculate button content space */
     content->x = r.x + style->padding.x + style->border + style->rounding;
     content->y = r.y + style->padding.y + style->border + style->rounding;
-    content->w = r.w - (2 * style->padding.x + style->border + style->rounding*2);
-    content->h = r.h - (2 * style->padding.y + style->border + style->rounding*2);
+    content->w = r.w - (2 * (style->padding.x + style->border + style->rounding));
+    content->h = r.h - (2 * (style->padding.y + style->border + style->rounding));
 
     /* execute button behavior */
     bounds.x = r.x - style->touch_padding.x;
@@ -156,6 +156,8 @@ nk_draw_button_text(struct nk_command_buffer *out,
     else if (state & NK_WIDGET_STATE_ACTIVED)
         text.text = style->text_active;
     else text.text = style->text_normal;
+
+    text.text = nk_rgb_factor(text.text, style->color_factor_text);
 
     text.padding = nk_vec2(0,0);
     nk_widget_text(out, *content, txt, len, &text, text_alignment, font);
@@ -204,6 +206,8 @@ nk_draw_button_symbol(struct nk_command_buffer *out,
     else if (state & NK_WIDGET_STATE_ACTIVED)
         sym = style->text_active;
     else sym = style->text_normal;
+
+    sym = nk_rgb_factor(sym, style->color_factor_text);
     nk_draw_symbol(out, type, *content, bg, sym, 1, font);
 }
 NK_LIB nk_bool
@@ -235,7 +239,7 @@ nk_draw_button_image(struct nk_command_buffer *out,
     nk_flags state, const struct nk_style_button *style, const struct nk_image *img)
 {
     nk_draw_button(out, bounds, state, style);
-    nk_draw_image(out, *content, img, nk_white);
+    nk_draw_image(out, *content, img, nk_rgb_factor(nk_white, style->color_factor_background));
 }
 NK_LIB nk_bool
 nk_do_button_image(nk_flags *state,
@@ -292,6 +296,8 @@ nk_draw_button_text_symbol(struct nk_command_buffer *out,
         text.text = style->text_normal;
     }
 
+    sym = nk_rgb_factor(sym, style->color_factor_text);
+    text.text = nk_rgb_factor(text.text, style->color_factor_text);
     text.padding = nk_vec2(0,0);
     nk_draw_symbol(out, type, *symbol, style->text_background, sym, 0, font);
     nk_widget_text(out, *label, str, len, &text, NK_TEXT_CENTERED, font);
@@ -349,9 +355,10 @@ nk_draw_button_text_image(struct nk_command_buffer *out,
         text.text = style->text_active;
     else text.text = style->text_normal;
 
-    text.padding = nk_vec2(0,0);
+    text.text = nk_rgb_factor(text.text, style->color_factor_text);
+    text.padding = nk_vec2(0, 0);
     nk_widget_text(out, *label, str, len, &text, NK_TEXT_CENTERED, font);
-    nk_draw_image(out, *image, img, nk_white);
+    nk_draw_image(out, *image, img, nk_rgb_factor(nk_white, style->color_factor_background));
 }
 NK_LIB nk_bool
 nk_do_button_text_image(nk_flags *state,
@@ -456,7 +463,7 @@ nk_button_text_styled(struct nk_context *ctx,
     state = nk_widget(&bounds, ctx);
 
     if (!state) return 0;
-    in = (state == NK_WIDGET_ROM || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
+    in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
     return nk_do_button_text(&ctx->last_widget_state, &win->buffer, bounds,
                     title, len, style->text_alignment, ctx->button_behavior,
                     style, in, ctx->style.font);
@@ -501,7 +508,7 @@ nk_button_color(struct nk_context *ctx, struct nk_color color)
 
     state = nk_widget(&bounds, ctx);
     if (!state) return 0;
-    in = (state == NK_WIDGET_ROM || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
+    in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
 
     button = ctx->style.button;
     button.normal = nk_style_item_color(color);
@@ -533,7 +540,7 @@ nk_button_symbol_styled(struct nk_context *ctx,
     layout = win->layout;
     state = nk_widget(&bounds, ctx);
     if (!state) return 0;
-    in = (state == NK_WIDGET_ROM || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
+    in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
     return nk_do_button_symbol(&ctx->last_widget_state, &win->buffer, bounds,
             symbol, ctx->button_behavior, style, in, ctx->style.font);
 }
@@ -566,7 +573,7 @@ nk_button_image_styled(struct nk_context *ctx, const struct nk_style_button *sty
 
     state = nk_widget(&bounds, ctx);
     if (!state) return 0;
-    in = (state == NK_WIDGET_ROM || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
+    in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
     return nk_do_button_image(&ctx->last_widget_state, &win->buffer, bounds,
                 img, ctx->button_behavior, style, in);
 }
@@ -600,7 +607,7 @@ nk_button_symbol_text_styled(struct nk_context *ctx,
 
     state = nk_widget(&bounds, ctx);
     if (!state) return 0;
-    in = (state == NK_WIDGET_ROM || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
+    in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
     return nk_do_button_text_symbol(&ctx->last_widget_state, &win->buffer, bounds,
                 symbol, text, len, align, ctx->button_behavior,
                 style, ctx->style.font, in);
@@ -647,7 +654,7 @@ nk_button_image_text_styled(struct nk_context *ctx,
 
     state = nk_widget(&bounds, ctx);
     if (!state) return 0;
-    in = (state == NK_WIDGET_ROM || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
+    in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
     return nk_do_button_text_image(&ctx->last_widget_state, &win->buffer,
             bounds, img, text, len, align, ctx->button_behavior,
             style, ctx->style.font, in);
