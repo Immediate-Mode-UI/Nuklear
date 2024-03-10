@@ -28552,7 +28552,7 @@ nk_draw_color_picker(struct nk_command_buffer *o, const struct nk_rect *matrix,
 
     /* draw color matrix */
     temp = nk_hsv_f(hsva[0], 1.0f, 1.0f);
-    nk_fill_rect_multi_color(o, *matrix, white, temp, temp, white);
+    nk_fill_rect_multi_color(o, *matrix, white, temp, white, temp);
     nk_fill_rect_multi_color(o, *matrix, black_trans, black_trans, black, black);
 
     /* draw cross-hair */
