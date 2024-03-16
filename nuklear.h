@@ -19667,12 +19667,12 @@ nk_panel_get_border_color(const struct nk_style *style, enum nk_panel_type type)
 NK_LIB nk_bool
 nk_panel_is_sub(enum nk_panel_type type)
 {
-    return (type & NK_PANEL_SET_SUB)?1:0;
+    return ((int)type & (int)NK_PANEL_SET_SUB)?1:0;
 }
 NK_LIB nk_bool
 nk_panel_is_nonblock(enum nk_panel_type type)
 {
-    return (type & NK_PANEL_SET_NONBLOCK)?1:0;
+    return ((int)type & (int)NK_PANEL_SET_NONBLOCK)?1:0;
 }
 NK_LIB nk_bool
 nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type panel_type)
@@ -20922,7 +20922,7 @@ nk_popup_begin(struct nk_context *ctx, enum nk_popup_type type,
 
     win = ctx->current;
     panel = win->layout;
-    NK_ASSERT(!(panel->type & NK_PANEL_SET_POPUP) && "popups are not allowed to have popups");
+    NK_ASSERT(!((int)panel->type & (int)NK_PANEL_SET_POPUP) && "popups are not allowed to have popups");
     (void)panel;
     title_len = (int)nk_strlen(title);
     title_hash = nk_murmur_hash(title, (int)title_len, NK_PANEL_POPUP);
@@ -21016,7 +21016,7 @@ nk_nonblock_begin(struct nk_context *ctx,
     /* popups cannot have popups */
     win = ctx->current;
     panel = win->layout;
-    NK_ASSERT(!(panel->type & NK_PANEL_SET_POPUP));
+    NK_ASSERT(!((int)panel->type & (int)NK_PANEL_SET_POPUP));
     (void)panel;
     popup = win->popup.win;
     if (!popup) {
@@ -21089,7 +21089,7 @@ nk_popup_close(struct nk_context *ctx)
 
     popup = ctx->current;
     NK_ASSERT(popup->parent);
-    NK_ASSERT(popup->layout->type & NK_PANEL_SET_POPUP);
+    NK_ASSERT((int)popup->layout->type & (int)NK_PANEL_SET_POPUP);
     popup->flags |= NK_WINDOW_HIDDEN;
 }
 NK_API void
@@ -21357,7 +21357,7 @@ nk_contextual_end(struct nk_context *ctx)
     popup = ctx->current;
     panel = popup->layout;
     NK_ASSERT(popup->parent);
-    NK_ASSERT(panel->type & NK_PANEL_SET_POPUP);
+    NK_ASSERT((int)panel->type & (int)NK_PANEL_SET_POPUP);
     if (panel->flags & NK_WINDOW_DYNAMIC) {
         /* Close behavior
         This is a bit of a hack solution since we do not know before we end our popup
@@ -28322,7 +28322,7 @@ nk_do_property(nk_flags *ws,
     text_edit->string.buffer.memory.ptr = dst;
     text_edit->string.buffer.size = NK_MAX_NUMBER_BUFFER;
     text_edit->mode = NK_TEXT_EDIT_MODE_INSERT;
-    nk_do_edit(ws, out, edit, NK_EDIT_FIELD|NK_EDIT_AUTO_SELECT,
+    nk_do_edit(ws, out, edit, (int)NK_EDIT_FIELD|(int)NK_EDIT_AUTO_SELECT,
         filters[filter], text_edit, &style->edit, (*state == NK_PROPERTY_EDIT) ? in: 0, font);
 
     *length = text_edit->string.len;
@@ -29982,7 +29982,7 @@ nk_tooltip_begin(struct nk_context *ctx, float width)
     /* make sure that no nonblocking popup is currently active */
     win = ctx->current;
     in = &ctx->input;
-    if (win->popup.win && (win->popup.type & NK_PANEL_SET_NONBLOCK))
+    if (win->popup.win && ((int)win->popup.type & (int)NK_PANEL_SET_NONBLOCK))
         return 0;
 
     w = nk_iceilf(width);
@@ -30123,6 +30123,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2024/03/07 (4.12.1) - Fix bitwise operations warnings in C++20
 /// - 2023/11/26 (4.12.0) - Added an alignment option to checkboxes and radio buttons.
 /// - 2023/10/11 (4.11.0) - Added nk_widget_disable_begin() and nk_widget_disable_end()
 /// - 2022/12/23 (4.10.6) - Fix incorrect glyph index in nk_font_bake()
