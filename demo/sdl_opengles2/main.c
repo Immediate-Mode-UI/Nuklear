@@ -92,6 +92,7 @@ MainLoop(void* loopArg){
         if (evt.type == SDL_QUIT) running = nk_false;
         nk_sdl_handle_event(&evt);
     }
+    nk_sdl_handle_grab(); /* optional grabbing behavior */
     nk_input_end(ctx);
 
 

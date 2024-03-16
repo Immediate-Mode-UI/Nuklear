@@ -139,6 +139,7 @@ main(int argc, char *argv[])
             if (evt.type == SDL_QUIT) goto cleanup;
             nk_sdl_handle_event(&evt);
         }
+        nk_sdl_handle_grab(); /* optional grabbing behavior */
         nk_input_end(ctx);
 
         /* GUI */
