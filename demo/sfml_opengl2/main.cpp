@@ -107,6 +107,8 @@ int main(void)
     set_style(ctx, THEME_BLUE);
     #elif defined(STYLE_DARK)
     set_style(ctx, THEME_DARK);
+    #elif defined(STYLE_DRACULA)
+    set_style(ctx, THEME_DRACULA);
     #endif
     #endif
 
