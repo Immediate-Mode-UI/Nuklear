@@ -23,6 +23,13 @@ extern "C" {
 #ifndef NK_SCROLLBAR_HIDING_TIMEOUT
   #define NK_SCROLLBAR_HIDING_TIMEOUT 4.0f
 #endif
+/* for use in inline color code escape */
+#ifndef NK_ESC
+  #define NK_ESC "\033"
+#endif
+#ifndef NK_ESC_CHAR
+  #define NK_ESC_CHAR (NK_ESC[0])
+#endif
 /*
  * ==============================================================
  *
@@ -1185,7 +1192,7 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
 /// Function                            | Description
 /// ------------------------------------|----------------------------------------
 /// nk_begin                            | Starts a new window; needs to be called every frame for every window (unless hidden) or otherwise the window gets removed
-/// nk_begin_titled                     | Extended window start with separated title and identifier to allow multiple windows with same name but not title
+/// nk_begin_titled                     | Extended window start with separated title and identifier to allow multiple windows with same title but not name
 /// nk_end                              | Needs to be called at the end of the window building process to process scaling, scrollbars and general cleanup
 //
 /// nk_window_find                      | Finds and returns the window with give name
@@ -3627,7 +3634,7 @@ NK_API const char* nk_utf_at(const char *buffer, int length, int index, nk_rune 
 /// Finally the most complex API wise is using nuklear's font baking API.
 //
 /// #### Using your own implementation without vertex buffer output
-/// 
+///
 /// So first up the easiest way to do font handling is by just providing a
 /// `nk_user_font` struct which only requires the height in pixel of the used
 /// font and a callback to calculate the width of a string. This way of handling
@@ -3650,12 +3657,12 @@ NK_API const char* nk_utf_at(const char *buffer, int length, int index, nk_rune 
 ///     font.userdata.ptr = &your_font_class_or_struct;
 ///     font.height = your_font_height;
 ///     font.width = your_text_width_calculation;
-/// 
+///
 ///     struct nk_context ctx;
 ///     nk_init_default(&ctx, &font);
 /// ```
 /// #### Using your own implementation with vertex buffer output
-/// 
+///
 /// While the first approach works fine if you don't want to use the optional
 /// vertex buffer output it is not enough if you do. To get font handling working
 /// for these cases you have to provide two additional parameters inside the
@@ -3684,44 +3691,44 @@ NK_API const char* nk_utf_at(const char *buffer, int length, int index, nk_rune 
 ///         glyph.offset.x = ...;
 ///         glyph.offset.y = ...;
 ///     }
-/// 
+///
 ///     struct nk_user_font font;
 ///     font.userdata.ptr = &your_font_class_or_struct;
 ///     font.height = your_font_height;
 ///     font.width = your_text_width_calculation;
 ///     font.query = query_your_font_glyph;
 ///     font.texture.id = your_font_texture;
-/// 
+///
 ///     struct nk_context ctx;
 ///     nk_init_default(&ctx, &font);
 /// ```
 ///
 /// #### Nuklear font baker
-/// 
+///
 /// The final approach if you do not have a font handling functionality or don't
 /// want to use it in this library is by using the optional font baker.
 /// The font baker APIs can be used to create a font plus font atlas texture
 /// and can be used with or without the vertex buffer output.
-/// 
+///
 /// It still uses the `nk_user_font` struct and the two different approaches
 /// previously stated still work. The font baker is not located inside
 /// `nk_context` like all other systems since it can be understood as more of
 /// an extension to nuklear and does not really depend on any `nk_context` state.
-/// 
+///
 /// Font baker need to be initialized first by one of the nk_font_atlas_init_xxx
 /// functions. If you don't care about memory just call the default version
 /// `nk_font_atlas_init_default` which will allocate all memory from the standard library.
 /// If you want to control memory allocation but you don't care if the allocated
 /// memory is temporary and therefore can be freed directly after the baking process
 /// is over or permanent you can call `nk_font_atlas_init`.
-/// 
+///
 /// After successfully initializing the font baker you can add Truetype(.ttf) fonts from
 /// different sources like memory or from file by calling one of the `nk_font_atlas_add_xxx`.
 /// functions. Adding font will permanently store each font, font config and ttf memory block(!)
 /// inside the font atlas and allows to reuse the font atlas. If you don't want to reuse
 /// the font baker by for example adding additional fonts you can call
 /// `nk_font_atlas_cleanup` after the baking process is over (after calling nk_font_atlas_end).
-/// 
+///
 /// As soon as you added all fonts you wanted you can now start the baking process
 /// for every selected glyph to image by calling `nk_font_atlas_bake`.
 /// The baking process returns image memory, width and height which can be used to
@@ -3732,12 +3739,12 @@ NK_API const char* nk_utf_at(const char *buffer, int length, int index, nk_rune 
 /// to your font texture or object and optionally fills a `struct nk_draw_null_texture`
 /// which can be used for the optional vertex output. If you don't want it just
 /// set the argument to `NULL`.
-/// 
+///
 /// At this point you are done and if you don't want to reuse the font atlas you
 /// can call `nk_font_atlas_cleanup` to free all truetype blobs and configuration
 /// memory. Finally if you don't use the font atlas and any of it's fonts anymore
 /// you need to call `nk_font_atlas_clear` to free all memory still being used.
-/// 
+///
 /// ```c
 ///     struct nk_font_atlas atlas;
 ///     nk_font_atlas_init_default(&atlas);
@@ -3746,11 +3753,11 @@ NK_API const char* nk_utf_at(const char *buffer, int length, int index, nk_rune 
 ///     nk_font *font2 = nk_font_atlas_add_from_file(&atlas, "Path/To/Your/TTF_Font2.ttf", 16, 0);
 ///     const void* img = nk_font_atlas_bake(&atlas, &img_width, &img_height, NK_FONT_ATLAS_RGBA32);
 ///     nk_font_atlas_end(&atlas, nk_handle_id(texture), 0);
-/// 
+///
 ///     struct nk_context ctx;
 ///     nk_init_default(&ctx, &font->handle);
 ///     while (1) {
-/// 
+///
 ///     }
 ///     nk_font_atlas_clear(&atlas);
 /// ```
@@ -3945,7 +3952,7 @@ NK_API void nk_font_atlas_clear(struct nk_font_atlas*);
 /// not as much control is needed.
 /// In general all memory inside this library can be provided from the user in
 /// three different ways.
-/// 
+///
 /// The first way and the one providing most control is by just passing a fixed
 /// size memory block. In this case all control lies in the hand of the user
 /// since he can exactly control where the memory comes from and how much memory
@@ -3954,13 +3961,13 @@ NK_API void nk_font_atlas_clear(struct nk_font_atlas*);
 /// you have to take over the resizing. While being a fixed sized buffer sounds
 /// quite limiting, it is very effective in this library since the actual memory
 /// consumption is quite stable and has a fixed upper bound for a lot of cases.
-/// 
+///
 /// If you don't want to think about how much memory the library should allocate
 /// at all time or have a very dynamic UI with unpredictable memory consumption
 /// habits but still want control over memory allocation you can use the dynamic
 /// allocator based API. The allocator consists of two callbacks for allocating
 /// and freeing memory and optional userdata so you can plugin your own allocator.
-/// 
+///
 /// The final and easiest way can be used by defining
 /// NK_INCLUDE_DEFAULT_ALLOCATOR which uses the standard library memory
 /// allocation functions malloc and free and takes over complete control over
@@ -4215,34 +4222,34 @@ NK_API void nk_textedit_redo(struct nk_text_edit*);
 /// started. It is probably important to note that the command buffer is the main
 /// drawing API and the optional vertex buffer API only takes this format and
 /// converts it into a hardware accessible format.
-/// 
+///
 /// To use the command queue to draw your own widgets you can access the
 /// command buffer of each window by calling `nk_window_get_canvas` after
 /// previously having called `nk_begin`:
-/// 
+///
 /// ```c
 ///     void draw_red_rectangle_widget(struct nk_context *ctx)
 ///     {
 ///         struct nk_command_buffer *canvas;
 ///         struct nk_input *input = &ctx->input;
 ///         canvas = nk_window_get_canvas(ctx);
-/// 
+///
 ///         struct nk_rect space;
 ///         enum nk_widget_layout_states state;
 ///         state = nk_widget(&space, ctx);
 ///         if (!state) return;
-/// 
+///
 ///         if (state != NK_WIDGET_ROM)
 ///             update_your_widget_by_user_input(...);
 ///         nk_fill_rect(canvas, space, 0, nk_rgb(255,0,0));
 ///     }
-/// 
+///
 ///     if (nk_begin(...)) {
 ///         nk_layout_row_dynamic(ctx, 25, 1);
 ///         draw_red_rectangle_widget(ctx);
 ///     }
 ///     nk_end(..)
-/// 
+///
 /// ```
 /// Important to know if you want to create your own widgets is the `nk_widget`
 /// call. It allocates space on the panel reserved for this widget to be used,
@@ -4446,6 +4453,22 @@ struct nk_command_buffer {
     int use_clipping;
     nk_handle userdata;
     nk_size begin, end, last;
+    struct nk_draw_config *draw_config;
+};
+
+#ifndef NK_INLINE_TAG_STACK_SIZE
+#define NK_INLINE_TAG_STACK_SIZE 16
+#endif
+
+enum nk_inline_tag_color {
+    NK_INLINE_TAG_COLOR,
+    NK_INLINE_TAG_BGCOLOR,
+    NK_INLINE_TAG_MAX
+};
+
+struct nk_inline_tag_stack {
+    nk_size head[NK_INLINE_TAG_MAX];
+    struct nk_color colors[NK_INLINE_TAG_MAX][NK_INLINE_TAG_STACK_SIZE];
 };
 
 /* shape outlines */
@@ -4470,6 +4493,8 @@ NK_API void nk_fill_polygon(struct nk_command_buffer*, float*, int point_count, 
 NK_API void nk_draw_image(struct nk_command_buffer*, struct nk_rect, const struct nk_image*, struct nk_color);
 NK_API void nk_draw_nine_slice(struct nk_command_buffer*, struct nk_rect, const struct nk_nine_slice*, struct nk_color);
 NK_API void nk_draw_text(struct nk_command_buffer*, struct nk_rect, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color);
+NK_API int nk_draw_coded_text(struct nk_command_buffer*, struct nk_rect*, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color, nk_bool wrap, struct nk_inline_tag_stack *stack);
+NK_API int nk_draw_raw_text(struct nk_command_buffer*, struct nk_rect*, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color, nk_bool wrap, nk_bool wrap_at_sep_only, float *w);
 NK_API void nk_push_scissor(struct nk_command_buffer*, struct nk_rect);
 NK_API void nk_push_custom(struct nk_command_buffer*, struct nk_rect, nk_command_custom_callback, nk_handle usr);
 
@@ -4543,7 +4568,7 @@ NK_API nk_bool nk_input_is_key_down(const struct nk_input*, enum nk_keys);
 /// library since converting the default library draw command output is done by
 /// just calling `nk_convert` but I decided to still make this library accessible
 /// since it can be useful.
-/// 
+///
 /// The draw list is based on a path buffering and polygon and polyline
 /// rendering API which allows a lot of ways to draw 2D content to screen.
 /// In fact it is probably more powerful than needed but allows even more crazy
@@ -4689,6 +4714,10 @@ NK_API void nk_draw_list_push_userdata(struct nk_draw_list*, nk_handle userdata)
  *                          GUI
  *
  * ===============================================================*/
+#ifndef NK_NAME_COLOR_MAX_NAME
+#define NK_NAME_COLOR_MAX_NAME 32
+#endif
+
 enum nk_style_item_type {
     NK_STYLE_ITEM_COLOR,
     NK_STYLE_ITEM_IMAGE,
@@ -5149,10 +5178,44 @@ struct nk_style {
     struct nk_style_window window;
 };
 
+struct nk_name_color {
+    nk_hash name;
+    char name_string[NK_NAME_COLOR_MAX_NAME];
+    struct nk_color color;
+};
+
+struct nk_map_name_color {
+    struct nk_buffer buffer;
+    int count;
+};
+
+enum nk_color_inline_type {
+    NK_COLOR_INLINE_NONE,
+    NK_COLOR_INLINE_TAG,
+    NK_COLOR_INLINE_ESCAPE_TAG,
+    NK_COLOR_INLINE_MAX
+};
+
 NK_API struct nk_style_item nk_style_item_color(struct nk_color);
 NK_API struct nk_style_item nk_style_item_image(struct nk_image img);
 NK_API struct nk_style_item nk_style_item_nine_slice(struct nk_nine_slice slice);
 NK_API struct nk_style_item nk_style_item_hide(void);
+
+NK_API void nk_name_color_init(struct nk_name_color *, const char *, struct nk_color);
+
+#ifdef NK_INCLUDE_DEFAULT_ALLOCATOR
+NK_API void nk_map_name_color_init_default(struct nk_map_name_color *);
+#endif
+NK_API void nk_map_name_color_init(struct nk_map_name_color *, const struct nk_allocator *, const struct nk_name_color *, int count);
+NK_API void nk_map_name_color_init_colors(struct nk_map_name_color *, const struct nk_allocator *, const char **, struct nk_color *, int count);
+NK_API void nk_map_name_color_init_map_name_color(struct nk_map_name_color *, const struct nk_allocator *, const struct nk_map_name_color *, const char **filter_out, int count);
+NK_API void nk_map_name_color_init_fixed(struct nk_map_name_color *, struct nk_name_color *, int count, int capacity);
+NK_API void nk_map_name_color_free(struct nk_map_name_color *);
+NK_API void nk_map_name_color_push(struct nk_map_name_color *, const struct nk_name_color *, int count);
+NK_API void nk_map_name_color_push_colors(struct nk_map_name_color *, const char **, struct nk_color *, int count);
+NK_API void nk_map_name_color_push_map_name_color(struct nk_map_name_color *, const struct nk_map_name_color *);
+NK_API void nk_map_name_color_delete(struct nk_map_name_color *, const char **, int count);
+NK_API void nk_map_name_color_clear(struct nk_map_name_color *);
 
 /*==============================================================
  *                          PANEL
@@ -5357,23 +5420,24 @@ struct nk_window {
 /// red button you can temporarily push the old button color onto a stack
 /// draw the button with a red color and then you just pop the old color
 /// back from the stack:
-/// 
+///
 ///     nk_style_push_style_item(ctx, &ctx->style.button.normal, nk_style_item_color(nk_rgb(255,0,0)));
 ///     nk_style_push_style_item(ctx, &ctx->style.button.hover, nk_style_item_color(nk_rgb(255,0,0)));
 ///     nk_style_push_style_item(ctx, &ctx->style.button.active, nk_style_item_color(nk_rgb(255,0,0)));
 ///     nk_style_push_vec2(ctx, &cx->style.button.padding, nk_vec2(2,2));
-/// 
+///
 ///     nk_button(...);
-/// 
+///
 ///     nk_style_pop_style_item(ctx);
 ///     nk_style_pop_style_item(ctx);
 ///     nk_style_pop_style_item(ctx);
 ///     nk_style_pop_vec2(ctx);
-/// 
+///
 /// Nuklear has a stack for style_items, float properties, vector properties,
-/// flags, colors, fonts and for button_behavior. Each has it's own fixed size stack
+/// flags, colors, fonts, button_behavior, color_inline, and map_name_color. Each has it's own fixed size stack
 /// which can be changed at compile time.
  */
+
 #ifndef NK_BUTTON_BEHAVIOR_STACK_SIZE
 #define NK_BUTTON_BEHAVIOR_STACK_SIZE 8
 #endif
@@ -5402,6 +5466,10 @@ struct nk_window {
 #define NK_COLOR_STACK_SIZE 32
 #endif
 
+#ifndef NK_COLOR_INLINE_STACK_SIZE
+#define NK_COLOR_INLINE_STACK_SIZE 8
+#endif
+
 #define NK_CONFIGURATION_STACK_TYPE(prefix, name, type)\
     struct nk_config_stack_##name##_element {\
         prefix##_##type *address;\
@@ -5421,6 +5489,9 @@ NK_CONFIGURATION_STACK_TYPE(nk ,flags, flags);
 NK_CONFIGURATION_STACK_TYPE(struct nk, color, color);
 NK_CONFIGURATION_STACK_TYPE(const struct nk, user_font, user_font*);
 NK_CONFIGURATION_STACK_TYPE(enum nk, button_behavior, button_behavior);
+struct nk_config_stack_color_inline_element {
+    enum nk_color_inline_type old_value;
+};
 
 NK_CONFIG_STACK(style_item, NK_STYLE_ITEM_STACK_SIZE);
 NK_CONFIG_STACK(float, NK_FLOAT_STACK_SIZE);
@@ -5429,6 +5500,7 @@ NK_CONFIG_STACK(flags, NK_FLAGS_STACK_SIZE);
 NK_CONFIG_STACK(color, NK_COLOR_STACK_SIZE);
 NK_CONFIG_STACK(user_font, NK_FONT_STACK_SIZE);
 NK_CONFIG_STACK(button_behavior, NK_BUTTON_BEHAVIOR_STACK_SIZE);
+NK_CONFIG_STACK(color_inline, NK_COLOR_INLINE_STACK_SIZE);
 
 struct nk_configuration_stacks {
     struct nk_config_stack_style_item style_items;
@@ -5438,6 +5510,7 @@ struct nk_configuration_stacks {
     struct nk_config_stack_color colors;
     struct nk_config_stack_user_font fonts;
     struct nk_config_stack_button_behavior button_behaviors;
+    struct nk_config_stack_color_inline color_inline;
 };
 
 /*==============================================================
@@ -5483,6 +5556,20 @@ struct nk_pool {
     nk_size cap;
 };
 
+#ifndef NK_MAP_NAME_COLOR_STACK_SIZE
+#define NK_MAP_NAME_COLOR_STACK_SIZE 32
+#endif
+
+struct nk_map_name_color_stack {
+    int head;
+    struct nk_map_name_color *elements[NK_MAP_NAME_COLOR_STACK_SIZE];
+};
+
+struct nk_draw_config {
+    enum nk_color_inline_type color_inline;
+    struct nk_map_name_color_stack map_name_color;
+};
+
 struct nk_context {
 /* public: can be accessed freely */
     struct nk_input input;
@@ -5491,6 +5578,7 @@ struct nk_context {
     struct nk_clipboard clip;
     nk_flags last_widget_state;
     enum nk_button_behavior button_behavior;
+    struct nk_draw_config draw_config;
     struct nk_configuration_stacks stacks;
     float delta_time_seconds;
 
@@ -5524,6 +5612,15 @@ struct nk_context {
     unsigned int seq;
 };
 
+NK_API void nk_draw_set_color_inline(struct nk_context*, enum nk_color_inline_type);
+NK_API nk_bool nk_draw_push_color_inline(struct nk_context*, enum nk_color_inline_type);
+NK_API nk_bool nk_draw_pop_color_inline(struct nk_context*);
+NK_API nk_bool nk_draw_push_map_name_color(struct nk_context*, struct nk_map_name_color *); /* map is held by reference, not copied */
+NK_API struct nk_map_name_color *nk_draw_get_map_name_color(struct nk_context*, int index); /* 0-index for most-recently pushed */
+NK_API int nk_draw_get_map_name_color_index_range(struct nk_context*); /* one past the max index */
+NK_API struct nk_map_name_color *nk_draw_pop_map_name_color(struct nk_context*);
+NK_API struct nk_name_color *nk_draw_get_name_color(struct nk_map_name_color_stack *stack, const char *name, int len);
+
 /* ==============================================================
  *                          MATH
  * =============================================================== */
@@ -5543,6 +5640,8 @@ struct nk_context {
     (y1 < (y0 + h0)) && (y0 < (y1 + h1)))
 #define NK_CONTAINS(x, y, w, h, bx, by, bw, bh)\
     (NK_INBOX(x,y, bx, by, bw, bh) && NK_INBOX(x+w,y+h, bx, by, bw, bh))
+#define NK_CHAR_IS_HEX_DIGIT(c)\
+    (((c) >= '0' && (c) <= '9') || ((c) >= 'a' && (c) <= 'f') || ((c) >= 'A' && (c) <= 'F'))
 
 #define nk_vec2_sub(a, b) nk_vec2((a).x - (b).x, (a).y - (b).y)
 #define nk_vec2_add(a, b) nk_vec2((a).x + (b).x, (a).y + (b).y)
