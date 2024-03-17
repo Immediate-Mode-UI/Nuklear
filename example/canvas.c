@@ -86,7 +86,7 @@ icon_load(const char *filename)
     unsigned char *data = stbi_load(filename, &x, &y, &n, 0);
     if (!data) die("[SDL]: failed to load image: %s", filename);
 
-     glGenTextures(1, &tex);
+    glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
