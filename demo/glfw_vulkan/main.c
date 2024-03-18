@@ -758,7 +758,6 @@ bool create_swap_chain(struct vulkan_demo *demo) {
     VkResult result;
     VkSwapchainCreateInfoKHR create_info;
     uint32_t queue_family_indices[2];
-    uint32_t old_swap_chain_images_len;
     bool ret = false;
 
     queue_family_indices[0] = (uint32_t)demo->indices.graphics;
@@ -815,20 +814,10 @@ bool create_swap_chain(struct vulkan_demo *demo) {
         goto cleanup;
     }
 
-    old_swap_chain_images_len = demo->swap_chain_images_len;
     result = vkGetSwapchainImagesKHR(demo->device, demo->swap_chain,
                                      &demo->swap_chain_images_len, NULL);
     if (result != VK_SUCCESS) {
         fprintf(stderr, "vkGetSwapchainImagesKHR failed: %d\n", result);
-        goto cleanup;
-    }
-    if (old_swap_chain_images_len > 0 &&
-        old_swap_chain_images_len != demo->swap_chain_images_len) {
-        fprintf(stderr,
-                "number of assigned swap chain images changed between "
-                "runs. old: %u, new: %u\n",
-                (unsigned)old_swap_chain_images_len,
-                (unsigned)demo->swap_chain_images_len);
         goto cleanup;
     }
     if (demo->swap_chain_images == NULL) {
@@ -2219,7 +2208,7 @@ int main(void) {
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             continue;
         }
-        if (result != VK_SUCCESS) {
+        if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
             fprintf(stderr, "vkAcquireNextImageKHR failed: %d\n", result);
             return false;
         }
