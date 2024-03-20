@@ -19,7 +19,7 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_INCLUDE_SOFTWARE_FONT
 #include "../../nuklear.h"
-#define NK_SDLSURFACE_IMPLEMENTATION
+#define NK_RAWFB_IMPLEMENTATION
 #include "sdl2surface_rawfb.h"
 
 /* ===============================================================
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
     struct nk_color clear = {0,100,0,255};
     struct nk_vec2 vec;
     struct nk_rect bounds = {40,40,0,0};
-    struct sdlsurface_context *context;
+    struct rawfb_context *context;
 
     SDL_DisplayMode dm;
     SDL_Window *window;
@@ -165,7 +165,7 @@ int main(int argc, char **argv)
     surface = SDL_CreateRGBSurfaceWithFormat(0, dm.w-200, dm.h-200, 32, SDL_PIXELFORMAT_ARGB8888);
 
 
-    context = nk_sdlsurface_init(surface, 13.0f);
+    context = nk_rawfb_init(surface, 13.0f);
 
 
     while(1)
@@ -240,7 +240,7 @@ int main(int argc, char **argv)
         #endif
         /* ----------------------------------------- */
 
-        nk_sdlsurface_render(context, clear, 1);
+        nk_rawfb_render(context, clear, 1);
 
 
 
@@ -252,7 +252,7 @@ int main(int argc, char **argv)
 
     }
 
-    nk_sdlsurface_shutdown(context);
+    nk_rawfb_shutdown(context);
 
     SDL_FreeSurface(surface);
     SDL_DestroyRenderer(renderer);
