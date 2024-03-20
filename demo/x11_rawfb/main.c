@@ -47,7 +47,7 @@
 #define NK_INCLUDE_SOFTWARE_FONT
 
 #include "../../nuklear.h"
-#include "nuklear_rawfb.h"
+#include "../../demo/common/nuklear_rawfb.h"
 #include "nuklear_xlib.h"
 
 #define DTIME           20

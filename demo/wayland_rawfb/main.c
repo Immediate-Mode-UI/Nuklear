@@ -4,6 +4,7 @@
 #define NK_INCLUDE_STANDARD_VARARGS
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_IMPLEMENTATION
+#define NK_RAWFB_IMPLEMENTATION
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_INCLUDE_SOFTWARE_FONT
@@ -23,8 +24,31 @@
 #include "../../nuklear.h"
 
 #include "xdg-shell.h"
-#include "nuklear_raw_wayland.h"
+#include "../../demo/common/nuklear_rawfb.h"
 
+struct nk_wayland {
+    /*wayland vars*/
+    struct wl_display *display;
+    struct wl_compositor *compositor;
+    struct xdg_wm_base *xdg_wm_base;
+    struct wl_shm *wl_shm;
+    struct wl_seat* seat;
+    struct wl_callback *frame_callback;
+    struct wl_surface *surface;
+    struct xdg_surface *xdg_surface;
+    struct xdg_toplevel *xdg_toplevel;
+    struct wl_buffer *front_buffer;
+
+    int32_t *data;
+    int mouse_pointer_x;
+    int mouse_pointer_y;
+    uint8_t tex_scratch[512 * 512];
+
+    struct rawfb_context *rawfb;
+};
+
+#define WIDTH 800
+#define HEIGHT 600
 
 #define DTIME           20
 
@@ -141,7 +165,7 @@ static void nk_wayland_pointer_motion (void *data, struct wl_pointer *pointer, u
     win->mouse_pointer_x = wl_fixed_to_int(x);
     win->mouse_pointer_y = wl_fixed_to_int(y);
     
-    nk_input_motion(&(win->ctx), win->mouse_pointer_x, win->mouse_pointer_y);
+    nk_input_motion(&(win->rawfb->ctx), win->mouse_pointer_x, win->mouse_pointer_y);
 }
 
 static void nk_wayland_pointer_button (void *data, struct wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state) 
@@ -155,10 +179,10 @@ static void nk_wayland_pointer_button (void *data, struct wl_pointer *pointer, u
     if (button == 272){ //left mouse button
         if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
            // printf("nk_input_button x=%d, y=%d press: 1 \n", win->mouse_pointer_x, win->mouse_pointer_y);
-            nk_input_button(&(win->ctx), NK_BUTTON_LEFT, win->mouse_pointer_x, win->mouse_pointer_y, 1);
+            nk_input_button(&(win->rawfb->ctx), NK_BUTTON_LEFT, win->mouse_pointer_x, win->mouse_pointer_y, 1);
             
         } else if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
-            nk_input_button(&(win->ctx), NK_BUTTON_LEFT, win->mouse_pointer_x, win->mouse_pointer_y, 0);
+            nk_input_button(&(win->rawfb->ctx), NK_BUTTON_LEFT, win->mouse_pointer_x, win->mouse_pointer_y, 0);
         }
     }
 }
@@ -354,44 +378,6 @@ static struct wl_registry_listener nk_wayland_registry_listener =
 };
 //------------------------------------------------------------------------------------------------ endof WAYLAND REGISTRY INTERFACE
 
-
-static void nk_wayland_init(struct nk_wayland* win)
-{
-    const void *tex;
-    
-    win->font_tex.pixels = win->tex_scratch;
-    win->font_tex.format = NK_FONT_ATLAS_ALPHA8;
-    win->font_tex.w = win->font_tex.h = 0;
-
-    if (0 == nk_init_default(&(win->ctx), 0)) {
-        return;
-    }
-
-    nk_font_atlas_init_default(&(win->atlas));
-    nk_font_atlas_begin(&(win->atlas));
-    tex = nk_font_atlas_bake(&(win->atlas), &(win->font_tex.w), &(win->font_tex.h), win->font_tex.format);
-    if (!tex) {
-        return;
-    }
-
-    switch(win->font_tex.format) {
-    case NK_FONT_ATLAS_ALPHA8:
-        win->font_tex.pitch = win->font_tex.w * 1;
-        break;
-    case NK_FONT_ATLAS_RGBA32:
-        win->font_tex.pitch = win->font_tex.w * 4;
-        break;
-    };
-    /* Store the font texture in tex scratch memory */
-    memcpy(win->font_tex.pixels, tex, win->font_tex.pitch * win->font_tex.h);
-    nk_font_atlas_end(&(win->atlas), nk_handle_ptr(NULL), NULL);
-    if (win->atlas.default_font)
-        nk_style_set_font(&(win->ctx), &(win->atlas.default_font->handle));
-    nk_style_load_all_cursors(&(win->ctx), win->atlas.cursors);
-    nk_wayland_scissor(win, 0, 0, win->width, win->height);
-    
-}
-
 static void nk_wayland_deinit(struct nk_wayland *win) 
 {
 	xdg_toplevel_destroy (win->xdg_toplevel);
@@ -422,9 +408,9 @@ static void nk_wayland_surf_clear(struct nk_wayland* win)
     int x, y;
     int pix_idx;
     
-    for (y = 0; y < win->height; y++){
-        for (x = 0; x < win->width; x++){ 
-            pix_idx = y * win->width + x;
+    for (y = 0; y < HEIGHT; y++){
+        for (x = 0; x < WIDTH; x++){ 
+            pix_idx = y * WIDTH + x;
             win->data[pix_idx] = 0xFF000000;
         }
     }
@@ -479,9 +465,6 @@ int main ()
 	
     
     //2. Create Window
-    nk_wayland_ctx.width = WIDTH;
-	nk_wayland_ctx.height = HEIGHT;
-
 	nk_wayland_ctx.surface = wl_compositor_create_surface (nk_wayland_ctx.compositor);
 
 	nk_wayland_ctx.xdg_surface = xdg_wm_base_get_xdg_surface(nk_wayland_ctx.xdg_wm_base, nk_wayland_ctx.surface);
@@ -513,7 +496,7 @@ int main ()
     wl_surface_attach (nk_wayland_ctx.surface, nk_wayland_ctx.front_buffer, 0, 0);
     wl_surface_commit (nk_wayland_ctx.surface);
 
-    nk_wayland_init(&nk_wayland_ctx);
+    nk_rawfb_init(nk_wayland_ctx.data, nk_wayland_ctx.tex_scratch, WIDTH, HEIGHT, WIDTH*4, PIXEL_LAYOUT_XRGB_8888);
     
     
     //4. rendering UI
@@ -521,50 +504,50 @@ int main ()
         started = timestamp(); 
       
         // GUI 
-        if (nk_begin(&(nk_wayland_ctx.ctx), "Demo", nk_rect(50, 50, 200, 200),
+        if (nk_begin(&(nk_wayland_ctx.rawfb->ctx), "Demo", nk_rect(50, 50, 200, 200),
             NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|
             NK_WINDOW_CLOSABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE)) {
             enum {EASY, HARD};
             static int op = EASY;
             static int property = 20;
 
-            nk_layout_row_static(&(nk_wayland_ctx.ctx), 30, 80, 1);
-            if (nk_button_label(&(nk_wayland_ctx.ctx), "button")){
+            nk_layout_row_static(&(nk_wayland_ctx.rawfb->ctx), 30, 80, 1);
+            if (nk_button_label(&(nk_wayland_ctx.rawfb->ctx), "button")){
                 printf("button pressed\n");
             }
-            nk_layout_row_dynamic(&(nk_wayland_ctx.ctx), 30, 2);
-            if (nk_option_label(&(nk_wayland_ctx.ctx), "easy", op == EASY)) op = EASY;
-            if (nk_option_label(&(nk_wayland_ctx.ctx), "hard", op == HARD)) op = HARD;
-            nk_layout_row_dynamic(&(nk_wayland_ctx.ctx), 25, 1);
-            nk_property_int(&(nk_wayland_ctx.ctx), "Compression:", 0, &property, 100, 10, 1);
+            nk_layout_row_dynamic(&(nk_wayland_ctx.rawfb->ctx), 30, 2);
+            if (nk_option_label(&(nk_wayland_ctx.rawfb->ctx), "easy", op == EASY)) op = EASY;
+            if (nk_option_label(&(nk_wayland_ctx.rawfb->ctx), "hard", op == HARD)) op = HARD;
+            nk_layout_row_dynamic(&(nk_wayland_ctx.rawfb->ctx), 25, 1);
+            nk_property_int(&(nk_wayland_ctx.rawfb->ctx), "Compression:", 0, &property, 100, 10, 1);
         }
-        nk_end(&(nk_wayland_ctx.ctx));
+        nk_end(&(nk_wayland_ctx.rawfb->ctx));
         
-        if (nk_window_is_closed(&(nk_wayland_ctx.ctx), "Demo")) break;
+        if (nk_window_is_closed(&(nk_wayland_ctx.rawfb->ctx), "Demo")) break;
 
         /* -------------- EXAMPLES ---------------- */
         #ifdef INCLUDE_CALCULATOR
-          calculator(&(nk_wayland_ctx.ctx));
+          calculator(&(nk_wayland_ctx.rawfb->ctx));
         #endif
         #ifdef INCLUDE_CANVAS
-          canvas(&(nk_wayland_ctx.ctx));
+          canvas(&(nk_wayland_ctx.rawfb->ctx));
         #endif
         #ifdef INCLUDE_OVERVIEW
-          overview(&(nk_wayland_ctx.ctx));
+          overview(&(nk_wayland_ctx.rawfb->ctx));
         #endif
         #ifdef INCLUDE_NODE_EDITOR
-          node_editor(&(nk_wayland_ctx.ctx));
+          node_editor(&(nk_wayland_ctx.rawfb->ctx));
         #endif
         /* ----------------------------------------- */
 
         // Draw framebuffer 
-        nk_wayland_render(&nk_wayland_ctx, nk_rgb(30,30,30), 1);
+        nk_rawfb_render(nk_wayland_ctx.rawfb, nk_rgb(30,30,30), 1);
         
         
         //handle wayland stuff (send display to FB & get inputs)
-        nk_input_begin(&(nk_wayland_ctx.ctx));
+        nk_input_begin(&(nk_wayland_ctx.rawfb->ctx));
         wl_display_dispatch(nk_wayland_ctx.display);
-        nk_input_end(&(nk_wayland_ctx.ctx));
+        nk_input_end(&(nk_wayland_ctx.rawfb->ctx));
         
         // Timing 
         dt = timestamp() - started;
