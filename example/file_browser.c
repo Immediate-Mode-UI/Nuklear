@@ -346,7 +346,7 @@ static void
 file_browser_reload_directory_content(struct file_browser *browser, const char *path)
 {
     const size_t path_len = strlen(path) + 1;
-    memmove(browser->directory, path, MIN(path_len, MAX_PATH_LEN));
+    NK_MEMCPY(browser->directory, path, MIN(path_len, MAX_PATH_LEN));
     browser->directory[MAX_PATH_LEN - 1] = 0;
     dir_free_list(browser->files, browser->file_count);
     dir_free_list(browser->directories, browser->dir_count);
