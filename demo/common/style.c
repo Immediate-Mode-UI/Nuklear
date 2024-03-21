@@ -159,7 +159,7 @@ set_style(struct nk_context *ctx, enum theme theme)
         table[NK_COLOR_CHART] = currentline;
         table[NK_COLOR_CHART_COLOR] = comment;
         table[NK_COLOR_CHART_COLOR_HIGHLIGHT] = purple;
-        table[NK_COLOR_SCROLLBAR] = currentline;
+        table[NK_COLOR_SCROLLBAR] = background;
         table[NK_COLOR_SCROLLBAR_CURSOR] = currentline;
         table[NK_COLOR_SCROLLBAR_CURSOR_HOVER] = comment;
         table[NK_COLOR_SCROLLBAR_CURSOR_ACTIVE] = purple;
