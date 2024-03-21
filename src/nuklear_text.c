@@ -34,8 +34,7 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
         label.w = NK_MAX(1, 2 * t->padding.x + (float)text_width);
         label.x = (b.x + t->padding.x + ((b.w - 2 * t->padding.x) - label.w) / 2);
         label.x = NK_MAX(b.x + t->padding.x, label.x);
-        label.w = NK_MIN(b.x + b.w, label.x + label.w);
-        if (label.w >= label.x) label.w -= label.x;
+        label.w = NK_MIN(b.w, label.w);
     } else if (a & NK_TEXT_ALIGN_RIGHT) {
         label.x = NK_MAX(b.x + t->padding.x, (b.x + b.w) - (2 * t->padding.x + (float)text_width));
         label.w = (float)text_width + 2 * t->padding.x;
