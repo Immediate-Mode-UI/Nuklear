@@ -151,7 +151,7 @@ set_style(struct nk_context *ctx, enum theme theme)
         table[NK_COLOR_SLIDER] = background;
         table[NK_COLOR_SLIDER_CURSOR] = currentline;
         table[NK_COLOR_SLIDER_CURSOR_HOVER] = comment;
-        table[NK_COLOR_SLIDER_CURSOR_ACTIVE] = purple;
+        table[NK_COLOR_SLIDER_CURSOR_ACTIVE] = comment;
         table[NK_COLOR_PROPERTY] = currentline;
         table[NK_COLOR_EDIT] = currentline;
         table[NK_COLOR_EDIT_CURSOR] = foreground;
