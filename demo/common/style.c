@@ -144,8 +144,8 @@ set_style(struct nk_context *ctx, enum theme theme)
         table[NK_COLOR_BUTTON_HOVER] = comment;
         table[NK_COLOR_BUTTON_ACTIVE] = purple;
         table[NK_COLOR_TOGGLE] = currentline;
-        table[NK_COLOR_TOGGLE_HOVER] = comment;
-        table[NK_COLOR_TOGGLE_CURSOR] = pink;
+        table[NK_COLOR_TOGGLE_HOVER] = pink;
+        table[NK_COLOR_TOGGLE_CURSOR] = comment;
         table[NK_COLOR_SELECT] = currentline;
         table[NK_COLOR_SELECT_ACTIVE] = comment;
         table[NK_COLOR_SLIDER] = background;
