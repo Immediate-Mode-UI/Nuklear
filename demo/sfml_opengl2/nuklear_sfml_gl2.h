@@ -31,6 +31,8 @@ NK_API void                 nk_sfml_shutdown(void);
  * ===============================================================
  */
  #ifdef NK_SFML_GL2_IMPLEMENTATION
+#include <cstdlib>
+#include <cstring>
 
 struct nk_sfml_device {
     struct nk_buffer cmds;

@@ -151,7 +151,7 @@ extern "C" {
     #elif (defined(_WIN32) || defined(WIN32)) && defined(_MSC_VER)
       #define NK_SIZE_TYPE unsigned __int32
     #elif defined(__GNUC__) || defined(__clang__)
-      #if defined(__x86_64__) || defined(__ppc64__) || defined(__aarch64__)
+      #if defined(__x86_64__) || defined(__ppc64__) || defined(__PPC64__) || defined(__aarch64__)
         #define NK_SIZE_TYPE unsigned long
       #else
         #define NK_SIZE_TYPE unsigned int
@@ -166,7 +166,7 @@ extern "C" {
     #elif (defined(_WIN32) || defined(WIN32)) && defined(_MSC_VER)
       #define NK_POINTER_TYPE unsigned __int32
     #elif defined(__GNUC__) || defined(__clang__)
-      #if defined(__x86_64__) || defined(__ppc64__) || defined(__aarch64__)
+      #if defined(__x86_64__) || defined(__ppc64__) || defined(__PPC64__) || defined(__aarch64__)
         #define NK_POINTER_TYPE unsigned long
       #else
         #define NK_POINTER_TYPE unsigned int
@@ -1241,7 +1241,7 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
 /// #### nk_collapse_states
 /// State           | Description
 /// ----------------|-----------------------------------------------------------
-/// __NK_MINIMIZED__| UI section is collased and not visible until maximized
+/// __NK_MINIMIZED__| UI section is collapsed and not visible until maximized
 /// __NK_MAXIMIZED__| UI section is extended and visible until minimized
 /// <br /><br />
 */
@@ -1779,9 +1779,22 @@ NK_API void nk_window_show(struct nk_context*, const char *name, enum nk_show_st
 /// __ctx__     | Must point to an previously initialized `nk_context` struct
 /// __name__    | Identifier of the window to either hide or show
 /// __state__   | state with either visible or hidden to modify the window with
-/// __cond__    | condition that has to be met to actually commit the visbility state change
+/// __cond__    | condition that has to be met to actually commit the visibility state change
 */
 NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show_states, int cond);
+/*/// #### nk_window_show_if
+/// Line for visual separation. Draws a line with thickness determined by the current row height.
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// void nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, NK_BOOL rounding)
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter       | Description
+/// ----------------|-------------------------------------------------------
+/// __ctx__         | Must point to an previously initialized `nk_context` struct
+/// __color__       | Color of the horizontal line
+/// __rounding__    | Whether or not to make the line round
+*/
+NK_API void nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, nk_bool rounding);
 /* =============================================================================
  *
  *                                  LAYOUT
@@ -1834,7 +1847,7 @@ NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show
 ///     the size of each widget dynamically by formula:
 ///
 ///     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-///     widget_width = (window_width - padding - spacing) * (1/colum_count)
+///     widget_width = (window_width - padding - spacing) * (1/column_count)
 ///     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 ///     Just like all other layouting APIs if you define more widget than columns this
@@ -1932,7 +1945,7 @@ NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show
 ///     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
 ///     if (nk_begin_xxx(...) {
 ///         // two rows with height: 30 composed of two widgets with width 60 and 40
-///         const float size[] = {60,40};
+///         const float ratio[] = {60,40};
 ///         nk_layout_row(ctx, NK_STATIC, 30, 2, ratio);
 ///         nk_widget(...);
 ///         nk_widget(...);
@@ -2055,6 +2068,21 @@ NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show
 /// nk_layout_space_rect_to_screen          | Converts rectangle from nk_layout_space coordinate space into screen space
 /// nk_layout_space_rect_to_local           | Converts rectangle from screen space into nk_layout_space coordinates
 */
+
+enum nk_widget_align {
+    NK_WIDGET_ALIGN_LEFT        = 0x01,
+    NK_WIDGET_ALIGN_CENTERED    = 0x02,
+    NK_WIDGET_ALIGN_RIGHT       = 0x04,
+    NK_WIDGET_ALIGN_TOP         = 0x08,
+    NK_WIDGET_ALIGN_MIDDLE      = 0x10,
+    NK_WIDGET_ALIGN_BOTTOM      = 0x20
+};
+enum nk_widget_alignment {
+    NK_WIDGET_LEFT        = NK_WIDGET_ALIGN_MIDDLE|NK_WIDGET_ALIGN_LEFT,
+    NK_WIDGET_CENTERED    = NK_WIDGET_ALIGN_MIDDLE|NK_WIDGET_ALIGN_CENTERED,
+    NK_WIDGET_RIGHT       = NK_WIDGET_ALIGN_MIDDLE|NK_WIDGET_ALIGN_RIGHT
+};
+
 /*/// #### nk_layout_set_min_row_height
 /// Sets the currently used minimum row height.
 /// !!! WARNING
@@ -2854,7 +2882,8 @@ NK_API void nk_list_view_end(struct nk_list_view*);
 enum nk_widget_layout_states {
     NK_WIDGET_INVALID, /* The widget cannot be seen and is completely out of view */
     NK_WIDGET_VALID, /* The widget is completely inside the window and can be updated and drawn */
-    NK_WIDGET_ROM /* The widget is partially visible and cannot be updated */
+    NK_WIDGET_ROM, /* The widget is partially visible and cannot be updated */
+    NK_WIDGET_DISABLED /* The widget is manually disabled and acts like NK_WIDGET_ROM */
 };
 enum nk_widget_states {
     NK_WIDGET_STATE_MODIFIED    = NK_FLAG(1),
@@ -2877,6 +2906,8 @@ NK_API nk_bool nk_widget_is_hovered(struct nk_context*);
 NK_API nk_bool nk_widget_is_mouse_clicked(struct nk_context*, enum nk_buttons);
 NK_API nk_bool nk_widget_has_mouse_click_down(struct nk_context*, enum nk_buttons, nk_bool down);
 NK_API void nk_spacing(struct nk_context*, int cols);
+NK_API void nk_widget_disable_begin(struct nk_context* ctx);
+NK_API void nk_widget_disable_end(struct nk_context* ctx);
 /* =============================================================================
  *
  *                                  TEXT
@@ -2954,10 +2985,13 @@ NK_API nk_bool nk_button_pop_behavior(struct nk_context*);
  * ============================================================================= */
 NK_API nk_bool nk_check_label(struct nk_context*, const char*, nk_bool active);
 NK_API nk_bool nk_check_text(struct nk_context*, const char*, int, nk_bool active);
+NK_API nk_bool nk_check_text_align(struct nk_context*, const char*, int, nk_bool active, nk_flags widget_alignment, nk_flags text_alignment);
 NK_API unsigned nk_check_flags_label(struct nk_context*, const char*, unsigned int flags, unsigned int value);
 NK_API unsigned nk_check_flags_text(struct nk_context*, const char*, int, unsigned int flags, unsigned int value);
 NK_API nk_bool nk_checkbox_label(struct nk_context*, const char*, nk_bool *active);
+NK_API nk_bool nk_checkbox_label_align(struct nk_context *ctx, const char *label, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment);
 NK_API nk_bool nk_checkbox_text(struct nk_context*, const char*, int, nk_bool *active);
+NK_API nk_bool nk_checkbox_text_align(struct nk_context *ctx, const char *text, int len, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment);
 NK_API nk_bool nk_checkbox_flags_label(struct nk_context*, const char*, unsigned int *flags, unsigned int value);
 NK_API nk_bool nk_checkbox_flags_text(struct nk_context*, const char*, int, unsigned int *flags, unsigned int value);
 /* =============================================================================
@@ -2966,9 +3000,13 @@ NK_API nk_bool nk_checkbox_flags_text(struct nk_context*, const char*, int, unsi
  *
  * ============================================================================= */
 NK_API nk_bool nk_radio_label(struct nk_context*, const char*, nk_bool *active);
+NK_API nk_bool nk_radio_label_align(struct nk_context *ctx, const char *label, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment);
 NK_API nk_bool nk_radio_text(struct nk_context*, const char*, int, nk_bool *active);
+NK_API nk_bool nk_radio_text_align(struct nk_context *ctx, const char *text, int len, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment);
 NK_API nk_bool nk_option_label(struct nk_context*, const char*, nk_bool active);
+NK_API nk_bool nk_option_label_align(struct nk_context *ctx, const char *label, nk_bool active, nk_flags widget_alignment, nk_flags text_alignment);
 NK_API nk_bool nk_option_text(struct nk_context*, const char*, int, nk_bool active);
+NK_API nk_bool nk_option_text_align(struct nk_context *ctx, const char *text, int len, nk_bool is_active, nk_flags widget_alignment, nk_flags text_alignment);
 /* =============================================================================
  *
  *                                  SELECTABLE
@@ -3371,6 +3409,9 @@ NK_API void nk_menu_end(struct nk_context*);
  *                                  STYLE
  *
  * ============================================================================= */
+
+#define NK_WIDGET_DISABLED_FACTOR 0.5f
+
 enum nk_style_colors {
     NK_COLOR_TEXT,
     NK_COLOR_WINDOW,
@@ -3447,6 +3488,7 @@ NK_API struct nk_color nk_rgb_f(float r, float g, float b);
 NK_API struct nk_color nk_rgb_fv(const float *rgb);
 NK_API struct nk_color nk_rgb_cf(struct nk_colorf c);
 NK_API struct nk_color nk_rgb_hex(const char *rgb);
+NK_API struct nk_color nk_rgb_factor(struct nk_color col, const float factor);
 
 NK_API struct nk_color nk_rgba(int r, int g, int b, int a);
 NK_API struct nk_color nk_rgba_u32(nk_uint);
@@ -3576,149 +3618,155 @@ NK_API const char* nk_utf_at(const char *buffer, int length, int index, nk_rune 
  *                          FONT
  *
  * ===============================================================*/
-/*  Font handling in this library was designed to be quite customizable and lets
-    you decide what you want to use and what you want to provide. There are three
-    different ways to use the font atlas. The first two will use your font
-    handling scheme and only requires essential data to run nuklear. The next
-    slightly more advanced features is font handling with vertex buffer output.
-    Finally the most complex API wise is using nuklear's font baking API.
-
-    1.) Using your own implementation without vertex buffer output
-    --------------------------------------------------------------
-    So first up the easiest way to do font handling is by just providing a
-    `nk_user_font` struct which only requires the height in pixel of the used
-    font and a callback to calculate the width of a string. This way of handling
-    fonts is best fitted for using the normal draw shape command API where you
-    do all the text drawing yourself and the library does not require any kind
-    of deeper knowledge about which font handling mechanism you use.
-    IMPORTANT: the `nk_user_font` pointer provided to nuklear has to persist
-    over the complete life time! I know this sucks but it is currently the only
-    way to switch between fonts.
-
-        float your_text_width_calculation(nk_handle handle, float height, const char *text, int len)
-        {
-            your_font_type *type = handle.ptr;
-            float text_width = ...;
-            return text_width;
-        }
-
-        struct nk_user_font font;
-        font.userdata.ptr = &your_font_class_or_struct;
-        font.height = your_font_height;
-        font.width = your_text_width_calculation;
-
-        struct nk_context ctx;
-        nk_init_default(&ctx, &font);
-
-    2.) Using your own implementation with vertex buffer output
-    --------------------------------------------------------------
-    While the first approach works fine if you don't want to use the optional
-    vertex buffer output it is not enough if you do. To get font handling working
-    for these cases you have to provide two additional parameters inside the
-    `nk_user_font`. First a texture atlas handle used to draw text as subimages
-    of a bigger font atlas texture and a callback to query a character's glyph
-    information (offset, size, ...). So it is still possible to provide your own
-    font and use the vertex buffer output.
-
-        float your_text_width_calculation(nk_handle handle, float height, const char *text, int len)
-        {
-            your_font_type *type = handle.ptr;
-            float text_width = ...;
-            return text_width;
-        }
-        void query_your_font_glyph(nk_handle handle, float font_height, struct nk_user_font_glyph *glyph, nk_rune codepoint, nk_rune next_codepoint)
-        {
-            your_font_type *type = handle.ptr;
-            glyph.width = ...;
-            glyph.height = ...;
-            glyph.xadvance = ...;
-            glyph.uv[0].x = ...;
-            glyph.uv[0].y = ...;
-            glyph.uv[1].x = ...;
-            glyph.uv[1].y = ...;
-            glyph.offset.x = ...;
-            glyph.offset.y = ...;
-        }
-
-        struct nk_user_font font;
-        font.userdata.ptr = &your_font_class_or_struct;
-        font.height = your_font_height;
-        font.width = your_text_width_calculation;
-        font.query = query_your_font_glyph;
-        font.texture.id = your_font_texture;
-
-        struct nk_context ctx;
-        nk_init_default(&ctx, &font);
-
-    3.) Nuklear font baker
-    ------------------------------------
-    The final approach if you do not have a font handling functionality or don't
-    want to use it in this library is by using the optional font baker.
-    The font baker APIs can be used to create a font plus font atlas texture
-    and can be used with or without the vertex buffer output.
-
-    It still uses the `nk_user_font` struct and the two different approaches
-    previously stated still work. The font baker is not located inside
-    `nk_context` like all other systems since it can be understood as more of
-    an extension to nuklear and does not really depend on any `nk_context` state.
-
-    Font baker need to be initialized first by one of the nk_font_atlas_init_xxx
-    functions. If you don't care about memory just call the default version
-    `nk_font_atlas_init_default` which will allocate all memory from the standard library.
-    If you want to control memory allocation but you don't care if the allocated
-    memory is temporary and therefore can be freed directly after the baking process
-    is over or permanent you can call `nk_font_atlas_init`.
-
-    After successfully initializing the font baker you can add Truetype(.ttf) fonts from
-    different sources like memory or from file by calling one of the `nk_font_atlas_add_xxx`.
-    functions. Adding font will permanently store each font, font config and ttf memory block(!)
-    inside the font atlas and allows to reuse the font atlas. If you don't want to reuse
-    the font baker by for example adding additional fonts you can call
-    `nk_font_atlas_cleanup` after the baking process is over (after calling nk_font_atlas_end).
-
-    As soon as you added all fonts you wanted you can now start the baking process
-    for every selected glyph to image by calling `nk_font_atlas_bake`.
-    The baking process returns image memory, width and height which can be used to
-    either create your own image object or upload it to any graphics library.
-    No matter which case you finally have to call `nk_font_atlas_end` which
-    will free all temporary memory including the font atlas image so make sure
-    you created our texture beforehand. `nk_font_atlas_end` requires a handle
-    to your font texture or object and optionally fills a `struct nk_draw_null_texture`
-    which can be used for the optional vertex output. If you don't want it just
-    set the argument to `NULL`.
-
-    At this point you are done and if you don't want to reuse the font atlas you
-    can call `nk_font_atlas_cleanup` to free all truetype blobs and configuration
-    memory. Finally if you don't use the font atlas and any of it's fonts anymore
-    you need to call `nk_font_atlas_clear` to free all memory still being used.
-
-        struct nk_font_atlas atlas;
-        nk_font_atlas_init_default(&atlas);
-        nk_font_atlas_begin(&atlas);
-        nk_font *font = nk_font_atlas_add_from_file(&atlas, "Path/To/Your/TTF_Font.ttf", 13, 0);
-        nk_font *font2 = nk_font_atlas_add_from_file(&atlas, "Path/To/Your/TTF_Font2.ttf", 16, 0);
-        const void* img = nk_font_atlas_bake(&atlas, &img_width, &img_height, NK_FONT_ATLAS_RGBA32);
-        nk_font_atlas_end(&atlas, nk_handle_id(texture), 0);
-
-        struct nk_context ctx;
-        nk_init_default(&ctx, &font->handle);
-        while (1) {
-
-        }
-        nk_font_atlas_clear(&atlas);
-
-    The font baker API is probably the most complex API inside this library and
-    I would suggest reading some of my examples `example/` to get a grip on how
-    to use the font atlas. There are a number of details I left out. For example
-    how to merge fonts, configure a font with `nk_font_config` to use other languages,
-    use another texture coordinate format and a lot more:
-
-        struct nk_font_config cfg = nk_font_config(font_pixel_height);
-        cfg.merge_mode = nk_false or nk_true;
-        cfg.range = nk_font_korean_glyph_ranges();
-        cfg.coord_type = NK_COORD_PIXEL;
-        nk_font *font = nk_font_atlas_add_from_file(&atlas, "Path/To/Your/TTF_Font.ttf", 13, &cfg);
-
+/*/// ### Font
+/// Font handling in this library was designed to be quite customizable and lets
+/// you decide what you want to use and what you want to provide. There are three
+/// different ways to use the font atlas. The first two will use your font
+/// handling scheme and only requires essential data to run nuklear. The next
+/// slightly more advanced features is font handling with vertex buffer output.
+/// Finally the most complex API wise is using nuklear's font baking API.
+//
+/// #### Using your own implementation without vertex buffer output
+/// 
+/// So first up the easiest way to do font handling is by just providing a
+/// `nk_user_font` struct which only requires the height in pixel of the used
+/// font and a callback to calculate the width of a string. This way of handling
+/// fonts is best fitted for using the normal draw shape command API where you
+/// do all the text drawing yourself and the library does not require any kind
+/// of deeper knowledge about which font handling mechanism you use.
+/// IMPORTANT: the `nk_user_font` pointer provided to nuklear has to persist
+/// over the complete life time! I know this sucks but it is currently the only
+/// way to switch between fonts.
+///
+/// ```c
+///     float your_text_width_calculation(nk_handle handle, float height, const char *text, int len)
+///     {
+///         your_font_type *type = handle.ptr;
+///         float text_width = ...;
+///         return text_width;
+///     }
+///
+///     struct nk_user_font font;
+///     font.userdata.ptr = &your_font_class_or_struct;
+///     font.height = your_font_height;
+///     font.width = your_text_width_calculation;
+/// 
+///     struct nk_context ctx;
+///     nk_init_default(&ctx, &font);
+/// ```
+/// #### Using your own implementation with vertex buffer output
+/// 
+/// While the first approach works fine if you don't want to use the optional
+/// vertex buffer output it is not enough if you do. To get font handling working
+/// for these cases you have to provide two additional parameters inside the
+/// `nk_user_font`. First a texture atlas handle used to draw text as subimages
+/// of a bigger font atlas texture and a callback to query a character's glyph
+/// information (offset, size, ...). So it is still possible to provide your own
+/// font and use the vertex buffer output.
+///
+/// ```c
+///     float your_text_width_calculation(nk_handle handle, float height, const char *text, int len)
+///     {
+///         your_font_type *type = handle.ptr;
+///         float text_width = ...;
+///         return text_width;
+///     }
+///     void query_your_font_glyph(nk_handle handle, float font_height, struct nk_user_font_glyph *glyph, nk_rune codepoint, nk_rune next_codepoint)
+///     {
+///         your_font_type *type = handle.ptr;
+///         glyph.width = ...;
+///         glyph.height = ...;
+///         glyph.xadvance = ...;
+///         glyph.uv[0].x = ...;
+///         glyph.uv[0].y = ...;
+///         glyph.uv[1].x = ...;
+///         glyph.uv[1].y = ...;
+///         glyph.offset.x = ...;
+///         glyph.offset.y = ...;
+///     }
+/// 
+///     struct nk_user_font font;
+///     font.userdata.ptr = &your_font_class_or_struct;
+///     font.height = your_font_height;
+///     font.width = your_text_width_calculation;
+///     font.query = query_your_font_glyph;
+///     font.texture.id = your_font_texture;
+/// 
+///     struct nk_context ctx;
+///     nk_init_default(&ctx, &font);
+/// ```
+///
+/// #### Nuklear font baker
+/// 
+/// The final approach if you do not have a font handling functionality or don't
+/// want to use it in this library is by using the optional font baker.
+/// The font baker APIs can be used to create a font plus font atlas texture
+/// and can be used with or without the vertex buffer output.
+/// 
+/// It still uses the `nk_user_font` struct and the two different approaches
+/// previously stated still work. The font baker is not located inside
+/// `nk_context` like all other systems since it can be understood as more of
+/// an extension to nuklear and does not really depend on any `nk_context` state.
+/// 
+/// Font baker need to be initialized first by one of the nk_font_atlas_init_xxx
+/// functions. If you don't care about memory just call the default version
+/// `nk_font_atlas_init_default` which will allocate all memory from the standard library.
+/// If you want to control memory allocation but you don't care if the allocated
+/// memory is temporary and therefore can be freed directly after the baking process
+/// is over or permanent you can call `nk_font_atlas_init`.
+/// 
+/// After successfully initializing the font baker you can add Truetype(.ttf) fonts from
+/// different sources like memory or from file by calling one of the `nk_font_atlas_add_xxx`.
+/// functions. Adding font will permanently store each font, font config and ttf memory block(!)
+/// inside the font atlas and allows to reuse the font atlas. If you don't want to reuse
+/// the font baker by for example adding additional fonts you can call
+/// `nk_font_atlas_cleanup` after the baking process is over (after calling nk_font_atlas_end).
+/// 
+/// As soon as you added all fonts you wanted you can now start the baking process
+/// for every selected glyph to image by calling `nk_font_atlas_bake`.
+/// The baking process returns image memory, width and height which can be used to
+/// either create your own image object or upload it to any graphics library.
+/// No matter which case you finally have to call `nk_font_atlas_end` which
+/// will free all temporary memory including the font atlas image so make sure
+/// you created our texture beforehand. `nk_font_atlas_end` requires a handle
+/// to your font texture or object and optionally fills a `struct nk_draw_null_texture`
+/// which can be used for the optional vertex output. If you don't want it just
+/// set the argument to `NULL`.
+/// 
+/// At this point you are done and if you don't want to reuse the font atlas you
+/// can call `nk_font_atlas_cleanup` to free all truetype blobs and configuration
+/// memory. Finally if you don't use the font atlas and any of it's fonts anymore
+/// you need to call `nk_font_atlas_clear` to free all memory still being used.
+/// 
+/// ```c
+///     struct nk_font_atlas atlas;
+///     nk_font_atlas_init_default(&atlas);
+///     nk_font_atlas_begin(&atlas);
+///     nk_font *font = nk_font_atlas_add_from_file(&atlas, "Path/To/Your/TTF_Font.ttf", 13, 0);
+///     nk_font *font2 = nk_font_atlas_add_from_file(&atlas, "Path/To/Your/TTF_Font2.ttf", 16, 0);
+///     const void* img = nk_font_atlas_bake(&atlas, &img_width, &img_height, NK_FONT_ATLAS_RGBA32);
+///     nk_font_atlas_end(&atlas, nk_handle_id(texture), 0);
+/// 
+///     struct nk_context ctx;
+///     nk_init_default(&ctx, &font->handle);
+///     while (1) {
+/// 
+///     }
+///     nk_font_atlas_clear(&atlas);
+/// ```
+/// The font baker API is probably the most complex API inside this library and
+/// I would suggest reading some of my examples `example/` to get a grip on how
+/// to use the font atlas. There are a number of details I left out. For example
+/// how to merge fonts, configure a font with `nk_font_config` to use other languages,
+/// use another texture coordinate format and a lot more:
+///
+/// ```c
+///     struct nk_font_config cfg = nk_font_config(font_pixel_height);
+///     cfg.merge_mode = nk_false or nk_true;
+///     cfg.range = nk_font_korean_glyph_ranges();
+///     cfg.coord_type = NK_COORD_PIXEL;
+///     nk_font *font = nk_font_atlas_add_from_file(&atlas, "Path/To/Your/TTF_Font.ttf", 13, &cfg);
+/// ```
 */
 struct nk_user_font_glyph;
 typedef float(*nk_text_width_f)(nk_handle, float h, const char*, int len);
@@ -3889,33 +3937,34 @@ NK_API void nk_font_atlas_clear(struct nk_font_atlas*);
  *                          MEMORY BUFFER
  *
  * ===============================================================*/
-/*  A basic (double)-buffer with linear allocation and resetting as only
-    freeing policy. The buffer's main purpose is to control all memory management
-    inside the GUI toolkit and still leave memory control as much as possible in
-    the hand of the user while also making sure the library is easy to use if
-    not as much control is needed.
-    In general all memory inside this library can be provided from the user in
-    three different ways.
-
-    The first way and the one providing most control is by just passing a fixed
-    size memory block. In this case all control lies in the hand of the user
-    since he can exactly control where the memory comes from and how much memory
-    the library should consume. Of course using the fixed size API removes the
-    ability to automatically resize a buffer if not enough memory is provided so
-    you have to take over the resizing. While being a fixed sized buffer sounds
-    quite limiting, it is very effective in this library since the actual memory
-    consumption is quite stable and has a fixed upper bound for a lot of cases.
-
-    If you don't want to think about how much memory the library should allocate
-    at all time or have a very dynamic UI with unpredictable memory consumption
-    habits but still want control over memory allocation you can use the dynamic
-    allocator based API. The allocator consists of two callbacks for allocating
-    and freeing memory and optional userdata so you can plugin your own allocator.
-
-    The final and easiest way can be used by defining
-    NK_INCLUDE_DEFAULT_ALLOCATOR which uses the standard library memory
-    allocation functions malloc and free and takes over complete control over
-    memory in this library.
+/*/// ### Memory Buffer
+/// A basic (double)-buffer with linear allocation and resetting as only
+/// freeing policy. The buffer's main purpose is to control all memory management
+/// inside the GUI toolkit and still leave memory control as much as possible in
+/// the hand of the user while also making sure the library is easy to use if
+/// not as much control is needed.
+/// In general all memory inside this library can be provided from the user in
+/// three different ways.
+/// 
+/// The first way and the one providing most control is by just passing a fixed
+/// size memory block. In this case all control lies in the hand of the user
+/// since he can exactly control where the memory comes from and how much memory
+/// the library should consume. Of course using the fixed size API removes the
+/// ability to automatically resize a buffer if not enough memory is provided so
+/// you have to take over the resizing. While being a fixed sized buffer sounds
+/// quite limiting, it is very effective in this library since the actual memory
+/// consumption is quite stable and has a fixed upper bound for a lot of cases.
+/// 
+/// If you don't want to think about how much memory the library should allocate
+/// at all time or have a very dynamic UI with unpredictable memory consumption
+/// habits but still want control over memory allocation you can use the dynamic
+/// allocator based API. The allocator consists of two callbacks for allocating
+/// and freeing memory and optional userdata so you can plugin your own allocator.
+/// 
+/// The final and easiest way can be used by defining
+/// NK_INCLUDE_DEFAULT_ALLOCATOR which uses the standard library memory
+/// allocation functions malloc and free and takes over complete control over
+/// memory in this library.
 */
 struct nk_memory_status {
     void *memory;
@@ -4040,28 +4089,29 @@ NK_API int nk_str_len_char(struct nk_str*);
  *                      TEXT EDITOR
  *
  * ===============================================================*/
-/* Editing text in this library is handled by either `nk_edit_string` or
- * `nk_edit_buffer`. But like almost everything in this library there are multiple
- * ways of doing it and a balance between control and ease of use with memory
- * as well as functionality controlled by flags.
- *
- * This library generally allows three different levels of memory control:
- * First of is the most basic way of just providing a simple char array with
- * string length. This method is probably the easiest way of handling simple
- * user text input. Main upside is complete control over memory while the biggest
- * downside in comparison with the other two approaches is missing undo/redo.
- *
- * For UIs that require undo/redo the second way was created. It is based on
- * a fixed size nk_text_edit struct, which has an internal undo/redo stack.
- * This is mainly useful if you want something more like a text editor but don't want
- * to have a dynamically growing buffer.
- *
- * The final way is using a dynamically growing nk_text_edit struct, which
- * has both a default version if you don't care where memory comes from and an
- * allocator version if you do. While the text editor is quite powerful for its
- * complexity I would not recommend editing gigabytes of data with it.
- * It is rather designed for uses cases which make sense for a GUI library not for
- * an full blown text editor.
+/*/// ### Text Editor
+/// Editing text in this library is handled by either `nk_edit_string` or
+/// `nk_edit_buffer`. But like almost everything in this library there are multiple
+/// ways of doing it and a balance between control and ease of use with memory
+/// as well as functionality controlled by flags.
+///
+/// This library generally allows three different levels of memory control:
+/// First of is the most basic way of just providing a simple char array with
+/// string length. This method is probably the easiest way of handling simple
+/// user text input. Main upside is complete control over memory while the biggest
+/// downside in comparison with the other two approaches is missing undo/redo.
+///
+/// For UIs that require undo/redo the second way was created. It is based on
+/// a fixed size nk_text_edit struct, which has an internal undo/redo stack.
+/// This is mainly useful if you want something more like a text editor but don't want
+/// to have a dynamically growing buffer.
+///
+/// The final way is using a dynamically growing nk_text_edit struct, which
+/// has both a default version if you don't care where memory comes from and an
+/// allocator version if you do. While the text editor is quite powerful for its
+/// complexity I would not recommend editing gigabytes of data with it.
+/// It is rather designed for uses cases which make sense for a GUI library not for
+/// an full blown text editor.
  */
 #ifndef NK_TEXTEDIT_UNDOSTATECOUNT
 #define NK_TEXTEDIT_UNDOSTATECOUNT     99
@@ -4155,49 +4205,52 @@ NK_API void nk_textedit_redo(struct nk_text_edit*);
  *                          DRAWING
  *
  * ===============================================================*/
-/*  This library was designed to be render backend agnostic so it does
-    not draw anything to screen. Instead all drawn shapes, widgets
-    are made of, are buffered into memory and make up a command queue.
-    Each frame therefore fills the command buffer with draw commands
-    that then need to be executed by the user and his own render backend.
-    After that the command buffer needs to be cleared and a new frame can be
-    started. It is probably important to note that the command buffer is the main
-    drawing API and the optional vertex buffer API only takes this format and
-    converts it into a hardware accessible format.
-
-    To use the command queue to draw your own widgets you can access the
-    command buffer of each window by calling `nk_window_get_canvas` after
-    previously having called `nk_begin`:
-
-        void draw_red_rectangle_widget(struct nk_context *ctx)
-        {
-            struct nk_command_buffer *canvas;
-            struct nk_input *input = &ctx->input;
-            canvas = nk_window_get_canvas(ctx);
-
-            struct nk_rect space;
-            enum nk_widget_layout_states state;
-            state = nk_widget(&space, ctx);
-            if (!state) return;
-
-            if (state != NK_WIDGET_ROM)
-                update_your_widget_by_user_input(...);
-            nk_fill_rect(canvas, space, 0, nk_rgb(255,0,0));
-        }
-
-        if (nk_begin(...)) {
-            nk_layout_row_dynamic(ctx, 25, 1);
-            draw_red_rectangle_widget(ctx);
-        }
-        nk_end(..)
-
-    Important to know if you want to create your own widgets is the `nk_widget`
-    call. It allocates space on the panel reserved for this widget to be used,
-    but also returns the state of the widget space. If your widget is not seen and does
-    not have to be updated it is '0' and you can just return. If it only has
-    to be drawn the state will be `NK_WIDGET_ROM` otherwise you can do both
-    update and draw your widget. The reason for separating is to only draw and
-    update what is actually necessary which is crucial for performance.
+/*/// ### Drawing
+/// This library was designed to be render backend agnostic so it does
+/// not draw anything to screen. Instead all drawn shapes, widgets
+/// are made of, are buffered into memory and make up a command queue.
+/// Each frame therefore fills the command buffer with draw commands
+/// that then need to be executed by the user and his own render backend.
+/// After that the command buffer needs to be cleared and a new frame can be
+/// started. It is probably important to note that the command buffer is the main
+/// drawing API and the optional vertex buffer API only takes this format and
+/// converts it into a hardware accessible format.
+/// 
+/// To use the command queue to draw your own widgets you can access the
+/// command buffer of each window by calling `nk_window_get_canvas` after
+/// previously having called `nk_begin`:
+/// 
+/// ```c
+///     void draw_red_rectangle_widget(struct nk_context *ctx)
+///     {
+///         struct nk_command_buffer *canvas;
+///         struct nk_input *input = &ctx->input;
+///         canvas = nk_window_get_canvas(ctx);
+/// 
+///         struct nk_rect space;
+///         enum nk_widget_layout_states state;
+///         state = nk_widget(&space, ctx);
+///         if (!state) return;
+/// 
+///         if (state != NK_WIDGET_ROM)
+///             update_your_widget_by_user_input(...);
+///         nk_fill_rect(canvas, space, 0, nk_rgb(255,0,0));
+///     }
+/// 
+///     if (nk_begin(...)) {
+///         nk_layout_row_dynamic(ctx, 25, 1);
+///         draw_red_rectangle_widget(ctx);
+///     }
+///     nk_end(..)
+/// 
+/// ```
+/// Important to know if you want to create your own widgets is the `nk_widget`
+/// call. It allocates space on the panel reserved for this widget to be used,
+/// but also returns the state of the widget space. If your widget is not seen and does
+/// not have to be updated it is '0' and you can just return. If it only has
+/// to be drawn the state will be `NK_WIDGET_ROM` otherwise you can do both
+/// update and draw your widget. The reason for separating is to only draw and
+/// update what is actually necessary which is crucial for performance.
 */
 enum nk_command_type {
     NK_COMMAND_NOP,
@@ -4482,18 +4535,19 @@ NK_API nk_bool nk_input_is_key_down(const struct nk_input*, enum nk_keys);
  *
  * ===============================================================*/
 #ifdef NK_INCLUDE_VERTEX_BUFFER_OUTPUT
-/*  The optional vertex buffer draw list provides a 2D drawing context
-    with antialiasing functionality which takes basic filled or outlined shapes
-    or a path and outputs vertexes, elements and draw commands.
-    The actual draw list API is not required to be used directly while using this
-    library since converting the default library draw command output is done by
-    just calling `nk_convert` but I decided to still make this library accessible
-    since it can be useful.
-
-    The draw list is based on a path buffering and polygon and polyline
-    rendering API which allows a lot of ways to draw 2D content to screen.
-    In fact it is probably more powerful than needed but allows even more crazy
-    things than this library provides by default.
+/* ### Draw List
+/// The optional vertex buffer draw list provides a 2D drawing context
+/// with antialiasing functionality which takes basic filled or outlined shapes
+/// or a path and outputs vertexes, elements and draw commands.
+/// The actual draw list API is not required to be used directly while using this
+/// library since converting the default library draw command output is done by
+/// just calling `nk_convert` but I decided to still make this library accessible
+/// since it can be useful.
+/// 
+/// The draw list is based on a path buffering and polygon and polyline
+/// rendering API which allows a lot of ways to draw 2D content to screen.
+/// In fact it is probably more powerful than needed but allows even more crazy
+/// things than this library provides by default.
 */
 #ifdef NK_UINT_DRAW_INDEX
 typedef nk_uint nk_draw_index;
@@ -4655,6 +4709,8 @@ struct nk_style_item {
 struct nk_style_text {
     struct nk_color color;
     struct nk_vec2 padding;
+    float color_factor;
+    float disabled_factor;
 };
 
 struct nk_style_button {
@@ -4663,6 +4719,7 @@ struct nk_style_button {
     struct nk_style_item hover;
     struct nk_style_item active;
     struct nk_color border_color;
+    float color_factor_background;
 
     /* text */
     struct nk_color text_background;
@@ -4670,6 +4727,7 @@ struct nk_style_button {
     struct nk_color text_hover;
     struct nk_color text_active;
     nk_flags text_alignment;
+    float color_factor_text;
 
     /* properties */
     float border;
@@ -4677,6 +4735,7 @@ struct nk_style_button {
     struct nk_vec2 padding;
     struct nk_vec2 image_padding;
     struct nk_vec2 touch_padding;
+    float disabled_factor;
 
     /* optional user callbacks */
     nk_handle userdata;
@@ -4707,6 +4766,8 @@ struct nk_style_toggle {
     struct nk_vec2 touch_padding;
     float spacing;
     float border;
+    float color_factor;
+    float disabled_factor;
 
     /* optional user callbacks */
     nk_handle userdata;
@@ -4742,6 +4803,8 @@ struct nk_style_selectable {
     struct nk_vec2 padding;
     struct nk_vec2 touch_padding;
     struct nk_vec2 image_padding;
+    float color_factor;
+    float disabled_factor;
 
     /* optional user callbacks */
     nk_handle userdata;
@@ -4774,6 +4837,8 @@ struct nk_style_slider {
     struct nk_vec2 padding;
     struct nk_vec2 spacing;
     struct nk_vec2 cursor_size;
+    float color_factor;
+    float disabled_factor;
 
     /* optional buttons */
     int show_buttons;
@@ -4807,6 +4872,8 @@ struct nk_style_progress {
     float cursor_border;
     float cursor_rounding;
     struct nk_vec2 padding;
+    float color_factor;
+    float disabled_factor;
 
     /* optional user callbacks */
     nk_handle userdata;
@@ -4833,6 +4900,8 @@ struct nk_style_scrollbar {
     float border_cursor;
     float rounding_cursor;
     struct nk_vec2 padding;
+    float color_factor;
+    float disabled_factor;
 
     /* optional buttons */
     int show_buttons;
@@ -4879,6 +4948,8 @@ struct nk_style_edit {
     struct nk_vec2 scrollbar_size;
     struct nk_vec2 padding;
     float row_padding;
+    float color_factor;
+    float disabled_factor;
 };
 
 struct nk_style_property {
@@ -4901,6 +4972,8 @@ struct nk_style_property {
     float border;
     float rounding;
     struct nk_vec2 padding;
+    float color_factor;
+    float disabled_factor;
 
     struct nk_style_edit edit;
     struct nk_style_button inc_button;
@@ -4923,6 +4996,8 @@ struct nk_style_chart {
     float border;
     float rounding;
     struct nk_vec2 padding;
+    float color_factor;
+    float disabled_factor;
 };
 
 struct nk_style_combo {
@@ -4954,6 +5029,8 @@ struct nk_style_combo {
     struct nk_vec2 content_padding;
     struct nk_vec2 button_padding;
     struct nk_vec2 spacing;
+    float color_factor;
+    float disabled_factor;
 };
 
 struct nk_style_tab {
@@ -4976,6 +5053,8 @@ struct nk_style_tab {
     float indent;
     struct nk_vec2 padding;
     struct nk_vec2 spacing;
+    float color_factor;
+    float disabled_factor;
 };
 
 enum nk_style_header_align {
@@ -5258,6 +5337,7 @@ struct nk_window {
     struct nk_popup_state popup;
     struct nk_edit_state edit;
     unsigned int scrolled;
+    nk_bool widgets_disabled;
 
     struct nk_table *tables;
     unsigned int table_count;
@@ -5271,27 +5351,28 @@ struct nk_window {
 /*==============================================================
  *                          STACK
  * =============================================================*/
-/* The style modifier stack can be used to temporarily change a
- * property inside `nk_style`. For example if you want a special
- * red button you can temporarily push the old button color onto a stack
- * draw the button with a red color and then you just pop the old color
- * back from the stack:
- *
- *      nk_style_push_style_item(ctx, &ctx->style.button.normal, nk_style_item_color(nk_rgb(255,0,0)));
- *      nk_style_push_style_item(ctx, &ctx->style.button.hover, nk_style_item_color(nk_rgb(255,0,0)));
- *      nk_style_push_style_item(ctx, &ctx->style.button.active, nk_style_item_color(nk_rgb(255,0,0)));
- *      nk_style_push_vec2(ctx, &cx->style.button.padding, nk_vec2(2,2));
- *
- *      nk_button(...);
- *
- *      nk_style_pop_style_item(ctx);
- *      nk_style_pop_style_item(ctx);
- *      nk_style_pop_style_item(ctx);
- *      nk_style_pop_vec2(ctx);
- *
- * Nuklear has a stack for style_items, float properties, vector properties,
- * flags, colors, fonts and for button_behavior. Each has it's own fixed size stack
- * which can be changed at compile time.
+/*/// ### Stack
+/// The style modifier stack can be used to temporarily change a
+/// property inside `nk_style`. For example if you want a special
+/// red button you can temporarily push the old button color onto a stack
+/// draw the button with a red color and then you just pop the old color
+/// back from the stack:
+/// 
+///     nk_style_push_style_item(ctx, &ctx->style.button.normal, nk_style_item_color(nk_rgb(255,0,0)));
+///     nk_style_push_style_item(ctx, &ctx->style.button.hover, nk_style_item_color(nk_rgb(255,0,0)));
+///     nk_style_push_style_item(ctx, &ctx->style.button.active, nk_style_item_color(nk_rgb(255,0,0)));
+///     nk_style_push_vec2(ctx, &cx->style.button.padding, nk_vec2(2,2));
+/// 
+///     nk_button(...);
+/// 
+///     nk_style_pop_style_item(ctx);
+///     nk_style_pop_style_item(ctx);
+///     nk_style_pop_style_item(ctx);
+///     nk_style_pop_vec2(ctx);
+/// 
+/// Nuklear has a stack for style_items, float properties, vector properties,
+/// flags, colors, fonts and for button_behavior. Each has it's own fixed size stack
+/// which can be changed at compile time.
  */
 #ifndef NK_BUTTON_BEHAVIOR_STACK_SIZE
 #define NK_BUTTON_BEHAVIOR_STACK_SIZE 8
