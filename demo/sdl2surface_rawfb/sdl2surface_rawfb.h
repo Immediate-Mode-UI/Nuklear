@@ -37,7 +37,7 @@
 #include <SDL_surface.h>
 
 struct sdlsurface_context *nk_sdlsurface_init(SDL_Surface *fb, float fontSize);
-void                  nk_sdlsurface_render(const struct sdlsurface_context *sdlsurface, const struct nk_color clear, const unsigned char enable_clear);
+void                  nk_sdlsurface_render(struct sdlsurface_context *sdlsurface, const struct nk_color clear, const unsigned char enable_clear);
 void                  nk_sdlsurface_shutdown(struct sdlsurface_context *sdlsurface);
 
 #endif
@@ -59,6 +59,7 @@ struct sdlsurface_context {
     struct SDL_Surface *fb;
     struct SDL_Surface *font_tex;
     struct nk_font_atlas atlas;
+    Uint64 delta_time_last;
 };
 
 #ifndef MIN
@@ -836,6 +837,8 @@ nk_sdlsurface_init(SDL_Surface *fb, float fontSize)
     nk_style_load_all_cursors(&sdlsurface->ctx, sdlsurface->atlas.cursors);
     nk_sdlsurface_scissor(sdlsurface, 0, 0, sdlsurface->fb->w, sdlsurface->fb->h);
 
+    sdlsurface->delta_time_last = SDL_GetTicks64();
+
     return sdlsurface;
 }
 
@@ -990,11 +993,17 @@ nk_sdlsurface_shutdown(struct sdlsurface_context *sdlsurface)
 
 
 NK_API void
-nk_sdlsurface_render(const struct sdlsurface_context *sdlsurface,
+nk_sdlsurface_render(struct sdlsurface_context *sdlsurface,
                 const struct nk_color clear,
                 const unsigned char enable_clear)
 {
     const struct nk_command *cmd;
+
+    /* update the timer */
+    Uint64 now = SDL_GetTicks64();
+    sdlsurface->ctx.delta_time_seconds = (float)(now - sdlsurface->delta_time_last) / 1000;
+    sdlsurface->delta_time_last = now;
+
     if (enable_clear)
         nk_sdlsurface_clear(sdlsurface, clear);
 
