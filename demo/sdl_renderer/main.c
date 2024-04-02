@@ -38,7 +38,6 @@
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_OVERVIEW */
 /*#define INCLUDE_NODE_EDITOR */
-#define INCLUDE_ALL
 #ifdef INCLUDE_ALL
   #define INCLUDE_STYLE
   #define INCLUDE_CALCULATOR
