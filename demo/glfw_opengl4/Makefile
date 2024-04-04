@@ -2,7 +2,7 @@
 BIN = demo
 
 # Flags
-CFLAGS += -std=c89 -Wall -Wextra -pedantic -O2
+CFLAGS += -std=c99 -Wall -Wextra -pedantic -O2
 
 SRC = main.c
 OBJ = $(SRC:.c=.o)

@@ -10,6 +10,9 @@
 #include <time.h>
 
 #include <SDL2/SDL.h>
+#ifdef USE_SDL_IMAGE
+#include <SDL2/SDL_image.h>
+#endif
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -22,6 +25,11 @@
 #define NK_SDL_RENDERER_IMPLEMENTATION
 #include "../../nuklear.h"
 #include "nuklear_sdl_renderer.h"
+
+#ifndef USE_SDL_IMAGE
+#define STB_IMAGE_IMPLEMENTATION
+#include "../../demo/common/filebrowser/stb_image.h"
+#endif
 
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 800
@@ -36,6 +44,8 @@
 /*#define INCLUDE_ALL */
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
+/*#define INCLUDE_CANVAS */
+/*#define INCLUDE_FILE_BROWSER */
 /*#define INCLUDE_OVERVIEW */
 /*#define INCLUDE_NODE_EDITOR */
 
@@ -43,6 +53,7 @@
   #define INCLUDE_STYLE
   #define INCLUDE_CALCULATOR
   #define INCLUDE_CANVAS
+  #define INCLUDE_FILE_BROWSER
   #define INCLUDE_OVERVIEW
   #define INCLUDE_NODE_EDITOR
 #endif
@@ -56,12 +67,48 @@
 #ifdef INCLUDE_CANVAS
   #include "../../demo/common/canvas.c"
 #endif
+#ifdef INCLUDE_FILE_BROWSER
+  #include "../../demo/common/file_browser.c"
+#endif
 #ifdef INCLUDE_OVERVIEW
   #include "../../demo/common/overview.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
   #include "../../demo/common/node_editor.c"
 #endif
+
+static void
+die(const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(stderr, fmt, ap);
+    va_end(ap);
+    fputs("\n", stderr);
+    exit(EXIT_FAILURE);
+}
+
+static struct nk_image
+icon_load(const char *filename)
+{
+#ifdef USE_SDL_IMAGE
+    SDL_Texture *tex = IMG_LoadTexture(sdl.renderer, filename);
+    if (!tex) die("[SDL]: failed to load image: %s", filename);
+#else
+    int x,y,n;
+    SDL_Texture *tex;
+    unsigned char *data = stbi_load(filename, &x, &y, &n, 0);
+    if (!data) die("[SDL]: failed to load image: %s", filename);
+
+    tex = SDL_CreateTexture(sdl.renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, x, y);
+    if (!tex) die("error creating texture");
+
+    SDL_UpdateTexture(tex, NULL, data, x * 4);
+    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+    stbi_image_free(data);
+#endif
+    return nk_image_ptr(tex);
+}
 
 /* ===============================================================
  *
@@ -81,6 +128,10 @@ main(int argc, char *argv[])
     /* GUI */
     struct nk_context *ctx;
     struct nk_colorf bg;
+#ifdef INCLUDE_FILE_BROWSER
+    struct file_browser browser;
+    struct media media;
+#endif
 
     /* SDL setup */
     SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "0");
@@ -168,6 +219,24 @@ main(int argc, char *argv[])
     #endif
 
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
+
+    #ifdef INCLUDE_FILE_BROWSER
+    /* icons */
+    media.icons.home = icon_load("../../demo/common/filebrowser/icon/home.png");
+    media.icons.directory = icon_load("../../demo/common/filebrowser/icon/directory.png");
+    media.icons.computer = icon_load("../../demo/common/filebrowser/icon/computer.png");
+    media.icons.desktop = icon_load("../../demo/common/filebrowser/icon/desktop.png");
+    media.icons.default_file = icon_load("../../demo/common/filebrowser/icon/default.png");
+    media.icons.text_file = icon_load("../../demo/common/filebrowser/icon/text.png");
+    media.icons.music_file = icon_load("../../demo/common/filebrowser/icon/music.png");
+    media.icons.font_file =  icon_load("../../demo/common/filebrowser/icon/font.png");
+    media.icons.img_file = icon_load("../../demo/common/filebrowser/icon/img.png");
+    media.icons.movie_file = icon_load("../../demo/common/filebrowser/icon/movie.png");
+    media_init(&media);
+
+    file_browser_init(&browser, &media);
+    #endif
+
     while (running)
     {
         /* Input */
@@ -221,6 +290,9 @@ main(int argc, char *argv[])
         #ifdef INCLUDE_CANVAS
         canvas(ctx);
         #endif
+        #ifdef INCLUDE_FILE_BROWSER
+          file_browser_run(&browser, ctx);
+        #endif
         #ifdef INCLUDE_OVERVIEW
           overview(ctx);
         #endif
@@ -238,6 +310,21 @@ main(int argc, char *argv[])
     }
 
 cleanup:
+    #ifdef INCLUDE_FILE_BROWSER
+    SDL_DestroyTexture(media.icons.home.handle.ptr);
+    SDL_DestroyTexture(media.icons.directory.handle.ptr);
+    SDL_DestroyTexture(media.icons.computer.handle.ptr);
+    SDL_DestroyTexture(media.icons.desktop.handle.ptr);
+    SDL_DestroyTexture(media.icons.default_file.handle.ptr);
+    SDL_DestroyTexture(media.icons.text_file.handle.ptr);
+    SDL_DestroyTexture(media.icons.music_file.handle.ptr);
+    SDL_DestroyTexture(media.icons.font_file.handle.ptr);
+    SDL_DestroyTexture(media.icons.img_file.handle.ptr);
+    SDL_DestroyTexture(media.icons.movie_file.handle.ptr);
+
+    file_browser_free(&browser);
+    #endif
+
     nk_sdl_shutdown();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(win);

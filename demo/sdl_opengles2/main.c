@@ -21,6 +21,9 @@
 #include "../../nuklear.h"
 #include "nuklear_sdl_gles2.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "../../demo/common/filebrowser/stb_image.h"
+
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
@@ -43,6 +46,7 @@
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
+/*#define INCLUDE_FILE_BROWSER */
 /*#define INCLUDE_OVERVIEW */
 /*#define INCLUDE_NODE_EDITOR */
 
@@ -50,6 +54,7 @@
   #define INCLUDE_STYLE
   #define INCLUDE_CALCULATOR
   #define INCLUDE_CANVAS
+  #define INCLUDE_FILE_BROWSER
   #define INCLUDE_OVERVIEW
   #define INCLUDE_NODE_EDITOR
 #endif
@@ -62,6 +67,9 @@
 #endif
 #ifdef INCLUDE_CANVAS
   #include "../../demo/common/canvas.c"
+#endif
+#ifdef INCLUDE_FILE_BROWSER
+  #include "../../demo/common/file_browser.c"
 #endif
 #ifdef INCLUDE_OVERVIEW
   #include "../../demo/common/overview.c"
@@ -80,6 +88,41 @@
 /* Platform */
 SDL_Window *win;
 int running = nk_true;
+#ifdef INCLUDE_FILE_BROWSER
+struct file_browser browser;
+struct media media;
+#endif
+
+static void
+die(const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(stderr, fmt, ap);
+    va_end(ap);
+    fputs("\n", stderr);
+    exit(EXIT_FAILURE);
+}
+
+static struct nk_image
+icon_load(const char *filename)
+{
+    int x,y,n;
+    GLuint tex;
+    unsigned char *data = stbi_load(filename, &x, &y, &n, 0);
+    if (!data) die("[SDL]: failed to load image: %s", filename);
+
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(data);
+    return nk_image_id((int)tex);
+}
 
 static void
 MainLoop(void* loopArg){
@@ -143,6 +186,9 @@ MainLoop(void* loopArg){
     #endif
     #ifdef INCLUDE_CANVAS
       canvas(ctx);
+    #endif
+    #ifdef INCLUDE_FILE_BROWSER
+      file_browser_run(&browser, ctx);
     #endif
     #ifdef INCLUDE_OVERVIEW
       overview(ctx);
@@ -223,12 +269,45 @@ int main(int argc, char* argv[])
     #endif
     #endif
 
+    #ifdef INCLUDE_FILE_BROWSER
+    /* icons */
+    glEnable(GL_TEXTURE_2D);
+    media.icons.home = icon_load("../../demo/common/filebrowser/icon/home.png");
+    media.icons.directory = icon_load("../../demo/common/filebrowser/icon/directory.png");
+    media.icons.computer = icon_load("../../demo/common/filebrowser/icon/computer.png");
+    media.icons.desktop = icon_load("../../demo/common/filebrowser/icon/desktop.png");
+    media.icons.default_file = icon_load("../../demo/common/filebrowser/icon/default.png");
+    media.icons.text_file = icon_load("../../demo/common/filebrowser/icon/text.png");
+    media.icons.music_file = icon_load("../../demo/common/filebrowser/icon/music.png");
+    media.icons.font_file =  icon_load("../../demo/common/filebrowser/icon/font.png");
+    media.icons.img_file = icon_load("../../demo/common/filebrowser/icon/img.png");
+    media.icons.movie_file = icon_load("../../demo/common/filebrowser/icon/movie.png");
+    media_init(&media);
+
+    file_browser_init(&browser, &media);
+    #endif
+
 #if defined(__EMSCRIPTEN__)
     #include <emscripten.h>
     emscripten_set_main_loop_arg(MainLoop, (void*)ctx, 0, nk_true);
 #else
     while (running) MainLoop((void*)ctx);
 #endif
+
+    #ifdef INCLUDE_FILE_BROWSER
+    glDeleteTextures(1,(const GLuint*)&media.icons.home.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.directory.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.computer.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.desktop.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.default_file.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.text_file.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.music_file.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.font_file.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.img_file.handle.id);
+    glDeleteTextures(1,(const GLuint*)&media.icons.movie_file.handle.id);
+
+    file_browser_free(&browser);
+    #endif
 
     nk_sdl_shutdown();
     SDL_GL_DeleteContext(glContext);
