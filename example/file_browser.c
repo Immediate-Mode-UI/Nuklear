@@ -345,7 +345,8 @@ media_init(struct media *media)
 static void
 file_browser_reload_directory_content(struct file_browser *browser, const char *path)
 {
-    strncpy(browser->directory, path, MAX_PATH_LEN);
+    const size_t path_len = nk_strlen(path) + 1;
+    NK_MEMCPY(browser->directory, path, MIN(path_len, MAX_PATH_LEN));
     browser->directory[MAX_PATH_LEN - 1] = 0;
     dir_free_list(browser->files, browser->file_count);
     dir_free_list(browser->directories, browser->dir_count);
