@@ -18,9 +18,9 @@
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_INCLUDE_SOFTWARE_FONT
-#include "../../nuklear.h"
+#include "../../../nuklear.h"
 #define NK_RAWFB_IMPLEMENTATION
-#include "sdl2surface_rawfb.h"
+#include "nuklear_sdl2_rawfb.h"
 
 /* ===============================================================
  *
