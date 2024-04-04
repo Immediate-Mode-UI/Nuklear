@@ -31,8 +31,8 @@ jobs:
       run: make -C demo/sdl_opengles2
     - name: build sdl_renderer
       run: make -C demo/sdl_renderer
-    - name: build sdl2_rawfb
-      run: make -C demo/rawfb/sdl2
+    - name: build sdl_rawfb
+      run: make -C demo/rawfb/sdl
     - name: build wayland_rawfb
       run: make -C demo/rawfb/wayland
     - name: build x11
