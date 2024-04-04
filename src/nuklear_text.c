@@ -114,7 +114,7 @@ nk_text_colored(struct nk_context *ctx, const char *str, int len,
     text.padding.x = item_padding.x;
     text.padding.y = item_padding.y;
     text.background = style->window.background;
-    text.text = color;
+    text.text = nk_rgb_factor(color, style->text.color_factor);
     nk_widget_text(&win->buffer, bounds, str, len, &text, alignment, style->font);
 }
 NK_API void
@@ -141,7 +141,7 @@ nk_text_wrap_colored(struct nk_context *ctx, const char *str,
     text.padding.x = item_padding.x;
     text.padding.y = item_padding.y;
     text.background = style->window.background;
-    text.text = color;
+    text.text = nk_rgb_factor(color, style->text.color_factor);
     nk_widget_text_wrap(&win->buffer, bounds, str, len, &text, style->font);
 }
 #ifdef NK_INCLUDE_STANDARD_VARARGS

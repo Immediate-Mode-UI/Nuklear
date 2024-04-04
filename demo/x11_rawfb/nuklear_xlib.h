@@ -49,6 +49,9 @@ NK_API void nk_xlib_shutdown(void);
  * ===============================================================
  */
 #ifdef NK_XLIBSHM_IMPLEMENTATION
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>

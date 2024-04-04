@@ -38,7 +38,7 @@ NK_API void nk_gdi_set_font(GdiFont *font);
  * ===============================================================
  */
 #ifdef NK_GDI_IMPLEMENTATION
-
+#include <string.h>
 #include <stdlib.h>
 #include <malloc.h>
 

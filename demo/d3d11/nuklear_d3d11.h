@@ -41,6 +41,7 @@ NK_API void nk_d3d11_shutdown(void);
 #define COBJMACROS
 #include <d3d11.h>
 
+#include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
 #include <float.h>

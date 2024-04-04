@@ -23,6 +23,16 @@ nk_parse_hex(const char *p, int length)
     return i;
 }
 NK_API struct nk_color
+nk_rgb_factor(struct nk_color col, const float factor)
+{
+    if (factor == 1.0f)
+        return col;
+    col.r = (nk_byte)(col.r * factor);
+    col.g = (nk_byte)(col.g * factor);
+    col.b = (nk_byte)(col.b * factor);
+    return col;
+}
+NK_API struct nk_color
 nk_rgba(int r, int g, int b, int a)
 {
     struct nk_color ret;

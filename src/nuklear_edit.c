@@ -94,6 +94,9 @@ nk_edit_draw_text(struct nk_command_buffer *out,
     txt.background = background;
     txt.text = foreground;
 
+    foreground = nk_rgb_factor(foreground, style->color_factor);
+    background = nk_rgb_factor(background, style->color_factor);
+
     glyph_len = nk_utf_decode(text+text_len, &unicode, byte_len-text_len);
     if (!glyph_len) return;
     while ((text_len < byte_len) && glyph_len)
@@ -331,14 +334,14 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
     /* draw background frame */
     switch(background->type) {
         case NK_STYLE_ITEM_IMAGE:
-            nk_draw_image(out, bounds, &background->data.image, nk_white);
+            nk_draw_image(out, bounds, &background->data.image, nk_rgb_factor(nk_white, style->color_factor));
             break;
         case NK_STYLE_ITEM_NINE_SLICE:
-            nk_draw_nine_slice(out, bounds, &background->data.slice, nk_white);
+            nk_draw_nine_slice(out, bounds, &background->data.slice, nk_rgb_factor(nk_white, style->color_factor));
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, bounds, style->rounding, background->data.color);
-            nk_stroke_rect(out, bounds, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, bounds, style->rounding, nk_rgb_factor(background->data.color, style->color_factor));
+            nk_stroke_rect(out, bounds, style->rounding, style->border, nk_rgb_factor(style->border_color, style->color_factor));
             break;
     }}
 
@@ -547,6 +550,8 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         else
             background_color = background->data.color;
 
+        cursor_color = nk_rgb_factor(cursor_color, style->color_factor);
+        cursor_text_color = nk_rgb_factor(cursor_text_color, style->color_factor);
 
         if (edit->select_start == edit->select_end) {
             /* no selection so just draw the complete text */
@@ -654,6 +659,10 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
             background_color = nk_rgba(0,0,0,0);
         else
             background_color = background->data.color;
+
+        background_color = nk_rgb_factor(background_color, style->color_factor);
+        text_color = nk_rgb_factor(text_color, style->color_factor);
+
         nk_edit_draw_text(out, style, area.x - edit->scrollbar.x,
             area.y - edit->scrollbar.y, 0, begin, l, row_height, font,
             background_color, text_color, nk_false);
@@ -773,6 +782,8 @@ nk_edit_buffer(struct nk_context *ctx, nk_flags flags,
     style = &ctx->style;
     state = nk_widget(&bounds, ctx);
     if (!state) return state;
+    else if (state == NK_WIDGET_DISABLED)
+        flags |= NK_EDIT_READ_ONLY;
     in = (win->layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
 
     /* check if edit is currently hot item */

@@ -78,6 +78,9 @@ NK_API void                 nk_glfw3_mouse_button_callback(GLFWwindow *win, int 
  * ===============================================================
  */
 #ifdef NK_GLFW_GL3_IMPLEMENTATION
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
 
 #ifndef NK_GLFW_DOUBLE_CLICK_LO
 #define NK_GLFW_DOUBLE_CLICK_LO 0.02
