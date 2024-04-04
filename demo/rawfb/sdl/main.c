@@ -20,7 +20,7 @@
 #define NK_INCLUDE_SOFTWARE_FONT
 #include "../../../nuklear.h"
 #define NK_RAWFB_IMPLEMENTATION
-#include "nuklear_sdl2_rawfb.h"
+#include "nuklear_sdl_rawfb.h"
 
 /* ===============================================================
  *
