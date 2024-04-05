@@ -6,13 +6,14 @@ overview(struct nk_context *ctx)
     static nk_flags window_flags = NK_WINDOW_TITLE|NK_WINDOW_BORDER|NK_WINDOW_SCALABLE|NK_WINDOW_MOVABLE|NK_WINDOW_MINIMIZABLE;
     nk_flags actual_window_flags;
 
+    /* widget flags */
+	static nk_bool disable_widgets = nk_false;
+
     /* popups */
     static enum nk_style_header_align header_align = NK_HEADER_RIGHT;
     static nk_bool show_app_about = nk_false;
 
     ctx->style.window.header.align = header_align;
-
-	static nk_bool disable_widgets = nk_false;
 
     actual_window_flags = window_flags;
     if (!(actual_window_flags & NK_WINDOW_TITLE))
