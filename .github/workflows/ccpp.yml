@@ -6,7 +6,7 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
     - name: apt-update
@@ -31,10 +31,10 @@ jobs:
       run: make -C demo/sdl_opengles2
     - name: build sdl_renderer
       run: make -C demo/sdl_renderer
-    - name: build sdl2surface_rawfb
-      run: make -C demo/sdl2surface_rawfb
+    - name: build sdl_rawfb
+      run: make -C demo/rawfb/sdl
     - name: build wayland_rawfb
-      run: make -C demo/wayland_rawfb
+      run: make -C demo/rawfb/wayland
     - name: build x11
       run: make -C demo/x11
     - name: build x11_opengl2
@@ -42,7 +42,7 @@ jobs:
     - name: build x11_opengl3
       run: make -C demo/x11_opengl3
     - name: build x11_rawfb
-      run: make -C demo/x11_rawfb
+      run: make -C demo/rawfb/x11
     - name: build x11_xft
       run: make -C demo/x11_xft
     - name: build example
