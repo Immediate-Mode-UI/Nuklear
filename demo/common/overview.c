@@ -633,7 +633,7 @@ overview(struct nk_context *ctx)
             float id = 0;
             static int col_index = -1;
             static int line_index = -1;
-            static int show_markers = nk_true;
+            static nk_bool show_markers = nk_true;
             float step = (2*3.141592654f) / 32;
 
             int i;
