@@ -212,6 +212,7 @@ overview(struct nk_context *ctx)
                 static int range_int_value = 2048;
                 static int range_int_max = 4096;
                 static const float ratio[] = {120, 150};
+                static int range_int_value_hidden = 2048;
 
                 nk_layout_row_dynamic(ctx, 0, 1);
                 nk_checkbox_label(ctx, "CheckLeft TextLeft", &checkbox_left_text_left);
@@ -256,6 +257,10 @@ overview(struct nk_context *ctx)
                 nk_property_int(ctx, "#min:", INT_MIN, &range_int_min, range_int_max, 1, 10);
                 nk_property_int(ctx, "#neg:", range_int_min, &range_int_value, range_int_max, 1, 10);
                 nk_property_int(ctx, "#max:", range_int_min, &range_int_max, INT_MAX, 1, 10);
+
+                nk_layout_row_dynamic(ctx, 0, 2);
+                nk_label(ctx, "Hidden Label:", NK_TEXT_LEFT);
+                nk_property_int(ctx, "##Hidden Label", range_int_min, &range_int_value_hidden, INT_MAX, 1, 10);
 
                 nk_tree_pop(ctx);
             }
