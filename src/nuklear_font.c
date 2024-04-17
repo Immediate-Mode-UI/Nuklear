@@ -85,7 +85,7 @@ nk_font_chinese_glyph_ranges(void)
         0x3000, 0x30FF,
         0x31F0, 0x31FF,
         0xFF00, 0xFFEF,
-        0x4e00, 0x9FAF,
+        0x4E00, 0x9FAF,
         0
     };
     return ranges;
@@ -194,7 +194,7 @@ nk_font_bake_pack(struct nk_font_baker *baker,
             struct stbtt_fontinfo *font_info = &baker->build[i++].info;
             font_info->userdata = alloc;
 
-            if (!stbtt_InitFont(font_info, (const unsigned char*)it->ttf_blob, 0))
+            if (!stbtt_InitFont(font_info, (const unsigned char*)it->ttf_blob, stbtt_GetFontOffsetForIndex((const unsigned char*)it->ttf_blob, 0)))
                 return nk_false;
         } while ((it = it->n) != config_iter);
     }
@@ -354,7 +354,6 @@ nk_font_bake(struct nk_font_baker *baker, void *image_memory, int width, int hei
 
                     /* query glyph bounds from stb_truetype */
                     const stbtt_packedchar *pc = &range->chardata_for_range[char_idx];
-                    if (!pc->x0 && !pc->x1 && !pc->y0 && !pc->y1) continue;
                     codepoint = (nk_rune)(range->first_unicode_codepoint_in_range + char_idx);
                     stbtt_GetPackedQuad(range->chardata_for_range, (int)width,
                         (int)height, char_idx, &dummy_x, &dummy_y, &q, 0);
@@ -1276,20 +1275,20 @@ failed:
 }
 NK_API void
 nk_font_atlas_end(struct nk_font_atlas *atlas, nk_handle texture,
-    struct nk_draw_null_texture *null)
+    struct nk_draw_null_texture *tex_null)
 {
     int i = 0;
     struct nk_font *font_iter;
     NK_ASSERT(atlas);
     if (!atlas) {
-        if (!null) return;
-        null->texture = texture;
-        null->uv = nk_vec2(0.5f,0.5f);
+        if (!tex_null) return;
+        tex_null->texture = texture;
+        tex_null->uv = nk_vec2(0.5f,0.5f);
     }
-    if (null) {
-        null->texture = texture;
-        null->uv.x = (atlas->custom.x + 0.5f)/(float)atlas->tex_width;
-        null->uv.y = (atlas->custom.y + 0.5f)/(float)atlas->tex_height;
+    if (tex_null) {
+        tex_null->texture = texture;
+        tex_null->uv.x = (atlas->custom.x + 0.5f)/(float)atlas->tex_width;
+        tex_null->uv.y = (atlas->custom.y + 0.5f)/(float)atlas->tex_height;
     }
     for (font_iter = atlas->fonts; font_iter; font_iter = font_iter->next) {
         font_iter->texture = texture;

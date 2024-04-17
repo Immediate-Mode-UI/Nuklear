@@ -46,8 +46,8 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_INCLUDE_SOFTWARE_FONT
 
-#include "../../nuklear.h"
-#include "nuklear_rawfb.h"
+#include "../../../nuklear.h"
+#include "../nuklear_rawfb.h"
 #include "nuklear_xlib.h"
 
 #define DTIME           20
@@ -126,19 +126,19 @@ sleep_for(long t)
 #endif
 
 #ifdef INCLUDE_STYLE
-  #include "../../demo/common/style.c"
+  #include "../../common/style.c"
 #endif
 #ifdef INCLUDE_CALCULATOR
-  #include "../../demo/common/calculator.c"
+  #include "../../common/calculator.c"
 #endif
 #ifdef INCLUDE_CANVAS
-  #include "../../demo/common/canvas.c"
+  #include "../../common/canvas.c"
 #endif
 #ifdef INCLUDE_OVERVIEW
-  #include "../../demo/common/overview.c"
+  #include "../../common/overview.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
-  #include "../../demo/common/node_editor.c"
+  #include "../../common/node_editor.c"
 #endif
 
 /* ===============================================================
@@ -194,10 +194,16 @@ main(void)
     if (!rawfb) running = 0;
 
     #ifdef INCLUDE_STYLE
-    /*set_style(&rawfb->ctx, THEME_WHITE);*/
-    /*set_style(&rawfb->ctx, THEME_RED);*/
-    /*set_style(&rawfb->ctx, THEME_BLUE);*/
-    /*set_style(&rawfb->ctx, THEME_DARK);*/
+    /* ease regression testing during Nuklear release process; not needed for anything else */
+    #ifdef STYLE_WHITE
+    set_style(&rawfb->ctx, THEME_WHITE);
+    #elif defined(STYLE_RED)
+    set_style(&rawfb->ctx, THEME_RED);
+    #elif defined(STYLE_BLUE)
+    set_style(&rawfb->ctx, THEME_BLUE);
+    #elif defined(STYLE_DARK)
+    set_style(&rawfb->ctx, THEME_DARK);
+    #endif
     #endif
 
     while (running) {

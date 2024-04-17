@@ -115,10 +115,18 @@ int main(void)
     ctx = nk_allegro5_init(font, display, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     /* style.c */
-    /*set_style(ctx, THEME_WHITE);*/
-    /*set_style(ctx, THEME_RED);*/
-    /*set_style(ctx, THEME_BLUE);*/
-    /*set_style(ctx, THEME_DARK);*/
+    #ifdef INCLUDE_STYLE
+    /* ease regression testing during Nuklear release process; not needed for anything else */
+    #ifdef STYLE_WHITE
+    set_style(ctx, THEME_WHITE);
+    #elif defined(STYLE_RED)
+    set_style(ctx, THEME_RED);
+    #elif defined(STYLE_BLUE)
+    set_style(ctx, THEME_BLUE);
+    #elif defined(STYLE_DARK)
+    set_style(ctx, THEME_DARK);
+    #endif
+    #endif
 
     while(1)
     {
