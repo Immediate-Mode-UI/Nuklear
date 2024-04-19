@@ -5,8 +5,5 @@
   "homepage": "https://github.com/Immediate-Mode-UI/Nuklear",
   "description": "Minimal state immediate mode graphical user interface toolkit written in ANSI C and licensed under public domain.",
   "dependencies": [
-    "allegro5",
-    "glfw3",
-    "glew"
   ]
 }
