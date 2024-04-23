@@ -116,6 +116,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
 #ifdef NK_INCLUDE_COMMAND_USERDATA
     win->buffer.userdata = ctx->userdata;
 #endif
+    win->buffer.draw_config = &ctx->draw_config;
     /* pull style configuration into local stack */
     scrollbar_size = style->window.scrollbar_size;
     panel_padding = nk_panel_get_padding(style, panel_type);

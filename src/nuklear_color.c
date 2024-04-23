@@ -422,3 +422,344 @@ nk_color_hsv_bv(nk_byte *out, struct nk_color in)
     out[2] = (nk_byte)tmp[2];
 }
 
+NK_API void nk_name_color_init(struct nk_name_color *cn, const char *n, struct nk_color c)
+{
+    int len;
+
+    NK_ASSERT(cn);
+    NK_ASSERT(n);
+
+    if (!cn || !n)
+        return;
+
+    len = NK_MIN(nk_strlen(n), NK_NAME_COLOR_MAX_NAME - 1);
+    cn->name = nk_murmur_hash(n, len, NK_COLOR_INLINE_TAG);
+    NK_MEMCPY(cn->name_string, n, len);
+    cn->name_string[len] = '\0';
+    cn->color = c;
+}
+
+#ifdef NK_INCLUDE_DEFAULT_ALLOCATOR
+NK_API void nk_map_name_color_init_default(struct nk_map_name_color *c)
+{
+    struct nk_allocator alloc;
+
+    NK_ASSERT(c);
+
+    if (!c)
+        return;
+
+    alloc.userdata.ptr = 0;
+    alloc.alloc = nk_malloc;
+    alloc.free = nk_mfree;
+    nk_buffer_init(&c->buffer, &alloc, NK_DEFAULT_MAP_NAME_COLOR_BUFFER_SIZE);
+    c->count = 0;
+}
+
+#endif
+
+NK_API void nk_map_name_color_init(struct nk_map_name_color *c, const struct nk_allocator *a, const struct nk_name_color *cv, int cc)
+{
+    nk_size size;
+
+    NK_ASSERT(c);
+    NK_ASSERT(a);
+
+    if (!c || !a)
+        return;
+
+    if (cc == 0) {
+        nk_buffer_init(&c->buffer, a, NK_DEFAULT_MAP_NAME_COLOR_BUFFER_SIZE);
+        c->count = 0;
+        return;
+    }
+
+    NK_ASSERT(cv);
+    if (!cv)
+        return;
+
+    size = sizeof(struct nk_name_color) * cc;
+    nk_buffer_init(&c->buffer, a, size);
+    nk_buffer_push(&c->buffer, NK_BUFFER_FRONT, cv, size, sizeof(nk_hash));
+    c->count = cc;
+}
+
+NK_API void nk_map_name_color_init_colors(struct nk_map_name_color *c, const struct nk_allocator *a, const char **nv, struct nk_color *cv, int cc)
+{
+    nk_size size;
+    struct nk_name_color *m;
+    int i;
+
+    NK_ASSERT(c);
+    NK_ASSERT(a);
+
+    if (!c || !a)
+        return;
+
+    if (cc == 0) {
+        nk_buffer_init(&c->buffer, a, NK_DEFAULT_MAP_NAME_COLOR_BUFFER_SIZE);
+        c->count = 0;
+        return;
+    }
+
+    NK_ASSERT(nv);
+    NK_ASSERT(cv);
+    if (!nv || !cv)
+        return;
+
+    size = sizeof(struct nk_name_color) * cc;
+    nk_buffer_init(&c->buffer, a, size);
+    nk_buffer_alloc(&c->buffer, NK_BUFFER_FRONT, size, sizeof(nk_hash));
+    m = (struct nk_name_color *)c->buffer.memory.ptr;
+    for (i = 0; i < cc; ++i)
+        nk_name_color_init(&m[i], nv[i], cv[i]);
+    c->count = cc;
+}
+
+NK_API void nk_map_name_color_init_map_name_color(struct nk_map_name_color *c0, const struct nk_allocator *a, const struct nk_map_name_color *c1, const char **filter_out, int count)
+{
+    nk_size size;
+    struct nk_name_color *cv1;
+    int i, j, len, hashes_count;
+    nk_bool filtered;
+    nk_hash hashes[32];
+
+    NK_ASSERT(c0);
+    NK_ASSERT(a);
+    NK_ASSERT(c1);
+
+    if (!c0 || !a || !c1)
+        return;
+
+    if (c1->count == 0) {
+        nk_buffer_init(&c0->buffer, a, NK_DEFAULT_MAP_NAME_COLOR_BUFFER_SIZE);
+        c0->count = 0;
+        return;
+    }
+
+    size = sizeof(struct nk_name_color) * c1->count;
+    cv1 = (struct nk_name_color *)c1->buffer.memory.ptr;
+
+    if (count == 0) {
+        nk_buffer_init(&c0->buffer, a, size);
+        nk_buffer_push(&c0->buffer, NK_BUFFER_FRONT, cv1, size, sizeof(nk_hash));
+        c0->count = c1->count;
+        return;
+    }
+
+    NK_ASSERT(filter_out);
+    if (!filter_out)
+        return;
+
+    nk_buffer_init(&c0->buffer, a, size);
+
+    c0->count = 0;
+    hashes_count = NK_MIN((int)NK_LEN(hashes), count);
+    for (j = 0; j < hashes_count; ++j) {
+        len = NK_MIN(nk_strlen(filter_out[j]), NK_NAME_COLOR_MAX_NAME - 1);
+        hashes[j] = nk_murmur_hash(filter_out[j], len, NK_COLOR_INLINE_TAG);
+    }
+
+    for (i = 0; i < c1->count; ++i) {
+        filtered = 0;
+        for (j = 0; j < hashes_count; ++j) {
+            if (hashes[j] == cv1[i].name) {
+                if (nk_stricmpn(cv1[i].name_string, filter_out[j], NK_NAME_COLOR_MAX_NAME - 1) == 0) {
+                    filtered = 1;
+                    break;
+                }
+            }
+        }
+        if (!filtered) {
+            nk_buffer_push(&c0->buffer, NK_BUFFER_FRONT, &cv1[i], sizeof(struct nk_name_color), sizeof(nk_hash));
+            ++c0->count;
+        }
+    }
+
+    if (count > hashes_count)
+        nk_map_name_color_delete(c0, filter_out + hashes_count, count - hashes_count);
+}
+
+NK_API void nk_map_name_color_init_fixed(struct nk_map_name_color *c, struct nk_name_color *cv, int count, int capacity)
+{
+    NK_ASSERT(c);
+    NK_ASSERT(cv);
+    NK_ASSERT(count <= capacity);
+    NK_ASSERT(capacity != 0);
+
+    if (!c || !cv || count > capacity || capacity == 0)
+        return;
+
+    nk_buffer_init_fixed(&c->buffer, cv, capacity * sizeof(struct nk_name_color));
+    c->buffer.allocated = count * sizeof(struct nk_name_color);
+    c->count = count;
+}
+
+NK_API void nk_map_name_color_free(struct nk_map_name_color *c)
+{
+    NK_ASSERT(c);
+
+    if (!c)
+        return;
+
+    nk_buffer_free(&c->buffer);
+    c->count = 0;
+}
+
+NK_API void nk_map_name_color_push(struct nk_map_name_color *c, const struct nk_name_color *cv, int cc)
+{
+    nk_size size;
+    void *mem;
+
+    NK_ASSERT(c);
+
+    if (!c)
+        return;
+
+    if (cc == 0)
+        return;
+    NK_ASSERT(cv);
+    if (!cv)
+        return;
+
+    size = cc * sizeof(struct nk_name_color);
+    mem = nk_buffer_alloc(&c->buffer, NK_BUFFER_FRONT, size, sizeof(nk_hash));
+    if (!mem)
+        return;
+    NK_MEMCPY(mem, cv, size);
+    c->count += cc;
+}
+
+NK_API void nk_map_name_color_push_colors(struct nk_map_name_color *c, const char **nv, struct nk_color *cv, int cc)
+{
+    nk_size size;
+    void *mem;
+    struct nk_name_color *m;
+    int i;
+
+    NK_ASSERT(c);
+
+    if (!c)
+        return;
+
+    if (cc == 0)
+        return;
+    NK_ASSERT(nv);
+    NK_ASSERT(cv);
+    if (!nv || !cv)
+        return;
+
+    size = sizeof(struct nk_name_color) * cc;
+    mem = nk_buffer_alloc(&c->buffer, NK_BUFFER_FRONT, size, sizeof(nk_hash));
+    if (!mem)
+        return;
+    m = (struct nk_name_color *)mem;
+    for (i = 0; i < cc; ++i)
+        nk_name_color_init(&m[i], nv[i], cv[i]);
+    c->count += cc;
+}
+
+NK_API void nk_map_name_color_push_map_name_color(struct nk_map_name_color *c0, const struct nk_map_name_color *c1)
+{
+    nk_size size;
+    void *mem;
+
+    NK_ASSERT(c0);
+    NK_ASSERT(c1);
+
+    if (!c0 || !c1)
+        return;
+
+    size = c1->count * sizeof(struct nk_name_color);
+    mem = nk_buffer_alloc(&c0->buffer, NK_BUFFER_FRONT, size, sizeof(nk_hash));
+    if (!mem)
+        return;
+    NK_MEMCPY(mem, c1->buffer.memory.ptr, size);
+    c0->count += c1->count;
+}
+
+NK_API void nk_map_name_color_delete(struct nk_map_name_color *c, const char **filter_out, int count)
+{
+    nk_size size;
+    int hashes_count, out_count = 0;
+    nk_bool filtered;
+    int out_begin, out_end, i, j, len, out_state;
+    struct nk_name_color *cv;
+    nk_hash hashes[32];
+
+    NK_ASSERT(c);
+
+    if (!c || c->count == 0)
+        return;
+
+    if (count == 0)
+        return;
+    NK_ASSERT(filter_out);
+    if (!filter_out)
+        return;
+
+    cv = (struct nk_name_color *)c->buffer.memory.ptr;
+    while (count > 0) {
+        hashes_count = NK_MIN((int)NK_LEN(hashes), count);
+
+        for (j = 0; j < hashes_count; ++j) {
+            len = NK_MIN(nk_strlen(filter_out[j]), NK_NAME_COLOR_MAX_NAME - 1);
+            hashes[j] = nk_murmur_hash(filter_out[j], len, NK_COLOR_INLINE_TAG);
+        }
+
+        out_state = -1;
+        for (i = 0; i < c->count; ++i) {
+            filtered = 0;
+            for (j = 0; j < hashes_count; ++j) {
+                if (hashes[j] == cv[i].name) {
+                    if (nk_stricmpn(cv[i].name_string, filter_out[j], NK_NAME_COLOR_MAX_NAME - 1) == 0) {
+                        filtered = 1;
+                        break;
+                    }
+                }
+            }
+            if (filtered) {
+                if (out_state == 1) {
+                    /* memmove */
+                    size = (i - out_end) * sizeof(struct nk_name_color);
+                    NK_MEMCPY(&cv[out_begin], &cv[out_end], size);
+                    out_count += out_end - out_begin;
+                }
+                if (out_state != 0) {
+                    out_state = 0;
+                    out_begin = i;
+                }
+            } else {
+                if (out_state == 0) {
+                    out_state = 1;
+                    out_end = i;
+                }
+            }
+        }
+        /* copy final stretch if needed */
+        if (out_state == 1) {
+            size = (i - out_end) * sizeof(struct nk_name_color);
+            NK_MEMCPY(&cv[out_begin], &cv[out_end], size);
+            out_count += out_end - out_begin;
+        } else if (out_state == 0) {
+            out_count += i - out_begin;
+        }
+
+        c->buffer.allocated -= out_count * sizeof(struct nk_name_color);
+        c->count -= out_count;
+
+        filter_out += hashes_count;
+        count -= hashes_count;
+    }
+}
+
+NK_API void nk_map_name_color_clear(struct nk_map_name_color *c)
+{
+    NK_ASSERT(c);
+
+    if (!c)
+        return;
+
+    nk_buffer_clear(&c->buffer);
+    c->count = 0;
+}
