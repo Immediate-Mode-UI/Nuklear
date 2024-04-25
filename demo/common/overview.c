@@ -130,7 +130,7 @@ overview(struct nk_context *ctx)
 
 #ifdef INCLUDE_STYLE
         /* style selector */
-        nk_layout_row_dynamic(ctx, 30, 2);
+        nk_layout_row_dynamic(ctx, 0, 2);
         {
             int new_theme;
             nk_label(ctx, "Style:", NK_TEXT_LEFT);
