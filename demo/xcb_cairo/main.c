@@ -39,9 +39,9 @@ static void die(const char *fmt, ...)
  * done with this library. To try out an example uncomment the defines */
 
 /*#define INCLUDE_ALL */
-#define INCLUDE_STYLE
+/*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
-#define INCLUDE_OVERVIEW
+/*#define INCLUDE_OVERVIEW */
 /*#define INCLUDE_NODE_EDITOR */
 /*#define INCLUDE_CANVAS */
 
