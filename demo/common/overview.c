@@ -4,7 +4,7 @@ overview(struct nk_context *ctx)
     /* window flags */
     static nk_bool show_menu = nk_true;
     static nk_flags window_flags = NK_WINDOW_TITLE|NK_WINDOW_BORDER|NK_WINDOW_SCALABLE|NK_WINDOW_MOVABLE|NK_WINDOW_MINIMIZABLE;
-    nk_flags actual_window_flags;
+    nk_flags actual_window_flags = 0;
 
     /* widget flags */
 	static nk_bool disable_widgets = nk_false;
@@ -20,7 +20,6 @@ overview(struct nk_context *ctx)
 #endif
 
     /* window flags */
-    window_flags = 0;
     ctx->style.window.header.align = header_align;
 
     actual_window_flags = window_flags;
@@ -131,9 +130,11 @@ overview(struct nk_context *ctx)
 
 #ifdef INCLUDE_STYLE
         /* style selector */
-        nk_layout_row_static(ctx, 25, 200, 1);
+        nk_layout_row_dynamic(ctx, 30, 2);
         {
-            int new_theme = nk_combo(ctx, themes, NK_LEN(themes), current_theme, 25, nk_vec2(200, 200));
+            int new_theme;
+            nk_label(ctx, "Style:", NK_TEXT_LEFT);
+            new_theme = nk_combo(ctx, themes, NK_LEN(themes), current_theme, 25, nk_vec2(200, 200));
             if (new_theme != current_theme) {
                 current_theme = new_theme;
                 set_style(ctx, current_theme);
