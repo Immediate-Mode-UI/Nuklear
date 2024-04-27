@@ -35,7 +35,7 @@
  * ===============================================================*/
 /* This are some code examples to provide a small overview of what can be
  * done with this library. To try out an example uncomment the defines */
-#define INCLUDE_ALL
+/*#define INCLUDE_ALL */
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
@@ -2103,20 +2103,6 @@ int main(void) {
         nk_glfw3_font_stash_end(demo.graphics_queue);
         /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
     /*nk_style_set_font(ctx, &droid->handle);*/}
-
-#ifdef INCLUDE_STYLE
-    /* ease regression testing during Nuklear release process; not needed for
-     * anything else */
-#ifdef STYLE_WHITE
-    set_style(ctx, THEME_WHITE);
-#elif defined(STYLE_RED)
-    set_style(ctx, THEME_RED);
-#elif defined(STYLE_BLUE)
-    set_style(ctx, THEME_BLUE);
-#elif defined(STYLE_DARK)
-    set_style(ctx, THEME_DARK);
-#endif
-#endif
 
     img = nk_image_ptr(demo.demo_texture_image_view);
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;

@@ -193,19 +193,6 @@ main(void)
     rawfb = nk_rawfb_init(fb, tex_scratch, xw.width, xw.height, xw.width * 4, pl);
     if (!rawfb) running = 0;
 
-    #ifdef INCLUDE_STYLE
-    /* ease regression testing during Nuklear release process; not needed for anything else */
-    #ifdef STYLE_WHITE
-    set_style(&rawfb->ctx, THEME_WHITE);
-    #elif defined(STYLE_RED)
-    set_style(&rawfb->ctx, THEME_RED);
-    #elif defined(STYLE_BLUE)
-    set_style(&rawfb->ctx, THEME_BLUE);
-    #elif defined(STYLE_DARK)
-    set_style(&rawfb->ctx, THEME_DARK);
-    #endif
-    #endif
-
     while (running) {
         /* Input */
         XEvent evt;
