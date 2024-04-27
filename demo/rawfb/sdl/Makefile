@@ -2,7 +2,7 @@ CFLAGS=`sdl2-config --cflags --libs`   -std=c89 -Wall -Wextra -pedantic -Wno-unu
 
 .PHONY: clean
 
-demo: main.c sdl2surface_rawfb.h
+demo: main.c nuklear_sdl_rawfb.h
 	$(CC) -o demo *.c $(CFLAGS) -lrt -lm
 
 clean:

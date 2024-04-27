@@ -87,21 +87,21 @@ nk_rawfb_color2int(const struct nk_color c, rawfb_pl pl)
 
     switch (pl) {
     case PIXEL_LAYOUT_RGBX_8888:
-	res |= c.r << 24;
-	res |= c.g << 16;
-	res |= c.b << 8;
-	res |= c.a;
-	break;
+        res |= c.r << 24;
+        res |= c.g << 16;
+        res |= c.b << 8;
+        res |= c.a;
+        break;
     case PIXEL_LAYOUT_XRGB_8888:
-	res |= c.a << 24;
-	res |= c.r << 16;
-	res |= c.g << 8;
-	res |= c.b;
-	break;
+        res |= c.a << 24;
+        res |= c.r << 16;
+        res |= c.g << 8;
+        res |= c.b;
+        break;
 
     default:
-	perror("nk_rawfb_color2int(): Unsupported pixel layout.\n");
-	break;
+        perror("nk_rawfb_color2int(): Unsupported pixel layout.\n");
+        break;
     }
     return (res);
 }
@@ -113,21 +113,21 @@ nk_rawfb_int2color(const unsigned int i, rawfb_pl pl)
 
     switch (pl) {
     case PIXEL_LAYOUT_RGBX_8888:
-	col.r = (i >> 24) & 0xff;
-	col.g = (i >> 16) & 0xff;
-	col.b = (i >> 8) & 0xff;
-	col.a = i & 0xff;
-	break;
+        col.r = (i >> 24) & 0xff;
+        col.g = (i >> 16) & 0xff;
+        col.b = (i >> 8) & 0xff;
+        col.a = i & 0xff;
+        break;
     case PIXEL_LAYOUT_XRGB_8888:
-	col.a = (i >> 24) & 0xff;
-	col.r = (i >> 16) & 0xff;
-	col.g = (i >> 8) & 0xff;
-	col.b = i & 0xff;
-	break;
+        col.a = (i >> 24) & 0xff;
+        col.r = (i >> 16) & 0xff;
+        col.g = (i >> 8) & 0xff;
+        col.b = i & 0xff;
+        break;
 
     default:
-	perror("nk_rawfb_int2color(): Unsupported pixel layout.\n");
-	break;
+        perror("nk_rawfb_int2color(): Unsupported pixel layout.\n");
+        break;
     }
     return col;
 }
@@ -184,12 +184,12 @@ nk_rawfb_img_setpixel(const struct rawfb_image *img,
     NK_ASSERT(img);
     if (y0 < img->h && y0 >= 0 && x0 >= 0 && x0 < img->w) {
         ptr = (unsigned char *)img->pixels + (img->pitch * y0);
-	pixel = (unsigned int *)ptr;
+        pixel = (unsigned int *)ptr;
 
         if (img->format == NK_FONT_ATLAS_ALPHA8) {
             ptr[x0] = col.a;
         } else {
-	    pixel[x0] = c;
+            pixel[x0] = c;
         }
     }
 }
@@ -208,8 +208,8 @@ nk_rawfb_img_getpixel(const struct rawfb_image *img, const int x0, const int y0)
             col.a = ptr[x0];
             col.b = col.g = col.r = 0xff;
         } else {
-	    pixel = ((unsigned int *)ptr)[x0];
-	    col = nk_rawfb_int2color(pixel, img->pl);
+            pixel = ((unsigned int *)ptr)[x0];
+            col = nk_rawfb_int2color(pixel, img->pl);
         }
     } return col;
 }
@@ -598,7 +598,7 @@ nk_rawfb_draw_rect_multi_color(const struct rawfb_context *rawfb,
 
     edge_buf = malloc(((2*w) + (2*h)) * sizeof(struct nk_color));
     if (edge_buf == NULL)
-	return;
+        return;
 
     edge_t = edge_buf;
     edge_b = edge_buf + w;
@@ -608,51 +608,51 @@ nk_rawfb_draw_rect_multi_color(const struct rawfb_context *rawfb,
     /* Top and bottom edge gradients */
     for (i=0; i<w; i++)
     {
-	edge_t[i].r = (((((float)tr.r - tl.r)/(w-1))*i) + 0.5) + tl.r;
-	edge_t[i].g = (((((float)tr.g - tl.g)/(w-1))*i) + 0.5) + tl.g;
-	edge_t[i].b = (((((float)tr.b - tl.b)/(w-1))*i) + 0.5) + tl.b;
-	edge_t[i].a = (((((float)tr.a - tl.a)/(w-1))*i) + 0.5) + tl.a;
+        edge_t[i].r = (((((float)tr.r - tl.r)/(w-1))*i) + 0.5) + tl.r;
+        edge_t[i].g = (((((float)tr.g - tl.g)/(w-1))*i) + 0.5) + tl.g;
+        edge_t[i].b = (((((float)tr.b - tl.b)/(w-1))*i) + 0.5) + tl.b;
+        edge_t[i].a = (((((float)tr.a - tl.a)/(w-1))*i) + 0.5) + tl.a;
 
-	edge_b[i].r = (((((float)br.r - bl.r)/(w-1))*i) + 0.5) + bl.r;
-	edge_b[i].g = (((((float)br.g - bl.g)/(w-1))*i) + 0.5) + bl.g;
-	edge_b[i].b = (((((float)br.b - bl.b)/(w-1))*i) + 0.5) + bl.b;
-	edge_b[i].a = (((((float)br.a - bl.a)/(w-1))*i) + 0.5) + bl.a;
+        edge_b[i].r = (((((float)br.r - bl.r)/(w-1))*i) + 0.5) + bl.r;
+        edge_b[i].g = (((((float)br.g - bl.g)/(w-1))*i) + 0.5) + bl.g;
+        edge_b[i].b = (((((float)br.b - bl.b)/(w-1))*i) + 0.5) + bl.b;
+        edge_b[i].a = (((((float)br.a - bl.a)/(w-1))*i) + 0.5) + bl.a;
     }
 
     /* Left and right edge gradients */
     for (i=0; i<h; i++)
     {
-	edge_l[i].r = (((((float)bl.r - tl.r)/(h-1))*i) + 0.5) + tl.r;
-	edge_l[i].g = (((((float)bl.g - tl.g)/(h-1))*i) + 0.5) + tl.g;
-	edge_l[i].b = (((((float)bl.b - tl.b)/(h-1))*i) + 0.5) + tl.b;
-	edge_l[i].a = (((((float)bl.a - tl.a)/(h-1))*i) + 0.5) + tl.a;
+        edge_l[i].r = (((((float)bl.r - tl.r)/(h-1))*i) + 0.5) + tl.r;
+        edge_l[i].g = (((((float)bl.g - tl.g)/(h-1))*i) + 0.5) + tl.g;
+        edge_l[i].b = (((((float)bl.b - tl.b)/(h-1))*i) + 0.5) + tl.b;
+        edge_l[i].a = (((((float)bl.a - tl.a)/(h-1))*i) + 0.5) + tl.a;
 
-	edge_r[i].r = (((((float)br.r - tr.r)/(h-1))*i) + 0.5) + tr.r;
-	edge_r[i].g = (((((float)br.g - tr.g)/(h-1))*i) + 0.5) + tr.g;
-	edge_r[i].b = (((((float)br.b - tr.b)/(h-1))*i) + 0.5) + tr.b;
-	edge_r[i].a = (((((float)br.a - tr.a)/(h-1))*i) + 0.5) + tr.a;
+        edge_r[i].r = (((((float)br.r - tr.r)/(h-1))*i) + 0.5) + tr.r;
+        edge_r[i].g = (((((float)br.g - tr.g)/(h-1))*i) + 0.5) + tr.g;
+        edge_r[i].b = (((((float)br.b - tr.b)/(h-1))*i) + 0.5) + tr.b;
+        edge_r[i].a = (((((float)br.a - tr.a)/(h-1))*i) + 0.5) + tr.a;
     }
 
     for (i=0; i<h; i++) {
-	for (j=0; j<w; j++) {
-	    if (i==0) {
-		nk_rawfb_img_blendpixel(&rawfb->fb, x+j, y+i, edge_t[j]);
-	    } else if (i==h-1) {
-		nk_rawfb_img_blendpixel(&rawfb->fb, x+j, y+i, edge_b[j]);
-	    } else {
-		if (j==0) {
-		    nk_rawfb_img_blendpixel(&rawfb->fb, x+j, y+i, edge_l[i]);
-		} else if (j==w-1) {
-		    nk_rawfb_img_blendpixel(&rawfb->fb, x+j, y+i, edge_r[i]);
-		} else {
-		    pixel.r = (((((float)edge_r[i].r - edge_l[i].r)/(w-1))*j) + 0.5) + edge_l[i].r;
-		    pixel.g = (((((float)edge_r[i].g - edge_l[i].g)/(w-1))*j) + 0.5) + edge_l[i].g;
-		    pixel.b = (((((float)edge_r[i].b - edge_l[i].b)/(w-1))*j) + 0.5) + edge_l[i].b;
-		    pixel.a = (((((float)edge_r[i].a - edge_l[i].a)/(w-1))*j) + 0.5) + edge_l[i].a;
-		    nk_rawfb_img_blendpixel(&rawfb->fb, x+j, y+i, pixel);
-		}
-	    }
-	}
+        for (j=0; j<w; j++) {
+            if (i==0) {
+                nk_rawfb_img_blendpixel(&rawfb->fb, x+j, y+i, edge_t[j]);
+            } else if (i==h-1) {
+                nk_rawfb_img_blendpixel(&rawfb->fb, x+j, y+i, edge_b[j]);
+            } else {
+                if (j==0) {
+                    nk_rawfb_img_blendpixel(&rawfb->fb, x+j, y+i, edge_l[i]);
+                } else if (j==w-1) {
+                    nk_rawfb_img_blendpixel(&rawfb->fb, x+j, y+i, edge_r[i]);
+                } else {
+                    pixel.r = (((((float)edge_r[i].r - edge_l[i].r)/(w-1))*j) + 0.5) + edge_l[i].r;
+                    pixel.g = (((((float)edge_r[i].g - edge_l[i].g)/(w-1))*j) + 0.5) + edge_l[i].g;
+                    pixel.b = (((((float)edge_r[i].b - edge_l[i].b)/(w-1))*j) + 0.5) + edge_l[i].b;
+                    pixel.a = (((((float)edge_r[i].a - edge_l[i].a)/(w-1))*j) + 0.5) + edge_l[i].a;
+                    nk_rawfb_img_blendpixel(&rawfb->fb, x+j, y+i, pixel);
+                }
+            }
+        }
     }
 
     free(edge_buf);
@@ -837,31 +837,30 @@ nk_rawfb_init(void *fb, void *tex_mem, const unsigned int w, const unsigned int 
     rawfb->font_tex.w = rawfb->font_tex.h = 0;
 
     rawfb->fb.pixels = fb;
-    rawfb->fb.w= w;
+    rawfb->fb.w = w;
     rawfb->fb.h = h;
     rawfb->fb.pl = pl;
 
     if (pl == PIXEL_LAYOUT_RGBX_8888 || pl == PIXEL_LAYOUT_XRGB_8888) {
-    rawfb->fb.format = NK_FONT_ATLAS_RGBA32;
-    rawfb->fb.pitch = pitch;
-    }
-    else {
-	perror("nk_rawfb_init(): Unsupported pixel layout.\n");
-	free(rawfb);
-	return NULL;
+        rawfb->fb.format = NK_FONT_ATLAS_RGBA32;
+        rawfb->fb.pitch = pitch;
+    } else {
+        perror("nk_rawfb_init(): Unsupported pixel layout.\n");
+        free(rawfb);
+        return NULL;
     }
 
     if (0 == nk_init_default(&rawfb->ctx, 0)) {
-	free(rawfb);
-	return NULL;
+        free(rawfb);
+        return NULL;
     }
 
     nk_font_atlas_init_default(&rawfb->atlas);
     nk_font_atlas_begin(&rawfb->atlas);
     tex = nk_font_atlas_bake(&rawfb->atlas, &rawfb->font_tex.w, &rawfb->font_tex.h, rawfb->font_tex.format);
     if (!tex) {
-	free(rawfb);
-	return NULL;
+        free(rawfb);
+        return NULL;
     }
 
     switch(rawfb->font_tex.format) {
@@ -879,6 +878,7 @@ nk_rawfb_init(void *fb, void *tex_mem, const unsigned int w, const unsigned int 
         nk_style_set_font(&rawfb->ctx, &rawfb->atlas.default_font->handle);
     nk_style_load_all_cursors(&rawfb->ctx, rawfb->atlas.cursors);
     nk_rawfb_scissor(rawfb, 0, 0, rawfb->fb.w, rawfb->fb.h);
+
     return rawfb;
 }
 
@@ -905,12 +905,12 @@ nk_rawfb_stretch_image(const struct rawfb_image *dst,
                     continue;
             }
             col = nk_rawfb_img_getpixel(src, (int)xoff, (int) yoff);
-	    if (col.r || col.g || col.b)
-	    {
-		col.r = fg->r;
-		col.g = fg->g;
-		col.b = fg->b;
-	    }
+            if (col.r || col.g || col.b)
+            {
+                col.r = fg->r;
+                col.g = fg->g;
+                col.b = fg->b;
+            }
             nk_rawfb_img_blendpixel(dst, i + (int)(dst_rect->x + 0.5f), j + (int)(dst_rect->y + 0.5f), col);
             xoff += xinc;
         }
@@ -986,8 +986,8 @@ nk_rawfb_draw_text(const struct rawfb_context *rawfb,
 
         dst_rect.x = x + g.offset.x + rect.x;
         dst_rect.y = g.offset.y + rect.y;
-        dst_rect.w = ceilf(g.width);
-        dst_rect.h = ceilf(g.height);
+        dst_rect.w = ceil(g.width);
+        dst_rect.h = ceil(g.height);
 
         /* Use software rescaling to blit glyph from font_text to framebuffer */
         nk_rawfb_stretch_image(&rawfb->fb, &rawfb->font_tex, &dst_rect, &src_rect, &rawfb->scissors, &fg);
@@ -1024,9 +1024,9 @@ NK_API void
 nk_rawfb_shutdown(struct rawfb_context *rawfb)
 {
     if (rawfb) {
-	nk_free(&rawfb->ctx);
-	memset(rawfb, 0, sizeof(struct rawfb_context));
-	free(rawfb);
+        nk_free(&rawfb->ctx);
+        memset(rawfb, 0, sizeof(struct rawfb_context));
+        free(rawfb);
     }
 }
 
@@ -1036,7 +1036,7 @@ nk_rawfb_resize_fb(struct rawfb_context *rawfb,
                    const unsigned int w,
                    const unsigned int h,
                    const unsigned int pitch,
-		   const rawfb_pl pl)
+                   const rawfb_pl pl)
 {
     rawfb->fb.w = w;
     rawfb->fb.h = h;
@@ -1117,9 +1117,9 @@ nk_rawfb_render(const struct rawfb_context *rawfb,
                 q->end, 22, q->line_thickness, q->color);
         } break;
         case NK_COMMAND_RECT_MULTI_COLOR: {
-	    const struct nk_command_rect_multi_color *q = (const struct nk_command_rect_multi_color *)cmd;
-	    nk_rawfb_draw_rect_multi_color(rawfb, q->x, q->y, q->w, q->h, q->left, q->top, q->right, q->bottom);
-	} break;
+            const struct nk_command_rect_multi_color *q = (const struct nk_command_rect_multi_color *)cmd;
+            nk_rawfb_draw_rect_multi_color(rawfb, q->x, q->y, q->w, q->h, q->left, q->top, q->right, q->bottom);
+        } break;
         case NK_COMMAND_IMAGE: {
             const struct nk_command_image *q = (const struct nk_command_image *)cmd;
             nk_rawfb_drawimage(rawfb, q->x, q->y, q->w, q->h, &q->img, &q->col);

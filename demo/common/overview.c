@@ -4,15 +4,23 @@ overview(struct nk_context *ctx)
     /* window flags */
     static nk_bool show_menu = nk_true;
     static nk_flags window_flags = NK_WINDOW_TITLE|NK_WINDOW_BORDER|NK_WINDOW_SCALABLE|NK_WINDOW_MOVABLE|NK_WINDOW_MINIMIZABLE;
-    nk_flags actual_window_flags;
+    nk_flags actual_window_flags = 0;
+
+    /* widget flags */
+	static nk_bool disable_widgets = nk_false;
 
     /* popups */
     static enum nk_style_header_align header_align = NK_HEADER_RIGHT;
     static nk_bool show_app_about = nk_false;
 
-    ctx->style.window.header.align = header_align;
+#ifdef INCLUDE_STYLE
+    /* styles */
+    static const char* themes[] = {"Black", "White", "Red", "Blue", "Dark", "Dracula"};
+    static int current_theme = 0;
+#endif
 
-	static nk_bool disable_widgets = nk_false;
+    /* window flags */
+    ctx->style.window.header.align = header_align;
 
     actual_window_flags = window_flags;
     if (!(actual_window_flags & NK_WINDOW_TITLE))
@@ -119,6 +127,20 @@ overview(struct nk_context *ctx)
                 nk_popup_end(ctx);
             } else show_app_about = nk_false;
         }
+
+#ifdef INCLUDE_STYLE
+        /* style selector */
+        nk_layout_row_dynamic(ctx, 0, 2);
+        {
+            int new_theme;
+            nk_label(ctx, "Style:", NK_TEXT_LEFT);
+            new_theme = nk_combo(ctx, themes, NK_LEN(themes), current_theme, 25, nk_vec2(200, 200));
+            if (new_theme != current_theme) {
+                current_theme = new_theme;
+                set_style(ctx, current_theme);
+            }
+        }
+#endif
 
         /* window flags */
         if (nk_tree_push(ctx, NK_TREE_TAB, "Window", NK_MINIMIZED)) {
@@ -632,6 +654,7 @@ overview(struct nk_context *ctx)
             float id = 0;
             static int col_index = -1;
             static int line_index = -1;
+            static nk_bool show_markers = nk_true;
             float step = (2*3.141592654f) / 32;
 
             int i;
@@ -640,7 +663,10 @@ overview(struct nk_context *ctx)
             /* line chart */
             id = 0;
             index = -1;
+            nk_layout_row_dynamic(ctx, 15, 1);
+            nk_checkbox_label(ctx, "Show markers", &show_markers);
             nk_layout_row_dynamic(ctx, 100, 1);
+            ctx->style.chart.show_markers = show_markers;
             if (nk_chart_begin(ctx, NK_CHART_LINES, 32, -1.0f, 1.0f)) {
                 for (i = 0; i < 32; ++i) {
                     nk_flags res = nk_chart_push(ctx, (float)cos(id));

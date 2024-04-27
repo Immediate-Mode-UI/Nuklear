@@ -92,6 +92,7 @@ MainLoop(void* loopArg){
         if (evt.type == SDL_QUIT) running = nk_false;
         nk_sdl_handle_event(&evt);
     }
+    nk_sdl_handle_grab(); /* optional grabbing behavior */
     nk_input_end(ctx);
 
 
@@ -207,22 +208,6 @@ int main(int argc, char* argv[])
     nk_sdl_font_stash_end();
     /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
     /*nk_style_set_font(ctx, &roboto->handle)*/;}
-
-    /* style.c */
-    #ifdef INCLUDE_STYLE
-    /* ease regression testing during Nuklear release process; not needed for anything else */
-    #ifdef STYLE_WHITE
-    set_style(ctx, THEME_WHITE);
-    #elif defined(STYLE_RED)
-    set_style(ctx, THEME_RED);
-    #elif defined(STYLE_BLUE)
-    set_style(ctx, THEME_BLUE);
-    #elif defined(STYLE_DARK)
-    set_style(ctx, THEME_DARK);
-    #elif defined(STYLE_DRACULA)
-    set_style(ctx, THEME_DRACULA);
-    #endif
-    #endif
 
 #if defined(__EMSCRIPTEN__)
     #include <emscripten.h>
