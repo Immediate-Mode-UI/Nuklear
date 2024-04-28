@@ -15,7 +15,7 @@ overview(struct nk_context *ctx)
 
 #ifdef INCLUDE_STYLE
     /* styles */
-    static const char* themes[] = {"Black", "White", "Red", "Blue", "Dark"};
+    static const char* themes[] = {"Black", "White", "Red", "Blue", "Dark", "Dracula"};
     static int current_theme = 0;
 #endif
 
