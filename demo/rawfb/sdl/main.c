@@ -20,7 +20,7 @@
 #define NK_INCLUDE_SOFTWARE_FONT
 #include "../../../nuklear.h"
 #define NK_RAWFB_IMPLEMENTATION
-#include "nuklear_sdl_rawfb.h"
+#include "../nuklear_rawfb.h"
 
 /* ===============================================================
  *
@@ -132,6 +132,8 @@ int main(int argc, char **argv)
     struct nk_vec2 vec;
     struct nk_rect bounds = {40,40,0,0};
     struct rawfb_context *context;
+    struct rawfb_pl pl;
+    unsigned char tex_scratch[512 * 512];
 
     SDL_DisplayMode dm;
     SDL_Window *window;
@@ -164,8 +166,17 @@ int main(int argc, char **argv)
 
     surface = SDL_CreateRGBSurfaceWithFormat(0, dm.w-200, dm.h-200, 32, SDL_PIXELFORMAT_ARGB8888);
 
+    pl.bytesPerPixel = surface->format->BytesPerPixel;
+    pl.rshift = surface->format->Rshift;
+    pl.gshift = surface->format->Gshift;
+    pl.bshift = surface->format->Bshift;
+    pl.ashift = surface->format->Ashift;
+    pl.rloss = surface->format->Rloss;
+    pl.gloss = surface->format->Gloss;
+    pl.bloss = surface->format->Bloss;
+    pl.aloss = surface->format->Aloss;
 
-    context = nk_rawfb_init(surface, 13.0f);
+    context = nk_rawfb_init(surface->pixels, tex_scratch, surface->w, surface->h, surface->pitch, pl);
 
 
     while(1)

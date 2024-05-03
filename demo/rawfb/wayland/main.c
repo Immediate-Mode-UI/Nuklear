@@ -450,6 +450,7 @@ int main ()
     struct nk_wayland nk_wayland_ctx;
     struct wl_registry *registry;
     int running = 1;
+    struct rawfb_pl pl;
 
     //1. Initialize display
 	nk_wayland_ctx.display = wl_display_connect (NULL);
@@ -495,7 +496,17 @@ int main ()
     wl_surface_attach (nk_wayland_ctx.surface, nk_wayland_ctx.front_buffer, 0, 0);
     wl_surface_commit (nk_wayland_ctx.surface);
 
-    nk_rawfb_init(nk_wayland_ctx.data, nk_wayland_ctx.tex_scratch, WIDTH, HEIGHT, WIDTH*4, PIXEL_LAYOUT_XRGB_8888);
+    pl.bytesPerPixel = 4;
+    pl.ashift = 24;
+    pl.rshift = 16;
+    pl.gshift = 8;
+    pl.bshift = 0;
+    pl.aloss = 0;
+    pl.rloss = 0;
+    pl.gloss = 0;
+    pl.bloss = 0;
+
+    nk_rawfb_init(nk_wayland_ctx.data, nk_wayland_ctx.tex_scratch, WIDTH, HEIGHT, WIDTH*4, pl);
 
 
     //4. rendering UI
