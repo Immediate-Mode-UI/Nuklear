@@ -4499,12 +4499,26 @@ struct nk_mouse {
 
 struct nk_key {
     nk_bool down;
+    float down_time;
     unsigned int clicked;
 };
+
+#ifndef NK_INPUT_REPEATER_DELAY
+#define NK_INPUT_REPEATER_DELAY 0.33f
+#endif
+
+#ifndef NK_INPUT_REPEATER_INTERVAL
+#define NK_INPUT_REPEATER_INTERVAL 0.05f
+#endif
+
 struct nk_keyboard {
     struct nk_key keys[NK_KEY_MAX];
     char text[NK_INPUT_MAX];
     int text_len;
+    float repeater_delay;
+    float repeater_interval;
+    /* copied from nk_context.delta_time_seconds on nk_end_input call */
+    float delta;
 };
 
 struct nk_input {
