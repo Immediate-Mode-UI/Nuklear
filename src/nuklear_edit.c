@@ -247,9 +247,24 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         int old_mode = edit->mode;
         for (i = 0; i < NK_KEY_MAX; ++i) {
             if (i == NK_KEY_ENTER || i == NK_KEY_TAB) continue; /* special case */
+
+            if (!nk_input_is_key_down(in, (enum nk_keys)i)){
+                in->keyboard.keys[i].down_time = 0.0f;
+                continue;
+            }
+
+            in->keyboard.keys[i].down_time += in->keyboard.delta;
+
             if (nk_input_is_key_pressed(in, (enum nk_keys)i)) {
+                /* single press or begin holding */
                 nk_textedit_key(edit, (enum nk_keys)i, shift_mod, font, row_height);
                 cursor_follow = nk_true;
+                in->keyboard.keys[i].down_time = 0.0f;
+            } else if (in->keyboard.keys[i].down_time >= in->keyboard.repeater_delay) {
+                /* held for at least delay */
+                nk_textedit_key(edit, (enum nk_keys)i, shift_mod, font, row_height);
+                cursor_follow = nk_true;
+                in->keyboard.keys[i].down_time -= in->keyboard.repeater_interval;
             }
         }
         if (old_mode != edit->mode) {
