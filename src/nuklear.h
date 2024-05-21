@@ -391,7 +391,7 @@ NK_API nk_bool nk_init_fixed(struct nk_context*, void *memory, nk_size size, con
 /// interface to nuklear. Can be useful for cases like monitoring memory consumption.
 ///
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// nk_bool nk_init(struct nk_context *ctx, struct nk_allocator *alloc, const struct nk_user_font *font);
+/// nk_bool nk_init(struct nk_context *ctx, const struct nk_allocator *alloc, const struct nk_user_font *font);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
@@ -402,7 +402,7 @@ NK_API nk_bool nk_init_fixed(struct nk_context*, void *memory, nk_size size, con
 ///
 /// Returns either `false(0)` on failure or `true(1)` on success.
 */
-NK_API nk_bool nk_init(struct nk_context*, struct nk_allocator*, const struct nk_user_font*);
+NK_API nk_bool nk_init(struct nk_context*, const struct nk_allocator*, const struct nk_user_font*);
 /*/// #### nk_init_custom
 /// Initializes a `nk_context` struct from two different either fixed or growing
 /// buffers. The first buffer is for allocating draw commands while the second buffer is
@@ -3910,8 +3910,8 @@ NK_API const nk_rune *nk_font_korean_glyph_ranges(void);
 #ifdef NK_INCLUDE_DEFAULT_ALLOCATOR
 NK_API void nk_font_atlas_init_default(struct nk_font_atlas*);
 #endif
-NK_API void nk_font_atlas_init(struct nk_font_atlas*, struct nk_allocator*);
-NK_API void nk_font_atlas_init_custom(struct nk_font_atlas*, struct nk_allocator *persistent, struct nk_allocator *transient);
+NK_API void nk_font_atlas_init(struct nk_font_atlas*, const struct nk_allocator*);
+NK_API void nk_font_atlas_init_custom(struct nk_font_atlas*, const struct nk_allocator *persistent, const struct nk_allocator *transient);
 NK_API void nk_font_atlas_begin(struct nk_font_atlas*);
 NK_API struct nk_font_config nk_font_config(float pixel_height);
 NK_API struct nk_font *nk_font_atlas_add(struct nk_font_atlas*, const struct nk_font_config*);
@@ -4188,7 +4188,7 @@ NK_API nk_bool nk_filter_binary(const struct nk_text_edit*, nk_rune unicode);
 #ifdef NK_INCLUDE_DEFAULT_ALLOCATOR
 NK_API void nk_textedit_init_default(struct nk_text_edit*);
 #endif
-NK_API void nk_textedit_init(struct nk_text_edit*, struct nk_allocator*, nk_size size);
+NK_API void nk_textedit_init(struct nk_text_edit*, const struct nk_allocator*, nk_size size);
 NK_API void nk_textedit_init_fixed(struct nk_text_edit*, void *memory, nk_size size);
 NK_API void nk_textedit_free(struct nk_text_edit*);
 NK_API void nk_textedit_text(struct nk_text_edit*, const char*, int total_len);
