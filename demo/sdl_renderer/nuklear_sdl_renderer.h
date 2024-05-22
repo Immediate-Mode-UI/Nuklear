@@ -18,6 +18,7 @@ NK_API void                 nk_sdl_font_stash_end(void);
 NK_API int                  nk_sdl_handle_event(SDL_Event *evt);
 NK_API void                 nk_sdl_render(enum nk_anti_aliasing);
 NK_API void                 nk_sdl_shutdown(void);
+NK_API void                 nk_sdl_handle_grab(void);
 
 #if SDL_COMPILEDVERSION < SDL_VERSIONNUM(2, 0, 22)
 /* Metal API does not support cliprects with negative coordinates or large

@@ -27,6 +27,7 @@ NK_API void                 nk_sdl_render(enum nk_anti_aliasing , int max_vertex
 NK_API void                 nk_sdl_shutdown(void);
 NK_API void                 nk_sdl_device_destroy(void);
 NK_API void                 nk_sdl_device_create(void);
+NK_API void                 nk_sdl_handle_grab(void);
 
 #endif
 
