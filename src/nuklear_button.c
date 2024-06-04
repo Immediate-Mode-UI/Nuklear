@@ -80,10 +80,15 @@ nk_button_behavior(nk_flags *state, struct nk_rect r,
 #endif
         }
     }
-    if (*state & NK_WIDGET_STATE_HOVER && !nk_input_is_mouse_prev_hovering_rect(i, r))
-        *state |= NK_WIDGET_STATE_ENTERED;
-    else if (nk_input_is_mouse_prev_hovering_rect(i, r))
-        *state |= NK_WIDGET_STATE_LEFT;
+
+    if (*state & NK_WIDGET_STATE_HOVER) {
+        if (!nk_input_is_mouse_prev_hovering_rect(i, r))
+            *state |= NK_WIDGET_STATE_ENTERED;
+    } else {
+        if (nk_input_is_mouse_prev_hovering_rect(i, r))
+            *state |= NK_WIDGET_STATE_LEFT;
+    }
+
     return ret;
 }
 NK_LIB const struct nk_style_item*
