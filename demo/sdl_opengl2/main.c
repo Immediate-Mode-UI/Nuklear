@@ -116,19 +116,6 @@ main(int argc, char *argv[])
     /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
     /*nk_style_set_font(ctx, &roboto->handle)*/;}
 
-    #ifdef INCLUDE_STYLE
-    /* ease regression testing during Nuklear release process; not needed for anything else */
-    #ifdef STYLE_WHITE
-    set_style(ctx, THEME_WHITE);
-    #elif defined(STYLE_RED)
-    set_style(ctx, THEME_RED);
-    #elif defined(STYLE_BLUE)
-    set_style(ctx, THEME_BLUE);
-    #elif defined(STYLE_DARK)
-    set_style(ctx, THEME_DARK);
-    #endif
-    #endif
-
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
     while (running)
     {

@@ -41,7 +41,7 @@
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
-#define INCLUDE_OVERVIEW
+/*#define INCLUDE_OVERVIEW */
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
@@ -113,20 +113,6 @@ int main(void)
     font = nk_allegro5_font_create_from_file("../../../extra_font/Roboto-Regular.ttf", 12, 0);
 
     ctx = nk_allegro5_init(font, display, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-    /* style.c */
-    #ifdef INCLUDE_STYLE
-    /* ease regression testing during Nuklear release process; not needed for anything else */
-    #ifdef STYLE_WHITE
-    set_style(ctx, THEME_WHITE);
-    #elif defined(STYLE_RED)
-    set_style(ctx, THEME_RED);
-    #elif defined(STYLE_BLUE)
-    set_style(ctx, THEME_BLUE);
-    #elif defined(STYLE_DARK)
-    set_style(ctx, THEME_DARK);
-    #endif
-    #endif
 
     while(1)
     {
