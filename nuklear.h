@@ -524,6 +524,10 @@ enum nk_symbol_type {
     NK_SYMBOL_TRIANGLE_RIGHT,
     NK_SYMBOL_PLUS,
     NK_SYMBOL_MINUS,
+    NK_SYMBOL_TRIANGLE_UP_OUTLINE,
+    NK_SYMBOL_TRIANGLE_DOWN_OUTLINE,
+    NK_SYMBOL_TRIANGLE_LEFT_OUTLINE,
+    NK_SYMBOL_TRIANGLE_RIGHT_OUTLINE,
     NK_SYMBOL_MAX
 };
 /* =============================================================================
@@ -613,7 +617,7 @@ NK_API nk_bool nk_init_fixed(struct nk_context*, void *memory, nk_size size, con
 /// interface to nuklear. Can be useful for cases like monitoring memory consumption.
 ///
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// nk_bool nk_init(struct nk_context *ctx, struct nk_allocator *alloc, const struct nk_user_font *font);
+/// nk_bool nk_init(struct nk_context *ctx, const struct nk_allocator *alloc, const struct nk_user_font *font);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
@@ -624,7 +628,7 @@ NK_API nk_bool nk_init_fixed(struct nk_context*, void *memory, nk_size size, con
 ///
 /// Returns either `false(0)` on failure or `true(1)` on success.
 */
-NK_API nk_bool nk_init(struct nk_context*, struct nk_allocator*, const struct nk_user_font*);
+NK_API nk_bool nk_init(struct nk_context*, const struct nk_allocator*, const struct nk_user_font*);
 /*/// #### nk_init_custom
 /// Initializes a `nk_context` struct from two different either fixed or growing
 /// buffers. The first buffer is for allocating draw commands while the second buffer is
@@ -3849,7 +3853,7 @@ NK_API const char* nk_utf_at(const char *buffer, int length, int index, nk_rune 
 /// Finally the most complex API wise is using nuklear's font baking API.
 //
 /// #### Using your own implementation without vertex buffer output
-/// 
+///
 /// So first up the easiest way to do font handling is by just providing a
 /// `nk_user_font` struct which only requires the height in pixel of the used
 /// font and a callback to calculate the width of a string. This way of handling
@@ -3872,12 +3876,12 @@ NK_API const char* nk_utf_at(const char *buffer, int length, int index, nk_rune 
 ///     font.userdata.ptr = &your_font_class_or_struct;
 ///     font.height = your_font_height;
 ///     font.width = your_text_width_calculation;
-/// 
+///
 ///     struct nk_context ctx;
 ///     nk_init_default(&ctx, &font);
 /// ```
 /// #### Using your own implementation with vertex buffer output
-/// 
+///
 /// While the first approach works fine if you don't want to use the optional
 /// vertex buffer output it is not enough if you do. To get font handling working
 /// for these cases you have to provide two additional parameters inside the
@@ -3906,44 +3910,44 @@ NK_API const char* nk_utf_at(const char *buffer, int length, int index, nk_rune 
 ///         glyph.offset.x = ...;
 ///         glyph.offset.y = ...;
 ///     }
-/// 
+///
 ///     struct nk_user_font font;
 ///     font.userdata.ptr = &your_font_class_or_struct;
 ///     font.height = your_font_height;
 ///     font.width = your_text_width_calculation;
 ///     font.query = query_your_font_glyph;
 ///     font.texture.id = your_font_texture;
-/// 
+///
 ///     struct nk_context ctx;
 ///     nk_init_default(&ctx, &font);
 /// ```
 ///
 /// #### Nuklear font baker
-/// 
+///
 /// The final approach if you do not have a font handling functionality or don't
 /// want to use it in this library is by using the optional font baker.
 /// The font baker APIs can be used to create a font plus font atlas texture
 /// and can be used with or without the vertex buffer output.
-/// 
+///
 /// It still uses the `nk_user_font` struct and the two different approaches
 /// previously stated still work. The font baker is not located inside
 /// `nk_context` like all other systems since it can be understood as more of
 /// an extension to nuklear and does not really depend on any `nk_context` state.
-/// 
+///
 /// Font baker need to be initialized first by one of the nk_font_atlas_init_xxx
 /// functions. If you don't care about memory just call the default version
 /// `nk_font_atlas_init_default` which will allocate all memory from the standard library.
 /// If you want to control memory allocation but you don't care if the allocated
 /// memory is temporary and therefore can be freed directly after the baking process
 /// is over or permanent you can call `nk_font_atlas_init`.
-/// 
+///
 /// After successfully initializing the font baker you can add Truetype(.ttf) fonts from
 /// different sources like memory or from file by calling one of the `nk_font_atlas_add_xxx`.
 /// functions. Adding font will permanently store each font, font config and ttf memory block(!)
 /// inside the font atlas and allows to reuse the font atlas. If you don't want to reuse
 /// the font baker by for example adding additional fonts you can call
 /// `nk_font_atlas_cleanup` after the baking process is over (after calling nk_font_atlas_end).
-/// 
+///
 /// As soon as you added all fonts you wanted you can now start the baking process
 /// for every selected glyph to image by calling `nk_font_atlas_bake`.
 /// The baking process returns image memory, width and height which can be used to
@@ -3954,12 +3958,12 @@ NK_API const char* nk_utf_at(const char *buffer, int length, int index, nk_rune 
 /// to your font texture or object and optionally fills a `struct nk_draw_null_texture`
 /// which can be used for the optional vertex output. If you don't want it just
 /// set the argument to `NULL`.
-/// 
+///
 /// At this point you are done and if you don't want to reuse the font atlas you
 /// can call `nk_font_atlas_cleanup` to free all truetype blobs and configuration
 /// memory. Finally if you don't use the font atlas and any of it's fonts anymore
 /// you need to call `nk_font_atlas_clear` to free all memory still being used.
-/// 
+///
 /// ```c
 ///     struct nk_font_atlas atlas;
 ///     nk_font_atlas_init_default(&atlas);
@@ -3968,11 +3972,11 @@ NK_API const char* nk_utf_at(const char *buffer, int length, int index, nk_rune 
 ///     nk_font *font2 = nk_font_atlas_add_from_file(&atlas, "Path/To/Your/TTF_Font2.ttf", 16, 0);
 ///     const void* img = nk_font_atlas_bake(&atlas, &img_width, &img_height, NK_FONT_ATLAS_RGBA32);
 ///     nk_font_atlas_end(&atlas, nk_handle_id(texture), 0);
-/// 
+///
 ///     struct nk_context ctx;
 ///     nk_init_default(&ctx, &font->handle);
 ///     while (1) {
-/// 
+///
 ///     }
 ///     nk_font_atlas_clear(&atlas);
 /// ```
@@ -4132,8 +4136,8 @@ NK_API const nk_rune *nk_font_korean_glyph_ranges(void);
 #ifdef NK_INCLUDE_DEFAULT_ALLOCATOR
 NK_API void nk_font_atlas_init_default(struct nk_font_atlas*);
 #endif
-NK_API void nk_font_atlas_init(struct nk_font_atlas*, struct nk_allocator*);
-NK_API void nk_font_atlas_init_custom(struct nk_font_atlas*, struct nk_allocator *persistent, struct nk_allocator *transient);
+NK_API void nk_font_atlas_init(struct nk_font_atlas*, const struct nk_allocator*);
+NK_API void nk_font_atlas_init_custom(struct nk_font_atlas*, const struct nk_allocator *persistent, const struct nk_allocator *transient);
 NK_API void nk_font_atlas_begin(struct nk_font_atlas*);
 NK_API struct nk_font_config nk_font_config(float pixel_height);
 NK_API struct nk_font *nk_font_atlas_add(struct nk_font_atlas*, const struct nk_font_config*);
@@ -4167,7 +4171,7 @@ NK_API void nk_font_atlas_clear(struct nk_font_atlas*);
 /// not as much control is needed.
 /// In general all memory inside this library can be provided from the user in
 /// three different ways.
-/// 
+///
 /// The first way and the one providing most control is by just passing a fixed
 /// size memory block. In this case all control lies in the hand of the user
 /// since he can exactly control where the memory comes from and how much memory
@@ -4176,13 +4180,13 @@ NK_API void nk_font_atlas_clear(struct nk_font_atlas*);
 /// you have to take over the resizing. While being a fixed sized buffer sounds
 /// quite limiting, it is very effective in this library since the actual memory
 /// consumption is quite stable and has a fixed upper bound for a lot of cases.
-/// 
+///
 /// If you don't want to think about how much memory the library should allocate
 /// at all time or have a very dynamic UI with unpredictable memory consumption
 /// habits but still want control over memory allocation you can use the dynamic
 /// allocator based API. The allocator consists of two callbacks for allocating
 /// and freeing memory and optional userdata so you can plugin your own allocator.
-/// 
+///
 /// The final and easiest way can be used by defining
 /// NK_INCLUDE_DEFAULT_ALLOCATOR which uses the standard library memory
 /// allocation functions malloc and free and takes over complete control over
@@ -4410,7 +4414,7 @@ NK_API nk_bool nk_filter_binary(const struct nk_text_edit*, nk_rune unicode);
 #ifdef NK_INCLUDE_DEFAULT_ALLOCATOR
 NK_API void nk_textedit_init_default(struct nk_text_edit*);
 #endif
-NK_API void nk_textedit_init(struct nk_text_edit*, struct nk_allocator*, nk_size size);
+NK_API void nk_textedit_init(struct nk_text_edit*, const struct nk_allocator*, nk_size size);
 NK_API void nk_textedit_init_fixed(struct nk_text_edit*, void *memory, nk_size size);
 NK_API void nk_textedit_free(struct nk_text_edit*);
 NK_API void nk_textedit_text(struct nk_text_edit*, const char*, int total_len);
@@ -4437,34 +4441,34 @@ NK_API void nk_textedit_redo(struct nk_text_edit*);
 /// started. It is probably important to note that the command buffer is the main
 /// drawing API and the optional vertex buffer API only takes this format and
 /// converts it into a hardware accessible format.
-/// 
+///
 /// To use the command queue to draw your own widgets you can access the
 /// command buffer of each window by calling `nk_window_get_canvas` after
 /// previously having called `nk_begin`:
-/// 
+///
 /// ```c
 ///     void draw_red_rectangle_widget(struct nk_context *ctx)
 ///     {
 ///         struct nk_command_buffer *canvas;
 ///         struct nk_input *input = &ctx->input;
 ///         canvas = nk_window_get_canvas(ctx);
-/// 
+///
 ///         struct nk_rect space;
 ///         enum nk_widget_layout_states state;
 ///         state = nk_widget(&space, ctx);
 ///         if (!state) return;
-/// 
+///
 ///         if (state != NK_WIDGET_ROM)
 ///             update_your_widget_by_user_input(...);
 ///         nk_fill_rect(canvas, space, 0, nk_rgb(255,0,0));
 ///     }
-/// 
+///
 ///     if (nk_begin(...)) {
 ///         nk_layout_row_dynamic(ctx, 25, 1);
 ///         draw_red_rectangle_widget(ctx);
 ///     }
 ///     nk_end(..)
-/// 
+///
 /// ```
 /// Important to know if you want to create your own widgets is the `nk_widget`
 /// call. It allocates space on the panel reserved for this widget to be used,
@@ -4765,7 +4769,7 @@ NK_API nk_bool nk_input_is_key_down(const struct nk_input*, enum nk_keys);
 /// library since converting the default library draw command output is done by
 /// just calling `nk_convert` but I decided to still make this library accessible
 /// since it can be useful.
-/// 
+///
 /// The draw list is based on a path buffering and polygon and polyline
 /// rendering API which allows a lot of ways to draw 2D content to screen.
 /// In fact it is probably more powerful than needed but allows even more crazy
@@ -5220,6 +5224,7 @@ struct nk_style_chart {
     struct nk_vec2 padding;
     float color_factor;
     float disabled_factor;
+    nk_bool show_markers;
 };
 
 struct nk_style_combo {
@@ -5410,6 +5415,7 @@ struct nk_chart_slot {
     int count;
     struct nk_vec2 last;
     int index;
+    nk_bool show_markers;
 };
 
 struct nk_chart {
@@ -5579,19 +5585,19 @@ struct nk_window {
 /// red button you can temporarily push the old button color onto a stack
 /// draw the button with a red color and then you just pop the old color
 /// back from the stack:
-/// 
+///
 ///     nk_style_push_style_item(ctx, &ctx->style.button.normal, nk_style_item_color(nk_rgb(255,0,0)));
 ///     nk_style_push_style_item(ctx, &ctx->style.button.hover, nk_style_item_color(nk_rgb(255,0,0)));
 ///     nk_style_push_style_item(ctx, &ctx->style.button.active, nk_style_item_color(nk_rgb(255,0,0)));
 ///     nk_style_push_vec2(ctx, &cx->style.button.padding, nk_vec2(2,2));
-/// 
+///
 ///     nk_button(...);
-/// 
+///
 ///     nk_style_pop_style_item(ctx);
 ///     nk_style_pop_style_item(ctx);
 ///     nk_style_pop_style_item(ctx);
 ///     nk_style_pop_vec2(ctx);
-/// 
+///
 /// Nuklear has a stack for style_items, float properties, vector properties,
 /// flags, colors, fonts and for button_behavior. Each has it's own fixed size stack
 /// which can be changed at compile time.
@@ -5968,7 +5974,7 @@ NK_LIB struct nk_vec2 nk_text_calculate_text_bounds(const struct nk_user_font *f
 NK_LIB int nk_strfmt(char *buf, int buf_size, const char *fmt, va_list args);
 #endif
 #ifdef NK_INCLUDE_STANDARD_IO
-NK_LIB char *nk_file_load(const char* path, nk_size* siz, struct nk_allocator *alloc);
+NK_LIB char *nk_file_load(const char* path, nk_size* siz, const struct nk_allocator *alloc);
 #endif
 
 /* buffer */
@@ -6013,7 +6019,7 @@ NK_LIB struct nk_window *nk_find_window(struct nk_context *ctx, nk_hash hash, co
 NK_LIB void nk_insert_window(struct nk_context *ctx, struct nk_window *win, enum nk_window_insert_location loc);
 
 /* pool */
-NK_LIB void nk_pool_init(struct nk_pool *pool, struct nk_allocator *alloc, unsigned int capacity);
+NK_LIB void nk_pool_init(struct nk_pool *pool, const struct nk_allocator *alloc, unsigned int capacity);
 NK_LIB void nk_pool_free(struct nk_pool *pool);
 NK_LIB void nk_pool_init_fixed(struct nk_pool *pool, void *memory, nk_size size);
 NK_LIB struct nk_page_element *nk_pool_alloc(struct nk_pool *pool);
@@ -7490,7 +7496,7 @@ nk_murmur_hash(const void * key, int len, nk_hash seed)
 }
 #ifdef NK_INCLUDE_STANDARD_IO
 NK_LIB char*
-nk_file_load(const char* path, nk_size* siz, struct nk_allocator *alloc)
+nk_file_load(const char* path, nk_size* siz, const struct nk_allocator *alloc)
 {
     char *buf;
     FILE *fd;
@@ -16679,7 +16685,7 @@ nk_font_baker_memory(nk_size *temp, int *glyph_count,
     *temp += nk_build_align + nk_baker_align;
 }
 NK_INTERN struct nk_font_baker*
-nk_font_baker(void *memory, int glyph_count, int count, struct nk_allocator *alloc)
+nk_font_baker(void *memory, int glyph_count, int count, const struct nk_allocator *alloc)
 {
     struct nk_font_baker *baker;
     if (!memory) return 0;
@@ -16696,7 +16702,7 @@ NK_INTERN int
 nk_font_bake_pack(struct nk_font_baker *baker,
     nk_size *image_memory, int *width, int *height, struct nk_recti *custom,
     const struct nk_font_config *config_list, int count,
-    struct nk_allocator *alloc)
+    const struct nk_allocator *alloc)
 {
     NK_STORAGE const nk_size max_height = 1024 * 32;
     const struct nk_font_config *config_iter, *it;
@@ -16725,7 +16731,7 @@ nk_font_bake_pack(struct nk_font_baker *baker,
         it = config_iter;
         do {
             struct stbtt_fontinfo *font_info = &baker->build[i++].info;
-            font_info->userdata = alloc;
+            font_info->userdata = (void*)alloc;
 
             if (!stbtt_InitFont(font_info, (const unsigned char*)it->ttf_blob, stbtt_GetFontOffsetForIndex((const unsigned char*)it->ttf_blob, 0)))
                 return nk_false;
@@ -16733,7 +16739,7 @@ nk_font_bake_pack(struct nk_font_baker *baker,
     }
     *height = 0;
     *width = (total_glyph_count > 1000) ? 1024 : 512;
-    stbtt_PackBegin(&baker->spc, 0, (int)*width, (int)max_height, 0, 1, alloc);
+    stbtt_PackBegin(&baker->spc, 0, (int)*width, (int)max_height, 0, 1, (void*)alloc);
     {
         int input_i = 0;
         int range_n = 0;
@@ -17426,7 +17432,7 @@ nk_font_atlas_init_default(struct nk_font_atlas *atlas)
 }
 #endif
 NK_API void
-nk_font_atlas_init(struct nk_font_atlas *atlas, struct nk_allocator *alloc)
+nk_font_atlas_init(struct nk_font_atlas *atlas, const struct nk_allocator *alloc)
 {
     NK_ASSERT(atlas);
     NK_ASSERT(alloc);
@@ -17437,7 +17443,7 @@ nk_font_atlas_init(struct nk_font_atlas *atlas, struct nk_allocator *alloc)
 }
 NK_API void
 nk_font_atlas_init_custom(struct nk_font_atlas *atlas,
-    struct nk_allocator *permanent, struct nk_allocator *temporary)
+    const struct nk_allocator *permanent, const struct nk_allocator *temporary)
 {
     NK_ASSERT(atlas);
     NK_ASSERT(permanent);
@@ -18678,6 +18684,7 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     chart->rounding         = 0;
     chart->color_factor     = 1.0f;
     chart->disabled_factor  = NK_WIDGET_DISABLED_FACTOR;
+    chart->show_markers     = nk_true;
 
     /* combo */
     combo = &style->combo;
@@ -19088,7 +19095,7 @@ nk_init_custom(struct nk_context *ctx, struct nk_buffer *cmds,
     return 1;
 }
 NK_API nk_bool
-nk_init(struct nk_context *ctx, struct nk_allocator *alloc,
+nk_init(struct nk_context *ctx, const struct nk_allocator *alloc,
     const struct nk_user_font *font)
 {
     NK_ASSERT(alloc);
@@ -19377,7 +19384,7 @@ nk__next(struct nk_context *ctx, const struct nk_command *cmd)
  *
  * ===============================================================*/
 NK_LIB void
-nk_pool_init(struct nk_pool *pool, struct nk_allocator *alloc,
+nk_pool_init(struct nk_pool *pool, const struct nk_allocator *alloc,
     unsigned int capacity)
 {
     NK_ASSERT(capacity >= 1);
@@ -19900,7 +19907,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
                 nk_draw_nine_slice(out, body, &style->window.fixed_background.data.slice, nk_white);
                 break;
             case NK_STYLE_ITEM_COLOR:
-                nk_fill_rect(out, body, 0, style->window.fixed_background.data.color);
+                nk_fill_rect(out, body, style->window.rounding, style->window.fixed_background.data.color);
                 break;
         }
     }
@@ -20096,7 +20103,7 @@ nk_panel_end(struct nk_context *ctx)
                 : (window->bounds.y + window->bounds.h));
         struct nk_rect b = window->bounds;
         b.h = padding_y - window->bounds.y;
-        nk_stroke_rect(out, b, 0, layout->border, border_color);
+        nk_stroke_rect(out, b, style->window.rounding, layout->border, border_color);
     }
 
     /* scaler */
@@ -24077,6 +24084,19 @@ nk_draw_symbol(struct nk_command_buffer *out, enum nk_symbol_type type,
         nk_fill_triangle(out, points[0].x, points[0].y, points[1].x, points[1].y,
             points[2].x, points[2].y, foreground);
     } break;
+    case NK_SYMBOL_TRIANGLE_UP_OUTLINE:
+    case NK_SYMBOL_TRIANGLE_DOWN_OUTLINE:
+    case NK_SYMBOL_TRIANGLE_LEFT_OUTLINE:
+    case NK_SYMBOL_TRIANGLE_RIGHT_OUTLINE: {
+        enum nk_heading heading;
+        struct nk_vec2 points[3];
+        heading = (type == NK_SYMBOL_TRIANGLE_RIGHT_OUTLINE) ? NK_RIGHT :
+            (type == NK_SYMBOL_TRIANGLE_LEFT_OUTLINE) ? NK_LEFT:
+            (type == NK_SYMBOL_TRIANGLE_UP_OUTLINE) ? NK_UP: NK_DOWN;
+        nk_triangle_from_direction(points, content, 0, 0, heading);
+        nk_stroke_triangle(out, points[0].x, points[0].y, points[1].x, points[1].y,
+            points[2].x, points[2].y, border_width, foreground);
+    } break;
     default:
     case NK_SYMBOL_NONE:
     case NK_SYMBOL_MAX: break;
@@ -27201,7 +27221,7 @@ nk_textedit_init_fixed(struct nk_text_edit *state, void *memory, nk_size size)
     nk_str_init_fixed(&state->string, memory, size);
 }
 NK_API void
-nk_textedit_init(struct nk_text_edit *state, struct nk_allocator *alloc, nk_size size)
+nk_textedit_init(struct nk_text_edit *state, const struct nk_allocator *alloc, nk_size size)
 {
     NK_ASSERT(state);
     NK_ASSERT(alloc);
@@ -28177,7 +28197,9 @@ nk_draw_property(struct nk_command_buffer *out, const struct nk_style_property *
 
     /* draw label */
     text.padding = nk_vec2(0,0);
-    nk_widget_text(out, *label, name, len, &text, NK_TEXT_CENTERED, font);
+    if (name && name[0] != '#') {
+        nk_widget_text(out, *label, name, len, &text, NK_TEXT_CENTERED, font);
+    }
 }
 NK_LIB void
 nk_do_property(nk_flags *ws,
@@ -28195,7 +28217,7 @@ nk_do_property(nk_flags *ws,
         nk_filter_float
     };
     nk_bool active, old;
-    int num_len = 0, name_len;
+    int num_len = 0, name_len = 0;
     char string[NK_MAX_NUMBER_BUFFER];
     float size;
 
@@ -28215,7 +28237,9 @@ nk_do_property(nk_flags *ws,
     left.y = property.y + style->border + property.h/2.0f - left.h/2;
 
     /* text label */
-    name_len = nk_strlen(name);
+    if (name && name[0] != '#') {
+        name_len = nk_strlen(name);
+    }
     size = font->width(font->userdata, font->height, name, name_len);
     label.x = left.x + left.w + style->padding.x;
     label.w = (float)size + 2 * style->padding.x;
@@ -28629,7 +28653,8 @@ nk_chart_begin_colored(struct nk_context *ctx, enum nk_chart_type type,
     slot->highlight = highlight;
     slot->min = NK_MIN(min_value, max_value);
     slot->max = NK_MAX(min_value, max_value);
-    slot->range = slot->max - slot->min;}
+    slot->range = slot->max - slot->min;
+    slot->show_markers = style->show_markers;}
 
     /* draw chart background */
     background = &style->background;
@@ -28681,7 +28706,8 @@ nk_chart_add_slot_colored(struct nk_context *ctx, const enum nk_chart_type type,
     slot->highlight = highlight;
     slot->min = NK_MIN(min_value, max_value);
     slot->max = NK_MAX(min_value, max_value);
-    slot->range = slot->max - slot->min;}
+    slot->range = slot->max - slot->min;
+    slot->show_markers = style->show_markers;}
 }
 NK_API void
 nk_chart_add_slot(struct nk_context *ctx, const enum nk_chart_type type,
@@ -28728,7 +28754,9 @@ nk_chart_push_line(struct nk_context *ctx, struct nk_window *win,
                 i->mouse.buttons[NK_BUTTON_LEFT].clicked) ? NK_CHART_CLICKED: 0;
             color = g->slots[slot].highlight;
         }
-        nk_fill_rect(out, bounds, 0, color);
+        if (g->slots[slot].show_markers) {
+            nk_fill_rect(out, bounds, 0, color);
+        }
         g->slots[slot].index += 1;
         return ret;
     }
@@ -28752,7 +28780,9 @@ nk_chart_push_line(struct nk_context *ctx, struct nk_window *win,
             color = g->slots[slot].highlight;
         }
     }
-    nk_fill_rect(out, nk_rect(cur.x - 2, cur.y - 2, 4, 4), 0, color);
+    if (g->slots[slot].show_markers) {
+        nk_fill_rect(out, nk_rect(cur.x - 2, cur.y - 2, 4, 4), 0, color);
+    }
 
     /* save current data point position */
     g->slots[slot].last.x = cur.x;

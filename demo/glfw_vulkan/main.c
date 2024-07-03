@@ -35,7 +35,7 @@
  * ===============================================================*/
 /* This are some code examples to provide a small overview of what can be
  * done with this library. To try out an example uncomment the defines */
-#define INCLUDE_ALL
+/*#define INCLUDE_ALL */
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
@@ -758,7 +758,6 @@ bool create_swap_chain(struct vulkan_demo *demo) {
     VkResult result;
     VkSwapchainCreateInfoKHR create_info;
     uint32_t queue_family_indices[2];
-    uint32_t old_swap_chain_images_len;
     bool ret = false;
 
     queue_family_indices[0] = (uint32_t)demo->indices.graphics;
@@ -815,20 +814,10 @@ bool create_swap_chain(struct vulkan_demo *demo) {
         goto cleanup;
     }
 
-    old_swap_chain_images_len = demo->swap_chain_images_len;
     result = vkGetSwapchainImagesKHR(demo->device, demo->swap_chain,
                                      &demo->swap_chain_images_len, NULL);
     if (result != VK_SUCCESS) {
         fprintf(stderr, "vkGetSwapchainImagesKHR failed: %d\n", result);
-        goto cleanup;
-    }
-    if (old_swap_chain_images_len > 0 &&
-        old_swap_chain_images_len != demo->swap_chain_images_len) {
-        fprintf(stderr,
-                "number of assigned swap chain images changed between "
-                "runs. old: %u, new: %u\n",
-                (unsigned)old_swap_chain_images_len,
-                (unsigned)demo->swap_chain_images_len);
         goto cleanup;
     }
     if (demo->swap_chain_images == NULL) {
@@ -2115,20 +2104,6 @@ int main(void) {
         /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
     /*nk_style_set_font(ctx, &droid->handle);*/}
 
-#ifdef INCLUDE_STYLE
-    /* ease regression testing during Nuklear release process; not needed for
-     * anything else */
-#ifdef STYLE_WHITE
-    set_style(ctx, THEME_WHITE);
-#elif defined(STYLE_RED)
-    set_style(ctx, THEME_RED);
-#elif defined(STYLE_BLUE)
-    set_style(ctx, THEME_BLUE);
-#elif defined(STYLE_DARK)
-    set_style(ctx, THEME_DARK);
-#endif
-#endif
-
     img = nk_image_ptr(demo.demo_texture_image_view);
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
     while (!glfwWindowShouldClose(demo.win)) {
@@ -2219,7 +2194,7 @@ int main(void) {
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             continue;
         }
-        if (result != VK_SUCCESS) {
+        if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
             fprintf(stderr, "vkAcquireNextImageKHR failed: %d\n", result);
             return false;
         }
