@@ -7174,8 +7174,8 @@ EM_BOOL Emscripten_on_keydown(int eventType, const EmscriptenKeyboardEvent* e, v
 
 	RGFW_keyboard[RGFW_apiKeyCodeToRGFW(e->keyCode)].prev = RGFW_keyboard[RGFW_apiKeyCodeToRGFW(e->keyCode)].current;
 	RGFW_keyboard[RGFW_apiKeyCodeToRGFW(e->keyCode)].current = 1;
-	RGFW_keyCallback(RGFW_root, e->keyCode, RGFW_events[RGFW_eventLen].keyName, 0, 1);
-
+	RGFW_keyCallback(RGFW_root, RGFW_apiKeyCodeToRGFW(e->keyCode), RGFW_events[RGFW_eventLen].keyName, 0, 1);
+	
     return EM_TRUE;
 }
 
@@ -7191,7 +7191,7 @@ EM_BOOL Emscripten_on_keyup(int eventType, const EmscriptenKeyboardEvent* e, voi
 	RGFW_keyboard[RGFW_apiKeyCodeToRGFW(e->keyCode)].prev = RGFW_keyboard[RGFW_apiKeyCodeToRGFW(e->keyCode)].current;
 	RGFW_keyboard[RGFW_apiKeyCodeToRGFW(e->keyCode)].current = 0;
 
-	RGFW_keyCallback(RGFW_root, e->keyCode, RGFW_events[RGFW_eventLen].keyName, 0, 0);
+	RGFW_keyCallback(RGFW_root, RGFW_apiKeyCodeToRGFW(e->keyCode), RGFW_events[RGFW_eventLen].keyName, 0, 0);
 
     return EM_TRUE;
 }
