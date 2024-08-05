@@ -40,6 +40,7 @@ nk_input_end(struct nk_context *ctx)
         in->mouse.ungrab = 0;
         in->mouse.grab = 0;
     }
+    ctx->input.keyboard.delta = ctx->delta_time_seconds;
 }
 NK_API void
 nk_input_motion(struct nk_context *ctx, int x, int y)
