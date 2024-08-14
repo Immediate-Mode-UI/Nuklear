@@ -201,6 +201,22 @@ typedef nk_uint nk_hash;
 typedef nk_uint nk_flags;
 typedef nk_uint nk_rune;
 
+/* UTF8 Private Use Area in the Basic Multilingual Plane
+   (codepoints U+E000 -> U+F8FF) are used by Nuklear to pass instructions
+   within text to modify rendering settings on the fly */
+#define NK_UTF_IS_INSTRUCTION(codepoint) \
+    (((nk_rune)(codepoint)) >= 0xE000 && ((nk_rune)(codepoint)) <= 0xF8FF)
+
+/* C89 does not support unicode literals so hex literals are used */
+#define NK_INSTRUCT_CODEPOINT_SET_RGB 0xE000
+#define NK_INSTRUCT_SET_RGB "\xEE\x80\x80"
+
+#define NK_INSTRUCT_CODEPOINT_SET_RGBA 0xE001
+#define NK_INSTRUCT_SET_RGBA "\xEE\x80\x81"
+
+#define NK_INSTRUCT_CODEPOINT_RESET_COLOR 0xE002
+#define NK_INSTRUCT_RESET_COLOR "\xEE\x80\x82"
+
 /* Make sure correct type size:
  * This will fire with a negative subscript error if the type sizes
  * are set incorrectly by the compiler, and compile out if not */
@@ -3617,6 +3633,23 @@ NK_API int nk_utf_decode(const char*, nk_rune*, int);
 NK_API int nk_utf_encode(nk_rune, char*, int);
 NK_API int nk_utf_len(const char*, int byte_len);
 NK_API const char* nk_utf_at(const char *buffer, int length, int index, nk_rune *unicode, int *len);
+/*/// #### nk_utf_filter_instructions
+/// Reads text from input, and writes to output while filtering out inline instructions and their payloads.
+/// input may be equal to output.
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// int nk_utf_filter_instructions(char *output, const char *input, int len);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __output__  | Address to write to
+/// __input__   | Address to read from
+/// __len__     | Length of input (in bytes)
+///
+/// Returns the length (in bytes) of output
+*/
+NK_API int nk_utf_filter_instructions(char *output, const char *input, int len);
 /* ===============================================================
  *
  *                          FONT
