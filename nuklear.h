@@ -7629,10 +7629,6 @@ nk_text_calculate_text_bounds(const struct nk_user_font *font,
     if (!begin || byte_len <= 0 || !font)
         return nk_vec2(0,row_height);
 
-//    glyph_len = nk_utf_decode(begin, &unicode, byte_len);
-//    if (!glyph_len) return text_size;
-//    glyph_width = font->width(font->userdata, font->height, begin, glyph_len);
-
     *glyphs = 0;
     do {
         glyph_len = nk_utf_decode(begin + text_len, &unicode, byte_len-text_len);
