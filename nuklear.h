@@ -423,6 +423,22 @@ typedef nk_uint nk_hash;
 typedef nk_uint nk_flags;
 typedef nk_uint nk_rune;
 
+/* UTF8 Private Use Area in the Basic Multilingual Plane
+   (codepoints U+E000 -> U+F8FF) are used by Nuklear to pass instructions
+   within text to modify rendering settings on the fly */
+#define NK_UTF_IS_INSTRUCTION(codepoint) \
+    (((nk_rune)(codepoint)) >= 0xE000 && ((nk_rune)(codepoint)) <= 0xF8FF)
+
+/* C89 does not support unicode literals so hex literals are used */
+#define NK_INSTRUCT_CODEPOINT_SET_RGB 0xE000
+#define NK_INSTRUCT_SET_RGB "\xEE\x80\x80"
+
+#define NK_INSTRUCT_CODEPOINT_SET_RGBA 0xE001
+#define NK_INSTRUCT_SET_RGBA "\xEE\x80\x81"
+
+#define NK_INSTRUCT_CODEPOINT_RESET_COLOR 0xE002
+#define NK_INSTRUCT_RESET_COLOR "\xEE\x80\x82"
+
 /* Make sure correct type size:
  * This will fire with a negative subscript error if the type sizes
  * are set incorrectly by the compiler, and compile out if not */
@@ -3839,6 +3855,23 @@ NK_API int nk_utf_decode(const char*, nk_rune*, int);
 NK_API int nk_utf_encode(nk_rune, char*, int);
 NK_API int nk_utf_len(const char*, int byte_len);
 NK_API const char* nk_utf_at(const char *buffer, int length, int index, nk_rune *unicode, int *len);
+/*/// #### nk_utf_filter_instructions
+/// Reads text from input, and writes to output while filtering out inline instructions and their payloads.
+/// input may be equal to output.
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// int nk_utf_filter_instructions(char *output, const char *input, int len);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __output__  | Address to write to
+/// __input__   | Address to read from
+/// __len__     | Length of input (in bytes)
+///
+/// Returns the length (in bytes) of output
+*/
+NK_API int nk_utf_filter_instructions(char *output, const char *input, int len);
 /* ===============================================================
  *
  *                          FONT
@@ -6070,6 +6103,9 @@ struct nk_text {
 NK_LIB void nk_widget_text(struct nk_command_buffer *o, struct nk_rect b, const char *string, int len, const struct nk_text *t, nk_flags a, const struct nk_user_font *f);
 NK_LIB void nk_widget_text_wrap(struct nk_command_buffer *o, struct nk_rect b, const char *string, int len, const struct nk_text *t, const struct nk_user_font *f);
 
+/* UTF-8 */
+NK_LIB int nk_utf_instruction_payload_size(nk_rune unicode);
+
 /* button */
 NK_LIB nk_bool nk_button_behavior(nk_flags *state, struct nk_rect r, const struct nk_input *i, enum nk_button_behavior behavior);
 NK_LIB const struct nk_style_item* nk_draw_button(struct nk_command_buffer *out, const struct nk_rect *bounds, nk_flags state, const struct nk_style_button *style);
@@ -7593,12 +7629,14 @@ nk_text_calculate_text_bounds(const struct nk_user_font *font,
     if (!begin || byte_len <= 0 || !font)
         return nk_vec2(0,row_height);
 
-    glyph_len = nk_utf_decode(begin, &unicode, byte_len);
-    if (!glyph_len) return text_size;
-    glyph_width = font->width(font->userdata, font->height, begin, glyph_len);
+//    glyph_len = nk_utf_decode(begin, &unicode, byte_len);
+//    if (!glyph_len) return text_size;
+//    glyph_width = font->width(font->userdata, font->height, begin, glyph_len);
 
     *glyphs = 0;
-    while ((text_len < byte_len) && glyph_len) {
+    do {
+        glyph_len = nk_utf_decode(begin + text_len, &unicode, byte_len-text_len);
+
         if (unicode == '\n') {
             text_size.x = NK_MAX(text_size.x, line_width);
             text_size.y += line_height;
@@ -7619,13 +7657,23 @@ nk_text_calculate_text_bounds(const struct nk_user_font *font,
             continue;
         }
 
-        *glyphs = *glyphs + 1;
+        if (NK_UTF_IS_INSTRUCTION(unicode)) {
+            int payload_size = nk_utf_instruction_payload_size(unicode);
+
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+            glyph_width = 0;
+        }else
+            glyph_width = font->width(font->userdata, font->height, begin+text_len, glyph_len);
+
+
+        (*glyphs)++;
         text_len += glyph_len;
         line_width += (float)glyph_width;
-        glyph_len = nk_utf_decode(begin + text_len, &unicode, byte_len-text_len);
-        glyph_width = font->width(font->userdata, font->height, begin+text_len, glyph_len);
         continue;
-    }
+    } while (text_len < byte_len && glyph_len);
 
     if (text_size.x < line_width)
         text_size.x = line_width;
@@ -8085,6 +8133,7 @@ nk_utf_validate(nk_rune *u, int i)
     if (!NK_BETWEEN(*u, nk_utfmin[i], nk_utfmax[i]) ||
          NK_BETWEEN(*u, 0xD800, 0xDFFF))
             *u = NK_UTF_INVALID;
+
     for (i = 1; *u > nk_utfmax[i]; ++i);
     return i;
 }
@@ -8124,6 +8173,7 @@ nk_utf_decode(const char *c, nk_rune *u, int clen)
     if (j < len)
         return 0;
     *u = udecoded;
+
     nk_utf_validate(u, len);
     return len;
 }
@@ -8162,12 +8212,21 @@ nk_utf_len(const char *str, int len)
 
     text = str;
     text_len = len;
-    glyph_len = nk_utf_decode(text, &unicode, text_len);
-    while (glyph_len && src_len < len) {
-        glyphs++;
-        src_len = src_len + glyph_len;
+    do {
         glyph_len = nk_utf_decode(text + src_len, &unicode, text_len - src_len);
-    }
+
+        if (NK_UTF_IS_INSTRUCTION(unicode)) {
+            int payload_size = nk_utf_instruction_payload_size(unicode);
+
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+        }
+        glyphs++;
+
+        src_len = src_len + glyph_len;
+    } while (glyph_len && src_len < len);
     return glyphs;
 }
 NK_API const char*
@@ -8203,11 +8262,69 @@ nk_utf_at(const char *buffer, int length, int index,
         i++;
         src_len = src_len + glyph_len;
         glyph_len = nk_utf_decode(text + src_len, unicode, text_len - src_len);
+        if (NK_UTF_IS_INSTRUCTION(*unicode)) {
+            int payload_size = nk_utf_instruction_payload_size(*unicode);
+
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+        }
     }
+
     if (i != index) return 0;
     return buffer + src_len;
 }
+NK_LIB int
+nk_utf_instruction_payload_size(nk_rune unicode)
+{
+    static const int payload_size_table[3] = {
+        6, /* NK_INSTRUCT_CODEPOINT_SET_RGB */
+        8, /* NK_INSTRUCT_CODEPOINT_SET_RGBA */
+        0, /* NK_INSTRUCT_CODEPOINT_RESET_COLOR */
+    };
 
+    if (!NK_UTF_IS_INSTRUCTION(unicode))
+        return 0;
+
+    if (unicode - 0xE000 < NK_LEN(payload_size_table))
+        return payload_size_table[ unicode - 0xE000 ];
+
+    return -1;
+}
+NK_API int
+nk_utf_filter_instructions(char *output, const char * input, int len)
+{
+    nk_rune unicode = 0;
+    int glyph_len, text_len = 0;
+    const char *start = output;
+    NK_ASSERT(output);
+    NK_ASSERT(input);
+    if(len == 0) return 0;
+
+    do {
+        glyph_len = nk_utf_decode(input + text_len, &unicode, (int)len - text_len);
+
+        if (unicode == NK_UTF_INVALID) break;
+
+        /* check for inline instructions */
+        if (NK_UTF_IS_INSTRUCTION(unicode)) {
+            int payload_size = nk_utf_instruction_payload_size(unicode);
+
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+        } else {
+            NK_MEMCPY(output, input + text_len, glyph_len);
+            output += glyph_len;
+        }
+
+        text_len += glyph_len;
+    } while(text_len <= len && glyph_len);
+
+    return output - start;
+}
 
 
 
@@ -8546,7 +8663,7 @@ nk_str_append_text_utf8(struct nk_str *str, const char *text, int len)
     nk_rune unicode;
     if (!str || !text || !len) return 0;
     for (i = 0; i < len; ++i)
-        byte_len += nk_utf_decode(text+byte_len, &unicode, 4);
+        byte_len += nk_utf_decode(text + byte_len, &unicode, 4);
     nk_str_append_text_char(str, text, byte_len);
     return len;
 }
@@ -8834,9 +8951,17 @@ nk_str_at_rune(struct nk_str *str, int pos, nk_rune *unicode, int *len)
             *len = glyph_len;
             break;
         }
+        if (NK_UTF_IS_INSTRUCTION(*unicode)) {
+            int payload_size = nk_utf_instruction_payload_size(*unicode);
 
-        i++;
-        src_len = src_len + glyph_len;
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+        }
+           i++;
+
+        src_len += glyph_len;
         glyph_len = nk_utf_decode(text + src_len, unicode, text_len - src_len);
     }
     if (i != pos) return 0;
@@ -8871,17 +8996,24 @@ nk_str_at_const(const struct nk_str *str, int pos, nk_rune *unicode, int *len)
 
     text = (char*)str->buffer.memory.ptr;
     text_len = (int)str->buffer.allocated;
-    glyph_len = nk_utf_decode(text, unicode, text_len);
-    while (glyph_len) {
+    do {
+        glyph_len = nk_utf_decode(text + src_len, unicode, text_len - src_len);
+        if (NK_UTF_IS_INSTRUCTION(*unicode)) {
+            int payload_size = nk_utf_instruction_payload_size(*unicode);
+
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+        }
         if (i == pos) {
             *len = glyph_len;
             break;
         }
-
         i++;
-        src_len = src_len + glyph_len;
-        glyph_len = nk_utf_decode(text + src_len, unicode, text_len - src_len);
-    }
+        src_len += glyph_len;
+    } while (glyph_len);
+
     if (i != pos) return 0;
     return text + src_len;
 }
@@ -10633,10 +10765,9 @@ nk_draw_list_add_text(struct nk_draw_list *list, const struct nk_user_font *font
     float x = 0;
     int text_len = 0;
     nk_rune unicode = 0;
-    nk_rune next = 0;
     int glyph_len = 0;
-    int next_glyph_len = 0;
     struct nk_user_font_glyph g;
+    struct nk_color og_fg;
 
     NK_ASSERT(list);
     if (!list || !len || !text) return;
@@ -10645,20 +10776,58 @@ nk_draw_list_add_text(struct nk_draw_list *list, const struct nk_user_font *font
 
     nk_draw_list_push_image(list, font->texture);
     x = rect.x;
-    glyph_len = nk_utf_decode(text, &unicode, len);
-    if (!glyph_len) return;
 
     /* draw every glyph image */
     fg.a = (nk_byte)((float)fg.a * list->config.global_alpha);
-    while (text_len < len && glyph_len) {
+    og_fg = fg;
+
+    if(*text == '\0') return;
+
+    do {
         float gx, gy, gh, gw;
         float char_width = 0;
-        if (unicode == NK_UTF_INVALID) break;
 
         /* query currently drawn glyph information */
-        next_glyph_len = nk_utf_decode(text + text_len + glyph_len, &next, (int)len - text_len);
-        font->query(font->userdata, font_height, &g, unicode,
-                    (next == NK_UTF_INVALID) ? '\0' : next);
+        glyph_len = nk_utf_decode(text + text_len, &unicode, (int)len - text_len);
+
+        if (unicode == NK_UTF_INVALID) break;
+
+        /* check for inline instructions */
+        if (NK_UTF_IS_INSTRUCTION(unicode)) {
+            const char* read_ptr = text + text_len + glyph_len;
+            int payload_size = nk_utf_instruction_payload_size(unicode);
+
+            switch(unicode){
+                case NK_INSTRUCT_CODEPOINT_SET_RGB: { /* rgb inline instruction */
+                    nk_uint color = (unsigned)nk_parse_hex(read_ptr, 6);
+                    fg.r = (NK_UINT8)( (color & 0x00FF0000) >> 16 );
+                    fg.g = (NK_UINT8)( (color & 0x0000FF00) >> 8  );
+                    fg.b = (NK_UINT8)( (color & 0x000000FF) >> 0  );
+                    } break;
+                case NK_INSTRUCT_CODEPOINT_SET_RGBA: { /* rgba inline instruction */
+                    nk_uint color = (unsigned)nk_parse_hex(read_ptr, 8);
+                    fg.r = (NK_UINT8)( (color & 0xFF000000) >> 24 );
+                    fg.g = (NK_UINT8)( (color & 0x00FF0000) >> 16 );
+                    fg.b = (NK_UINT8)( (color & 0x0000FF00) >> 8  );
+                    fg.a = (NK_UINT8)( (color & 0x000000FF) >> 0  );
+                    } break;
+                case NK_INSTRUCT_CODEPOINT_RESET_COLOR:
+                    fg = og_fg;
+                    break;
+                default:
+                    NK_ASSERT(0 && "Invalid UTF-8 instruction.");
+                    break;
+            }
+
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+
+            goto no_draw;
+        }
+
+        font->query(font->userdata, font_height, &g, unicode, unicode);
 
         /* calculate and draw glyph drawing rectangle and image */
         gx = x + g.offset.x;
@@ -10669,11 +10838,10 @@ nk_draw_list_add_text(struct nk_draw_list *list, const struct nk_user_font *font
             g.uv[0], g.uv[1], fg);
 
         /* offset next glyph */
+        no_draw:
         text_len += glyph_len;
         x += char_width;
-        glyph_len = next_glyph_len;
-        unicode = next;
-    }
+    } while (text_len < len && glyph_len);
 }
 NK_API nk_flags
 nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
@@ -17000,20 +17168,31 @@ nk_font_text_width(nk_handle handle, float height, const char *text, int len)
         return 0;
 
     scale = height/font->info.height;
-    glyph_len = text_len = nk_utf_decode(text, &unicode, (int)len);
-    if (!glyph_len) return 0;
-    while (text_len <= (int)len && glyph_len) {
+    if(*text == '\0') return 0.0f;
+
+    do {
         const struct nk_font_glyph *g;
+        glyph_len = nk_utf_decode(text + text_len, &unicode, len - text_len);
+
         if (unicode == NK_UTF_INVALID) break;
 
-        /* query currently drawn glyph information */
-        g = nk_font_find_glyph(font, unicode);
-        text_width += g->xadvance * scale;
+        if (NK_UTF_IS_INSTRUCTION(unicode)) {
+            int payload_size = nk_utf_instruction_payload_size(unicode);
+
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+        } else {
+            /* query currently drawn glyph information */
+            g = nk_font_find_glyph(font, unicode);
+            text_width += g->xadvance * scale;
+        }
 
         /* offset next glyph */
-        glyph_len = nk_utf_decode(text + text_len, &unicode, (int)len - text_len);
         text_len += glyph_len;
-    }
+    } while (text_len < len && glyph_len);
+
     return text_width;
 }
 #ifdef NK_INCLUDE_VERTEX_BUFFER_OUTPUT
@@ -27360,6 +27539,7 @@ nk_edit_draw_text(struct nk_command_buffer *out,
 
     glyph_len = nk_utf_decode(text+text_len, &unicode, byte_len-text_len);
     if (!glyph_len) return;
+
     while ((text_len < byte_len) && glyph_len)
     {
         if (unicode == '\n') {
@@ -27385,12 +27565,24 @@ nk_edit_draw_text(struct nk_command_buffer *out,
             glyph_len = nk_utf_decode(text + text_len, &unicode, (int)(byte_len-text_len));
             continue;
         }
+
         if (unicode == '\r') {
             text_len++;
             glyph_len = nk_utf_decode(text + text_len, &unicode, byte_len-text_len);
             continue;
         }
-        glyph_width = font->width(font->userdata, font->height, text+text_len, glyph_len);
+
+        if (NK_UTF_IS_INSTRUCTION(unicode)) {
+            int payload_size = nk_utf_instruction_payload_size(unicode);
+            glyph_width = 0;
+
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+        } else
+            glyph_width = font->width(font->userdata, font->height, text+text_len, glyph_len);
+
         line_width += (float)glyph_width;
         text_len += glyph_len;
         glyph_len = nk_utf_decode(text + text_len, &unicode, byte_len-text_len);
@@ -27536,21 +27728,26 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         }
 
         /* cut & copy handler */
-        {int copy= nk_input_is_key_pressed(in, NK_KEY_COPY);
-        int cut = nk_input_is_key_pressed(in, NK_KEY_CUT);
+        {int copy = nk_input_is_key_pressed(in, NK_KEY_COPY),
+              cut = nk_input_is_key_pressed(in, NK_KEY_CUT);
         if ((copy || cut) && (flags & NK_EDIT_CLIPBOARD))
         {
             int glyph_len;
             nk_rune unicode;
-            const char *text;
+            const char *text, *text_end;
             int b = edit->select_start;
             int e = edit->select_end;
-
             int begin = NK_MIN(b, e);
             int end = NK_MAX(b, e);
             text = nk_str_at_const(&edit->string, begin, &unicode, &glyph_len);
+            text_end = nk_str_at_const(&edit->string, end, &unicode, &glyph_len);
+
+            /* if read only convert cuts to copys */
+            if(flags & NK_EDIT_READ_ONLY)
+                cut = nk_false;
+
             if (edit->clip.copy)
-                edit->clip.copy(edit->clip.userdata, text, end - begin);
+                edit->clip.copy(edit->clip.userdata, text, text_end - text);
             if (cut && !(flags & NK_EDIT_READ_ONLY)){
                 nk_textedit_cut(edit);
                 cursor_follow = nk_true;
@@ -27638,13 +27835,12 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
             int glyphs = 0;
             int row_begin = 0;
 
-            glyph_len = nk_utf_decode(text, &unicode, len);
-            glyph_width = font->width(font->userdata, font->height, text, glyph_len);
-            line_width = 0;
-
             /* iterate all lines */
-            while ((text_len < len) && glyph_len)
-            {
+            do {
+                glyph_len = nk_utf_decode(text + text_len, &unicode, len-text_len);
+                glyph_width = font->width(font->userdata, font->height,
+                    text+text_len, glyph_len);
+
                 /* set cursor 2D position and line */
                 if (!cursor_ptr && glyphs == edit->cursor)
                 {
@@ -27708,16 +27904,20 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                     glyph_width = font->width(font->userdata, font->height, text+text_len, glyph_len);
                     continue;
                 }
+                if (NK_UTF_IS_INSTRUCTION(unicode)) {
+                    int payload_size = nk_utf_instruction_payload_size(unicode);
+
+                    /* invalid payload */
+                    if(payload_size == -1) break;
+
+                    glyph_len += payload_size;
+                }
 
                 glyphs++;
                 text_len += glyph_len;
                 line_width += (float)glyph_width;
+            } while (text_len < len && glyph_len);
 
-                glyph_len = nk_utf_decode(text + text_len, &unicode, len-text_len);
-                glyph_width = font->width(font->userdata, font->height,
-                    text+text_len, glyph_len);
-                continue;
-            }
             text_size.y = (float)total_lines * row_height;
 
             /* handle case when cursor is at end of text buffer */
@@ -27858,7 +28058,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                     area.y + selection_offset_end.y - edit->scrollbar.y,
                     selection_offset_end.x,
                     begin, (int)(end - begin), row_height, font,
-                    background_color, text_color, nk_true);
+                    background_color, text_color, nk_false);
             }
         }
 
