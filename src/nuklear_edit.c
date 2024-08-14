@@ -124,12 +124,24 @@ nk_edit_draw_text(struct nk_command_buffer *out,
             glyph_len = nk_utf_decode(text + text_len, &unicode, (int)(byte_len-text_len));
             continue;
         }
+
         if (unicode == '\r') {
             text_len++;
             glyph_len = nk_utf_decode(text + text_len, &unicode, byte_len-text_len);
             continue;
         }
-        glyph_width = font->width(font->userdata, font->height, text+text_len, glyph_len);
+
+        if (NK_UTF_IS_INSTRUCTION(unicode)) {
+            int payload_size = nk_utf_instruction_payload_size(unicode);
+            glyph_width = 0;
+
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+        } else
+            glyph_width = font->width(font->userdata, font->height, text+text_len, glyph_len);
+
         line_width += (float)glyph_width;
         text_len += glyph_len;
         glyph_len = nk_utf_decode(text + text_len, &unicode, byte_len-text_len);
