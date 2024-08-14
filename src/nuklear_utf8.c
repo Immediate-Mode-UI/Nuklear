@@ -19,6 +19,7 @@ nk_utf_validate(nk_rune *u, int i)
     if (!NK_BETWEEN(*u, nk_utfmin[i], nk_utfmax[i]) ||
          NK_BETWEEN(*u, 0xD800, 0xDFFF))
             *u = NK_UTF_INVALID;
+
     for (i = 1; *u > nk_utfmax[i]; ++i);
     return i;
 }
@@ -58,6 +59,7 @@ nk_utf_decode(const char *c, nk_rune *u, int clen)
     if (j < len)
         return 0;
     *u = udecoded;
+
     nk_utf_validate(u, len);
     return len;
 }
@@ -96,12 +98,21 @@ nk_utf_len(const char *str, int len)
 
     text = str;
     text_len = len;
-    glyph_len = nk_utf_decode(text, &unicode, text_len);
-    while (glyph_len && src_len < len) {
-        glyphs++;
-        src_len = src_len + glyph_len;
+    do {
         glyph_len = nk_utf_decode(text + src_len, &unicode, text_len - src_len);
-    }
+
+        if (NK_UTF_IS_INSTRUCTION(unicode)) {
+            int payload_size = nk_utf_instruction_payload_size(unicode);
+
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+        }
+        glyphs++;
+
+        src_len = src_len + glyph_len;
+    } while (glyph_len && src_len < len);
     return glyphs;
 }
 NK_API const char*
@@ -137,8 +148,66 @@ nk_utf_at(const char *buffer, int length, int index,
         i++;
         src_len = src_len + glyph_len;
         glyph_len = nk_utf_decode(text + src_len, unicode, text_len - src_len);
+        if (NK_UTF_IS_INSTRUCTION(*unicode)) {
+            int payload_size = nk_utf_instruction_payload_size(*unicode);
+
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+        }
     }
+
     if (i != index) return 0;
     return buffer + src_len;
 }
+NK_LIB int
+nk_utf_instruction_payload_size(nk_rune unicode)
+{
+    static const int payload_size_table[3] = {
+        6, /* NK_INSTRUCT_CODEPOINT_SET_RGB */
+        8, /* NK_INSTRUCT_CODEPOINT_SET_RGBA */
+        0, /* NK_INSTRUCT_CODEPOINT_RESET_COLOR */
+    };
 
+    if (!NK_UTF_IS_INSTRUCTION(unicode))
+        return 0;
+
+    if (unicode - 0xE000 < NK_LEN(payload_size_table))
+        return payload_size_table[ unicode - 0xE000 ];
+
+    return -1;
+}
+NK_API int
+nk_utf_filter_instructions(char *output, const char * input, int len)
+{
+    nk_rune unicode = 0;
+    int glyph_len, text_len = 0;
+    const char *start = output;
+    NK_ASSERT(output);
+    NK_ASSERT(input);
+    if(len == 0) return 0;
+
+    do {
+        glyph_len = nk_utf_decode(input + text_len, &unicode, (int)len - text_len);
+
+        if (unicode == NK_UTF_INVALID) break;
+
+        /* check for inline instructions */
+        if (NK_UTF_IS_INSTRUCTION(unicode)) {
+            int payload_size = nk_utf_instruction_payload_size(unicode);
+
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+        } else {
+            NK_MEMCPY(output, input + text_len, glyph_len);
+            output += glyph_len;
+        }
+
+        text_len += glyph_len;
+    } while(text_len <= len && glyph_len);
+
+    return output - start;
+}
