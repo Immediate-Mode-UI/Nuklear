@@ -57,7 +57,7 @@ nk_str_append_text_utf8(struct nk_str *str, const char *text, int len)
     nk_rune unicode;
     if (!str || !text || !len) return 0;
     for (i = 0; i < len; ++i)
-        byte_len += nk_utf_decode(text+byte_len, &unicode, 4);
+        byte_len += nk_utf_decode(text + byte_len, &unicode, 4);
     nk_str_append_text_char(str, text, byte_len);
     return len;
 }
@@ -345,9 +345,17 @@ nk_str_at_rune(struct nk_str *str, int pos, nk_rune *unicode, int *len)
             *len = glyph_len;
             break;
         }
+        if (NK_UTF_IS_INSTRUCTION(*unicode)) {
+            int payload_size = nk_utf_instruction_payload_size(*unicode);
 
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+        }
         i++;
-        src_len = src_len + glyph_len;
+
+        src_len += glyph_len;
         glyph_len = nk_utf_decode(text + src_len, unicode, text_len - src_len);
     }
     if (i != pos) return 0;
@@ -382,17 +390,24 @@ nk_str_at_const(const struct nk_str *str, int pos, nk_rune *unicode, int *len)
 
     text = (char*)str->buffer.memory.ptr;
     text_len = (int)str->buffer.allocated;
-    glyph_len = nk_utf_decode(text, unicode, text_len);
-    while (glyph_len) {
+    do {
+        glyph_len = nk_utf_decode(text + src_len, unicode, text_len - src_len);
+        if (NK_UTF_IS_INSTRUCTION(*unicode)) {
+            int payload_size = nk_utf_instruction_payload_size(*unicode);
+
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+        }
         if (i == pos) {
             *len = glyph_len;
             break;
         }
-
         i++;
-        src_len = src_len + glyph_len;
-        glyph_len = nk_utf_decode(text + src_len, unicode, text_len - src_len);
-    }
+        src_len += glyph_len;
+    } while (glyph_len);
+
     if (i != pos) return 0;
     return text + src_len;
 }
