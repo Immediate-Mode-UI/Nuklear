@@ -459,20 +459,31 @@ nk_font_text_width(nk_handle handle, float height, const char *text, int len)
         return 0;
 
     scale = height/font->info.height;
-    glyph_len = text_len = nk_utf_decode(text, &unicode, (int)len);
-    if (!glyph_len) return 0;
-    while (text_len <= (int)len && glyph_len) {
+    if(*text == '\0') return 0.0f;
+
+    do {
         const struct nk_font_glyph *g;
+        glyph_len = nk_utf_decode(text + text_len, &unicode, len - text_len);
+
         if (unicode == NK_UTF_INVALID) break;
 
-        /* query currently drawn glyph information */
-        g = nk_font_find_glyph(font, unicode);
-        text_width += g->xadvance * scale;
+        if (NK_UTF_IS_INSTRUCTION(unicode)) {
+            int payload_size = nk_utf_instruction_payload_size(unicode);
+
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+        } else {
+            /* query currently drawn glyph information */
+            g = nk_font_find_glyph(font, unicode);
+            text_width += g->xadvance * scale;
+        }
 
         /* offset next glyph */
-        glyph_len = nk_utf_decode(text + text_len, &unicode, (int)len - text_len);
         text_len += glyph_len;
-    }
+    } while (text_len < len && glyph_len);
+
     return text_width;
 }
 #ifdef NK_INCLUDE_VERTEX_BUFFER_OUTPUT
