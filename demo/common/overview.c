@@ -184,6 +184,27 @@ overview(struct nk_context *ctx)
                 nk_label_wrap(ctx, "This is a very long line to hopefully get this text to be wrapped into multiple lines to show line wrapping");
                 nk_layout_row_dynamic(ctx, 100, 1);
                 nk_label_wrap(ctx, "This is another long text to show dynamic window changes on multiline text");
+                nk_layout_row_dynamic(ctx, 50, 1);
+                nk_label_wrap(ctx, "This text demonstrates "
+                    NK_INSTRUCT_SET_RGB "E81416" "D"
+                    NK_INSTRUCT_SET_RGB "FFA500" "y"
+                    NK_INSTRUCT_SET_RGB "FAEB36" "n"
+                    NK_INSTRUCT_SET_RGB "79C314" "a"
+                    NK_INSTRUCT_SET_RGB "487DE7" "m"
+                    NK_INSTRUCT_SET_RGB "4B369D" "i"
+                    NK_INSTRUCT_SET_RGB "70369D" "c"
+                    NK_INSTRUCT_RESET_COLOR " recoloring of text via the "
+                    NK_INSTRUCT_SET_RGBA "FFFFFFBB" "NK_INSTRUCT_SET_"
+                    NK_INSTRUCT_SET_RGB  "FF0000"   "R"
+                    NK_INSTRUCT_SET_RGB  "00FF00"   "G"
+                    NK_INSTRUCT_SET_RGB  "0000FF"   "B"
+                    NK_INSTRUCT_RESET_COLOR " and "
+                    NK_INSTRUCT_SET_RGBA "FFFFFFBB" "NK_INSTRUCT_SET_"
+                    NK_INSTRUCT_SET_RGB  "FF0000"   "R"
+                    NK_INSTRUCT_SET_RGB  "00FF00"   "G"
+                    NK_INSTRUCT_SET_RGB  "0000FF"   "B"
+                    NK_INSTRUCT_SET_RGBA "FFFFFF88" "A"
+                    NK_INSTRUCT_RESET_COLOR " macros.");
                 nk_tree_pop(ctx);
             }
 
