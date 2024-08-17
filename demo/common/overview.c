@@ -205,9 +205,13 @@ overview(struct nk_context *ctx)
                 nk_button_symbol(ctx, NK_SYMBOL_RECT_SOLID);
                 nk_button_symbol(ctx, NK_SYMBOL_RECT_OUTLINE);
                 nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_UP);
+                nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_UP_OUTLINE);
                 nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_DOWN);
+                nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_DOWN_OUTLINE);
                 nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_LEFT);
+                nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_LEFT_OUTLINE);
                 nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_RIGHT);
+                nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_RIGHT_OUTLINE);
 
                 nk_layout_row_static(ctx, 30, 100, 2);
                 nk_button_symbol_label(ctx, NK_SYMBOL_TRIANGLE_LEFT, "prev", NK_TEXT_RIGHT);

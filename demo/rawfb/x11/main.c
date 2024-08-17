@@ -156,7 +156,7 @@ main(void)
     XWindow xw;
     struct rawfb_context *rawfb;
     void *fb = NULL;
-    rawfb_pl pl;
+    struct rawfb_pl pl;
     unsigned char tex_scratch[512 * 512];
 
     /* X11 */
