@@ -19,13 +19,13 @@ NK_API void nk_style_default(struct nk_context *ctx){nk_style_from_table(ctx, 0)
     NK_COLOR(NK_COLOR_TOGGLE_HOVER,             120,120,120,255) \
     NK_COLOR(NK_COLOR_TOGGLE_CURSOR,            45, 45, 45, 255) \
     NK_COLOR(NK_COLOR_SELECT,                   45, 45, 45, 255) \
-    NK_COLOR(NK_COLOR_SELECT_ACTIVE,            35, 35, 35,255) \
+    NK_COLOR(NK_COLOR_SELECT_ACTIVE,            35, 35, 35,255)  \
     NK_COLOR(NK_COLOR_SLIDER,                   38, 38, 38, 255) \
     NK_COLOR(NK_COLOR_SLIDER_CURSOR,            100,100,100,255) \
     NK_COLOR(NK_COLOR_SLIDER_CURSOR_HOVER,      120,120,120,255) \
     NK_COLOR(NK_COLOR_SLIDER_CURSOR_ACTIVE,     150,150,150,255) \
     NK_COLOR(NK_COLOR_PROPERTY,                 38, 38, 38, 255) \
-    NK_COLOR(NK_COLOR_EDIT,                     38, 38, 38, 255)  \
+    NK_COLOR(NK_COLOR_EDIT,                     38, 38, 38, 255) \
     NK_COLOR(NK_COLOR_EDIT_CURSOR,              175,175,175,255) \
     NK_COLOR(NK_COLOR_COMBO,                    45, 45, 45, 255) \
     NK_COLOR(NK_COLOR_CHART,                    120,120,120,255) \
@@ -35,7 +35,11 @@ NK_API void nk_style_default(struct nk_context *ctx){nk_style_from_table(ctx, 0)
     NK_COLOR(NK_COLOR_SCROLLBAR_CURSOR,         100,100,100,255) \
     NK_COLOR(NK_COLOR_SCROLLBAR_CURSOR_HOVER,   120,120,120,255) \
     NK_COLOR(NK_COLOR_SCROLLBAR_CURSOR_ACTIVE,  150,150,150,255) \
-    NK_COLOR(NK_COLOR_TAB_HEADER,               40, 40, 40,255)
+    NK_COLOR(NK_COLOR_TAB_HEADER,               40, 40, 40,255)  \
+    NK_COLOR(NK_COLOR_KNOB,                     38, 38, 38, 255) \
+    NK_COLOR(NK_COLOR_KNOB_CURSOR,              100,100,100,255) \
+    NK_COLOR(NK_COLOR_KNOB_CURSOR_HOVER,        120,120,120,255) \
+    NK_COLOR(NK_COLOR_KNOB_CURSOR_ACTIVE,       150,150,150,255)
 
 NK_GLOBAL const struct nk_color
 nk_default_color_style[NK_COLOR_COUNT] = {
