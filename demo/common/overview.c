@@ -264,6 +264,12 @@ overview(struct nk_context *ctx)
                 nk_labelf(ctx, NK_TEXT_LEFT, "Progressbar: %u" , (int)prog_value);
                 nk_progress(ctx, &prog_value, 100, NK_MODIFIABLE);
 
+                nk_layout_row(ctx, NK_STATIC, 40, 2, ratio);
+                nk_labelf(ctx, NK_TEXT_LEFT, "Knob int: %d", int_knob);
+                nk_knob_int(ctx, 0, &int_knob, 10, 1, NK_DOWN, 60.0f);
+                nk_labelf(ctx, NK_TEXT_LEFT, "Knob float: %.2f", float_knob);
+                nk_knob_float(ctx, 0, &float_knob, 5.0, 0.5f, NK_DOWN, 60.0f);
+
                 nk_layout_row(ctx, NK_STATIC, 25, 2, ratio);
                 nk_label(ctx, "Property float:", NK_TEXT_LEFT);
                 nk_property_float(ctx, "Float:", 0, &property_float, 64.0f, 0.1f, 0.2f);
