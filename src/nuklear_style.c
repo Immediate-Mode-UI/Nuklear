@@ -303,6 +303,32 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     button->draw_end        = 0;
     style->slider.dec_button = style->slider.inc_button;
 
+    /* knob */
+    knob = &style->knob;
+    nk_zero_struct(*knob);
+    knob->normal          = nk_style_item_hide();
+    knob->hover           = nk_style_item_hide();
+    knob->active          = nk_style_item_hide();
+    knob->knob_normal     = table[NK_COLOR_KNOB];
+    knob->knob_hover      = table[NK_COLOR_KNOB];
+    knob->knob_active     = table[NK_COLOR_KNOB];
+    knob->cursor_normal   = table[NK_COLOR_KNOB_CURSOR];
+    knob->cursor_hover    = table[NK_COLOR_KNOB_CURSOR_HOVER];
+    knob->cursor_active   = table[NK_COLOR_KNOB_CURSOR_ACTIVE];
+
+    knob->knob_border_color = table[NK_COLOR_BORDER];
+    knob->knob_border       = 1.0f;
+
+    knob->padding         = nk_vec2(2,2);
+    knob->spacing         = nk_vec2(2,2);
+    knob->cursor_width    = 2;
+    knob->color_factor    = 1.0f;
+    knob->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
+
+    knob->userdata        = nk_handle_ptr(0);
+    knob->draw_begin      = 0;
+    knob->draw_end        = 0;
+
     /* progressbar */
     prog = &style->progress;
     nk_zero_struct(*prog);
