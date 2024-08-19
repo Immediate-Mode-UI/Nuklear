@@ -225,6 +225,8 @@ overview(struct nk_context *ctx)
                 /* Basic widgets */
                 static int int_slider = 5;
                 static float float_slider = 2.5f;
+                static int int_knob = 5;
+                static float float_knob = 2.5f;
                 static nk_size prog_value = 40;
                 static float property_float = 2;
                 static int property_int = 10;
