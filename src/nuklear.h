@@ -3039,6 +3039,15 @@ NK_API float nk_slide_float(struct nk_context*, float min, float val, float max,
 NK_API int nk_slide_int(struct nk_context*, int min, int val, int max, int step);
 NK_API nk_bool nk_slider_float(struct nk_context*, float min, float *val, float max, float step);
 NK_API nk_bool nk_slider_int(struct nk_context*, int min, int *val, int max, int step);
+
+/* =============================================================================
+ *
+ *                                   KNOB
+ *
+ * ============================================================================= */
+NK_API nk_bool nk_knob_float(struct nk_context*, float min, float *val, float max, float step, enum nk_heading zero_direction, float dead_zone_degrees);
+NK_API nk_bool nk_knob_int(struct nk_context*, int min, int *val, int max, int step, enum nk_heading zero_direction, float dead_zone_degrees);
+
 /* =============================================================================
  *
  *                                  PROGRESSBAR
@@ -3445,6 +3454,10 @@ enum nk_style_colors {
     NK_COLOR_SCROLLBAR_CURSOR_HOVER,
     NK_COLOR_SCROLLBAR_CURSOR_ACTIVE,
     NK_COLOR_TAB_HEADER,
+    NK_COLOR_KNOB,
+    NK_COLOR_KNOB_CURSOR,
+    NK_COLOR_KNOB_CURSOR_HOVER,
+    NK_COLOR_KNOB_CURSOR_ACTIVE,
     NK_COLOR_COUNT
 };
 enum nk_style_cursor {
@@ -4857,6 +4870,39 @@ struct nk_style_slider {
     void(*draw_end)(struct nk_command_buffer*, nk_handle);
 };
 
+struct nk_style_knob {
+    /* background */
+    struct nk_style_item normal;
+    struct nk_style_item hover;
+    struct nk_style_item active;
+    struct nk_color border_color;
+
+    /* knob */
+    struct nk_color knob_normal;
+    struct nk_color knob_hover;
+    struct nk_color knob_active;
+    struct nk_color knob_border_color;
+
+    /* cursor */
+    struct nk_color cursor_normal;
+    struct nk_color cursor_hover;
+    struct nk_color cursor_active;
+
+    /* properties */
+    float border;
+    float knob_border;
+    struct nk_vec2 padding;
+    struct nk_vec2 spacing;
+    float cursor_width;
+    float color_factor;
+    float disabled_factor;
+
+    /* optional user callbacks */
+    nk_handle userdata;
+    void(*draw_begin)(struct nk_command_buffer*, nk_handle);
+    void(*draw_end)(struct nk_command_buffer*, nk_handle);
+};
+
 struct nk_style_progress {
     /* background */
     struct nk_style_item normal;
@@ -5143,6 +5189,7 @@ struct nk_style {
     struct nk_style_toggle checkbox;
     struct nk_style_selectable selectable;
     struct nk_style_slider slider;
+    struct nk_style_knob knob;
     struct nk_style_progress progress;
     struct nk_style_property property;
     struct nk_style_edit edit;
@@ -5534,6 +5581,7 @@ struct nk_context {
  *                          MATH
  * =============================================================== */
 #define NK_PI 3.141592654f
+#define NK_PI_HALF 1.570796326f
 #define NK_UTF_INVALID 0xFFFD
 #define NK_MAX_FLOAT_PRECISION 2
 
