@@ -95,6 +95,7 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     struct nk_style_toggle *toggle;
     struct nk_style_selectable *select;
     struct nk_style_slider *slider;
+    struct nk_style_knob *knob;
     struct nk_style_progress *prog;
     struct nk_style_scrollbar *scroll;
     struct nk_style_edit *edit;
