@@ -71,7 +71,7 @@ static struct nk_sdl {
     struct nk_sdl_device ogl;
     struct nk_context ctx;
     struct nk_font_atlas atlas;
-    double time_of_last_frame;
+    float time_of_last_frame;
 } sdl;
 
 
@@ -187,7 +187,7 @@ nk_sdl_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
         { -1.0f,  1.0f,  0.0f, 1.0f },
     };
 
-    double now = ((double)SDL_GetTicks64()) / 1000;
+    float now = ((float)SDL_GetTicks64()) / 1000;
     sdl.ctx.delta_time_seconds = now - sdl.time_of_last_frame;
     sdl.time_of_last_frame = now;
 
