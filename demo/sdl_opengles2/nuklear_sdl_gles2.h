@@ -71,7 +71,7 @@ static struct nk_sdl {
     struct nk_sdl_device ogl;
     struct nk_context ctx;
     struct nk_font_atlas atlas;
-    float time_of_last_frame;
+    float delta_time_seconds_last;
 } sdl;
 
 
@@ -188,8 +188,8 @@ nk_sdl_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
     };
 
     float now = ((float)SDL_GetTicks64()) / 1000;
-    sdl.ctx.delta_time_seconds = now - sdl.time_of_last_frame;
-    sdl.time_of_last_frame = now;
+    sdl.ctx.delta_time_seconds = now - sdl.delta_time_seconds_last;
+    sdl.delta_time_seconds_last = now;
 
     SDL_GetWindowSize(sdl.win, &width, &height);
     SDL_GL_GetDrawableSize(sdl.win, &display_width, &display_height);

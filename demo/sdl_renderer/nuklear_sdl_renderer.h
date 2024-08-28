@@ -64,6 +64,7 @@ static struct nk_sdl {
     struct nk_sdl_device ogl;
     struct nk_context ctx;
     struct nk_font_atlas atlas;
+    float delta_time_seconds_last;
 } sdl;
 
 
@@ -113,6 +114,11 @@ nk_sdl_render(enum nk_anti_aliasing AA)
             {NK_VERTEX_COLOR, NK_FORMAT_R8G8B8A8, NK_OFFSETOF(struct nk_sdl_vertex, col)},
             {NK_VERTEX_LAYOUT_END}
         };
+
+        float now = ((float)SDL_GetTicks64()) / 1000;
+        sdl.ctx.delta_time_seconds = now - sdl.delta_time_seconds_last;
+        sdl.delta_time_seconds_last = now;
+
         NK_MEMSET(&config, 0, sizeof(config));
         config.vertex_layout = vertex_layout;
         config.vertex_size = sizeof(struct nk_sdl_vertex);
