@@ -51,7 +51,7 @@ static struct nk_sdl {
     struct nk_sdl_device ogl;
     struct nk_context ctx;
     struct nk_font_atlas atlas;
-    double time_of_last_frame;
+    float time_of_last_frame;
 } sdl;
 
 NK_INTERN void
@@ -75,7 +75,7 @@ nk_sdl_render(enum nk_anti_aliasing AA)
     int display_width, display_height;
     struct nk_vec2 scale;
 
-    double now = ((double)SDL_GetTicks64()) / 1000;
+    float now = ((float)SDL_GetTicks64()) / 1000;
     sdl.ctx.delta_time_seconds = now - sdl.time_of_last_frame;
     sdl.time_of_last_frame = now;
 
