@@ -20789,7 +20789,6 @@ nk_window_set_bounds(struct nk_context *ctx,
     if (!ctx) return;
     win = nk_window_find(ctx, name);
     if (!win) return;
-    NK_ASSERT(ctx->current != win && "You cannot update a currently in procecss window");
     win->bounds = bounds;
 }
 NK_API void
