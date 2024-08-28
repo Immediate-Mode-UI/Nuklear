@@ -53,7 +53,7 @@ struct nk_glfw {
     double last_button_click;
     int is_double_click_down;
     struct nk_vec2 double_click_pos;
-    double delta_time_last;
+    float delta_time_seconds_last;
 };
 
 NK_API struct nk_context*   nk_glfw3_init(struct nk_glfw* glfw, GLFWwindow *win, enum nk_glfw_init_state);
@@ -390,7 +390,7 @@ nk_glfw3_init(struct nk_glfw* glfw, GLFWwindow *win, enum nk_glfw_init_state ini
     glfw->is_double_click_down = nk_false;
     glfw->double_click_pos = nk_vec2(0, 0);
 
-    glfw->delta_time_last = glfwGetTime();
+    glfw->delta_time_seconds_last = (float)glfwGetTime();
 
     return &glfw->ctx;
 }
@@ -423,9 +423,9 @@ nk_glfw3_new_frame(struct nk_glfw* glfw)
     struct GLFWwindow *win = glfw->win;
 
     /* update the timer */
-    double delta_time_now = glfwGetTime();
-    glfw->ctx.delta_time_seconds = delta_time_now - glfw->delta_time_last;
-    glfw->delta_time_last = delta_time_now;
+    float delta_time_now = (float)glfwGetTime();
+    glfw->ctx.delta_time_seconds = delta_time_now - glfw->delta_time_seconds_last;
+    glfw->delta_time_seconds_last = delta_time_now;
 
     glfwGetWindowSize(win, &glfw->width, &glfw->height);
     glfwGetFramebufferSize(win, &glfw->display_width, &glfw->display_height);

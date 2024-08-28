@@ -379,7 +379,7 @@ static struct nk_glfw {
     double last_button_click;
     int is_double_click_down;
     struct nk_vec2 double_click_pos;
-    double delta_time_last;
+    float delta_time_seconds_last;
 } glfw;
 
 struct Mat4f {
@@ -1256,9 +1256,9 @@ NK_API void nk_glfw3_new_frame(void) {
     struct GLFWwindow *win = glfw.win;
 
     /* update the timer */
-    double delta_time_now = glfwGetTime();
-    glfw.ctx.delta_time_seconds = delta_time_now - glfw.delta_time_last;
-    glfw.delta_time_last = delta_time_now;
+    float delta_time_now = (float)glfwGetTime();
+    glfw.ctx.delta_time_seconds = delta_time_now - glfw.delta_time_seconds_last;
+    glfw.delta_time_seconds_last = delta_time_now;
 
     nk_input_begin(ctx);
     for (i = 0; i < glfw.text_len; ++i)

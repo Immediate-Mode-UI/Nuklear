@@ -66,7 +66,7 @@ static struct nk_allegro5 {
     int touch_down_id;
     struct nk_context ctx;
     struct nk_buffer cmds;
-    double delta_time_last;
+    float delta_time_seconds_last;
 } allegro5;
 
 
@@ -179,9 +179,9 @@ nk_allegro5_render()
     const struct nk_command *cmd;
 
     /* Update the timer */
-    double now = al_get_time();
-    allegro5.ctx.delta_time_seconds = now - allegro5.delta_time_last;
-    allegro5.delta_time_last = now;
+    float now = (float)al_get_time();
+    allegro5.ctx.delta_time_seconds = now - allegro5.delta_time_seconds_last;
+    allegro5.delta_time_seconds_last = now;
 
     al_set_target_backbuffer(allegro5.dsp);
 
@@ -504,7 +504,7 @@ nk_allegro5_init(NkAllegro5Font *allegro5font, ALLEGRO_DISPLAY *dsp,
     allegro5.height = height;
     allegro5.is_touch_down = 0;
     allegro5.touch_down_id = -1;
-    allegro5.delta_time_last = al_get_time();
+    allegro5.delta_time_seconds_last = (float)al_get_time();
 
     nk_init_default(&allegro5.ctx, font);
     allegro5.ctx.clip.copy = nk_allegro5_clipboard_copy;

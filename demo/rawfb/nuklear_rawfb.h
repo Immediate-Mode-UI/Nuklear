@@ -70,7 +70,6 @@ struct rawfb_context {
     struct rawfb_image fb;
     struct rawfb_image font_tex;
     struct nk_font_atlas atlas;
-    Uint64 delta_time_last;
 };
 
 #ifndef MIN
@@ -1034,11 +1033,6 @@ nk_rawfb_render(const struct rawfb_context *rawfb,
                 const unsigned char enable_clear)
 {
     const struct nk_command *cmd;
-
-    /* update the timer */
-    Uint64 now = SDL_GetTicks64();
-    sdlsurface->ctx.delta_time_seconds = (float)(now - sdlsurface->delta_time_last) / 1000;
-    sdlsurface->delta_time_last = now;
 
     if (enable_clear)
         nk_rawfb_clear(rawfb, clear);

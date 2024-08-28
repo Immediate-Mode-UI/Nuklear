@@ -88,11 +88,6 @@ nk_sdl_render(enum nk_anti_aliasing AA)
     /* setup global state */
     struct nk_sdl_device *dev = &sdl.ogl;
 
-    /* update the timer */
-    Uint64 now = SDL_GetTicks64();
-    sdl.ctx.delta_time_seconds = (float)(now - sdl.delta_time_last) / 1000;
-    sdl.delta_time_last = now;
-
     {
         SDL_Rect saved_clip;
 #ifdef NK_SDL_CLAMP_CLIP_RECT
@@ -250,7 +245,7 @@ nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer)
 #endif
     sdl.win = win;
     sdl.renderer = renderer;
-    sdl.delta_time_last = SDL_GetTicks64();
+    sdl.delta_time_seconds_last = ((float)SDL_GetTicks64()) / 1000;
     nk_init_default(&sdl.ctx, 0);
     sdl.ctx.clip.copy = nk_sdl_clipboard_copy;
     sdl.ctx.clip.paste = nk_sdl_clipboard_paste;
