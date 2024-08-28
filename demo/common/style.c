@@ -33,6 +33,10 @@ set_style(struct nk_context *ctx, enum theme theme)
         table[NK_COLOR_SCROLLBAR_CURSOR_HOVER] = nk_rgba(150, 150, 150, 255);
         table[NK_COLOR_SCROLLBAR_CURSOR_ACTIVE] = nk_rgba(160, 160, 160, 255);
         table[NK_COLOR_TAB_HEADER] = nk_rgba(180, 180, 180, 255);
+        table[NK_COLOR_KNOB] = table[NK_COLOR_SLIDER];
+        table[NK_COLOR_KNOB_CURSOR] = table[NK_COLOR_SLIDER_CURSOR];
+        table[NK_COLOR_KNOB_CURSOR_HOVER] = table[NK_COLOR_SLIDER_CURSOR_HOVER];
+        table[NK_COLOR_KNOB_CURSOR_ACTIVE] = table[NK_COLOR_SLIDER_CURSOR_ACTIVE];
         nk_style_from_table(ctx, table);
     } else if (theme == THEME_RED) {
         table[NK_COLOR_TEXT] = nk_rgba(190, 190, 190, 255);
@@ -63,6 +67,10 @@ set_style(struct nk_context *ctx, enum theme theme)
         table[NK_COLOR_SCROLLBAR_CURSOR_HOVER] = nk_rgba(70, 90, 100, 255);
         table[NK_COLOR_SCROLLBAR_CURSOR_ACTIVE] = nk_rgba(75, 95, 105, 255);
         table[NK_COLOR_TAB_HEADER] = nk_rgba(181, 45, 69, 220);
+        table[NK_COLOR_KNOB] = table[NK_COLOR_SLIDER];
+        table[NK_COLOR_KNOB_CURSOR] = table[NK_COLOR_SLIDER_CURSOR];
+        table[NK_COLOR_KNOB_CURSOR_HOVER] = table[NK_COLOR_SLIDER_CURSOR_HOVER];
+        table[NK_COLOR_KNOB_CURSOR_ACTIVE] = table[NK_COLOR_SLIDER_CURSOR_ACTIVE];
         nk_style_from_table(ctx, table);
     } else if (theme == THEME_BLUE) {
         table[NK_COLOR_TEXT] = nk_rgba(20, 20, 20, 255);
@@ -93,6 +101,10 @@ set_style(struct nk_context *ctx, enum theme theme)
         table[NK_COLOR_SCROLLBAR_CURSOR_HOVER] = nk_rgba(70, 90, 100, 255);
         table[NK_COLOR_SCROLLBAR_CURSOR_ACTIVE] = nk_rgba(75, 95, 105, 255);
         table[NK_COLOR_TAB_HEADER] = nk_rgba(156, 193, 220, 255);
+        table[NK_COLOR_KNOB] = table[NK_COLOR_SLIDER];
+        table[NK_COLOR_KNOB_CURSOR] = table[NK_COLOR_SLIDER_CURSOR];
+        table[NK_COLOR_KNOB_CURSOR_HOVER] = table[NK_COLOR_SLIDER_CURSOR_HOVER];
+        table[NK_COLOR_KNOB_CURSOR_ACTIVE] = table[NK_COLOR_SLIDER_CURSOR_ACTIVE];
         nk_style_from_table(ctx, table);
     } else if (theme == THEME_DARK) {
         table[NK_COLOR_TEXT] = nk_rgba(210, 210, 210, 255);
@@ -123,6 +135,10 @@ set_style(struct nk_context *ctx, enum theme theme)
         table[NK_COLOR_SCROLLBAR_CURSOR_HOVER] = nk_rgba(53, 88, 116, 255);
         table[NK_COLOR_SCROLLBAR_CURSOR_ACTIVE] = nk_rgba(58, 93, 121, 255);
         table[NK_COLOR_TAB_HEADER] = nk_rgba(48, 83, 111, 255);
+        table[NK_COLOR_KNOB] = table[NK_COLOR_SLIDER];
+        table[NK_COLOR_KNOB_CURSOR] = table[NK_COLOR_SLIDER_CURSOR];
+        table[NK_COLOR_KNOB_CURSOR_HOVER] = table[NK_COLOR_SLIDER_CURSOR_HOVER];
+        table[NK_COLOR_KNOB_CURSOR_ACTIVE] = table[NK_COLOR_SLIDER_CURSOR_ACTIVE];
         nk_style_from_table(ctx, table);
     } else if (theme == THEME_DRACULA) {
         struct nk_color background = nk_rgba(40, 42, 54, 255);
@@ -164,6 +180,10 @@ set_style(struct nk_context *ctx, enum theme theme)
         table[NK_COLOR_SCROLLBAR_CURSOR_HOVER] = comment;
         table[NK_COLOR_SCROLLBAR_CURSOR_ACTIVE] = purple;
         table[NK_COLOR_TAB_HEADER] = currentline;
+        table[NK_COLOR_KNOB] = table[NK_COLOR_SLIDER];
+        table[NK_COLOR_KNOB_CURSOR] = table[NK_COLOR_SLIDER_CURSOR];
+        table[NK_COLOR_KNOB_CURSOR_HOVER] = table[NK_COLOR_SLIDER_CURSOR_HOVER];
+        table[NK_COLOR_KNOB_CURSOR_ACTIVE] = table[NK_COLOR_SLIDER_CURSOR_ACTIVE];
         nk_style_from_table(ctx, table);
     } else {
         nk_style_default(ctx);
