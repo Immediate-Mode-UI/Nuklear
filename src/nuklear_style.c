@@ -19,13 +19,13 @@ NK_API void nk_style_default(struct nk_context *ctx){nk_style_from_table(ctx, 0)
     NK_COLOR(NK_COLOR_TOGGLE_HOVER,             120,120,120,255) \
     NK_COLOR(NK_COLOR_TOGGLE_CURSOR,            45, 45, 45, 255) \
     NK_COLOR(NK_COLOR_SELECT,                   45, 45, 45, 255) \
-    NK_COLOR(NK_COLOR_SELECT_ACTIVE,            35, 35, 35,255) \
+    NK_COLOR(NK_COLOR_SELECT_ACTIVE,            35, 35, 35,255)  \
     NK_COLOR(NK_COLOR_SLIDER,                   38, 38, 38, 255) \
     NK_COLOR(NK_COLOR_SLIDER_CURSOR,            100,100,100,255) \
     NK_COLOR(NK_COLOR_SLIDER_CURSOR_HOVER,      120,120,120,255) \
     NK_COLOR(NK_COLOR_SLIDER_CURSOR_ACTIVE,     150,150,150,255) \
     NK_COLOR(NK_COLOR_PROPERTY,                 38, 38, 38, 255) \
-    NK_COLOR(NK_COLOR_EDIT,                     38, 38, 38, 255)  \
+    NK_COLOR(NK_COLOR_EDIT,                     38, 38, 38, 255) \
     NK_COLOR(NK_COLOR_EDIT_CURSOR,              175,175,175,255) \
     NK_COLOR(NK_COLOR_COMBO,                    45, 45, 45, 255) \
     NK_COLOR(NK_COLOR_CHART,                    120,120,120,255) \
@@ -35,7 +35,11 @@ NK_API void nk_style_default(struct nk_context *ctx){nk_style_from_table(ctx, 0)
     NK_COLOR(NK_COLOR_SCROLLBAR_CURSOR,         100,100,100,255) \
     NK_COLOR(NK_COLOR_SCROLLBAR_CURSOR_HOVER,   120,120,120,255) \
     NK_COLOR(NK_COLOR_SCROLLBAR_CURSOR_ACTIVE,  150,150,150,255) \
-    NK_COLOR(NK_COLOR_TAB_HEADER,               40, 40, 40,255)
+    NK_COLOR(NK_COLOR_TAB_HEADER,               40, 40, 40,255)  \
+    NK_COLOR(NK_COLOR_KNOB,                     38, 38, 38, 255) \
+    NK_COLOR(NK_COLOR_KNOB_CURSOR,              100,100,100,255) \
+    NK_COLOR(NK_COLOR_KNOB_CURSOR_HOVER,        120,120,120,255) \
+    NK_COLOR(NK_COLOR_KNOB_CURSOR_ACTIVE,       150,150,150,255)
 
 NK_GLOBAL const struct nk_color
 nk_default_color_style[NK_COLOR_COUNT] = {
@@ -95,6 +99,7 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     struct nk_style_toggle *toggle;
     struct nk_style_selectable *select;
     struct nk_style_slider *slider;
+    struct nk_style_knob *knob;
     struct nk_style_progress *prog;
     struct nk_style_scrollbar *scroll;
     struct nk_style_edit *edit;
@@ -302,6 +307,32 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     button->draw_begin      = 0;
     button->draw_end        = 0;
     style->slider.dec_button = style->slider.inc_button;
+
+    /* knob */
+    knob = &style->knob;
+    nk_zero_struct(*knob);
+    knob->normal          = nk_style_item_hide();
+    knob->hover           = nk_style_item_hide();
+    knob->active          = nk_style_item_hide();
+    knob->knob_normal     = table[NK_COLOR_KNOB];
+    knob->knob_hover      = table[NK_COLOR_KNOB];
+    knob->knob_active     = table[NK_COLOR_KNOB];
+    knob->cursor_normal   = table[NK_COLOR_KNOB_CURSOR];
+    knob->cursor_hover    = table[NK_COLOR_KNOB_CURSOR_HOVER];
+    knob->cursor_active   = table[NK_COLOR_KNOB_CURSOR_ACTIVE];
+
+    knob->knob_border_color = table[NK_COLOR_BORDER];
+    knob->knob_border       = 1.0f;
+
+    knob->padding         = nk_vec2(2,2);
+    knob->spacing         = nk_vec2(2,2);
+    knob->cursor_width    = 2;
+    knob->color_factor    = 1.0f;
+    knob->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
+
+    knob->userdata        = nk_handle_ptr(0);
+    knob->draw_begin      = 0;
+    knob->draw_end        = 0;
 
     /* progressbar */
     prog = &style->progress;
