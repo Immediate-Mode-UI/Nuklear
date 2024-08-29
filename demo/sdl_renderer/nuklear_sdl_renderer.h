@@ -64,7 +64,7 @@ static struct nk_sdl {
     struct nk_sdl_device ogl;
     struct nk_context ctx;
     struct nk_font_atlas atlas;
-    float delta_time_seconds_last;
+    Uint64 time_of_last_frame;
 } sdl;
 
 NK_INTERN void
@@ -113,9 +113,9 @@ nk_sdl_render(enum nk_anti_aliasing AA)
             {NK_VERTEX_LAYOUT_END}
         };
 
-        float now = ((float)SDL_GetTicks64()) / 1000;
-        sdl.ctx.delta_time_seconds = now - sdl.delta_time_seconds_last;
-        sdl.delta_time_seconds_last = now;
+        Uint64 now = SDL_GetTicks64();
+        sdl.ctx.delta_time_seconds = (float)(now - sdl.time_of_last_frame) / 1000;
+        sdl.time_of_last_frame = now;
 
         NK_MEMSET(&config, 0, sizeof(config));
         config.vertex_layout = vertex_layout;
@@ -245,7 +245,7 @@ nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer)
 #endif
     sdl.win = win;
     sdl.renderer = renderer;
-    sdl.delta_time_seconds_last = ((float)SDL_GetTicks64()) / 1000;
+    sdl.time_of_last_frame = SDL_GetTicks64();
     nk_init_default(&sdl.ctx, 0);
     sdl.ctx.clip.copy = nk_sdl_clipboard_copy;
     sdl.ctx.clip.paste = nk_sdl_clipboard_paste;
