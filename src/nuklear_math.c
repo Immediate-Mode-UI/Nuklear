@@ -84,6 +84,52 @@ nk_cos(float x)
     return a0 + x*(a1 + x*(a2 + x*(a3 + x*(a4 + x*(a5 + x*(a6 + x*(a7 + x*a8)))))));
 }
 #endif
+#ifndef NK_ATAN
+#define NK_ATAN nk_atan
+NK_LIB float
+nk_atan(float x)
+{
+    /* ./lolremez --progress --float -d 9 -r "0:pi*2" "atan(x)" */
+    float u = -1.0989005e-05f;
+    NK_ASSERT(x >= 0.0f && "TODO support negative floats");
+    u = u * x + 0.00034117949f;
+    u = u * x + -0.0044932296f;
+    u = u * x + 0.032596264f;
+    u = u * x + -0.14088021f;
+    u = u * x + 0.36040401f;
+    u = u * x + -0.47017866f;
+    u = u * x + 0.00050198776f;
+    u = u * x + 1.0077682f;
+    u = u * x + -0.0004765437f;
+    return u;
+}
+#endif
+#ifndef NK_ATAN2
+#define NK_ATAN2 nk_atan2
+NK_LIB float
+nk_atan2(float y, float x)
+{
+    float ax = NK_ABS(x),
+          ay = NK_ABS(y);
+    /* 0 = +y +x    1 = -y +x
+       2 = +y -x    3 = -y -x */
+    nk_uint signs = (y < 0) | ((x < 0) << 1);
+
+    float a;
+    if(y == 0.0 && x == 0.0) return 0.0f;
+    a = (ay > ax)
+        ? NK_PI_HALF - NK_ATAN(ax / ay)
+        : NK_ATAN(ay / ax);
+
+    switch(signs){
+        case 0: return a;
+        case 1: return -a;
+        case 2: return -a + NK_PI;
+        case 3: return a - NK_PI;
+    }
+    return 0.0f; /* prevents warning */
+}
+#endif
 NK_LIB nk_uint
 nk_round_up_pow2(nk_uint v)
 {

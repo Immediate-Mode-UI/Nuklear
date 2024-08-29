@@ -103,6 +103,12 @@ NK_LIB float nk_sin(float x);
 #ifndef NK_COS
 NK_LIB float nk_cos(float x);
 #endif
+#ifndef NK_ATAN
+NK_LIB float nk_atan(float x);
+#endif
+#ifndef NK_ATAN2
+NK_LIB float nk_atan2(float y, float x);
+#endif
 NK_LIB nk_uint nk_round_up_pow2(nk_uint v);
 NK_LIB struct nk_rect nk_shrink_rect(struct nk_rect r, float amount);
 NK_LIB struct nk_rect nk_pad_rect(struct nk_rect r, struct nk_vec2 pad);
