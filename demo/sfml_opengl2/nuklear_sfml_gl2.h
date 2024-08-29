@@ -14,6 +14,7 @@
 #define NK_SFML_GL2_H_
 
 #include <SFML/Window.hpp>
+#include <SFML/System/Clock.hpp>
 
 NK_API struct nk_context*   nk_sfml_init(sf::Window* window);
 NK_API void                 nk_sfml_font_stash_begin(struct nk_font_atlas** atlas);
@@ -51,6 +52,7 @@ static struct nk_sfml {
     struct nk_sfml_device ogl;
     struct nk_context ctx;
     struct nk_font_atlas atlas;
+    sf::Clock* frame_delta_clock;
 } sfml;
 
 NK_INTERN void
@@ -73,6 +75,9 @@ nk_sfml_render(enum nk_anti_aliasing AA)
 
     int window_width = sfml.window->getSize().x;
     int window_height = sfml.window->getSize().y;
+
+    sfml.ctx.delta_time_seconds = (float)((double)sfml.frame_delta_clock->getElapsedTime().asMicroseconds() / 1000000);
+    sfml.frame_delta_clock->restart();
 
     glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_TRANSFORM_BIT);
     glDisable(GL_CULL_FACE);
@@ -229,6 +234,7 @@ nk_sfml_init(sf::Window* window)
     sfml.ctx.clip.paste = nk_sfml_clipboard_paste;
     sfml.ctx.clip.userdata = nk_handle_ptr(0);
     nk_buffer_init_default(&sfml.ogl.cmds);
+    sfml.frame_delta_clock = new sf::Clock();
     return &sfml.ctx;
 }
 
@@ -334,8 +340,8 @@ nk_sfml_handle_event(sf::Event* evt)
     } else if(evt->type == sf::Event::TouchBegan || evt->type == sf::Event::TouchEnded) {
         int down = evt->type == sf::Event::TouchBegan;
         const int x = evt->touch.x, y = evt->touch.y;
-		ctx->input.mouse.pos.x = x;
-		ctx->input.mouse.pos.y = y;
+        ctx->input.mouse.pos.x = x;
+        ctx->input.mouse.pos.y = y;
         nk_input_button(ctx, NK_BUTTON_LEFT, x, y, down);
         return 1;
     } else if(evt->type == sf::Event::TouchMoved) {
@@ -363,6 +369,7 @@ void nk_sfml_shutdown(void)
     nk_free(&sfml.ctx);
     glDeleteTextures(1, &dev->font_tex);
     nk_buffer_free(&dev->cmds);
+    delete sfml.frame_delta_clock;
     memset(&sfml, 0, sizeof(sfml));
 }
 
