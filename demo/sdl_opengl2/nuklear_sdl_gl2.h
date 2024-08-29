@@ -217,6 +217,7 @@ nk_sdl_init(SDL_Window *win)
     sdl.ctx.clip.paste = nk_sdl_clipboard_paste;
     sdl.ctx.clip.userdata = nk_handle_ptr(0);
     nk_buffer_init_default(&sdl.ogl.cmds);
+    sdl.time_of_last_frame = ((float)SDL_GetTicks64()) / 1000;
     return &sdl.ctx;
 }
 
