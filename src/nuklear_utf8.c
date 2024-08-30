@@ -202,7 +202,7 @@ nk_utf_filter_instructions(char *output, const char * input, int len)
 
             glyph_len += payload_size;
         } else {
-            NK_MEMCPY(output, input + text_len, glyph_len);
+            NK_MEMCPY(output, input + text_len, (NK_SIZE_TYPE)glyph_len);
             output += glyph_len;
         }
 
