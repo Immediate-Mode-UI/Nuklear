@@ -13,8 +13,10 @@ nk_setup(struct nk_context *ctx, const struct nk_user_font *font)
     if (!ctx) return;
     nk_zero_struct(*ctx);
     nk_style_default(ctx);
+#ifdef NK_KEY_REPEAT
     ctx->input.keyboard.repeater_delay    = NK_INPUT_REPEATER_DELAY;
     ctx->input.keyboard.repeater_interval = NK_INPUT_REPEATER_INTERVAL;
+#endif
     ctx->seq = 1;
     if (font) ctx->style.font = font;
 #ifdef NK_INCLUDE_VERTEX_BUFFER_OUTPUT
