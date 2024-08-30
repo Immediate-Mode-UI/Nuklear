@@ -1033,6 +1033,7 @@ nk_rawfb_render(const struct rawfb_context *rawfb,
                 const unsigned char enable_clear)
 {
     const struct nk_command *cmd;
+
     if (enable_clear)
         nk_rawfb_clear(rawfb, clear);
 

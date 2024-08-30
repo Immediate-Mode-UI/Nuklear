@@ -64,9 +64,8 @@ static struct nk_sdl {
     struct nk_sdl_device ogl;
     struct nk_context ctx;
     struct nk_font_atlas atlas;
+    Uint64 time_of_last_frame;
 } sdl;
-
-
 
 NK_INTERN void
 nk_sdl_device_upload_atlas(const void *image, int width, int height)
@@ -113,6 +112,11 @@ nk_sdl_render(enum nk_anti_aliasing AA)
             {NK_VERTEX_COLOR, NK_FORMAT_R8G8B8A8, NK_OFFSETOF(struct nk_sdl_vertex, col)},
             {NK_VERTEX_LAYOUT_END}
         };
+
+        Uint64 now = SDL_GetTicks64();
+        sdl.ctx.delta_time_seconds = (float)(now - sdl.time_of_last_frame) / 1000;
+        sdl.time_of_last_frame = now;
+
         NK_MEMSET(&config, 0, sizeof(config));
         config.vertex_layout = vertex_layout;
         config.vertex_size = sizeof(struct nk_sdl_vertex);
@@ -241,6 +245,7 @@ nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer)
 #endif
     sdl.win = win;
     sdl.renderer = renderer;
+    sdl.time_of_last_frame = SDL_GetTicks64();
     nk_init_default(&sdl.ctx, 0);
     sdl.ctx.clip.copy = nk_sdl_clipboard_copy;
     sdl.ctx.clip.paste = nk_sdl_clipboard_paste;
