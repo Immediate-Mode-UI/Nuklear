@@ -4516,8 +4516,11 @@ struct nk_mouse {
 
 struct nk_key {
     nk_bool down;
-    float down_time;
+    nk_bool fire;
     unsigned int clicked;
+#ifdef NK_KEY_REPEAT
+    float down_time;
+#endif
 };
 
 #ifndef NK_INPUT_REPEATER_DELAY
@@ -4532,10 +4535,10 @@ struct nk_keyboard {
     struct nk_key keys[NK_KEY_MAX];
     char text[NK_INPUT_MAX];
     int text_len;
+#ifdef NK_KEY_REPEAT
     float repeater_delay;
     float repeater_interval;
-    /* copied from nk_context.delta_time_seconds on nk_end_input call */
-    float delta;
+#endif
 };
 
 struct nk_input {
@@ -4559,6 +4562,7 @@ NK_API nk_bool nk_input_is_mouse_released(const struct nk_input*, enum nk_button
 NK_API nk_bool nk_input_is_key_pressed(const struct nk_input*, enum nk_keys);
 NK_API nk_bool nk_input_is_key_released(const struct nk_input*, enum nk_keys);
 NK_API nk_bool nk_input_is_key_down(const struct nk_input*, enum nk_keys);
+NK_API nk_bool nk_input_is_key_fired(const struct nk_input*, enum nk_keys);
 
 /* ===============================================================
  *
