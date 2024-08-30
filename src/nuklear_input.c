@@ -40,7 +40,6 @@ nk_input_end(struct nk_context *ctx)
         in->mouse.ungrab = 0;
         in->mouse.grab = 0;
     }
-    ctx->input.keyboard.delta = ctx->delta_time_seconds;
 }
 NK_API void
 nk_input_motion(struct nk_context *ctx, int x, int y)
@@ -58,9 +57,12 @@ NK_API void
 nk_input_key(struct nk_context *ctx, enum nk_keys key, nk_bool down)
 {
     struct nk_input *in;
+    nk_bool old_down;
     NK_ASSERT(ctx);
     if (!ctx) return;
     in = &ctx->input;
+    old_down = ctx->input.keyboard.keys[key].down;
+    in->keyboard.keys[key].fire = nk_false;
 #ifdef NK_KEYSTATE_BASED_INPUT
     if (in->keyboard.keys[key].down != down)
         in->keyboard.keys[key].clicked++;
@@ -68,6 +70,26 @@ nk_input_key(struct nk_context *ctx, enum nk_keys key, nk_bool down)
     in->keyboard.keys[key].clicked++;
 #endif
     in->keyboard.keys[key].down = down;
+
+#ifdef NK_KEY_REPEAT
+    if (!down) {
+        /* reset time held counter */
+        in->keyboard.keys[key].down_time = 0.0f;
+    } else  if(!old_down) {
+        /* first frame key down */
+        in->keyboard.keys[key].fire = nk_true;
+    } else {
+        /* handle key repeat */
+        in->keyboard.keys[key].down_time += ctx->delta_time_seconds;
+        if (in->keyboard.keys[key].down_time >= in->keyboard.repeater_delay) {
+            in->keyboard.keys[key].fire = nk_true;
+            in->keyboard.keys[key].down_time -= in->keyboard.repeater_interval;
+        }
+    }
+#else
+    if(down && !old_down)
+        in->keyboard.keys[key].fire = nk_true;
+#endif
 }
 NK_API void
 nk_input_button(struct nk_context *ctx, enum nk_buttons id, int x, int y, nk_bool down)
@@ -276,10 +298,13 @@ nk_input_is_key_released(const struct nk_input *i, enum nk_keys key)
 NK_API nk_bool
 nk_input_is_key_down(const struct nk_input *i, enum nk_keys key)
 {
-    const struct nk_key *k;
     if (!i) return nk_false;
-    k = &i->keyboard.keys[key];
-    if (k->down) return nk_true;
-    return nk_false;
+    return i->keyboard.keys[key].down;
+}
+NK_API nk_bool
+nk_input_is_key_fired(const struct nk_input *i, enum nk_keys key)
+{
+    if (!i) return nk_false;
+    return i->keyboard.keys[key].fire;
 }
 
