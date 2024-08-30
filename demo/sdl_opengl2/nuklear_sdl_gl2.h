@@ -51,7 +51,7 @@ static struct nk_sdl {
     struct nk_sdl_device ogl;
     struct nk_context ctx;
     struct nk_font_atlas atlas;
-    float time_of_last_frame;
+    Uint64 time_of_last_frame;
 } sdl;
 
 NK_INTERN void
@@ -75,8 +75,8 @@ nk_sdl_render(enum nk_anti_aliasing AA)
     int display_width, display_height;
     struct nk_vec2 scale;
 
-    float now = ((float)SDL_GetTicks64()) / 1000;
-    sdl.ctx.delta_time_seconds = now - sdl.time_of_last_frame;
+    Uint64 now = SDL_GetTicks64();
+    sdl.ctx.delta_time_seconds = (float)(now - sdl.time_of_last_frame) / 1000;
     sdl.time_of_last_frame = now;
 
     SDL_GetWindowSize(sdl.win, &width, &height);
@@ -217,6 +217,7 @@ nk_sdl_init(SDL_Window *win)
     sdl.ctx.clip.paste = nk_sdl_clipboard_paste;
     sdl.ctx.clip.userdata = nk_handle_ptr(0);
     nk_buffer_init_default(&sdl.ogl.cmds);
+    sdl.time_of_last_frame = SDL_GetTicks64();
     return &sdl.ctx;
 }
 

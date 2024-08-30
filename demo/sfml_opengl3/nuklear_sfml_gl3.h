@@ -66,6 +66,7 @@ static struct nk_sfml {
     struct nk_sfml_device ogl;
     struct nk_context ctx;
     struct nk_font_atlas atlas;
+    sf::Clock* frame_delta_clock;
 } sfml;
 
 #ifdef __APPLE__
@@ -197,11 +198,15 @@ nk_sfml_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_
     int window_width = sfml.window->getSize().x;
     int window_height = sfml.window->getSize().y;
     GLfloat ortho[4][4] = {
-        {2.0f, 0.0f, 0.0f, 0.0f},
-        {0.0f,-2.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f,-1.0f, 0.0f},
-        {-1.0f,1.0f, 0.0f, 1.0f},
+        {  2.0f,  0.0f,  0.0f, 0.0f },
+        {  0.0f, -2.0f,  0.0f, 0.0f },
+        {  0.0f,  0.0f, -1.0f, 0.0f },
+        { -1.0f,  1.0f,  0.0f, 1.0f },
     };
+
+    sfml.ctx.delta_time_seconds = (float)((double)sfml.frame_delta_clock->getElapsedTime().asMicroseconds() / 1000000);
+    sfml.frame_delta_clock->restart();
+
     ortho[0][0] /= (GLfloat)window_width;
     ortho[1][1] /= (GLfloat)window_height;
 
@@ -336,6 +341,7 @@ nk_sfml_init(sf::Window* window)
     sfml.ctx.clip.paste = nk_sfml_clipboard_paste;
     sfml.ctx.clip.userdata = nk_handle_ptr(0);
     nk_sfml_device_create();
+    sfml.frame_delta_clock = new sf::Clock();
     return &sfml.ctx;
 }
 
@@ -451,10 +457,10 @@ nk_sfml_handle_event(sf::Event* evt)
         } else nk_input_motion(ctx, evt->touch.x, evt->touch.y);
         return 1;
     } else if(evt->type == sf::Event::TextEntered) {
-		/* 8 ~ backspace */
-		if (evt->text.unicode != 8) {
-			nk_input_unicode(ctx, evt->text.unicode);
-		}
+        /* 8 ~ backspace */
+        if (evt->text.unicode != 8) {
+            nk_input_unicode(ctx, evt->text.unicode);
+        }
         return 1;
     } else if(evt->type == sf::Event::MouseWheelScrolled) {
         nk_input_scroll(ctx, nk_vec2(0,evt->mouseWheelScroll.delta));
@@ -469,6 +475,7 @@ void nk_sfml_shutdown()
     nk_font_atlas_clear(&sfml.atlas);
     nk_free(&sfml.ctx);
     nk_sfml_device_destroy();
+    delete sfml.frame_delta_clock;
     memset(&sfml, 0, sizeof(sfml));
 }
 
