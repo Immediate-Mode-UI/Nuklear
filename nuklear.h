@@ -4738,12 +4738,29 @@ struct nk_mouse {
 
 struct nk_key {
     nk_bool down;
+    nk_bool fire;
     unsigned int clicked;
+#ifdef NK_KEY_REPEAT
+    float down_time;
+#endif
 };
+
+#ifndef NK_INPUT_REPEATER_DELAY
+#define NK_INPUT_REPEATER_DELAY 0.33f
+#endif
+
+#ifndef NK_INPUT_REPEATER_INTERVAL
+#define NK_INPUT_REPEATER_INTERVAL 0.05f
+#endif
+
 struct nk_keyboard {
     struct nk_key keys[NK_KEY_MAX];
     char text[NK_INPUT_MAX];
     int text_len;
+#ifdef NK_KEY_REPEAT
+    float repeater_delay;
+    float repeater_interval;
+#endif
 };
 
 struct nk_input {
@@ -4767,6 +4784,7 @@ NK_API nk_bool nk_input_is_mouse_released(const struct nk_input*, enum nk_button
 NK_API nk_bool nk_input_is_key_pressed(const struct nk_input*, enum nk_keys);
 NK_API nk_bool nk_input_is_key_released(const struct nk_input*, enum nk_keys);
 NK_API nk_bool nk_input_is_key_down(const struct nk_input*, enum nk_keys);
+NK_API nk_bool nk_input_is_key_fired(const struct nk_input*, enum nk_keys);
 
 /* ===============================================================
  *
@@ -18072,9 +18090,12 @@ NK_API void
 nk_input_key(struct nk_context *ctx, enum nk_keys key, nk_bool down)
 {
     struct nk_input *in;
+    nk_bool old_down;
     NK_ASSERT(ctx);
     if (!ctx) return;
     in = &ctx->input;
+    old_down = ctx->input.keyboard.keys[key].down;
+    in->keyboard.keys[key].fire = nk_false;
 #ifdef NK_KEYSTATE_BASED_INPUT
     if (in->keyboard.keys[key].down != down)
         in->keyboard.keys[key].clicked++;
@@ -18082,6 +18103,26 @@ nk_input_key(struct nk_context *ctx, enum nk_keys key, nk_bool down)
     in->keyboard.keys[key].clicked++;
 #endif
     in->keyboard.keys[key].down = down;
+
+#ifdef NK_KEY_REPEAT
+    if (!down) {
+        /* reset time held counter */
+        in->keyboard.keys[key].down_time = 0.0f;
+    } else  if(!old_down) {
+        /* first frame key down */
+        in->keyboard.keys[key].fire = nk_true;
+    } else {
+        /* handle key repeat */
+        in->keyboard.keys[key].down_time += ctx->delta_time_seconds;
+        if (in->keyboard.keys[key].down_time >= in->keyboard.repeater_delay) {
+            in->keyboard.keys[key].fire = nk_true;
+            in->keyboard.keys[key].down_time -= in->keyboard.repeater_interval;
+        }
+    }
+#else
+    if(down && !old_down)
+        in->keyboard.keys[key].fire = nk_true;
+#endif
 }
 NK_API void
 nk_input_button(struct nk_context *ctx, enum nk_buttons id, int x, int y, nk_bool down)
@@ -18290,11 +18331,14 @@ nk_input_is_key_released(const struct nk_input *i, enum nk_keys key)
 NK_API nk_bool
 nk_input_is_key_down(const struct nk_input *i, enum nk_keys key)
 {
-    const struct nk_key *k;
     if (!i) return nk_false;
-    k = &i->keyboard.keys[key];
-    if (k->down) return nk_true;
-    return nk_false;
+    return i->keyboard.keys[key].down;
+}
+NK_API nk_bool
+nk_input_is_key_fired(const struct nk_input *i, enum nk_keys key)
+{
+    if (!i) return nk_false;
+    return i->keyboard.keys[key].fire;
 }
 
 
@@ -19178,6 +19222,10 @@ nk_setup(struct nk_context *ctx, const struct nk_user_font *font)
     if (!ctx) return;
     nk_zero_struct(*ctx);
     nk_style_default(ctx);
+#ifdef NK_KEY_REPEAT
+    ctx->input.keyboard.repeater_delay    = NK_INPUT_REPEATER_DELAY;
+    ctx->input.keyboard.repeater_interval = NK_INPUT_REPEATER_INTERVAL;
+#endif
     ctx->seq = 1;
     if (font) ctx->style.font = font;
 #ifdef NK_INCLUDE_VERTEX_BUFFER_OUTPUT
@@ -27889,7 +27937,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         int old_mode = edit->mode;
         for (i = 0; i < NK_KEY_MAX; ++i) {
             if (i == NK_KEY_ENTER || i == NK_KEY_TAB) continue; /* special case */
-            if (nk_input_is_key_pressed(in, (enum nk_keys)i)) {
+            if (nk_input_is_key_fired(in, (enum nk_keys)i)) {
                 nk_textedit_key(edit, (enum nk_keys)i, shift_mod, font, row_height);
                 cursor_follow = nk_true;
             }
