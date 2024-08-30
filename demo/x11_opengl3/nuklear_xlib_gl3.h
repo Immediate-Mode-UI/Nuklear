@@ -50,10 +50,10 @@ NK_API void                 nk_x11_device_destroy(void);
 #include <GL/glx.h>
 
 #ifndef NK_X11_DOUBLE_CLICK_LO
-#define NK_X11_DOUBLE_CLICK_LO 20
+#define NK_X11_DOUBLE_CLICK_LO 0.02
 #endif
 #ifndef NK_X11_DOUBLE_CLICK_HI
-#define NK_X11_DOUBLE_CLICK_HI 200
+#define NK_X11_DOUBLE_CLICK_HI 0.20
 #endif
 
 #ifdef NK_XLIB_LOAD_OPENGL_EXTENSIONS
@@ -194,7 +194,8 @@ static struct nk_x11 {
     Cursor cursor;
     Display *dpy;
     Window win;
-    long last_button_click;
+    double last_button_click;
+    double time_of_last_frame;
 } x11;
 
 #ifdef __APPLE__
@@ -206,12 +207,12 @@ static struct nk_x11 {
 #ifdef NK_XLIB_LOAD_OPENGL_EXTENSIONS
 #include <GL/glx.h>
 
-NK_INTERN long
-nk_timestamp(void)
+NK_INTERN double
+nk_get_time(void)
 {
     struct timeval tv;
     if (gettimeofday(&tv, NULL) < 0) return 0;
-    return (long)((long)tv.tv_sec * 1000 + (long)tv.tv_usec/1000);
+    return ((double)tv.tv_sec + (double)tv.tv_usec/1000000);
 }
 
 NK_INTERN int
@@ -480,11 +481,15 @@ nk_x11_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
     XWindowAttributes attr;
     struct nk_x11_device *dev = &x11.ogl;
     GLfloat ortho[4][4] = {
-        {2.0f, 0.0f, 0.0f, 0.0f},
-        {0.0f,-2.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f,-1.0f, 0.0f},
-        {-1.0f,1.0f, 0.0f, 1.0f},
+        {  2.0f,  0.0f,  0.0f, 0.0f },
+        {  0.0f, -2.0f,  0.0f, 0.0f },
+        {  0.0f,  0.0f, -1.0f, 0.0f },
+        { -1.0f,  1.0f,  0.0f, 1.0f },
     };
+    double now = nk_get_time();
+    x11.ctx.delta_time_seconds = now - x11.time_of_last_frame;
+    x11.time_of_last_frame = now;
+
     XGetWindowAttributes(x11.dpy, x11.win, &attr);
     width = attr.width;
     height = attr.height;
@@ -678,10 +683,10 @@ nk_x11_handle_event(XEvent *evt)
         const int x = evt->xbutton.x, y = evt->xbutton.y;
         if (evt->xbutton.button == Button1) {
             if (down) { /* Double-Click Button handler */
-                long dt = nk_timestamp() - x11.last_button_click;
+                float dt = nk_get_time() - x11.last_button_click;
                 if (dt > NK_X11_DOUBLE_CLICK_LO && dt < NK_X11_DOUBLE_CLICK_HI)
                     nk_input_button(ctx, NK_BUTTON_DOUBLE, x, y, nk_true);
-                x11.last_button_click = nk_timestamp();
+                x11.last_button_click = nk_get_time();
             } else nk_input_button(ctx, NK_BUTTON_DOUBLE, x, y, nk_false);
             nk_input_button(ctx, NK_BUTTON_LEFT, x, y, down);
         } else if (evt->xbutton.button == Button2)
@@ -730,6 +735,7 @@ nk_x11_init(Display *dpy, Window win)
     XFreePixmap(dpy, blank);}
 
     nk_init_default(&x11.ctx, 0);
+    x11.time_of_last_frame = nk_get_time();
     return &x11.ctx;
 }
 
