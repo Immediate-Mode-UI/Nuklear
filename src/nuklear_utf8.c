@@ -209,5 +209,6 @@ nk_utf_filter_instructions(char *output, const char * input, int len)
         text_len += glyph_len;
     } while(text_len <= len && glyph_len);
 
-    return output - start;
+
+    return (int)(output - start);
 }
