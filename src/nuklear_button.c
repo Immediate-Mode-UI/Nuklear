@@ -338,15 +338,18 @@ nk_do_button_text_symbol(nk_flags *state,
     if (align & NK_TEXT_ALIGN_LEFT) {
         tri.x = (content.x + content.w) - (2 * style->padding.x + tri.w);
         tri.x = NK_MAX(tri.x, 0);
-        content.w -= tri.w;
+
+        float label_icon_spacing = ((bounds.x + bounds.w) - (tri.x + tri.w)) * 0.5f;
+        //float label_icon_spacing = ((content.x + content.w) - (tri.x + tri.w)) * 1.f;
+        content.w = tri.x - content.x - label_icon_spacing;
         content.w = NK_MAX(content.w, 0);
     } else {
         tri.x = content.x + 2 * style->padding.x;
-        content.x = tri.x + tri.w;
-        content.w -= tri.w;
-
-        content.x += style->padding.x;
-        content.w -= style->padding.x;
+        
+        float label_icon_spacing = (tri.x - bounds.x) * 0.5f;
+        //float label_icon_spacing = (tri.x - content.x) * 1.f;
+        content.x = tri.x + tri.w + label_icon_spacing;
+        content.w -= tri.w + label_icon_spacing;
         content.w = NK_MAX(content.w, 0);
     }
 
@@ -405,19 +408,20 @@ nk_do_button_text_image(nk_flags *state,
     icon.y = bounds.y + style->padding.y;
     icon.w = icon.h = bounds.h - 2 * style->padding.y;
     if (align & NK_TEXT_ALIGN_LEFT) {
-        icon.x = (bounds.x + bounds.w) - (2 * style->padding.x + icon.w);
+        icon.x = (content.x + content.w) - (2 * style->padding.x + icon.w);
         icon.x = NK_MAX(icon.x, 0);
-        content.w -= icon.w;
-        
+
+        float label_icon_spacing = ((bounds.x + bounds.w) - (icon.x + icon.w)) * 0.5f;
+        //float label_icon_spacing = ((content.x + content.w) - (icon.x + icon.w)) * 1.f;
+        content.w = icon.x - content.x - label_icon_spacing;
         content.w = NK_MAX(content.w, 0);
     } else {
-        icon.x = bounds.x + 2 * style->padding.x;
-        content.x += icon.w;
-        content.w -= icon.w;
-
-        content.x += style->padding.x;
-        content.w -= style->padding.x;
-
+        icon.x = content.x + 2 * style->padding.x;
+        
+        float label_icon_spacing = (icon.x - bounds.x) * 0.5f;
+        //float label_icon_spacing = (icon.x - content.x) * 1.f;
+        content.x = icon.x + icon.w + label_icon_spacing;
+        content.w -= icon.w + label_icon_spacing;
         content.w = NK_MAX(content.w, 0);
     }
 
