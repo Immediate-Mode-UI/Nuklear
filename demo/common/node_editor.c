@@ -12,6 +12,8 @@
  * into something more serious it is probably best to extend it.*/
 struct node {
     int ID;
+    int edit_active;
+    int name_length;
     char name[32];
     struct nk_rect bounds;
     float value;
@@ -200,6 +202,35 @@ node_editor(struct nk_context *ctx)
                         nodedit->end != it)
                     {
                         updated = it;
+                    }
+
+                    if (nk_input_mouse_clicked(in, NK_BUTTON_DOUBLE, it->bounds))
+                    {
+                        it->edit_active = 1;
+                    }
+
+                    if(it->edit_active)
+                    {
+                        struct nk_rect bounds = it->bounds;
+                        bounds.y = 0 ;
+                        bounds.x = 0 ;
+                        bounds.h = 55;
+                        if(nk_popup_begin(ctx, NK_POPUP_DYNAMIC, 
+                                    "edit node name",
+                                    NK_WINDOW_MOVABLE|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BORDER, 
+                                    bounds))
+                        {
+                            nk_layout_row_dynamic(ctx, 30, 1);
+                            int status = nk_edit_string_zero_terminated(ctx, NK_EDIT_SIMPLE, &it->name, sizeof(it->name), nk_filter_default);
+                            //nk_edit_focus(ctx, NK_EDIT_SIMPLE); cant figure
+                            //out how to auto focus
+                            if(status & NK_EDIT_DEACTIVATED)
+                            {
+                                nk_popup_close(ctx);
+                                it->edit_active = 0;
+                            }
+                        }
+                        nk_popup_end(ctx);
                     }
 
                     /* ================= NODE CONTENT =====================*/
