@@ -14,7 +14,7 @@ enum node_type {
     NODE_NEW,
     NODE_SOURCE,
     NODE_COMBINE,
-    NODE_SINK,
+    NODE_CONSTANT,
     NODE_ADD,
     NODE_DIFF,
 };
@@ -23,7 +23,7 @@ const char* node_type_map[] = {
     [NODE_NEW] = "New",
     [NODE_SOURCE] = "Source",
     [NODE_COMBINE] = "Combine",
-    [NODE_SINK] = "Sink",
+    [NODE_CONSTANT] = "Constant",
     [NODE_ADD] = "Add",
     [NODE_DIFF] = "Difference",
 };
@@ -39,6 +39,61 @@ struct node {
     struct node *next;
     struct node *prev;
     enum node_type type;
+};
+
+void draw_type_new(struct nk_context *ctx, struct node* this)
+{
+}
+
+void draw_type_source(struct nk_context *ctx,struct node* this)
+{
+    /* complex color combobox */
+    if (nk_combo_begin_color(ctx, this->color, nk_vec2(this->bounds.w,this->bounds.h))) 
+    {
+        nk_layout_row_dynamic(ctx, 150, 1);
+        this->color = nk_rgb_cf(nk_color_picker(ctx, nk_color_cf(this->color), NK_RGBA));
+        nk_combo_end(ctx);
+    }
+    this->color.r = (nk_byte)nk_propertyi(ctx, "#R:", 0, this->color.r, 255, 1,1);
+    this->color.g = (nk_byte)nk_propertyi(ctx, "#G:", 0, this->color.g, 255, 1,1);
+    this->color.b = (nk_byte)nk_propertyi(ctx, "#B:", 0, this->color.b, 255, 1,1);
+    this->color.a = (nk_byte)nk_propertyi(ctx, "#A:", 0, this->color.a, 255, 1,1);
+}
+
+void draw_type_combine(struct nk_context *ctx,struct node* this)
+{
+    int check = 0;
+    nk_button_color(ctx, this->color);
+    nk_checkbox_label(ctx, "Mean", &check);
+    nk_checkbox_label(ctx, "Sum", &check);
+    nk_checkbox_label(ctx, "Difference", &check);
+    nk_checkbox_label(ctx, "Divide", &check);
+    nk_checkbox_label(ctx, "Random", &check);
+}
+
+void draw_type_constant(struct nk_context *ctx,struct node* this)
+{
+    char tmp[256] = "";
+    sprintf(tmp,"%f",this->value);
+    nk_edit_string_zero_terminated(ctx, NK_EDIT_SIMPLE, tmp, sizeof(tmp), nk_filter_float);
+    this->value = atof(tmp);
+}
+
+void draw_type_add(struct nk_context *ctx,struct node* this)
+{
+
+}
+void draw_type_diff(struct nk_context *ctx,struct node* this)
+{
+}
+
+void (*type_draw_map[])(struct nk_context*, struct node*) = {
+    [NODE_NEW] = draw_type_new,
+    [NODE_SOURCE] = draw_type_source,
+    [NODE_COMBINE] = draw_type_combine,
+    [NODE_CONSTANT] = draw_type_constant,
+    [NODE_ADD] = draw_type_add,
+    [NODE_DIFF] = draw_type_diff,
 };
 
 struct node_link {
@@ -132,7 +187,7 @@ node_editor_add(struct node_editor *editor, const char *name, struct nk_rect bou
     node->output_count = out_count;
     node->color = col;
     node->bounds = bounds;
-    node->type = NODE_NEW;
+    node->type = NODE_SOURCE;
     strcpy(node->name, name);
     node_editor_push(editor, node);
 }
@@ -209,7 +264,7 @@ node_editor(struct nk_context *ctx)
                     it->bounds.y - nodedit->scrolling.y, it->bounds.w, it->bounds.h));
 
                 /* execute node window */
-                if (nk_group_begin(ctx, it->name, NK_WINDOW_MOVABLE|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BORDER|NK_WINDOW_TITLE))
+                if (nk_group_begin(ctx, it->name, NK_WINDOW_MOVABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_BORDER|NK_WINDOW_TITLE))
                 {
                     /* always have last selected node on top */
 
@@ -225,11 +280,7 @@ node_editor(struct nk_context *ctx)
                     /* ================= NODE CONTENT =====================*/
                     nk_layout_row_dynamic(ctx, 25, 1);
                     it->type = nk_combo(ctx, node_type_map, NK_LEN(node_type_map), it->type, 25, nk_vec2(200,200));
-                    nk_button_color(ctx, it->color);
-                    it->color.r = (nk_byte)nk_propertyi(ctx, "#R:", 0, it->color.r, 255, 1,1);
-                    it->color.g = (nk_byte)nk_propertyi(ctx, "#G:", 0, it->color.g, 255, 1,1);
-                    it->color.b = (nk_byte)nk_propertyi(ctx, "#B:", 0, it->color.b, 255, 1,1);
-                    it->color.a = (nk_byte)nk_propertyi(ctx, "#A:", 0, it->color.a, 255, 1,1);
+                    type_draw_map[it->type](ctx, it);
                     /* ====================================================*/
                     nk_group_end(ctx);
                 }
@@ -261,11 +312,11 @@ node_editor(struct nk_context *ctx)
 
                         /* draw curve from linked node slot to mouse position */
                         if (nodedit->linking.active && nodedit->linking.node == it &&
-                            nodedit->linking.input_slot == n) {
+                                nodedit->linking.input_slot == n) {
                             struct nk_vec2 l0 = nk_vec2(circle.x + 3, circle.y + 3);
                             struct nk_vec2 l1 = in->mouse.pos;
                             nk_stroke_curve(canvas, l0.x, l0.y, l0.x + 50.0f, l0.y,
-                                l1.x - 50.0f, l1.y, l1.x, l1.y, 1.0f, nk_rgb(100, 100, 100));
+                                    l1.x - 50.0f, l1.y, l1.x, l1.y, 1.0f, nk_rgb(100, 100, 100));
                         }
                     }
 
@@ -278,11 +329,11 @@ node_editor(struct nk_context *ctx)
                         circle.w = 8; circle.h = 8;
                         nk_fill_circle(canvas, circle, nk_rgb(100, 100, 100));
                         if (nk_input_is_mouse_released(in, NK_BUTTON_LEFT) &&
-                            nk_input_is_mouse_hovering_rect(in, circle) &&
-                            nodedit->linking.active && nodedit->linking.node != it) {
+                                nk_input_is_mouse_hovering_rect(in, circle) &&
+                                nodedit->linking.active && nodedit->linking.node != it) {
                             nodedit->linking.active = nk_false;
                             node_editor_link(nodedit, nodedit->linking.input_id,
-                                nodedit->linking.input_slot, it->ID, n);
+                                    nodedit->linking.input_slot, it->ID, n);
                         }
                     }
                 }
@@ -304,16 +355,16 @@ node_editor(struct nk_context *ctx)
                 float spacei = node->bounds.h / (float)((ni->output_count) + 1);
                 float spaceo = node->bounds.h / (float)((no->input_count) + 1);
                 struct nk_vec2 l0 = nk_layout_space_to_screen(ctx,
-                    nk_vec2(ni->bounds.x + ni->bounds.w, 3.0f + ni->bounds.y + spacei * (float)(link->input_slot+1)));
+                        nk_vec2(ni->bounds.x + ni->bounds.w, 3.0f + ni->bounds.y + spacei * (float)(link->input_slot+1)));
                 struct nk_vec2 l1 = nk_layout_space_to_screen(ctx,
-                    nk_vec2(no->bounds.x, 3.0f + no->bounds.y + spaceo * (float)(link->output_slot+1)));
+                        nk_vec2(no->bounds.x, 3.0f + no->bounds.y + spaceo * (float)(link->output_slot+1)));
 
                 l0.x -= nodedit->scrolling.x;
                 l0.y -= nodedit->scrolling.y;
                 l1.x -= nodedit->scrolling.x;
                 l1.y -= nodedit->scrolling.y;
                 nk_stroke_curve(canvas, l0.x, l0.y, l0.x + 50.0f, l0.y,
-                    l1.x - 50.0f, l1.y, l1.x, l1.y, 1.0f, nk_rgb(100, 100, 100));
+                        l1.x - 50.0f, l1.y, l1.x, l1.y, 1.0f, nk_rgb(100, 100, 100));
             }
 
             if (updated) {
@@ -353,7 +404,7 @@ node_editor(struct nk_context *ctx)
 
         /* window content scrolling */
         if (nk_input_is_mouse_hovering_rect(in, nk_window_get_bounds(ctx)) &&
-            nk_input_is_mouse_down(in, NK_BUTTON_MIDDLE)) {
+                nk_input_is_mouse_down(in, NK_BUTTON_MIDDLE)) {
             nodedit->scrolling.x += in->mouse.delta.x;
             nodedit->scrolling.y += in->mouse.delta.y;
         }
