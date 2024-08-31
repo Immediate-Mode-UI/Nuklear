@@ -10,6 +10,24 @@
  * In addition adding and removing nodes is quite limited at the
  * moment since it is based on a simple fixed array. If this is to be converted
  * into something more serious it is probably best to extend it.*/
+enum node_type {
+    NODE_NEW,
+    NODE_SOURCE,
+    NODE_COMBINE,
+    NODE_SINK,
+    NODE_ADD,
+    NODE_DIFF,
+};
+
+const char* node_type_map[] = {
+    [NODE_NEW] = "New",
+    [NODE_SOURCE] = "Source",
+    [NODE_COMBINE] = "Combine",
+    [NODE_SINK] = "Sink",
+    [NODE_ADD] = "Add",
+    [NODE_DIFF] = "Difference",
+};
+
 struct node {
     int ID;
     char name[32];
@@ -20,6 +38,7 @@ struct node {
     int output_count;
     struct node *next;
     struct node *prev;
+    enum node_type type;
 };
 
 struct node_link {
@@ -113,6 +132,7 @@ node_editor_add(struct node_editor *editor, const char *name, struct nk_rect bou
     node->output_count = out_count;
     node->color = col;
     node->bounds = bounds;
+    node->type = NODE_NEW;
     strcpy(node->name, name);
     node_editor_push(editor, node);
 }
@@ -204,6 +224,7 @@ node_editor(struct nk_context *ctx)
 
                     /* ================= NODE CONTENT =====================*/
                     nk_layout_row_dynamic(ctx, 25, 1);
+                    it->type = nk_combo(ctx, node_type_map, NK_LEN(node_type_map), it->type, 25, nk_vec2(200,200));
                     nk_button_color(ctx, it->color);
                     it->color.r = (nk_byte)nk_propertyi(ctx, "#R:", 0, it->color.r, 255, 1,1);
                     it->color.g = (nk_byte)nk_propertyi(ctx, "#G:", 0, it->color.g, 255, 1,1);
