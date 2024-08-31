@@ -57,11 +57,11 @@ NK_API void
 nk_input_key(struct nk_context *ctx, enum nk_keys key, nk_bool down)
 {
     struct nk_input *in;
-    nk_bool old_down;
+    nk_bool prev_frame_down;
     NK_ASSERT(ctx);
     if (!ctx) return;
     in = &ctx->input;
-    old_down = ctx->input.keyboard.keys[key].down;
+    prev_frame_down = ctx->input.keyboard.keys[key].down;
     in->keyboard.keys[key].fire = nk_false;
 #ifdef NK_KEYSTATE_BASED_INPUT
     if (in->keyboard.keys[key].down != down)
@@ -75,7 +75,7 @@ nk_input_key(struct nk_context *ctx, enum nk_keys key, nk_bool down)
     if (!down) {
         /* reset time held counter */
         in->keyboard.keys[key].down_time = 0.0f;
-    } else  if(!old_down) {
+    } else  if(!prev_frame_down) {
         /* first frame key down */
         in->keyboard.keys[key].fire = nk_true;
     } else {
@@ -87,7 +87,7 @@ nk_input_key(struct nk_context *ctx, enum nk_keys key, nk_bool down)
         }
     }
 #else
-    if(down && !old_down)
+    if(down && !prev_frame_down)
         in->keyboard.keys[key].fire = nk_true;
 #endif
 }
