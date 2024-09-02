@@ -36,6 +36,7 @@
 /*#define INCLUDE_ALL */
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
+/*#define INCLUDE_CANVAS */
 /*#define INCLUDE_OVERVIEW */
 /*#define INCLUDE_NODE_EDITOR */
 
@@ -154,13 +155,6 @@ main(int argc, char *argv[])
         nk_style_set_font(ctx, &font->handle);
     }
 
-    #ifdef INCLUDE_STYLE
-    /*set_style(ctx, THEME_WHITE);*/
-    /*set_style(ctx, THEME_RED);*/
-    /*set_style(ctx, THEME_BLUE);*/
-    /*set_style(ctx, THEME_DARK);*/
-    #endif
-
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
     while (running)
     {
@@ -171,6 +165,7 @@ main(int argc, char *argv[])
             if (evt.type == SDL_QUIT) goto cleanup;
             nk_sdl_handle_event(&evt);
         }
+        nk_sdl_handle_grab(); /* optional grabbing behavior */
         nk_input_end(ctx);
 
         /* GUI */

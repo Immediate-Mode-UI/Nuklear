@@ -41,7 +41,7 @@
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
-#define INCLUDE_OVERVIEW
+/*#define INCLUDE_OVERVIEW */
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
@@ -113,12 +113,6 @@ int main(void)
     font = nk_allegro5_font_create_from_file("../../../extra_font/Roboto-Regular.ttf", 12, 0);
 
     ctx = nk_allegro5_init(font, display, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-    /* style.c */
-    /*set_style(ctx, THEME_WHITE);*/
-    /*set_style(ctx, THEME_RED);*/
-    /*set_style(ctx, THEME_BLUE);*/
-    /*set_style(ctx, THEME_DARK);*/
 
     while(1)
     {

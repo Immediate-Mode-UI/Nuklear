@@ -48,6 +48,9 @@ NK_API void                 nk_xfont_del(Display *dpy, XFont *font);
  * ===============================================================
  */
 #ifdef NK_XLIB_IMPLEMENTATION
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
@@ -73,10 +76,10 @@ NK_API void                 nk_xfont_del(Display *dpy, XFont *font);
 
 
 #ifndef NK_X11_DOUBLE_CLICK_LO
-#define NK_X11_DOUBLE_CLICK_LO 20
+#define NK_X11_DOUBLE_CLICK_LO 0.02
 #endif
 #ifndef NK_X11_DOUBLE_CLICK_HI
-#define NK_X11_DOUBLE_CLICK_HI 200
+#define NK_X11_DOUBLE_CLICK_HI 0.20
 #endif
 
 typedef struct XSurface XSurface;
@@ -128,15 +131,16 @@ static struct  {
     Visual *vis;
     Colormap cmap;
 #endif
-    long last_button_click;
+    double last_button_click;
+    double time_of_last_frame;
 } xlib;
 
-NK_INTERN long
-nk_timestamp(void)
+NK_INTERN double
+nk_get_time(void)
 {
     struct timeval tv;
     if (gettimeofday(&tv, NULL) < 0) return 0;
-    return (long)((long)tv.tv_sec * 1000 + (long)tv.tv_usec/1000);
+    return ((double)tv.tv_sec + (double)tv.tv_usec/1000000);
 }
 
 NK_INTERN unsigned long
@@ -179,9 +183,9 @@ nk_xsurf_resize(XSurface *surf, unsigned int w, unsigned int h)
     surf->drawable = XCreatePixmap(surf->dpy, surf->root, w, h,
         (unsigned int)DefaultDepth(surf->dpy, surf->screen));
 #ifdef NK_XLIB_USE_XFT
-	XftDrawChange(surf->ftdraw, surf->drawable);
+    XftDrawChange(surf->ftdraw, surf->drawable);
 #endif
-	return;
+    return;
 }
 
 NK_INTERN void
@@ -195,9 +199,9 @@ nk_xsurf_scissor(XSurface *surf, float x, float y, float w, float h)
     XSetClipRectangles(surf->dpy, surf->gc, 0, 0, &clip_rect, 1, Unsorted);
 
 #ifdef NK_XLIB_USE_XFT
-	XftDrawSetClipRectangles(surf->ftdraw, 0, 0, &clip_rect, 1);
+    XftDrawSetClipRectangles(surf->ftdraw, 0, 0, &clip_rect, 1);
 #endif
-	return;
+    return;
 }
 
 NK_INTERN void
@@ -390,6 +394,29 @@ nk_xsurf_stroke_circle(XSurface *surf, short x, short y, unsigned short w,
 }
 
 NK_INTERN void
+nk_xsurf_stroke_arc(XSurface *surf, short cx, short cy, unsigned short radius,
+    float a_min, float a_max, unsigned short line_thickness, struct nk_color col)
+{
+    unsigned long c = nk_color_from_byte(&col.r);
+    XSetLineAttributes(surf->dpy, surf->gc, line_thickness, LineSolid, CapButt, JoinMiter);
+    XSetForeground(surf->dpy, surf->gc, c);
+    XDrawArc(surf->dpy, surf->drawable, surf->gc, (int)(cx - radius), (int)(cy - radius),
+        (unsigned)(radius * 2), (unsigned)(radius * 2),
+        (int)(a_min * 180 * 64 / NK_PI), (int)(a_max * 180 * 64 / NK_PI));
+}
+
+NK_INTERN void
+nk_xsurf_fill_arc(XSurface *surf, short cx, short cy, unsigned short radius,
+    float a_min, float a_max, struct nk_color col)
+{
+    unsigned long c = nk_color_from_byte(&col.r);
+    XSetForeground(surf->dpy, surf->gc, c);
+    XFillArc(surf->dpy, surf->drawable, surf->gc, (int)(cx - radius), (int)(cy - radius),
+        (unsigned)(radius * 2), (unsigned)(radius * 2),
+        (int)(a_min * 180 * 64 / NK_PI), (int)(a_max * 180 * 64 / NK_PI));
+}
+
+NK_INTERN void
 nk_xsurf_stroke_curve(XSurface *surf, struct nk_vec2i p1,
     struct nk_vec2i p2, struct nk_vec2i p3, struct nk_vec2i p4,
     unsigned int num_segments, unsigned short line_thickness, struct nk_color col)
@@ -439,13 +466,13 @@ nk_xsurf_draw_text(XSurface *surf, short x, short y, const char *text, int len,
     xrc.alpha = cfg.a * 257;
     XftColorAllocValue(surf->dpy, xlib.vis, xlib.cmap, &xrc, &color);
     XftDrawStringUtf8(surf->ftdraw, &color, font->ft, tx, ty, (FcChar8*)text, len);
-	XftColorFree(surf->dpy, xlib.vis, xlib.cmap, &color);
+    XftColorFree(surf->dpy, xlib.vis, xlib.cmap, &color);
 #else
     XSetForeground(surf->dpy, surf->gc, fg);
     if(font->set) XmbDrawString(surf->dpy,surf->drawable, font->set, surf->gc, tx, ty, (const char*)text, (int)len);
     else XDrawString(surf->dpy, surf->drawable, surf->gc, tx, ty, (const char*)text, (int)len);
 #endif
-	return;
+    return;
 }
 
 
@@ -584,7 +611,7 @@ NK_INTERN void
 nk_xsurf_del(XSurface *surf)
 {
 #ifdef NK_XLIB_USE_XFT
-	XftDrawDestroy(surf->ftdraw);
+    XftDrawDestroy(surf->ftdraw);
 #endif
     XFreePixmap(surf->dpy, surf->drawable);
     XFreeGC(surf->dpy, surf->gc);
@@ -648,8 +675,8 @@ nk_xfont_get_text_width(nk_handle handle, float height, const char *text, int le
 
     NK_UNUSED(height);
 
-	if(!font || !text)
-		return 0;
+    if(!font || !text)
+        return 0;
 
     XftTextExtentsUtf8(xlib.dpy, font->ft, (FcChar8*)text, len, &g);
     return g.xOff;
@@ -658,8 +685,8 @@ nk_xfont_get_text_width(nk_handle handle, float height, const char *text, int le
 
     NK_UNUSED(height);
 
-	if(!font || !text)
-		return 0;
+    if(!font || !text)
+        return 0;
 
     if(font->set) {
         XmbTextExtents(font->set, (const char*)text, len, NULL, &r);
@@ -676,7 +703,7 @@ nk_xfont_del(Display *dpy, XFont *font)
 {
     if(!font) return;
 #ifdef NK_XLIB_USE_XFT
-	XftFontClose(dpy, font->ft);
+    XftFontClose(dpy, font->ft);
 #else
     if(font->set)
         XFreeFontSet(dpy, font->set);
@@ -721,6 +748,7 @@ nk_xlib_init(XFont *xfont, Display *dpy, int screen, Window root,
     XFreePixmap(dpy, blank);}
     xlib.surf = nk_xsurf_create(screen, w, h);
     nk_init_default(&xlib.ctx, font);
+    xlib.time_of_last_frame = nk_get_time();
     return &xlib.ctx;
 }
 
@@ -852,10 +880,10 @@ nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt)
         const int x = evt->xbutton.x, y = evt->xbutton.y;
         if (evt->xbutton.button == Button1) {
             if (down) { /* Double-Click Button handler */
-                long dt = nk_timestamp() - xlib.last_button_click;
+                float dt = nk_get_time() - xlib.last_button_click;
                 if (dt > NK_X11_DOUBLE_CLICK_LO && dt < NK_X11_DOUBLE_CLICK_HI)
                     nk_input_button(ctx, NK_BUTTON_DOUBLE, x, y, nk_true);
-                xlib.last_button_click = nk_timestamp();
+                xlib.last_button_click = nk_get_time();
             } else nk_input_button(ctx, NK_BUTTON_DOUBLE, x, y, nk_false);
             nk_input_button(ctx, NK_BUTTON_LEFT, x, y, down);
         } else if (evt->xbutton.button == Button2)
@@ -964,6 +992,10 @@ nk_xlib_render(Drawable screen, struct nk_color clear)
     struct nk_context *ctx = &xlib.ctx;
     XSurface *surf = xlib.surf;
 
+    double now = nk_get_time();
+    xlib.ctx.delta_time_seconds = now - xlib.time_of_last_frame;
+    xlib.time_of_last_frame = now;
+
     nk_xsurf_clear(xlib.surf, nk_color_from_byte(&clear.r));
     nk_foreach(cmd, &xlib.ctx)
     {
@@ -996,6 +1028,14 @@ nk_xlib_render(Drawable screen, struct nk_color clear)
         case NK_COMMAND_CIRCLE_FILLED: {
             const struct nk_command_circle_filled *c = (const struct nk_command_circle_filled *)cmd;
             nk_xsurf_fill_circle(surf, c->x, c->y, c->w, c->h, c->color);
+        } break;
+        case NK_COMMAND_ARC: {
+            const struct nk_command_arc *a = (const struct nk_command_arc *)cmd;
+            nk_xsurf_stroke_arc(surf, a->cx, a->cy, a->r, a->a[0], a->a[1], a->line_thickness, a->color);
+        } break;
+        case NK_COMMAND_ARC_FILLED: {
+            const struct nk_command_arc_filled *a = (const struct nk_command_arc_filled *)cmd;
+            nk_xsurf_fill_arc(surf, a->cx, a->cy, a->r, a->a[0], a->a[1], a->color);
         } break;
         case NK_COMMAND_TRIANGLE: {
             const struct nk_command_triangle*t = (const struct nk_command_triangle*)cmd;
@@ -1034,8 +1074,6 @@ nk_xlib_render(Drawable screen, struct nk_color clear)
             nk_xsurf_draw_image(surf, i->x, i->y, i->w, i->h, i->img, i->col);
         } break;
         case NK_COMMAND_RECT_MULTI_COLOR:
-        case NK_COMMAND_ARC:
-        case NK_COMMAND_ARC_FILLED:
         case NK_COMMAND_CUSTOM:
         default: break;
         }

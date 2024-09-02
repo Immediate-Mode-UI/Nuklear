@@ -46,6 +46,7 @@ NK_API void                   nk_allegro5_font_set_font(NkAllegro5Font *font);
  * ===============================================================
  */
 #ifdef NK_ALLEGRO5_IMPLEMENTATION
+#include <stdio.h>
 
 #ifndef NK_ALLEGRO5_TEXT_MAX
 #define NK_ALLEGRO5_TEXT_MAX 256
@@ -65,6 +66,7 @@ static struct nk_allegro5 {
     int touch_down_id;
     struct nk_context ctx;
     struct nk_buffer cmds;
+    float delta_time_seconds_last;
 } allegro5;
 
 
@@ -101,7 +103,7 @@ static float
 nk_allegro5_font_get_text_width(nk_handle handle, float height, const char *text, int len)
 {
     float width;
-    char *strcpy;
+    char *str;
     NkAllegro5Font *font = (NkAllegro5Font*)handle.ptr;
     NK_UNUSED(height);
     if (!font || !text) {
@@ -111,11 +113,11 @@ nk_allegro5_font_get_text_width(nk_handle handle, float height, const char *text
        as nuklear uses variable size buffers and al_get_text_width doesn't
        accept a length, it infers length from null-termination
        (which is unsafe API design by allegro devs!) */
-    strcpy = malloc(len + 1);
-    strncpy(strcpy, text, len);
-    strcpy[len] = '\0';
-    width = al_get_text_width(font->font, strcpy);
-    free(strcpy);
+    str = calloc((size_t)len + 1, 1);
+    if(!str) return 0;
+    strncpy(str, text, len);
+    width = al_get_text_width(font->font, str);
+    free(str);
     return width;
 }
 
@@ -175,6 +177,11 @@ NK_API void
 nk_allegro5_render()
 {
     const struct nk_command *cmd;
+
+    /* Update the timer */
+    float now = (float)al_get_time();
+    allegro5.ctx.delta_time_seconds = now - allegro5.delta_time_seconds_last;
+    allegro5.delta_time_seconds_last = now;
 
     al_set_target_backbuffer(allegro5.dsp);
 
@@ -473,10 +480,9 @@ nk_allegro5_clipboard_copy(nk_handle usr, const char *text, int len)
     char *str = 0;
     (void)usr;
     if (!len) return;
-    str = (char*)malloc((size_t)len+1);
+    str = calloc((size_t)len + 1, 1);
     if (!str) return;
-    memcpy(str, text, (size_t)len);
-    str[len] = '\0';
+    strncpy(str, text, len);
     al_set_clipboard_text(allegro5.dsp, str);
     free(str);
 }
@@ -498,6 +504,7 @@ nk_allegro5_init(NkAllegro5Font *allegro5font, ALLEGRO_DISPLAY *dsp,
     allegro5.height = height;
     allegro5.is_touch_down = 0;
     allegro5.touch_down_id = -1;
+    allegro5.delta_time_seconds_last = (float)al_get_time();
 
     nk_init_default(&allegro5.ctx, font);
     allegro5.ctx.clip.copy = nk_allegro5_clipboard_copy;

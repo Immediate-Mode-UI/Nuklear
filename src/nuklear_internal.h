@@ -103,6 +103,12 @@ NK_LIB float nk_sin(float x);
 #ifndef NK_COS
 NK_LIB float nk_cos(float x);
 #endif
+#ifndef NK_ATAN
+NK_LIB float nk_atan(float x);
+#endif
+#ifndef NK_ATAN2
+NK_LIB float nk_atan2(float y, float x);
+#endif
 NK_LIB nk_uint nk_round_up_pow2(nk_uint v);
 NK_LIB struct nk_rect nk_shrink_rect(struct nk_rect r, float amount);
 NK_LIB struct nk_rect nk_pad_rect(struct nk_rect r, struct nk_vec2 pad);
@@ -138,7 +144,7 @@ NK_LIB struct nk_vec2 nk_text_calculate_text_bounds(const struct nk_user_font *f
 NK_LIB int nk_strfmt(char *buf, int buf_size, const char *fmt, va_list args);
 #endif
 #ifdef NK_INCLUDE_STANDARD_IO
-NK_LIB char *nk_file_load(const char* path, nk_size* siz, struct nk_allocator *alloc);
+NK_LIB char *nk_file_load(const char* path, nk_size* siz, const struct nk_allocator *alloc);
 #endif
 
 /* buffer */
@@ -183,7 +189,7 @@ NK_LIB struct nk_window *nk_find_window(struct nk_context *ctx, nk_hash hash, co
 NK_LIB void nk_insert_window(struct nk_context *ctx, struct nk_window *win, enum nk_window_insert_location loc);
 
 /* pool */
-NK_LIB void nk_pool_init(struct nk_pool *pool, struct nk_allocator *alloc, unsigned int capacity);
+NK_LIB void nk_pool_init(struct nk_pool *pool, const struct nk_allocator *alloc, unsigned int capacity);
 NK_LIB void nk_pool_free(struct nk_pool *pool);
 NK_LIB void nk_pool_init_fixed(struct nk_pool *pool, void *memory, nk_size size);
 NK_LIB struct nk_page_element *nk_pool_alloc(struct nk_pool *pool);
@@ -255,9 +261,9 @@ enum nk_toggle_type {
     NK_TOGGLE_OPTION
 };
 NK_LIB nk_bool nk_toggle_behavior(const struct nk_input *in, struct nk_rect select, nk_flags *state, nk_bool active);
-NK_LIB void nk_draw_checkbox(struct nk_command_buffer *out, nk_flags state, const struct nk_style_toggle *style, nk_bool active, const struct nk_rect *label, const struct nk_rect *selector, const struct nk_rect *cursors, const char *string, int len, const struct nk_user_font *font);
-NK_LIB void nk_draw_option(struct nk_command_buffer *out, nk_flags state, const struct nk_style_toggle *style, nk_bool active, const struct nk_rect *label, const struct nk_rect *selector, const struct nk_rect *cursors, const char *string, int len, const struct nk_user_font *font);
-NK_LIB nk_bool nk_do_toggle(nk_flags *state, struct nk_command_buffer *out, struct nk_rect r, nk_bool *active, const char *str, int len, enum nk_toggle_type type, const struct nk_style_toggle *style, const struct nk_input *in, const struct nk_user_font *font);
+NK_LIB void nk_draw_checkbox(struct nk_command_buffer *out, nk_flags state, const struct nk_style_toggle *style, nk_bool active, const struct nk_rect *label, const struct nk_rect *selector, const struct nk_rect *cursors, const char *string, int len, const struct nk_user_font *font, nk_flags text_alignment);
+NK_LIB void nk_draw_option(struct nk_command_buffer *out, nk_flags state, const struct nk_style_toggle *style, nk_bool active, const struct nk_rect *label, const struct nk_rect *selector, const struct nk_rect *cursors, const char *string, int len, const struct nk_user_font *font, nk_flags text_alignment);
+NK_LIB nk_bool nk_do_toggle(nk_flags *state, struct nk_command_buffer *out, struct nk_rect r, nk_bool *active, const char *str, int len, enum nk_toggle_type type, const struct nk_style_toggle *style, const struct nk_input *in, const struct nk_user_font *font, nk_flags widget_alignment, nk_flags text_alignment);
 
 /* progress */
 NK_LIB nk_size nk_progress_behavior(nk_flags *state, struct nk_input *in, struct nk_rect r, struct nk_rect cursor, nk_size max, nk_size value, nk_bool modifiable);
@@ -328,21 +334,36 @@ NK_LIB void nk_property(struct nk_context *ctx, const char *name, struct nk_prop
 
 #ifdef NK_INCLUDE_FONT_BAKING
 
+/**
+ * @def NK_NO_STB_RECT_PACK_IMPLEMENTATION
+ *
+ * When defined, will avoid enabling STB_RECT_PACK_IMPLEMENTATION for when stb_rect_pack.h is already implemented elsewhere.
+ */
+#ifndef NK_NO_STB_RECT_PACK_IMPLEMENTATION
 #define STB_RECT_PACK_IMPLEMENTATION
+#endif /* NK_NO_STB_RECT_PACK_IMPLEMENTATION */
+
+/**
+ * @def NK_NO_STB_TRUETYPE_IMPLEMENTATION
+ *
+ * When defined, will avoid enabling STB_TRUETYPE_IMPLEMENTATION for when stb_truetype.h is already implemented elsewhere.
+ */
+#ifndef NK_NO_STB_TRUETYPE_IMPLEMENTATION
 #define STB_TRUETYPE_IMPLEMENTATION
+#endif /* NK_NO_STB_TRUETYPE_IMPLEMENTATION */
 
 /* Allow consumer to define own STBTT_malloc/STBTT_free, and use the font atlas' allocator otherwise */
 #ifndef STBTT_malloc
 static void*
 nk_stbtt_malloc(nk_size size, void *user_data) {
-	struct nk_allocator *alloc = (struct nk_allocator *) user_data;
-	return alloc->alloc(alloc->userdata, 0, size);
+    struct nk_allocator *alloc = (struct nk_allocator *) user_data;
+    return alloc->alloc(alloc->userdata, 0, size);
 }
 
 static void
 nk_stbtt_free(void *ptr, void *user_data) {
-	struct nk_allocator *alloc = (struct nk_allocator *) user_data;
-	alloc->free(alloc->userdata, ptr);
+    struct nk_allocator *alloc = (struct nk_allocator *) user_data;
+    alloc->free(alloc->userdata, ptr);
 }
 
 #define STBTT_malloc(x,u)  nk_stbtt_malloc(x,u)

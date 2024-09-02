@@ -42,7 +42,7 @@
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
-#define INCLUDE_OVERVIEW
+/*#define INCLUDE_OVERVIEW */
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
@@ -124,13 +124,6 @@ int main(void)
     nk_glfw3_font_stash_end();
     /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
     /*nk_style_set_font(ctx, &droid->handle);*/}
-
-    #ifdef INCLUDE_STYLE
-    /*set_style(ctx, THEME_WHITE);*/
-    /*set_style(ctx, THEME_RED);*/
-    /*set_style(ctx, THEME_BLUE);*/
-    /*set_style(ctx, THEME_DARK);*/
-    #endif
 
     /* Create bindless texture.
      * The index returned is not the opengl resource id.

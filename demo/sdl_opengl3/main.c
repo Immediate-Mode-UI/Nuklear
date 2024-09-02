@@ -126,14 +126,6 @@ int main(int argc, char *argv[])
     /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
     /*nk_style_set_font(ctx, &roboto->handle);*/}
 
-    /* style.c */
-    #ifdef INCLUDE_STYLE
-    /*set_style(ctx, THEME_WHITE);*/
-    /*set_style(ctx, THEME_RED);*/
-    /*set_style(ctx, THEME_BLUE);*/
-    /*set_style(ctx, THEME_DARK);*/
-    #endif
-
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
     while (running)
     {
@@ -143,7 +135,9 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&evt)) {
             if (evt.type == SDL_QUIT) goto cleanup;
             nk_sdl_handle_event(&evt);
-        } nk_input_end(ctx);
+        }
+        nk_sdl_handle_grab(); /* optional grabbing behavior */
+        nk_input_end(ctx);
 
         /* GUI */
         if (nk_begin(ctx, "Demo", nk_rect(50, 50, 230, 250),

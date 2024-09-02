@@ -76,12 +76,12 @@ nk_panel_get_border_color(const struct nk_style *style, enum nk_panel_type type)
 NK_LIB nk_bool
 nk_panel_is_sub(enum nk_panel_type type)
 {
-    return (type & NK_PANEL_SET_SUB)?1:0;
+    return ((int)type & (int)NK_PANEL_SET_SUB)?1:0;
 }
 NK_LIB nk_bool
 nk_panel_is_nonblock(enum nk_panel_type type)
 {
-    return (type & NK_PANEL_SET_NONBLOCK)?1:0;
+    return ((int)type & (int)NK_PANEL_SET_NONBLOCK)?1:0;
 }
 NK_LIB nk_bool
 nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type panel_type)
@@ -309,7 +309,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
                 nk_draw_nine_slice(out, body, &style->window.fixed_background.data.slice, nk_white);
                 break;
             case NK_STYLE_ITEM_COLOR:
-                nk_fill_rect(out, body, 0, style->window.fixed_background.data.color);
+                nk_fill_rect(out, body, style->window.rounding, style->window.fixed_background.data.color);
                 break;
         }
     }
@@ -505,7 +505,7 @@ nk_panel_end(struct nk_context *ctx)
                 : (window->bounds.y + window->bounds.h));
         struct nk_rect b = window->bounds;
         b.h = padding_y - window->bounds.y;
-        nk_stroke_rect(out, b, 0, layout->border, border_color);
+        nk_stroke_rect(out, b, style->window.rounding, layout->border, border_color);
     }
 
     /* scaler */

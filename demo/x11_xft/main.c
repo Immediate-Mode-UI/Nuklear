@@ -156,13 +156,6 @@ main(void)
 #endif
                     xw.width, xw.height);
 
-    #ifdef INCLUDE_STYLE
-    /*set_style(ctx, THEME_WHITE);*/
-    /*set_style(ctx, THEME_RED);*/
-    /*set_style(ctx, THEME_BLUE);*/
-    /*set_style(ctx, THEME_DARK);*/
-    #endif
-
     while (running)
     {
         /* Input */

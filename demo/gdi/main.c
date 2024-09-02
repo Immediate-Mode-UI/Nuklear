@@ -103,7 +103,7 @@ int main(void)
     atom = RegisterClassW(&wc);
 
     AdjustWindowRectEx(&rect, style, FALSE, exstyle);
-    wnd = CreateWindowExW(exstyle, wc.lpszClassName, L"Nuklear Demo",
+    wnd = CreateWindowExW(exstyle, wc.lpszClassName, L"Nuklear GDI Demo",
         style | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT,
         rect.right - rect.left, rect.bottom - rect.top,
         NULL, NULL, wc.hInstance, NULL);
@@ -112,14 +112,6 @@ int main(void)
     /* GUI */
     font = nk_gdifont_create("Arial", 14);
     ctx = nk_gdi_init(font, dc, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-    /* style.c */
-    #ifdef INCLUDE_STYLE
-    /*set_style(ctx, THEME_WHITE);*/
-    /*set_style(ctx, THEME_RED);*/
-    /*set_style(ctx, THEME_BLUE);*/
-    /*set_style(ctx, THEME_DARK);*/
-    #endif
 
     while (running)
     {

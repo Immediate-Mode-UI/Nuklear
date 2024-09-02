@@ -161,7 +161,7 @@ int main(void)
 
     AdjustWindowRectEx(&rect, style, FALSE, exstyle);
 
-    wnd = CreateWindowExW(exstyle, wc.lpszClassName, L"Nuklear Demo",
+    wnd = CreateWindowExW(exstyle, wc.lpszClassName, L"Nuklear Direct3D 11 Demo",
         style | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT,
         rect.right - rect.left, rect.bottom - rect.top,
         NULL, NULL, wc.hInstance, NULL);
@@ -207,14 +207,6 @@ int main(void)
     nk_d3d11_font_stash_end();
     /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
     /*nk_style_set_font(ctx, &droid->handle)*/;}
-
-    /* style.c */
-    #ifdef INCLUDE_STYLE
-    /*set_style(ctx, THEME_WHITE);*/
-    /*set_style(ctx, THEME_RED);*/
-    /*set_style(ctx, THEME_BLUE);*/
-    /*set_style(ctx, THEME_DARK);*/
-    #endif
 
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
     while (running)

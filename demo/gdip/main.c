@@ -99,7 +99,7 @@ int main(void)
 
     AdjustWindowRectEx(&rect, style, FALSE, exstyle);
 
-    wnd = CreateWindowExW(exstyle, wc.lpszClassName, L"Nuklear Demo",
+    wnd = CreateWindowExW(exstyle, wc.lpszClassName, L"Nuklear GDI+ Demo",
         style | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT,
         rect.right - rect.left, rect.bottom - rect.top,
         NULL, NULL, wc.hInstance, NULL);
@@ -108,14 +108,6 @@ int main(void)
     ctx = nk_gdip_init(wnd, WINDOW_WIDTH, WINDOW_HEIGHT);
     font = nk_gdipfont_create("Arial", 12);
     nk_gdip_set_font(font);
-
-    /* style.c */
-    #ifdef INCLUDE_STYLE
-    /*set_style(ctx, THEME_WHITE);*/
-    /*set_style(ctx, THEME_RED);*/
-    /*set_style(ctx, THEME_BLUE);*/
-    /*set_style(ctx, THEME_DARK);*/
-    #endif
 
     while (running)
     {

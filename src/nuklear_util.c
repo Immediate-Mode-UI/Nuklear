@@ -984,7 +984,7 @@ nk_murmur_hash(const void * key, int len, nk_hash seed)
 }
 #ifdef NK_INCLUDE_STANDARD_IO
 NK_LIB char*
-nk_file_load(const char* path, nk_size* siz, struct nk_allocator *alloc)
+nk_file_load(const char* path, nk_size* siz, const struct nk_allocator *alloc)
 {
     char *buf;
     FILE *fd;

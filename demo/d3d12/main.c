@@ -191,7 +191,7 @@ WindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 int main(void)
-{  
+{
     struct nk_context *ctx;
     struct nk_colorf bg;
 
@@ -219,7 +219,7 @@ int main(void)
 
     AdjustWindowRectEx(&rect, style, FALSE, exstyle);
 
-    wnd = CreateWindowExW(exstyle, wc.lpszClassName, L"Nuklear Demo",
+    wnd = CreateWindowExW(exstyle, wc.lpszClassName, L"Nuklear Direct3D 12 Demo",
         style | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT,
         rect.right - rect.left, rect.bottom - rect.top,
         NULL, NULL, wc.hInstance, NULL);
@@ -278,7 +278,7 @@ int main(void)
 
     /* GUI */
     ctx = nk_d3d12_init(device, WINDOW_WIDTH, WINDOW_HEIGHT, MAX_VERTEX_BUFFER, MAX_INDEX_BUFFER, USER_TEXTURES);
-    
+
     /* Load Fonts: if none of these are loaded a default font will be used  */
     /* Load Cursor: if you uncomment cursor loading please hide the cursor */
     {
@@ -299,14 +299,6 @@ int main(void)
     execute_commands();
     /* Now we can cleanup all resources consumed by font stashing that are no longer used */
     nk_d3d12_font_stash_cleanup();
-
-    /* style.c */
-    #ifdef INCLUDE_STYLE
-    /*set_style(ctx, THEME_WHITE);*/
-    /*set_style(ctx, THEME_RED);*/
-    /*set_style(ctx, THEME_BLUE);*/
-    /*set_style(ctx, THEME_DARK);*/
-    #endif
 
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
     while (running)

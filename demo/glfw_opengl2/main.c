@@ -40,7 +40,7 @@
 /* #define INCLUDE_ALL          */
 /* #define INCLUDE_STYLE        */
 /* #define INCLUDE_CALCULATOR   */
-#define INCLUDE_CANVAS
+/* #define INCLUDE_CANVAS       */
 /* #define INCLUDE_FILE_BROWSER */
 /* #define INCLUDE_OVERVIEW     */
 /* #define INCLUDE_NODE_EDITOR  */
@@ -49,6 +49,7 @@
   #define INCLUDE_STYLE
   #define INCLUDE_CALCULATOR
   #define INCLUDE_CANVAS
+  #define INCLUDE_FILE_BROWSER
   #define INCLUDE_OVERVIEW
   #define INCLUDE_NODE_EDITOR
 #endif
@@ -85,7 +86,7 @@ int main(void)
     /* Platform */
     static GLFWwindow *win;
     int width = 0, height = 0;
-    
+
     /* GUI */
     struct nk_context *ctx;
     struct nk_colorf bg;
@@ -120,15 +121,8 @@ int main(void)
     /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
     /*nk_style_set_font(ctx, &droid->handle);*/}
 
-    #ifdef INCLUDE_STYLE
-    /*set_style(ctx, THEME_WHITE);*/
-    /*set_style(ctx, THEME_RED);*/
-    /*set_style(ctx, THEME_BLUE);*/
-    /*set_style(ctx, THEME_DARK);*/
-    #endif
-
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
-    
+
     #ifdef INCLUDE_FILE_BROWSER
     /* icons */
     glEnable(GL_TEXTURE_2D);
@@ -219,7 +213,7 @@ int main(void)
         glfwSwapBuffers(win);
     }
 
-    #ifdef INCLUDE_FILE_BROWSER       
+    #ifdef INCLUDE_FILE_BROWSER
     glDeleteTextures(1,(const GLuint*)&media.icons.home.handle.id);
     glDeleteTextures(1,(const GLuint*)&media.icons.directory.handle.id);
     glDeleteTextures(1,(const GLuint*)&media.icons.computer.handle.id);
@@ -232,8 +226,8 @@ int main(void)
     glDeleteTextures(1,(const GLuint*)&media.icons.movie_file.handle.id);
 
     file_browser_free(&browser);
-    #endif    
-    
+    #endif
+
     nk_glfw3_shutdown();
     glfwTerminate();
     return 0;
