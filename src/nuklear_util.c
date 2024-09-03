@@ -141,7 +141,7 @@ nk_strlen(const char *str)
     return siz;
 }
 NK_API int
-nk_strtoi(const char *str, const char **endptr)
+nk_strtoi(const char *str, char **endptr)
 {
     int neg = 1;
     const char *p = str;
@@ -165,7 +165,7 @@ nk_strtoi(const char *str, const char **endptr)
     return neg*value;
 }
 NK_API double
-nk_strtod(const char *str, const char **endptr)
+nk_strtod(const char *str, char **endptr)
 {
     double m;
     double neg = 1.0;
@@ -222,7 +222,7 @@ nk_strtod(const char *str, const char **endptr)
     return number;
 }
 NK_API float
-nk_strtof(const char *str, const char **endptr)
+nk_strtof(const char *str, char **endptr)
 {
     float float_value;
     double double_value;
