@@ -3612,11 +3612,11 @@ NK_API struct nk_vec2 nk_rect_size(struct nk_rect);
 NK_API int nk_strlen(const char *str);
 NK_API int nk_stricmp(const char *s1, const char *s2);
 NK_API int nk_stricmpn(const char *s1, const char *s2, int n);
-NK_API int nk_strtoi(const char *str, const char **endptr);
-NK_API float nk_strtof(const char *str, const char **endptr);
+NK_API int nk_strtoi(const char *str, char **endptr);
+NK_API float nk_strtof(const char *str, char **endptr);
 #ifndef NK_STRTOD
 #define NK_STRTOD nk_strtod
-NK_API double nk_strtod(const char *str, const char **endptr);
+NK_API double nk_strtod(const char *str, char **endptr);
 #endif
 NK_API int nk_strfilter(const char *text, const char *regexp);
 NK_API int nk_strmatch_fuzzy_string(char const *str, char const *pattern, int *out_score);
