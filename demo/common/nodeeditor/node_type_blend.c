@@ -7,6 +7,7 @@ struct node_type_blend {
 
 static struct nk_colorf *node_blend_eval(struct node *node, int oIndex) {
     struct node_type_blend* blend_node = (struct node_type_blend*)node;
+    NK_UNUSED(oIndex);
     return &blend_node->output_val;
 }
 
@@ -35,8 +36,8 @@ static void node_blend_display(struct nk_context *ctx, struct node *node) {
             blend_node->blend_val = nk_propertyf(ctx, "#Blend", 0.0f, blend_node->blend_val, 1.0f, 0.01f, 0.01f);
             blend_amnt = blend_node->blend_val;
         }
-    
-    
+
+
     if(node->inputs[0].is_connected && node->inputs[1].is_connected) {
         blend_node->output_val.r = blend_node->input_val[0].r * (1.0f-blend_amnt) + blend_node->input_val[1].r * blend_amnt;
         blend_node->output_val.g = blend_node->input_val[0].g * (1.0f-blend_amnt) + blend_node->input_val[1].g * blend_amnt;
@@ -48,7 +49,7 @@ static void node_blend_display(struct nk_context *ctx, struct node *node) {
     }
 }
 
-void node_blend_create(struct node_editor *editor, struct nk_vec2 position) {
+struct node_type_blend* node_blend_create(struct node_editor *editor, struct nk_vec2 position) {
     struct node_type_blend* blend_node = (struct node_type_blend*)node_editor_add(editor, sizeof(struct node_type_blend), "Blend", nk_rect(position.x, position.y, 180, 130), 3, 1);
     if (blend_node) {
         const struct nk_colorf blank = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -68,6 +69,7 @@ void node_blend_create(struct node_editor *editor, struct nk_vec2 position) {
 
         blend_node->node.display_func = node_blend_display;
         blend_node->node.eval_func = (void*(*)(struct node*, int)) node_blend_eval;
-
     }
+
+    return blend_node;
 }

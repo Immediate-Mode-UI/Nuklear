@@ -1,6 +1,6 @@
 /*
-A basic node-based UI built with Nuklear. 
-Builds on the node editor example included in Nuklear v1.00, with the aim of 
+A basic node-based UI built with Nuklear.
+Builds on the node editor example included in Nuklear v1.00, with the aim of
 being used as a prototype for implementing a functioning node editor.
 
 Features:
@@ -176,7 +176,7 @@ node_editor_delete_link(struct node_link *link)
 }
 
 struct node*
-node_editor_add(struct node_editor *editor, size_t nodeSize, const char *name, struct nk_rect bounds, 
+node_editor_add(struct node_editor *editor, size_t nodeSize, const char *name, struct nk_rect bounds,
 int in_count, int out_count)
 {
     int i;
@@ -208,7 +208,7 @@ int in_count, int out_count)
     }
 
     node->bounds = bounds;
-    
+
     node->input_count = in_count;
     node->output_count = out_count;
 
@@ -224,7 +224,7 @@ int in_count, int out_count)
         node->outputs[i].type = fValue; /* default connector type */
     }
 
-    /* default connector spacing */ 
+    /* default connector spacing */
     node->slot_spacing.in_top = node->slot_spacing.in_space = node->bounds.h / (float)((node->input_count) + 1);
     node->slot_spacing.out_top = node->slot_spacing.out_space = node->bounds.h / (float)((node->output_count) + 1);
 
@@ -235,7 +235,7 @@ int in_count, int out_count)
 }
 
 void *
-node_editor_eval_connected(struct node* node, int inputSlot) 
+node_editor_eval_connected(struct node* node, int inputSlot)
 {
     NK_ASSERT(node->inputs[inputSlot].is_connected);
     return node->inputs[inputSlot].connected_node->eval_func(node->inputs[inputSlot].connected_node, node->inputs[inputSlot].connected_slot);
@@ -265,7 +265,7 @@ node_editor_link(struct node_editor *editor, struct node *in_node, int in_slot,
         in_node->outputs[in_slot].is_connected = nk_true;
         out_node->inputs[out_slot].connected_node = in_node;
         out_node->inputs[out_slot].connected_slot = in_slot;
-        
+
         link->input_node = in_node;
         link->input_slot = in_slot;
         link->output_node = out_node;
@@ -279,15 +279,37 @@ node_editor_link(struct node_editor *editor, struct node *in_node, int in_slot,
 static void
 node_editor_init(struct node_editor *editor)
 {
-    struct nk_vec2 output_node_position = {500, 300};
-    struct nk_vec2 color_node_position = {200, 200};
+    struct nk_vec2 color_node_position = {40, 10};
+    struct nk_vec2 color2_node_position = {40, 260};
+    struct nk_vec2 blend_node_position = {300, 140};
+    struct nk_vec2 output_node_position = {540, 154};
+    struct node_type_color *color1;
+    struct node_type_color *color2;
+    struct node *blend;
     memset(editor, 0, sizeof(*editor));
     editor->begin = NULL;
     editor->end = NULL;
 
+    /* Create the nodes */
     editor->output_node = node_output_create(editor, output_node_position);
-    node_color_create(editor, color_node_position);
-    node_editor_link(editor, editor->node_buf[1], 0, editor->output_node, 0);
+    color1 = node_color_create(editor, color_node_position);
+    color2 = node_color_create(editor, color2_node_position);
+    blend = (struct node *)node_blend_create(editor, blend_node_position);
+
+    /* Set the color values */
+    color1->input_val[0] = 1.0f;
+    color1->input_val[1] = 0.0f;
+    color1->input_val[2] = 0.0f;
+
+    color2->input_val[0] = 0.0f;
+    color2->input_val[1] = 0.0f;
+    color2->input_val[2] = 1.0f;
+
+    /* Link the nodes */
+    node_editor_link(editor, (struct node*)color1, 0, blend, 0);
+    node_editor_link(editor, (struct node*)color2, 0, blend, 1);
+    node_editor_link(editor, blend, 0, editor->output_node, 0);
+
     editor->show_grid = nk_true;
 }
 
@@ -330,13 +352,13 @@ node_editor(struct nk_context *ctx)
             }
 
             /* execute each node as a movable group */
-            /* (loop through nodes) */ 
+            /* (loop through nodes) */
             while (it) {
                 /* Output node window should not have a close button */
                 nk_flags nodePanel_flags = NK_WINDOW_MOVABLE|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BORDER|NK_WINDOW_TITLE;
-                if (it != editor->output_node) 
+                if (it != editor->output_node)
                     nodePanel_flags |= NK_WINDOW_CLOSABLE;
-                
+
                 /* calculate scrolled node window position and size */
                 nk_layout_space_push(ctx, nk_rect(it->bounds.x - editor->scrolling.x,
                     it->bounds.y - editor->scrolling.y, it->bounds.w, it->bounds.h));
@@ -356,7 +378,7 @@ node_editor(struct nk_context *ctx)
                     }
 
                     if ((nodePanel->flags & NK_WINDOW_HIDDEN)) /* Node close button has been clicked */
-                    { 
+                    {
                         /* Delete node */
                         struct node_link *link_remove;
                         node_editor_pop(editor, it);
@@ -383,16 +405,16 @@ node_editor(struct nk_context *ctx)
                     else {
 
                         /* ================= NODE CONTENT ===================== */
-                        
+
                         it->display_func(ctx, it);
-                        
+
                         /* ==================================================== */
-                        
+
                     }
                     nk_group_end(ctx);
 
                 }
-                if (!(nodePanel->flags & NK_WINDOW_HIDDEN)) 
+                if (!(nodePanel->flags & NK_WINDOW_HIDDEN))
                 {
                     /* node connector and linking */
                     struct nk_rect bounds;
@@ -416,7 +438,7 @@ node_editor(struct nk_context *ctx)
                         /* start linking process */
                         /* (set linking active) */
                         if (nk_input_has_mouse_click_down_in_rect(in, NK_BUTTON_LEFT, circle, nk_true)) {
-                            editor->linking.active = nk_true;  
+                            editor->linking.active = nk_true;
                             editor->linking.node = it;
                             editor->linking.input_id = it->ID;
                             editor->linking.input_slot = n;
@@ -450,7 +472,7 @@ node_editor(struct nk_context *ctx)
                         editor->linking.active == nk_false &&
                         it->inputs[n].is_connected == nk_true) {
                             struct node_link *node_relink = node_editor_find_link_by_output(editor, it, n);
-                            editor->linking.active = nk_true;  
+                            editor->linking.active = nk_true;
                             editor->linking.node = node_relink->input_node;
                             editor->linking.input_id = node_relink->input_node->ID;
                             editor->linking.input_slot = node_relink->input_slot;
@@ -460,12 +482,12 @@ node_editor(struct nk_context *ctx)
                         /* (Create link) */
                         if (nk_input_is_mouse_released(in, NK_BUTTON_LEFT) &&
                             nk_input_is_mouse_hovering_rect(in, circle) &&
-                            editor->linking.active && 
+                            editor->linking.active &&
                             editor->linking.node != it &&
                             it->inputs[n].type == editor->linking.node->outputs[editor->linking.input_slot].type &&
                             it->inputs[n].is_connected != nk_true) {
                             editor->linking.active = nk_false;
-                            
+
                             node_editor_link(editor, editor->linking.node,
                                 editor->linking.input_slot, it, n);
                         }
