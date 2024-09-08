@@ -1237,7 +1237,7 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
 /// NK_WINDOW_MINIMIZABLE       | Adds a minimize icon into the header
 /// NK_WINDOW_NO_SCROLLBAR_H    | Removes the horizontal scrollbar from the window
 /// NK_WINDOW_NO_SCROLLBAR_V    | Removes the vertical scrollbar from the window
-/// NK_WINDOW_NO_SCROLLBAR      | Removes all scrollbars from the window
+/// NK_WINDOW_NO_SCROLLBAR      | Removes both scrollbars from the window
 /// NK_WINDOW_TITLE             | Forces a header at the top at the window showing the title
 /// NK_WINDOW_SCROLL_AUTO_HIDE  | Automatically hides the window scrollbar if no user interaction: also requires delta time in `nk_context` to be set each frame
 /// NK_WINDOW_BACKGROUND        | Always keep window in the background
