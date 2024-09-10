@@ -414,7 +414,6 @@ nk_do_button_text_image(nk_flags *state,
         icon.x = NK_MAX(icon.x, 0);
 
         label_icon_spacing = ((bounds.x + bounds.w) - (icon.x + icon.w)) * 0.5f;
-        /*label_icon_spacing = ((content.x + content.w) - (icon.x + icon.w)) * 1.f;*/
         content.w = icon.x - content.x - label_icon_spacing;
         content.w = NK_MAX(content.w, 0);
     } else {
