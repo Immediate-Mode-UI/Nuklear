@@ -420,7 +420,6 @@ nk_do_button_text_image(nk_flags *state,
         icon.x = content.x + 2 * style->padding.x;
         
         label_icon_spacing = (icon.x - bounds.x) * 0.5f;
-        /*label_icon_spacing = (icon.x - content.x) * 1.f;*/
         content.x = icon.x + icon.w + label_icon_spacing;
         content.w -= icon.w + label_icon_spacing;
         content.w = NK_MAX(content.w, 0);
