@@ -6773,7 +6773,7 @@ nk_strtoi(const char *str, char **endptr)
         p++;
     }
     if (endptr)
-        *endptr = p;
+        *endptr = (char *)p;
     return neg*value;
 }
 NK_API double
@@ -6830,7 +6830,7 @@ nk_strtod(const char *str, char **endptr)
     }
     number = value * neg;
     if (endptr)
-        *endptr = p;
+        *endptr = (char *)p;
     return number;
 }
 NK_API float
