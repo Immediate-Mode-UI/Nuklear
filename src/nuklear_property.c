@@ -395,7 +395,7 @@ nk_property(struct nk_context *ctx, const char *name, struct nk_property_variant
         select_end, &style->property, filter, in, style->font, &ctx->text_edit,
         ctx->button_behavior);
 
-    if (in && *state != NK_PROPERTY_DEFAULT && !win->property.active) {
+    if (in && *state != NK_PROPERTY_DEFAULT && !(win->property.active && hash == win->property.name)) {
         /* current property is now hot */
         win->property.active = 1;
         NK_MEMCPY(win->property.buffer, buffer, (nk_size)*len);
