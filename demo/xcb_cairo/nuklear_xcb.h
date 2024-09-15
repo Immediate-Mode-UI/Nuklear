@@ -789,9 +789,9 @@ NK_API int nk_cairo_render(struct nk_cairo_context *cairo_ctx, struct nk_context
                 cairo_format_t format = CAIRO_FORMAT_ARGB32;
                 int stride = cairo_format_stride_for_width(format, im->img.w);
 
-                if (!im->img.handle.ptr) return;
+                if (!im->img.handle.ptr) return nk_false;
                 img_surf = cairo_image_surface_create_for_data(im->img.handle.ptr, format, im->img.w, im->img.h, stride);
-                if (!img_surf) return;
+                if (!img_surf) return nk_false;
                 cairo_save(cr);
 
                 cairo_rectangle(cr, im->x, im->y, im->w, im->h);
