@@ -324,12 +324,17 @@ nk_allegro5_render()
         } break;
         case NK_COMMAND_IMAGE: {
             const struct nk_command_image *i = (const struct nk_command_image *)cmd;
-            nk_ushort w = i->img.region[2],
+            nk_ushort
+                x = i->img.region[0],
+                y = i->img.region[1],
+                w = i->img.region[2],
                 h = i->img.region[3];
+            if(w == 0 && h == 0)
+            {
+                x = i->x; y = i->y; w = i->w; h = i->h;
+            }
             al_draw_scaled_bitmap(i->img.handle.ptr,
-                                  i->img.region[0], i->img.region[1],
-                                  w ? w : i->w, h ? h : i->h,
-                                  i->x, i->y, i->w, i->h, 0);
+                                  x, y, w, h, i->x, i->y, i->w, i->h, 0);
         } break;
         case NK_COMMAND_RECT_MULTI_COLOR:
         default: break;
