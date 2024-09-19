@@ -161,7 +161,7 @@ nk_strtoi(const char *str, char **endptr)
         p++;
     }
     if (endptr)
-        *endptr = p;
+        *endptr = (char *)p;
     return neg*value;
 }
 NK_API double
@@ -169,7 +169,7 @@ nk_strtod(const char *str, char **endptr)
 {
     double m;
     double neg = 1.0;
-    const char *p = str;
+    char *p = (char *)str;
     double value = 0;
     double number = 0;
 
