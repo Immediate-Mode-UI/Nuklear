@@ -153,7 +153,15 @@ nk_group_begin_titled(struct nk_context *ctx, const char *id,
         NK_ASSERT(y_offset);
         if (!x_offset || !y_offset) return 0;
         *x_offset = *y_offset = 0;
-    } else y_offset = nk_find_value(win, id_hash+1);
+    } else {
+        y_offset = nk_find_value(win, id_hash+1);
+        if (!y_offset) {
+            y_offset = nk_add_value(ctx, win, id_hash+1, 0);
+            NK_ASSERT(y_offset);
+            if (!y_offset) return 0;
+            *y_offset = 0;
+        }
+    }
     return nk_group_scrolled_offset_begin(ctx, x_offset, y_offset, title, flags);
 }
 NK_API nk_bool
@@ -195,7 +203,15 @@ nk_group_get_scroll(struct nk_context *ctx, const char *id, nk_uint *x_offset, n
         NK_ASSERT(y_offset_ptr);
         if (!x_offset_ptr || !y_offset_ptr) return;
         *x_offset_ptr = *y_offset_ptr = 0;
-    } else y_offset_ptr = nk_find_value(win, id_hash+1);
+    } else {
+        y_offset_ptr = nk_find_value(win, id_hash+1);
+        if (!y_offset_ptr) {
+            y_offset_ptr = nk_add_value(ctx, win, id_hash+1, 0);
+            NK_ASSERT(y_offset_ptr);
+            if (!y_offset_ptr) return;
+            *y_offset_ptr = 0;
+        }
+    }
     if (x_offset)
       *x_offset = *x_offset_ptr;
     if (y_offset)
@@ -230,7 +246,15 @@ nk_group_set_scroll(struct nk_context *ctx, const char *id, nk_uint x_offset, nk
         NK_ASSERT(y_offset_ptr);
         if (!x_offset_ptr || !y_offset_ptr) return;
         *x_offset_ptr = *y_offset_ptr = 0;
-    } else y_offset_ptr = nk_find_value(win, id_hash+1);
+    } else {
+        y_offset_ptr = nk_find_value(win, id_hash+1);
+        if (!y_offset_ptr) {
+            y_offset_ptr = nk_add_value(ctx, win, id_hash+1, 0);
+            NK_ASSERT(y_offset_ptr);
+            if (!y_offset_ptr) return;
+            *y_offset_ptr = 0;
+        }
+    }
     *x_offset_ptr = x_offset;
     *y_offset_ptr = y_offset;
 }
