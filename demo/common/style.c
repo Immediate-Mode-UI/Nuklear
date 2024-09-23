@@ -1,4 +1,4 @@
-enum theme {THEME_BLACK, THEME_WHITE, THEME_RED, THEME_BLUE, THEME_DARK, THEME_DRACULA};
+enum theme {THEME_BLACK, THEME_WHITE, THEME_RED, THEME_BLUE, THEME_DARK, THEME_DRACULA, THEME_CATPPUCCIN};
 
 static void
 set_style(struct nk_context *ctx, enum theme theme)
@@ -184,6 +184,66 @@ set_style(struct nk_context *ctx, enum theme theme)
         table[NK_COLOR_KNOB_CURSOR] = table[NK_COLOR_SLIDER_CURSOR];
         table[NK_COLOR_KNOB_CURSOR_HOVER] = table[NK_COLOR_SLIDER_CURSOR_HOVER];
         table[NK_COLOR_KNOB_CURSOR_ACTIVE] = table[NK_COLOR_SLIDER_CURSOR_ACTIVE];
+        nk_style_from_table(ctx, table);
+    } else if (theme == THEME_CATPPUCCIN){
+        struct nk_color rosewater = nk_rgba(244, 219, 214, 255);
+        struct nk_color flamingo = nk_rgba(240, 198, 198, 255);
+        struct nk_color pink = nk_rgba(245, 189, 230, 255);
+        struct nk_color mauve = nk_rgba(198, 160, 246, 255);
+        struct nk_color red = nk_rgba(237, 135, 150, 255);
+        struct nk_color maroon = nk_rgba(238, 153, 160, 255);
+        struct nk_color peach = nk_rgba(245, 169, 127, 255);
+        struct nk_color yellow = nk_rgba(238, 212, 159, 255);
+        struct nk_color green = nk_rgba(166, 218, 149, 255);
+        struct nk_color teal = nk_rgba(139, 213, 202, 255);
+        struct nk_color sky = nk_rgba(145, 215, 227, 255);
+        struct nk_color sapphire = nk_rgba(125, 196, 228, 255);
+        struct nk_color blue = nk_rgba(138, 173, 244, 255);
+        struct nk_color lavender = nk_rgba(183, 189, 248, 255);
+        struct nk_color text = nk_rgba(202, 211, 245, 255);
+        struct nk_color subtext1 = nk_rgba(184, 192, 224, 255);
+        struct nk_color subtext0 = nk_rgba(165, 173, 203, 255);
+        struct nk_color overlay2 = nk_rgba(147, 154, 183, 255);
+        struct nk_color overlay1 = nk_rgba(128, 135, 162, 255);
+        struct nk_color overlay0 = nk_rgba(110, 115, 141, 255);
+        struct nk_color surface2 = nk_rgba(91, 96, 120, 255);
+        struct nk_color surface1 = nk_rgba(73, 77, 100, 255);
+        struct nk_color surface0 = nk_rgba(54, 58, 79, 255);
+        struct nk_color base = nk_rgba(36, 39, 58, 255);
+        struct nk_color mantle = nk_rgba(30, 32, 48, 255);
+        struct nk_color crust = nk_rgba(24, 25, 38, 255);
+        table[NK_COLOR_TEXT] = text;
+        table[NK_COLOR_WINDOW] = base;
+        table[NK_COLOR_HEADER] = mantle;
+        table[NK_COLOR_BORDER] = mantle;
+        table[NK_COLOR_BUTTON] = surface0;
+        table[NK_COLOR_BUTTON_HOVER] = overlay1;
+        table[NK_COLOR_BUTTON_ACTIVE] = overlay0;
+        table[NK_COLOR_TOGGLE] = surface2;
+        table[NK_COLOR_TOGGLE_HOVER] = overlay2;
+        table[NK_COLOR_TOGGLE_CURSOR] = pink;
+        table[NK_COLOR_SELECT] = surface0;
+        table[NK_COLOR_SELECT_ACTIVE] = overlay0;
+        table[NK_COLOR_SLIDER] = surface1;
+        table[NK_COLOR_SLIDER_CURSOR] = green;
+        table[NK_COLOR_SLIDER_CURSOR_HOVER] = green;
+        table[NK_COLOR_SLIDER_CURSOR_ACTIVE] = green;
+        table[NK_COLOR_PROPERTY] = surface0;
+        table[NK_COLOR_EDIT] = surface0;
+        table[NK_COLOR_EDIT_CURSOR] = red;
+        table[NK_COLOR_COMBO] = surface0;
+        table[NK_COLOR_CHART] = surface0;
+        table[NK_COLOR_CHART_COLOR] = lavender;
+        table[NK_COLOR_CHART_COLOR_HIGHLIGHT] = pink;
+        table[NK_COLOR_SCROLLBAR] = surface0;
+        table[NK_COLOR_SCROLLBAR_CURSOR] = overlay0;
+        table[NK_COLOR_SCROLLBAR_CURSOR_HOVER] = lavender;
+        table[NK_COLOR_SCROLLBAR_CURSOR_ACTIVE] = lavender;
+        table[NK_COLOR_TAB_HEADER] = surface0;
+        table[NK_COLOR_KNOB] = table[NK_COLOR_SLIDER];
+        table[NK_COLOR_KNOB_CURSOR] = pink;
+        table[NK_COLOR_KNOB_CURSOR_HOVER] = pink;
+        table[NK_COLOR_KNOB_CURSOR_ACTIVE] = pink;
         nk_style_from_table(ctx, table);
     } else {
         nk_style_default(ctx);
