@@ -319,6 +319,12 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
     layout->clip = layout->bounds;
     nk_unify(&clip, &win->buffer.clip, layout->clip.x, layout->clip.y,
         layout->clip.x + layout->clip.w, layout->clip.y + layout->clip.h);
+
+    clip.x -= style->window.padding.x;
+    clip.y -= style->window.padding.y;
+    clip.w += style->window.padding.x*2;
+    clip.h += style->window.padding.y*2;
+
     nk_push_scissor(out, clip);
     layout->clip = clip;}
     return !(layout->flags & NK_WINDOW_HIDDEN) && !(layout->flags & NK_WINDOW_MINIMIZED);
