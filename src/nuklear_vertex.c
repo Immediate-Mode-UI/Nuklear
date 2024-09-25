@@ -978,10 +978,13 @@ nk_draw_list_stroke_rect(struct nk_draw_list *list, struct nk_rect rect,
            the stroke needs to stay within its bounds
         */
         float hl = nk_div_round_closest(thickness, 2.0);
-        rect.x += hl;
-        rect.w -= thickness;
-        rect.y += hl;
-        rect.h -= thickness;
+        if (hl > 0)
+        {
+            rect.x += hl - 0.5;
+            rect.w -= thickness;
+            rect.y += hl - 0.5;
+            rect.h -= thickness;
+        }
         nk_draw_list_path_rect_to(list, nk_vec2(rect.x, rect.y),
             nk_vec2(rect.x + rect.w, rect.y + rect.h), rounding);
     } else {
