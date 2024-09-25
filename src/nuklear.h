@@ -5606,6 +5606,7 @@ struct nk_context {
 #define nk_ptr_add(t, p, i) ((t*)((void*)((nk_byte*)(p) + (i))))
 #define nk_ptr_add_const(t, p, i) ((const t*)((const void*)((const nk_byte*)(p) + (i))))
 #define nk_zero_struct(s) nk_zero(&s, sizeof(s))
+#define nk_div_round_closest(n, d) ((((n) < 0) == ((d) < 0)) ? (((n) + (d)/2)/(d)) : (((n) - (d)/2)/(d)))
 
 /* ==============================================================
  *                          ALIGNMENT

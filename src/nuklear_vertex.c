@@ -973,6 +973,15 @@ nk_draw_list_stroke_rect(struct nk_draw_list *list, struct nk_rect rect,
     NK_ASSERT(list);
     if (!list || !col.a) return;
     if (list->line_AA == NK_ANTI_ALIASING_ON) {
+        /* borders will get cut off due to clipping
+           since widgets shrink the widget's area
+           the stroke needs to stay within its bounds
+        */
+        float hl = nk_div_round_closest(thickness, 2.0);
+        rect.x += hl;
+        rect.w -= hl;
+        rect.y += hl;
+        rect.h -= hl;
         nk_draw_list_path_rect_to(list, nk_vec2(rect.x, rect.y),
             nk_vec2(rect.x + rect.w, rect.y + rect.h), rounding);
     } else {
