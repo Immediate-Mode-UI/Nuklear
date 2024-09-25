@@ -973,18 +973,6 @@ nk_draw_list_stroke_rect(struct nk_draw_list *list, struct nk_rect rect,
     NK_ASSERT(list);
     if (!list || !col.a) return;
     if (list->line_AA == NK_ANTI_ALIASING_ON) {
-        /* borders will get cut off due to clipping
-           since widgets shrink the widget's area
-           the stroke needs to stay within its bounds
-        */
-        float hl = nk_div_round_closest(thickness, 2.0);
-        if (hl > 0)
-        {
-            rect.x += hl - 0.5;
-            rect.w -= thickness;
-            rect.y += hl - 0.5;
-            rect.h -= thickness;
-        }
         nk_draw_list_path_rect_to(list, nk_vec2(rect.x, rect.y),
             nk_vec2(rect.x + rect.w, rect.y + rect.h), rounding);
     } else {
@@ -1232,7 +1220,20 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
                 config->curve_segment_count, q->line_thickness);
         } break;
         case NK_COMMAND_RECT: {
-            const struct nk_command_rect *r = (const struct nk_command_rect*)cmd;
+            struct nk_command_rect *r = (struct nk_command_rect*)cmd;
+
+            if (r->stroke_type == NK_STROKE_INNER)
+            {
+                float hl = nk_div_round_closest(r->line_thickness, 2.0);
+                if (hl > 0)
+                {
+                    r->x += hl;
+                    r->w -= r->line_thickness;
+                    r->y += hl;
+                    r->h -= r->line_thickness;
+                }
+            }
+
             nk_draw_list_stroke_rect(&ctx->draw_list, nk_rect(r->x, r->y, r->w, r->h),
                 r->color, (float)r->rounding, r->line_thickness);
         } break;

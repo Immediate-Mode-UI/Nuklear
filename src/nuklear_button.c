@@ -111,16 +111,17 @@ nk_draw_button(struct nk_command_buffer *out,
         background = &style->active;
     else background = &style->normal;
 
+    struct nk_rect b = *bounds;
     switch (background->type) {
         case NK_STYLE_ITEM_IMAGE:
-            nk_draw_image(out, *bounds, &background->data.image, nk_rgb_factor(nk_white, style->color_factor_background));
+            nk_draw_image(out, b, &background->data.image, nk_rgb_factor(nk_white, style->color_factor_background));
             break;
         case NK_STYLE_ITEM_NINE_SLICE:
-            nk_draw_nine_slice(out, *bounds, &background->data.slice, nk_rgb_factor(nk_white, style->color_factor_background));
+            nk_draw_nine_slice(out, b, &background->data.slice, nk_rgb_factor(nk_white, style->color_factor_background));
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, *bounds, style->rounding, nk_rgb_factor(background->data.color, style->color_factor_background));
-            nk_stroke_rect(out, *bounds, style->rounding, style->border, nk_rgb_factor(style->border_color, style->color_factor_background));
+            nk_fill_rect(out, style->border != 0 ? nk_shrink_rect(b, style->border * 0.5) : b, style->rounding, nk_rgb_factor(background->data.color, style->color_factor_background));
+            nk_stroke_rect_ex(out, b, style->rounding, style->border, nk_rgb_factor(style->border_color, style->color_factor_background), NK_STROKE_INNER);
             break;
     }
     return background;
