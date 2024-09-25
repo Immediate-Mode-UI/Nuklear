@@ -320,7 +320,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
     nk_unify(&clip, &win->buffer.clip, layout->clip.x, layout->clip.y,
         layout->clip.x + layout->clip.w, layout->clip.y + layout->clip.h);
 
-    /* extand clipping area to allow borders to be properly drawn */
+    /* extend clipping area to allow borders to be properly drawn */
     clip.x -= style->window.padding.x;
     clip.y -= style->window.padding.y;
     clip.w += style->window.padding.x*2;
