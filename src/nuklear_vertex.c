@@ -1227,11 +1227,22 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
                 float hl = nk_div_round_closest(r->line_thickness, 2.0);
                 if (hl > 0)
                 {
-                    r->x += hl;
-                    r->w -= r->line_thickness;
-                    r->y += hl;
-                    r->h -= r->line_thickness;
+                    if (config->line_AA == NK_ANTI_ALIASING_OFF)
+                    {
+                        r->x += hl;
+                        r->w -= r->line_thickness;
+                        r->y += hl;
+                        r->h -= r->line_thickness;
+                    }
+                    else
+                    {
+                        /* TODO: i don't know yet */
+                    }
                 }
+            }
+            else
+            {
+                /* TODO: implement the rest */
             }
 
             nk_draw_list_stroke_rect(&ctx->draw_list, nk_rect(r->x, r->y, r->w, r->h),
