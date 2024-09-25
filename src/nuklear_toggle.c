@@ -15,10 +15,13 @@ nk_toggle_behavior(const struct nk_input *in, struct nk_rect select,
         *state = NK_WIDGET_STATE_ACTIVE;
         active = !active;
     }
-    if (*state & NK_WIDGET_STATE_HOVER && !nk_input_is_mouse_prev_hovering_rect(in, select))
-        *state |= NK_WIDGET_STATE_ENTERED;
-    else if (nk_input_is_mouse_prev_hovering_rect(in, select))
-        *state |= NK_WIDGET_STATE_LEFT;
+    if (*state & NK_WIDGET_STATE_HOVER) {
+        if (!nk_input_is_mouse_prev_hovering_rect(in, select))
+            *state |= NK_WIDGET_STATE_ENTERED;
+    } else {
+        if (nk_input_is_mouse_prev_hovering_rect(in, select))
+            *state |= NK_WIDGET_STATE_LEFT;
+    }
     return active;
 }
 NK_LIB void
