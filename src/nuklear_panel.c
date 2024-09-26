@@ -327,7 +327,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         clip.y -= style->window.padding.y;
         clip.w += style->window.padding.x*2;
         clip.h += style->window.padding.y*2;
-        /* ensure clipping area doesn't exceed windows bounds */
+        /* ensure clipping area doesn't exceed window bounds */
         clip.x = NK_MAX(clip.x, win->bounds.x);
         clip.w = NK_MIN(clip.w, win->bounds.w);
         clip.y = NK_MAX(clip.y, win->bounds.y+layout->header_height);
