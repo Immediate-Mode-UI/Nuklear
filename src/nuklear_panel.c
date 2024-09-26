@@ -320,16 +320,19 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
     nk_unify(&clip, &win->buffer.clip, layout->clip.x, layout->clip.y,
         layout->clip.x + layout->clip.w, layout->clip.y + layout->clip.h);
 
-    /* extend clipping area to allow borders to be properly drawn */
-    clip.x -= style->window.padding.x;
-    clip.y -= style->window.padding.y;
-    clip.w += style->window.padding.x*2;
-    clip.h += style->window.padding.y*2;
-    /* ensure clipping area doesn't exceed windows bounds */
-    clip.x = NK_MAX(clip.x, win->bounds.x);
-    clip.w = NK_MIN(clip.w, win->bounds.w);
-    clip.y = NK_MAX(clip.y, win->bounds.y+layout->header_height);
-    clip.h = NK_MIN(clip.h, win->bounds.h-layout->header_height);
+    if (panel_type == NK_PANEL_WINDOW)
+    {
+        /* extend clipping area to allow borders to be properly drawn */
+        clip.x -= style->window.padding.x;
+        clip.y -= style->window.padding.y;
+        clip.w += style->window.padding.x*2;
+        clip.h += style->window.padding.y*2;
+        /* ensure clipping area doesn't exceed windows bounds */
+        clip.x = NK_MAX(clip.x, win->bounds.x);
+        clip.w = NK_MIN(clip.w, win->bounds.w);
+        clip.y = NK_MAX(clip.y, win->bounds.y+layout->header_height);
+        clip.h = NK_MIN(clip.h, win->bounds.h-layout->header_height);
+    }
 
     nk_push_scissor(out, clip);
     layout->clip = clip;}
