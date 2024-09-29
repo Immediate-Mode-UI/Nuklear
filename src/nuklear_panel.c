@@ -320,6 +320,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
     nk_unify(&clip, &win->buffer.clip, layout->clip.x, layout->clip.y,
         layout->clip.x + layout->clip.w, layout->clip.y + layout->clip.h);
 
+
     if (panel_type == NK_PANEL_WINDOW)
     {
         /* extend clipping area to allow borders to be properly drawn */
@@ -327,6 +328,84 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         clip.y -= style->window.padding.y;
         clip.w += style->window.padding.x*2;
         clip.h += style->window.padding.y*2;
+        /* ensure clipping area doesn't exceed window bounds */
+        clip.x = NK_MAX(clip.x, win->bounds.x);
+        clip.w = NK_MIN(clip.w, win->bounds.w);
+        clip.y = NK_MAX(clip.y, win->bounds.y+layout->header_height);
+        clip.h = NK_MIN(clip.h, win->bounds.h-layout->header_height);
+    }
+    else if (panel_type == NK_PANEL_GROUP)
+    {
+        /* extend clipping area to allow borders to be properly drawn */
+        clip.x -= style->window.group_padding.x;
+        clip.y -= style->window.group_padding.y;
+        clip.w += style->window.group_padding.x*2;
+        clip.h += style->window.group_padding.y*2;
+        /* ensure clipping area doesn't exceed window bounds */
+        clip.x = NK_MAX(clip.x, win->bounds.x);
+        clip.w = NK_MIN(clip.w, win->bounds.w);
+        clip.y = NK_MAX(clip.y, win->bounds.y+layout->header_height);
+        clip.h = NK_MIN(clip.h, win->bounds.h-layout->header_height);
+    }
+    else if (panel_type == NK_PANEL_POPUP)
+    {
+        /* extend clipping area to allow borders to be properly drawn */
+        clip.x -= style->window.popup_padding.x;
+        clip.y -= style->window.popup_padding.y;
+        clip.w += style->window.popup_padding.x*2;
+        clip.h += style->window.popup_padding.y*2;
+        /* ensure clipping area doesn't exceed window bounds */
+        clip.x = NK_MAX(clip.x, win->bounds.x);
+        clip.w = NK_MIN(clip.w, win->bounds.w);
+        clip.y = NK_MAX(clip.y, win->bounds.y+layout->header_height);
+        clip.h = NK_MIN(clip.h, win->bounds.h-layout->header_height);
+    }
+    else if (panel_type == NK_PANEL_CONTEXTUAL)
+    {
+        /* extend clipping area to allow borders to be properly drawn */
+        clip.x -= style->window.contextual_padding.x;
+        clip.y -= style->window.contextual_padding.y;
+        clip.w += style->window.contextual_padding.x*2;
+        clip.h += style->window.contextual_padding.y*2;
+        /* ensure clipping area doesn't exceed window bounds */
+        clip.x = NK_MAX(clip.x, win->bounds.x);
+        clip.w = NK_MIN(clip.w, win->bounds.w);
+        clip.y = NK_MAX(clip.y, win->bounds.y+layout->header_height);
+        clip.h = NK_MIN(clip.h, win->bounds.h-layout->header_height);
+    }
+    else if (panel_type == NK_PANEL_MENU)
+    {
+        /* extend clipping area to allow borders to be properly drawn */
+        clip.x -= style->window.menu_padding.x;
+        clip.y -= style->window.menu_padding.y;
+        clip.w += style->window.menu_padding.x*2;
+        clip.h += style->window.menu_padding.y*2;
+        /* ensure clipping area doesn't exceed window bounds */
+        clip.x = NK_MAX(clip.x, win->bounds.x);
+        clip.w = NK_MIN(clip.w, win->bounds.w);
+        clip.y = NK_MAX(clip.y, win->bounds.y+layout->header_height);
+        clip.h = NK_MIN(clip.h, win->bounds.h-layout->header_height);
+    }
+    else if (panel_type == NK_PANEL_TOOLTIP)
+    {
+        /* extend clipping area to allow borders to be properly drawn */
+        clip.x -= style->window.tooltip_padding.x;
+        clip.y -= style->window.tooltip_padding.y;
+        clip.w += style->window.tooltip_padding.x*2;
+        clip.h += style->window.tooltip_padding.y*2;
+        /* ensure clipping area doesn't exceed window bounds */
+        clip.x = NK_MAX(clip.x, win->bounds.x);
+        clip.w = NK_MIN(clip.w, win->bounds.w);
+        clip.y = NK_MAX(clip.y, win->bounds.y+layout->header_height);
+        clip.h = NK_MIN(clip.h, win->bounds.h-layout->header_height);
+    }
+    else if (panel_type == NK_PANEL_COMBO)
+    {
+        /* extend clipping area to allow borders to be properly drawn */
+        clip.x -= style->window.combo_padding.x;
+        clip.y -= style->window.combo_padding.y;
+        clip.w += style->window.combo_padding.x*2;
+        clip.h += style->window.combo_padding.y*2;
         /* ensure clipping area doesn't exceed window bounds */
         clip.x = NK_MAX(clip.x, win->bounds.x);
         clip.w = NK_MIN(clip.w, win->bounds.w);
