@@ -197,11 +197,14 @@ nk_log10(double n)
     if (neg) exp = -exp;
     return exp;
 }
+#ifndef NK_ROUNDF
+#define NK_ROUNDF nk_roundf
 NK_LIB float
 nk_roundf(float x)
 {
-    return (x >= 0.0) ? nk_ifloorf(x + 0.5) : nk_iceilf(x - 0.5);
+    return (x >= 0.0f) ? nk_ifloorf(x + 0.5f) : nk_iceilf(x - 0.5f);
 }
+#endif
 NK_API struct nk_rect
 nk_get_null_rect(void)
 {

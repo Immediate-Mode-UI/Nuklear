@@ -5993,6 +5993,9 @@ NK_LIB float nk_atan(float x);
 #ifndef NK_ATAN2
 NK_LIB float nk_atan2(float y, float x);
 #endif
+#ifndef NK_ROUNDF
+NK_LIB float nk_roundf(float x);
+#endif
 NK_LIB nk_uint nk_round_up_pow2(nk_uint v);
 NK_LIB struct nk_rect nk_shrink_rect(struct nk_rect r, float amount);
 NK_LIB struct nk_rect nk_pad_rect(struct nk_rect r, struct nk_vec2 pad);
@@ -6002,7 +6005,6 @@ NK_LIB int nk_ifloord(double x);
 NK_LIB int nk_ifloorf(float x);
 NK_LIB int nk_iceilf(float x);
 NK_LIB int nk_log10(double n);
-NK_LIB float nk_roundf(float x);
 
 /* util */
 enum {NK_DO_NOT_STOP_ON_NEW_LINE, NK_STOP_ON_NEW_LINE};
@@ -6460,11 +6462,14 @@ nk_log10(double n)
     if (neg) exp = -exp;
     return exp;
 }
+#ifndef NK_ROUNDF
+#define NK_ROUNDF nk_roundf
 NK_LIB float
 nk_roundf(float x)
 {
-    return (x >= 0.0) ? nk_ifloorf(x + 0.5) : nk_iceilf(x - 0.5);
+    return (x >= 0.0f) ? nk_ifloorf(x + 0.5f) : nk_iceilf(x - 0.5f);
 }
+#endif
 NK_API struct nk_rect
 nk_get_null_rect(void)
 {
@@ -22430,7 +22435,7 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
     panel_space = nk_layout_row_calculate_usable_space(&ctx->style, layout->type,
                                             layout->bounds.w, layout->row.columns);
 
-    #define NK_FRAC(x) (x - (float)(int)nk_roundf(x)) /* will be used to remove fookin gaps */
+    #define NK_FRAC(x) (x - (float)(int)NK_ROUNDF(x)) /* will be used to remove fookin gaps */
     /* calculate the width of one item inside the current layout space */
     switch (layout->row.type) {
     case NK_LAYOUT_DYNAMIC_FIXED: {
