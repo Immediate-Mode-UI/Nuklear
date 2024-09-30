@@ -2,7 +2,7 @@
 BIN = doc
 
 # Flags
-CFLAGS += -std=c99 -pedantic -O2
+CFLAGS += -std=c99 -pedantic
 
 SRC = stddoc.c
 OBJ = $(SRC:.c=.o)

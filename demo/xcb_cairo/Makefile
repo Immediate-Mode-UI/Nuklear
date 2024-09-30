@@ -1,6 +1,6 @@
 # Target
 BIN = demo
-CFLAGS += -std=c89 -pedantic -O2
+CFLAGS += -std=c89 -pedantic
 LDFLAGS += -lm
 SRC = ${wildcard *.c}
 OBJ = $(SRC:.c=.o)
