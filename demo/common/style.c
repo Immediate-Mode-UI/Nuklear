@@ -341,7 +341,7 @@ static void set_style(struct nk_context *ctx, enum theme theme) {
     struct nk_color surface0 = nk_rgba(54, 58, 79, 255);
     struct nk_color base = nk_rgba(36, 39, 58, 255);
     struct nk_color mantle = nk_rgba(30, 32, 48, 255);
-    struct nk_color crust = nk_rgba(24, 25, 38, 255);
+    /*struct nk_color crust = nk_rgba(24, 25, 38, 255);*/
     table[NK_COLOR_TEXT] = text;
     table[NK_COLOR_WINDOW] = base;
     table[NK_COLOR_HEADER] = mantle;
