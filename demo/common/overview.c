@@ -19,7 +19,7 @@ overview(struct nk_context *ctx)
 #ifdef INCLUDE_STYLE
     /* styles */
     static const char* themes[] = {"Black", "White", "Red", "Blue", "Dark", "Dracula", 
-      "Catpcn-Latte", "Catpcn-Frappe", "Catpcn-Macchiato", "Catpcn-Mocha"};
+      "Catppucin Latte", "Catppucin Frappe", "Catppucin Macchiato", "Catppucin Mocha"};
     static int current_theme = 0;
 #endif
 
