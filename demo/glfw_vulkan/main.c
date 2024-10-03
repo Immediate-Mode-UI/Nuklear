@@ -299,7 +299,7 @@ bool create_instance(struct vulkan_demo *demo) {
         if (i > 0) {
             printf(", ");
         }
-        printf(enabled_extensions[i]);
+        printf("%s\n", enabled_extensions[i]);
     }
     printf("\n");
     for (i = 0; i < enabled_extension_count; i++) {
@@ -1227,8 +1227,8 @@ bool create_graphics_pipeline(struct vulkan_demo *demo) {
     bool ret = false;
     char *vert_shader_code = NULL;
     char *frag_shader_code = NULL;
-    VkShaderModule vert_shader_module;
-    VkShaderModule frag_shader_module;
+    VkShaderModule vert_shader_module = VK_NULL_HANDLE;
+    VkShaderModule frag_shader_module = VK_NULL_HANDLE;
     FILE *fp;
     size_t file_len;
     VkPipelineShaderStageCreateInfo vert_shader_stage_info;
@@ -1246,8 +1246,9 @@ bool create_graphics_pipeline(struct vulkan_demo *demo) {
     VkPipelineLayoutCreateInfo pipeline_layout_info;
     VkResult result;
     VkGraphicsPipelineCreateInfo pipeline_info;
+    size_t read_result;
 
-    fp = fopen("shaders/demo.vert.spv", "r");
+    fp = fopen("shaders/demo.vert.spv", "rb");
     if (!fp) {
         fprintf(stderr, "Couldn't open shaders/demo.vert.spv\n");
         return false;
@@ -1256,15 +1257,19 @@ bool create_graphics_pipeline(struct vulkan_demo *demo) {
     file_len = ftell(fp);
     vert_shader_code = malloc(file_len);
     fseek(fp, 0, 0);
-    fread(vert_shader_code, 1, file_len, fp);
+    read_result = fread(vert_shader_code, file_len, 1, fp);
     fclose(fp);
+    if (read_result != 1) {
+        fprintf(stderr, "Could not read fragment shader\n");
+        goto cleanup;
+    }
 
     if (!create_shader_module(demo->device, vert_shader_code, file_len,
                               &vert_shader_module)) {
         goto cleanup;
     }
 
-    fp = fopen("shaders/demo.frag.spv", "r");
+    fp = fopen("shaders/demo.frag.spv", "rb");
     if (!fp) {
         fprintf(stderr, "Couldn't open shaders/demo.frag.spv\n");
         return false;
@@ -1273,8 +1278,12 @@ bool create_graphics_pipeline(struct vulkan_demo *demo) {
     file_len = ftell(fp);
     frag_shader_code = malloc(file_len);
     fseek(fp, 0, 0);
-    fread(frag_shader_code, 1, file_len, fp);
+    read_result = fread(frag_shader_code, file_len, 1, fp);
     fclose(fp);
+    if (read_result != 1) {
+        fprintf(stderr, "Could not read fragment shader\n");
+        goto cleanup;
+    }
 
     if (!create_shader_module(demo->device, frag_shader_code, file_len,
                               &frag_shader_module)) {
