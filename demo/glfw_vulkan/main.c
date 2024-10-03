@@ -139,7 +139,18 @@ struct vulkan_demo {
     VkDeviceMemory demo_texture_memory;
 
     VkFence render_fence;
+
+    bool framebuffer_resized;
 };
+
+static void glfw_framebuffer_resize_callback(GLFWwindow* window, int width, int height) {
+    struct vulkan_demo* demo;
+
+    (void)width;
+    (void)height;
+    demo = glfwGetWindowUserPointer(window);
+    demo->framebuffer_resized = true;
+}
 
 static void glfw_error_callback(int e, const char *d) {
     fprintf(stderr, "Error %d: %s\n", e, d);
@@ -1871,6 +1882,8 @@ bool create_vulkan_demo(struct vulkan_demo *demo) {
         return false;
     }
 
+    demo->framebuffer_resized = false;
+
     return true;
 }
 
@@ -1885,6 +1898,9 @@ bool recreate_swap_chain(struct vulkan_demo *demo) {
     update_descriptor_sets(demo);
     nk_glfw3_resize(demo->swap_chain_image_extent.width,
                     demo->swap_chain_image_extent.height);
+
+    demo->framebuffer_resized = false;
+
     return true;
 }
 
@@ -1970,7 +1986,7 @@ bool render(struct vulkan_demo *demo, struct nk_colorf *bg,
 
     result = vkQueuePresentKHR(demo->present_queue, &present_info);
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || demo->framebuffer_resized) {
         recreate_swap_chain(demo);
     } else if (result != VK_SUCCESS) {
         fprintf(stderr, "vkQueuePresentKHR failed: %d\n", result);
@@ -2082,6 +2098,8 @@ int main(void) {
     memset(&demo, 0, sizeof(struct vulkan_demo));
     demo.win =
         glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Demo", NULL, NULL);
+    glfwSetWindowUserPointer(demo.win, &demo);
+    glfwSetFramebufferSizeCallback(demo.win, glfw_framebuffer_resize_callback);
 
     if (!create_vulkan_demo(&demo)) {
         fprintf(stderr, "failed to create vulkan demo!\n");
@@ -2201,6 +2219,10 @@ int main(void) {
                                   demo.image_available, NULL, &image_index);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+            recreate_swap_chain(&demo);
+
+            /* If vkAcquireNextImageKHR does not successfully acquire an image,
+             * semaphore and fence are unaffected. */
             continue;
         }
         if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {

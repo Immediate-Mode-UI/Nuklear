@@ -372,7 +372,6 @@ static struct nk_glfw {
     struct nk_glfw_device vulkan;
     struct nk_context ctx;
     struct nk_font_atlas atlas;
-    struct nk_vec2 fb_scale;
     unsigned int text[NK_GLFW_TEXT_MAX];
     int text_len;
     struct nk_vec2 scroll;
@@ -1179,8 +1178,6 @@ NK_API void nk_glfw3_resize(uint32_t framebuffer_width,
     struct nk_glfw_device *dev = &glfw.vulkan;
     glfwGetWindowSize(glfw.win, &glfw.width, &glfw.height);
     glfwGetFramebufferSize(glfw.win, &glfw.display_width, &glfw.display_height);
-    glfw.fb_scale.x = (float)glfw.display_width / (float)glfw.width;
-    glfw.fb_scale.y = (float)glfw.display_height / (float)glfw.height;
 
     nk_glfw3_destroy_render_resources(dev);
     nk_glfw3_create_render_resources(dev, framebuffer_width,
