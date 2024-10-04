@@ -1261,7 +1261,7 @@ NK_API void nk_glfw3_new_frame(void) {
     for (i = 0; i < glfw.text_len; ++i)
         nk_input_unicode(ctx, glfw.text[i]);
 
-#ifdef NK_GLFW_GL4_MOUSE_GRABBING
+#ifdef NK_GLFW_VULKAN_MOUSE_GRABBING
     /* optional grabbing behavior */
     if (ctx->input.mouse.grab)
         glfwSetInputMode(glfw.win, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
@@ -1329,7 +1329,7 @@ NK_API void nk_glfw3_new_frame(void) {
 
     glfwGetCursorPos(win, &x, &y);
     nk_input_motion(ctx, (int)x, (int)y);
-#ifdef NK_GLFW_GL4_MOUSE_GRABBING
+#ifdef NK_GLFW_VULKAN_MOUSE_GRABBING
     if (ctx->input.mouse.grabbed) {
         glfwSetCursorPos(glfw.win, ctx->input.mouse.prev.x,
                          ctx->input.mouse.prev.y);
