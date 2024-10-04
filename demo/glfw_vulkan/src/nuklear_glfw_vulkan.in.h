@@ -24,6 +24,7 @@ unsigned char nuklearshaders_nuklear_frag_spv[] = {};
 unsigned int nuklearshaders_nuklear_frag_spv_len = 0;
 // NUKLEAR_SHADERS_END
 
+#include <assert.h>
 #include <stddef.h>
 #include <string.h>
 #define GLFW_INCLUDE_VULKAN
@@ -71,7 +72,6 @@ NK_API void nk_glfw3_mouse_button_callback(GLFWwindow *win, int button,
  */
 #ifdef NK_GLFW_VULKAN_IMPLEMENTATION
 #undef NK_GLFW_VULKAN_IMPLEMENTATION
-#include <assert.h>
 #include <stdlib.h>
 
 #ifndef NK_GLFW_TEXT_MAX
@@ -149,13 +149,13 @@ static struct nk_glfw {
     struct nk_glfw_device vulkan;
     struct nk_context ctx;
     struct nk_font_atlas atlas;
-    struct nk_vec2 fb_scale;
     unsigned int text[NK_GLFW_TEXT_MAX];
     int text_len;
     struct nk_vec2 scroll;
     double last_button_click;
     int is_double_click_down;
     struct nk_vec2 double_click_pos;
+    float delta_time_seconds_last;
 } glfw;
 
 struct Mat4f {
@@ -955,8 +955,6 @@ NK_API void nk_glfw3_resize(uint32_t framebuffer_width,
     struct nk_glfw_device *dev = &glfw.vulkan;
     glfwGetWindowSize(glfw.win, &glfw.width, &glfw.height);
     glfwGetFramebufferSize(glfw.win, &glfw.display_width, &glfw.display_height);
-    glfw.fb_scale.x = (float)glfw.display_width / (float)glfw.width;
-    glfw.fb_scale.y = (float)glfw.display_height / (float)glfw.height;
 
     nk_glfw3_destroy_render_resources(dev);
     nk_glfw3_create_render_resources(dev, framebuffer_width,
@@ -1031,11 +1029,16 @@ NK_API void nk_glfw3_new_frame(void) {
     struct nk_context *ctx = &glfw.ctx;
     struct GLFWwindow *win = glfw.win;
 
+    /* update the timer */
+    float delta_time_now = (float)glfwGetTime();
+    glfw.ctx.delta_time_seconds = delta_time_now - glfw.delta_time_seconds_last;
+    glfw.delta_time_seconds_last = delta_time_now;
+
     nk_input_begin(ctx);
     for (i = 0; i < glfw.text_len; ++i)
         nk_input_unicode(ctx, glfw.text[i]);
 
-#ifdef NK_GLFW_GL4_MOUSE_GRABBING
+#ifdef NK_GLFW_VULKAN_MOUSE_GRABBING
     /* optional grabbing behavior */
     if (ctx->input.mouse.grab)
         glfwSetInputMode(glfw.win, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
@@ -1103,7 +1106,7 @@ NK_API void nk_glfw3_new_frame(void) {
 
     glfwGetCursorPos(win, &x, &y);
     nk_input_motion(ctx, (int)x, (int)y);
-#ifdef NK_GLFW_GL4_MOUSE_GRABBING
+#ifdef NK_GLFW_VULKAN_MOUSE_GRABBING
     if (ctx->input.mouse.grabbed) {
         glfwSetCursorPos(glfw.win, ctx->input.mouse.prev.x,
                          ctx->input.mouse.prev.y);
