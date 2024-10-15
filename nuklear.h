@@ -220,7 +220,7 @@ nk_end(&ctx);
   #define NK_SINGLE_FILE
 #endif
 
-/** \file nuklear.h 
+/** \file nuklear.h
  * \brief main API and documentation file
  *
  * \details
@@ -644,7 +644,7 @@ NK_API nk_bool nk_init_fixed(struct nk_context*, void *memory, nk_size size, con
 NK_API nk_bool nk_init(struct nk_context*, const struct nk_allocator*, const struct nk_user_font*);
 
 /**
- * \brief Initializes a `nk_context` struct from two different either fixed or growing buffers. 
+ * \brief Initializes a `nk_context` struct from two different either fixed or growing buffers.
  *
  * \details
  * The first buffer is for allocating draw commands while the second buffer is
@@ -664,7 +664,7 @@ NK_API nk_bool nk_init(struct nk_context*, const struct nk_allocator*, const str
 NK_API nk_bool nk_init_custom(struct nk_context*, struct nk_buffer *cmds, struct nk_buffer *pool, const struct nk_user_font*);
 
 /**
- * \brief Resets the context state at the end of the frame. 
+ * \brief Resets the context state at the end of the frame.
  *
  * \details
  * This includes mostly garbage collector tasks like removing windows or table
@@ -874,7 +874,7 @@ NK_API void nk_input_key(struct nk_context*, enum nk_keys, nk_bool down);
 NK_API void nk_input_button(struct nk_context*, enum nk_buttons, int x, int y, nk_bool down);
 
 /**
- * \brief Copies the last mouse scroll value to nuklear. 
+ * \brief Copies the last mouse scroll value to nuklear.
  *
  * \details
  * Is generally a scroll value. So does not have to come from mouse and could
@@ -927,7 +927,7 @@ NK_API void nk_input_glyph(struct nk_context*, const nk_glyph);
 /**
  * \brief Converts a unicode rune into UTF-8 and copies the result
  * into an internal text buffer.
- * 
+ *
  * \details
  * \note
  *     Stores up to NK_INPUT_MAX bytes between `nk_input_begin` and `nk_input_end`.
@@ -1256,7 +1256,7 @@ NK_API const struct nk_command* nk__next(struct nk_context*, const struct nk_com
 
 /**
  * \brief Converts all internal draw commands into vertex draw commands and fills
- * three buffers with vertexes, vertex draw commands and vertex indices. 
+ * three buffers with vertexes, vertex draw commands and vertex indices.
  *
  * \details
  * The vertex format as well as some other configuration values have to be
@@ -1593,9 +1593,8 @@ NK_API void nk_end(struct nk_context *ctx);
  *
  * \returns a `nk_window` struct pointing to the identified window or NULL if
  * no window with the given name was found
-
  */
-NK_API struct nk_window *nk_window_find(struct nk_context *ctx, const char *name);
+NK_API struct nk_window *nk_window_find(const struct nk_context *ctx, const char *name);
 
 /**
  * # # nk_window_get_bounds
@@ -1652,7 +1651,7 @@ NK_API struct nk_vec2 nk_window_get_position(const struct nk_context *ctx);
  * \returns a `nk_vec2` struct with window width and height
 
  */
-NK_API struct nk_vec2 nk_window_get_size(const struct nk_context*);
+NK_API struct nk_vec2 nk_window_get_size(const struct nk_context *ctx);
 
 /**
  * nk_window_get_width
@@ -1670,7 +1669,7 @@ NK_API struct nk_vec2 nk_window_get_size(const struct nk_context*);
  *
  * \returns the current window width
  */
-NK_API float nk_window_get_width(const struct nk_context*);
+NK_API float nk_window_get_width(const struct nk_context *ctx);
 
 /**
  * # # nk_window_get_height
@@ -1689,7 +1688,7 @@ NK_API float nk_window_get_width(const struct nk_context*);
  * \returns the current window height
 
  */
-NK_API float nk_window_get_height(const struct nk_context*);
+NK_API float nk_window_get_height(const struct nk_context* ctx);
 
 /**
  * # # nk_window_get_panel
@@ -1710,7 +1709,7 @@ NK_API float nk_window_get_height(const struct nk_context*);
  * \returns a pointer to window internal `nk_panel` state.
 
  */
-NK_API struct nk_panel* nk_window_get_panel(struct nk_context*);
+NK_API struct nk_panel* nk_window_get_panel(const struct nk_context* ctx);
 
 /**
  * # # nk_window_get_content_region
@@ -1732,7 +1731,7 @@ NK_API struct nk_panel* nk_window_get_panel(struct nk_context*);
  * of the visible space inside the current window
 
  */
-NK_API struct nk_rect nk_window_get_content_region(struct nk_context*);
+NK_API struct nk_rect nk_window_get_content_region(const struct nk_context* ctx);
 
 /**
  * # # nk_window_get_content_region_min
@@ -1754,7 +1753,7 @@ NK_API struct nk_rect nk_window_get_content_region(struct nk_context*);
  * of the visible space inside the current window
 
  */
-NK_API struct nk_vec2 nk_window_get_content_region_min(struct nk_context*);
+NK_API struct nk_vec2 nk_window_get_content_region_min(const struct nk_context *ctx);
 
 /**
  * # # nk_window_get_content_region_max
@@ -1776,7 +1775,7 @@ NK_API struct nk_vec2 nk_window_get_content_region_min(struct nk_context*);
  * of the visible space inside the current window
 
  */
-NK_API struct nk_vec2 nk_window_get_content_region_max(struct nk_context*);
+NK_API struct nk_vec2 nk_window_get_content_region_max(const struct nk_context *ctx);
 
 /**
  * # # nk_window_get_content_region_size
@@ -1797,7 +1796,7 @@ NK_API struct nk_vec2 nk_window_get_content_region_max(struct nk_context*);
  * \returns `nk_vec2` struct with size the visible space inside the current window
 
  */
-NK_API struct nk_vec2 nk_window_get_content_region_size(struct nk_context*);
+NK_API struct nk_vec2 nk_window_get_content_region_size(const struct nk_context *ctx);
 
 /**
  * # # nk_window_get_canvas
@@ -1817,9 +1816,8 @@ NK_API struct nk_vec2 nk_window_get_content_region_size(struct nk_context*);
  *
  * \returns a pointer to window internal `nk_command_buffer` struct used as
  * drawing canvas. Can be used to do custom drawing.
-
  */
-NK_API struct nk_command_buffer* nk_window_get_canvas(struct nk_context*);
+NK_API struct nk_command_buffer* nk_window_get_canvas(const struct nk_context* ctx);
 
 /**
  * # # nk_window_get_scroll
@@ -1838,7 +1836,7 @@ NK_API struct nk_command_buffer* nk_window_get_canvas(struct nk_context*);
  * \param[in] offset_y | A pointer to the y offset output (or NULL to ignore)
 
  */
-NK_API void nk_window_get_scroll(struct nk_context*, nk_uint *offset_x, nk_uint *offset_y);
+NK_API void nk_window_get_scroll(const struct nk_context *ctx, nk_uint *offset_x, nk_uint *offset_y);
 
 /**
  * # # nk_window_has_focus
@@ -1856,7 +1854,7 @@ NK_API void nk_window_get_scroll(struct nk_context*, nk_uint *offset_x, nk_uint 
  * \returns `false(0)` if current window is not active or `true(1)` if it is
 
  */
-NK_API nk_bool nk_window_has_focus(const struct nk_context*);
+NK_API nk_bool nk_window_has_focus(const struct nk_context *ctx);
 
 /**
  * # # nk_window_is_hovered
@@ -1874,7 +1872,7 @@ NK_API nk_bool nk_window_has_focus(const struct nk_context*);
  * \returns `true(1)` if current window is hovered or `false(0)` otherwise
 
  */
-NK_API nk_bool nk_window_is_hovered(struct nk_context*);
+NK_API nk_bool nk_window_is_hovered(const struct nk_context *ctx);
 
 /**
  * # # nk_window_is_collapsed
@@ -1892,7 +1890,7 @@ NK_API nk_bool nk_window_is_hovered(struct nk_context*);
  * found or is not minimized
 
  */
-NK_API nk_bool nk_window_is_collapsed(struct nk_context *ctx, const char *name);
+NK_API nk_bool nk_window_is_collapsed(const struct nk_context *ctx, const char *name);
 
 /**
  * # # nk_window_is_closed
@@ -1909,7 +1907,7 @@ NK_API nk_bool nk_window_is_collapsed(struct nk_context *ctx, const char *name);
  * \returns `true(1)` if current window was closed or `false(0)` window not found or not closed
 
  */
-NK_API nk_bool nk_window_is_closed(struct nk_context*, const char*);
+NK_API nk_bool nk_window_is_closed(const struct nk_context *ctx, const char* name);
 
 /**
  * # # nk_window_is_hidden
@@ -1926,7 +1924,7 @@ NK_API nk_bool nk_window_is_closed(struct nk_context*, const char*);
  * \returns `true(1)` if current window is hidden or `false(0)` window not found or visible
 
  */
-NK_API nk_bool nk_window_is_hidden(struct nk_context*, const char*);
+NK_API nk_bool nk_window_is_hidden(const struct nk_context *ctx, const char* name);
 
 /**
  * # # nk_window_is_active
@@ -1941,9 +1939,8 @@ NK_API nk_bool nk_window_is_hidden(struct nk_context*, const char*);
  * \param[in] name    | Identifier of window you want to check if it is active
  *
  * \returns `true(1)` if current window is active or `false(0)` window not found or not active
-
  */
-NK_API nk_bool nk_window_is_active(struct nk_context*, const char*);
+NK_API nk_bool nk_window_is_active(const struct nk_context *ctx, const char* name);
 
 /**
  * # # nk_window_is_any_hovered
@@ -1957,9 +1954,8 @@ NK_API nk_bool nk_window_is_active(struct nk_context*, const char*);
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct
  *
  * \returns `true(1)` if any window is hovered or `false(0)` otherwise
-
  */
-NK_API nk_bool nk_window_is_any_hovered(struct nk_context*);
+NK_API nk_bool nk_window_is_any_hovered(const struct nk_context *ctx);
 
 /**
  * # # nk_item_is_any_active
@@ -1977,7 +1973,7 @@ NK_API nk_bool nk_window_is_any_hovered(struct nk_context*);
  * \returns `true(1)` if any window is hovered or any item is active or `false(0)` otherwise
 
  */
-NK_API nk_bool nk_item_is_any_active(struct nk_context*);
+NK_API nk_bool nk_item_is_any_active(const struct nk_context *ctx);
 
 /**
  * # # nk_window_set_bounds
@@ -1993,7 +1989,7 @@ NK_API nk_bool nk_item_is_any_active(struct nk_context*);
  * \param[in] bounds  | Must point to a `nk_rect` struct with the new position and size
 
  */
-NK_API void nk_window_set_bounds(struct nk_context*, const char *name, struct nk_rect bounds);
+NK_API void nk_window_set_bounds(struct nk_context *ctx, const char *name, struct nk_rect bounds);
 
 /**
  * # # nk_window_set_position
@@ -2009,7 +2005,7 @@ NK_API void nk_window_set_bounds(struct nk_context*, const char *name, struct nk
  * \param[in] pos     | Must point to a `nk_vec2` struct with the new position
 
  */
-NK_API void nk_window_set_position(struct nk_context*, const char *name, struct nk_vec2 pos);
+NK_API void nk_window_set_position(struct nk_context *ctx, const char *name, struct nk_vec2 pos);
 
 /**
  * # # nk_window_set_size
@@ -2025,7 +2021,7 @@ NK_API void nk_window_set_position(struct nk_context*, const char *name, struct 
  * \param[in] size    | Must point to a `nk_vec2` struct with new window size
 
  */
-NK_API void nk_window_set_size(struct nk_context*, const char *name, struct nk_vec2);
+NK_API void nk_window_set_size(struct nk_context *ctx, const char *name, struct nk_vec2 size);
 
 /**
  * # # nk_window_set_focus
@@ -2040,7 +2036,7 @@ NK_API void nk_window_set_size(struct nk_context*, const char *name, struct nk_v
  * \param[in] name    | Identifier of the window to set focus on
 
  */
-NK_API void nk_window_set_focus(struct nk_context*, const char *name);
+NK_API void nk_window_set_focus(struct nk_context *ctx, const char *name);
 
 /**
  * # # nk_window_set_scroll
@@ -2059,7 +2055,7 @@ NK_API void nk_window_set_focus(struct nk_context*, const char *name);
  * \param[in] offset_y | The y offset to scroll to
 
  */
-NK_API void nk_window_set_scroll(struct nk_context*, nk_uint offset_x, nk_uint offset_y);
+NK_API void nk_window_set_scroll(struct nk_context *ctx, nk_uint offset_x, nk_uint offset_y);
 
 /**
  * # # nk_window_close
@@ -2090,7 +2086,7 @@ NK_API void nk_window_close(struct nk_context *ctx, const char *name);
  * \param[in] state   | value out of nk_collapse_states section
 
  */
-NK_API void nk_window_collapse(struct nk_context*, const char *name, enum nk_collapse_states state);
+NK_API void nk_window_collapse(struct nk_context *ctx, const char *name, enum nk_collapse_states state);
 
 /**
  * # # nk_window_collapse_if
@@ -2107,7 +2103,7 @@ NK_API void nk_window_collapse(struct nk_context*, const char *name, enum nk_col
  * \param[in] cond    | condition that has to be met to actually commit the collapse state change
 
  */
-NK_API void nk_window_collapse_if(struct nk_context*, const char *name, enum nk_collapse_states, int cond);
+NK_API void nk_window_collapse_if(struct nk_context *ctx, const char *name, enum nk_collapse_states state, int cond);
 
 /**
  * # # nk_window_show
@@ -2122,7 +2118,7 @@ NK_API void nk_window_collapse_if(struct nk_context*, const char *name, enum nk_
  * \param[in] name    | Identifier of the window to either collapse or maximize
  * \param[in] state   | state with either visible or hidden to modify the window with
  */
-NK_API void nk_window_show(struct nk_context*, const char *name, enum nk_show_states);
+NK_API void nk_window_show(struct nk_context *ctx, const char *name, enum nk_show_states state);
 
 /**
  * # # nk_window_show_if
@@ -2139,7 +2135,7 @@ NK_API void nk_window_show(struct nk_context*, const char *name, enum nk_show_st
  * \param[in] cond    | condition that has to be met to actually commit the visibility state change
 
  */
-NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show_states, int cond);
+NK_API void nk_window_show_if(struct nk_context *ctx, const char *name, enum nk_show_states state, int cond);
 
 /**
  * # # nk_window_show_if
@@ -2480,7 +2476,7 @@ NK_API void nk_layout_reset_min_row_height(struct nk_context*);
  *
  * \return `nk_rect` with both position and size of the next row
  */
-NK_API struct nk_rect nk_layout_widget_bounds(struct nk_context*);
+NK_API struct nk_rect nk_layout_widget_bounds(const struct nk_context *ctx);
 
 /**
  * \brief Utility functions to calculate window ratio from pixel size
@@ -2495,7 +2491,7 @@ NK_API struct nk_rect nk_layout_widget_bounds(struct nk_context*);
  *
  * \returns `nk_rect` with both position and size of the next row
  */
-NK_API float nk_layout_ratio_from_pixel(struct nk_context*, float pixel_width);
+NK_API float nk_layout_ratio_from_pixel(const struct nk_context *ctx, float pixel_width);
 
 /**
  * \brief Sets current row layout to share horizontal space
@@ -2710,7 +2706,7 @@ NK_API void nk_layout_space_end(struct nk_context*);
  *
  * \returns `nk_rect` holding the total space allocated
  */
-NK_API struct nk_rect nk_layout_space_bounds(struct nk_context*);
+NK_API struct nk_rect nk_layout_space_bounds(const struct nk_context *ctx);
 
 /**
  * # # nk_layout_space_to_screen
@@ -2726,7 +2722,7 @@ NK_API struct nk_rect nk_layout_space_bounds(struct nk_context*);
  *
  * \returns transformed `nk_vec2` in screen space coordinates
  */
-NK_API struct nk_vec2 nk_layout_space_to_screen(struct nk_context*, struct nk_vec2);
+NK_API struct nk_vec2 nk_layout_space_to_screen(const struct nk_context* ctx, struct nk_vec2 vec);
 
 /**
  * # # nk_layout_space_to_local
@@ -2742,7 +2738,7 @@ NK_API struct nk_vec2 nk_layout_space_to_screen(struct nk_context*, struct nk_ve
  *
  * \returns transformed `nk_vec2` in layout space coordinates
  */
-NK_API struct nk_vec2 nk_layout_space_to_local(struct nk_context*, struct nk_vec2);
+NK_API struct nk_vec2 nk_layout_space_to_local(const struct nk_context *ctx, struct nk_vec2 vec);
 
 /**
  * # # nk_layout_space_rect_to_screen
@@ -2758,7 +2754,7 @@ NK_API struct nk_vec2 nk_layout_space_to_local(struct nk_context*, struct nk_vec
  *
  * \returns transformed `nk_rect` in screen space coordinates
  */
-NK_API struct nk_rect nk_layout_space_rect_to_screen(struct nk_context*, struct nk_rect);
+NK_API struct nk_rect nk_layout_space_rect_to_screen(const struct nk_context *ctx, struct nk_rect bounds);
 
 /**
  * # # nk_layout_space_rect_to_local
@@ -2774,7 +2770,7 @@ NK_API struct nk_rect nk_layout_space_rect_to_screen(struct nk_context*, struct 
  *
  * \returns transformed `nk_rect` in layout space coordinates
  */
-NK_API struct nk_rect nk_layout_space_rect_to_local(struct nk_context*, struct nk_rect);
+NK_API struct nk_rect nk_layout_space_rect_to_local(const struct nk_context *ctx, struct nk_rect bounds);
 
 /**
  * # # nk_spacer
@@ -2788,7 +2784,7 @@ NK_API struct nk_rect nk_layout_space_rect_to_local(struct nk_context*, struct n
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct after call `nk_layout_space_begin`
  *
  */
-NK_API void nk_spacer(struct nk_context* );
+NK_API void nk_spacer(struct nk_context *ctx);
 
 
 /** =============================================================================
@@ -3321,15 +3317,15 @@ enum nk_widget_states {
     NK_WIDGET_STATE_ACTIVE      = NK_WIDGET_STATE_ACTIVED|NK_WIDGET_STATE_MODIFIED /**!< widget is currently activated */
 };
 NK_API enum nk_widget_layout_states nk_widget(struct nk_rect*, const struct nk_context*);
-NK_API enum nk_widget_layout_states nk_widget_fitting(struct nk_rect*, struct nk_context*, struct nk_vec2);
-NK_API struct nk_rect nk_widget_bounds(struct nk_context*);
-NK_API struct nk_vec2 nk_widget_position(struct nk_context*);
-NK_API struct nk_vec2 nk_widget_size(struct nk_context*);
-NK_API float nk_widget_width(struct nk_context*);
-NK_API float nk_widget_height(struct nk_context*);
-NK_API nk_bool nk_widget_is_hovered(struct nk_context*);
-NK_API nk_bool nk_widget_is_mouse_clicked(struct nk_context*, enum nk_buttons);
-NK_API nk_bool nk_widget_has_mouse_click_down(struct nk_context*, enum nk_buttons, nk_bool down);
+NK_API enum nk_widget_layout_states nk_widget_fitting(struct nk_rect*, const struct nk_context*, struct nk_vec2);
+NK_API struct nk_rect nk_widget_bounds(const struct nk_context*);
+NK_API struct nk_vec2 nk_widget_position(const struct nk_context*);
+NK_API struct nk_vec2 nk_widget_size(const struct nk_context*);
+NK_API float nk_widget_width(const struct nk_context*);
+NK_API float nk_widget_height(const struct nk_context*);
+NK_API nk_bool nk_widget_is_hovered(const struct nk_context*);
+NK_API nk_bool nk_widget_is_mouse_clicked(const struct nk_context*, enum nk_buttons);
+NK_API nk_bool nk_widget_has_mouse_click_down(const struct nk_context*, enum nk_buttons, nk_bool down);
 NK_API void nk_spacing(struct nk_context*, int cols);
 NK_API void nk_widget_disable_begin(struct nk_context* ctx);
 NK_API void nk_widget_disable_end(struct nk_context* ctx);
@@ -3758,18 +3754,18 @@ NK_API void nk_plot_function(struct nk_context*, enum nk_chart_type, void *userd
 NK_API nk_bool nk_popup_begin(struct nk_context*, enum nk_popup_type, const char*, nk_flags, struct nk_rect bounds);
 NK_API void nk_popup_close(struct nk_context*);
 NK_API void nk_popup_end(struct nk_context*);
-NK_API void nk_popup_get_scroll(struct nk_context*, nk_uint *offset_x, nk_uint *offset_y);
+NK_API void nk_popup_get_scroll(const struct nk_context*, nk_uint *offset_x, nk_uint *offset_y);
 NK_API void nk_popup_set_scroll(struct nk_context*, nk_uint offset_x, nk_uint offset_y);
 /* =============================================================================
  *
  *                                  COMBOBOX
  *
  * ============================================================================= */
-NK_API int nk_combo(struct nk_context*, const char **items, int count, int selected, int item_height, struct nk_vec2 size);
+NK_API int nk_combo(struct nk_context*, const char *const *items, int count, int selected, int item_height, struct nk_vec2 size);
 NK_API int nk_combo_separator(struct nk_context*, const char *items_separated_by_separator, int separator, int selected, int count, int item_height, struct nk_vec2 size);
 NK_API int nk_combo_string(struct nk_context*, const char *items_separated_by_zeros, int selected, int count, int item_height, struct nk_vec2 size);
 NK_API int nk_combo_callback(struct nk_context*, void(*item_getter)(void*, int, const char**), void *userdata, int selected, int count, int item_height, struct nk_vec2 size);
-NK_API void nk_combobox(struct nk_context*, const char **items, int count, int *selected, int item_height, struct nk_vec2 size);
+NK_API void nk_combobox(struct nk_context*, const char *const *items, int count, int *selected, int item_height, struct nk_vec2 size);
 NK_API void nk_combobox_string(struct nk_context*, const char *items_separated_by_zeros, int *selected, int count, int item_height, struct nk_vec2 size);
 NK_API void nk_combobox_separator(struct nk_context*, const char *items_separated_by_separator, int separator, int *selected, int count, int item_height, struct nk_vec2 size);
 NK_API void nk_combobox_callback(struct nk_context*, void(*item_getter)(void*, int, const char**), void*, int *selected, int count, int item_height, struct nk_vec2 size);
@@ -3900,7 +3896,7 @@ enum nk_style_cursor {
 NK_API void nk_style_default(struct nk_context*);
 NK_API void nk_style_from_table(struct nk_context*, const struct nk_color*);
 NK_API void nk_style_load_cursor(struct nk_context*, enum nk_style_cursor, const struct nk_cursor*);
-NK_API void nk_style_load_all_cursors(struct nk_context*, struct nk_cursor*);
+NK_API void nk_style_load_all_cursors(struct nk_context*, const struct nk_cursor*);
 NK_API const char* nk_style_get_color_by_name(enum nk_style_colors);
 NK_API void nk_style_set_font(struct nk_context*, const struct nk_user_font*);
 NK_API nk_bool nk_style_set_cursor(struct nk_context*, enum nk_style_cursor);
@@ -3932,7 +3928,7 @@ NK_API struct nk_color nk_rgb_f(float r, float g, float b);
 NK_API struct nk_color nk_rgb_fv(const float *rgb);
 NK_API struct nk_color nk_rgb_cf(struct nk_colorf c);
 NK_API struct nk_color nk_rgb_hex(const char *rgb);
-NK_API struct nk_color nk_rgb_factor(struct nk_color col, const float factor);
+NK_API struct nk_color nk_rgb_factor(struct nk_color col, float factor);
 
 NK_API struct nk_color nk_rgba(int r, int g, int b, int a);
 NK_API struct nk_color nk_rgba_u32(nk_uint);
@@ -3944,7 +3940,7 @@ NK_API struct nk_color nk_rgba_cf(struct nk_colorf c);
 NK_API struct nk_color nk_rgba_hex(const char *rgb);
 
 NK_API struct nk_colorf nk_hsva_colorf(float h, float s, float v, float a);
-NK_API struct nk_colorf nk_hsva_colorfv(float *c);
+NK_API struct nk_colorf nk_hsva_colorfv(const float *c);
 NK_API void nk_colorf_hsva_f(float *out_h, float *out_s, float *out_v, float *out_a, struct nk_colorf in);
 NK_API void nk_colorf_hsva_fv(float *hsva, struct nk_colorf in);
 
@@ -4344,7 +4340,7 @@ NK_API struct nk_font *nk_font_atlas_add_compressed(struct nk_font_atlas*, void 
 NK_API struct nk_font* nk_font_atlas_add_compressed_base85(struct nk_font_atlas*, const char *data, float height, const struct nk_font_config *config);
 NK_API const void* nk_font_atlas_bake(struct nk_font_atlas*, int *width, int *height, enum nk_font_atlas_format);
 NK_API void nk_font_atlas_end(struct nk_font_atlas*, nk_handle tex, struct nk_draw_null_texture*);
-NK_API const struct nk_font_glyph* nk_font_find_glyph(struct nk_font*, nk_rune unicode);
+NK_API const struct nk_font_glyph* nk_font_find_glyph(const struct nk_font*, nk_rune unicode);
 NK_API void nk_font_atlas_cleanup(struct nk_font_atlas *atlas);
 NK_API void nk_font_atlas_clear(struct nk_font_atlas*);
 
@@ -4429,7 +4425,7 @@ NK_API void nk_buffer_init_default(struct nk_buffer*);
 #endif
 NK_API void nk_buffer_init(struct nk_buffer*, const struct nk_allocator*, nk_size size);
 NK_API void nk_buffer_init_fixed(struct nk_buffer*, void *memory, nk_size size);
-NK_API void nk_buffer_info(struct nk_memory_status*, struct nk_buffer*);
+NK_API void nk_buffer_info(struct nk_memory_status*, const struct nk_buffer*);
 NK_API void nk_buffer_push(struct nk_buffer*, enum nk_buffer_allocation_type type, const void *memory, nk_size size, nk_size align);
 NK_API void nk_buffer_mark(struct nk_buffer*, enum nk_buffer_allocation_type type);
 NK_API void nk_buffer_reset(struct nk_buffer*, enum nk_buffer_allocation_type type);
@@ -4437,7 +4433,7 @@ NK_API void nk_buffer_clear(struct nk_buffer*);
 NK_API void nk_buffer_free(struct nk_buffer*);
 NK_API void *nk_buffer_memory(struct nk_buffer*);
 NK_API const void *nk_buffer_memory_const(const struct nk_buffer*);
-NK_API nk_size nk_buffer_total(struct nk_buffer*);
+NK_API nk_size nk_buffer_total(const struct nk_buffer*);
 
 /** ==============================================================
  *
@@ -4492,8 +4488,8 @@ NK_API const char *nk_str_at_const(const struct nk_str*, int pos, nk_rune *unico
 
 NK_API char *nk_str_get(struct nk_str*);
 NK_API const char *nk_str_get_const(const struct nk_str*);
-NK_API int nk_str_len(struct nk_str*);
-NK_API int nk_str_len_char(struct nk_str*);
+NK_API int nk_str_len(const struct nk_str*);
+NK_API int nk_str_len_char(const struct nk_str*);
 
 /**===============================================================
  *
@@ -4870,8 +4866,8 @@ NK_API void nk_stroke_rect(struct nk_command_buffer*, struct nk_rect, float roun
 NK_API void nk_stroke_circle(struct nk_command_buffer*, struct nk_rect, float line_thickness, struct nk_color);
 NK_API void nk_stroke_arc(struct nk_command_buffer*, float cx, float cy, float radius, float a_min, float a_max, float line_thickness, struct nk_color);
 NK_API void nk_stroke_triangle(struct nk_command_buffer*, float, float, float, float, float, float, float line_thichness, struct nk_color);
-NK_API void nk_stroke_polyline(struct nk_command_buffer*, float *points, int point_count, float line_thickness, struct nk_color col);
-NK_API void nk_stroke_polygon(struct nk_command_buffer*, float*, int point_count, float line_thickness, struct nk_color);
+NK_API void nk_stroke_polyline(struct nk_command_buffer*, const float *points, int point_count, float line_thickness, struct nk_color col);
+NK_API void nk_stroke_polygon(struct nk_command_buffer*, const float *points, int point_count, float line_thickness, struct nk_color);
 
 /** filled shades */
 NK_API void nk_fill_rect(struct nk_command_buffer*, struct nk_rect, float rounding, struct nk_color);
@@ -4879,7 +4875,7 @@ NK_API void nk_fill_rect_multi_color(struct nk_command_buffer*, struct nk_rect, 
 NK_API void nk_fill_circle(struct nk_command_buffer*, struct nk_rect, struct nk_color);
 NK_API void nk_fill_arc(struct nk_command_buffer*, float cx, float cy, float radius, float a_min, float a_max, struct nk_color);
 NK_API void nk_fill_triangle(struct nk_command_buffer*, float x0, float y0, float x1, float y1, float x2, float y2, struct nk_color);
-NK_API void nk_fill_polygon(struct nk_command_buffer*, float*, int point_count, struct nk_color);
+NK_API void nk_fill_polygon(struct nk_command_buffer*, const float *points, int point_count, struct nk_color);
 
 /** misc */
 NK_API void nk_draw_image(struct nk_command_buffer*, struct nk_rect, const struct nk_image*, struct nk_color);
@@ -6239,7 +6235,7 @@ enum nk_window_insert_location {
 NK_LIB void *nk_create_window(struct nk_context *ctx);
 NK_LIB void nk_remove_window(struct nk_context*, struct nk_window*);
 NK_LIB void nk_free_window(struct nk_context *ctx, struct nk_window *win);
-NK_LIB struct nk_window *nk_find_window(struct nk_context *ctx, nk_hash hash, const char *name);
+NK_LIB struct nk_window *nk_find_window(const struct nk_context *ctx, nk_hash hash, const char *name);
 NK_LIB void nk_insert_window(struct nk_context *ctx, struct nk_window *win, enum nk_window_insert_location loc);
 
 /* pool */
@@ -6259,7 +6255,7 @@ NK_LIB void nk_remove_table(struct nk_window *win, struct nk_table *tbl);
 NK_LIB void nk_free_table(struct nk_context *ctx, struct nk_table *tbl);
 NK_LIB void nk_push_table(struct nk_window *win, struct nk_table *tbl);
 NK_LIB nk_uint *nk_add_value(struct nk_context *ctx, struct nk_window *win, nk_hash name, nk_uint value);
-NK_LIB nk_uint *nk_find_value(struct nk_window *win, nk_hash name);
+NK_LIB nk_uint *nk_find_value(const struct nk_window *win, nk_hash name);
 
 /* panel */
 NK_LIB void *nk_create_panel(struct nk_context *ctx);
@@ -6280,7 +6276,7 @@ NK_LIB void nk_row_layout(struct nk_context *ctx, enum nk_layout_format fmt, flo
 NK_LIB void nk_panel_alloc_row(const struct nk_context *ctx, struct nk_window *win);
 NK_LIB void nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx, struct nk_window *win, int modify);
 NK_LIB void nk_panel_alloc_space(struct nk_rect *bounds, const struct nk_context *ctx);
-NK_LIB void nk_layout_peek(struct nk_rect *bounds, struct nk_context *ctx);
+NK_LIB void nk_layout_peek(struct nk_rect *bounds, const struct nk_context *ctx);
 
 /* popup */
 NK_LIB nk_bool nk_nonblock_begin(struct nk_context *ctx, nk_flags flags, struct nk_rect body, struct nk_rect header, enum nk_panel_type panel_type);
@@ -6428,7 +6424,6 @@ nk_stbtt_free(void *ptr, void *user_data) {
 #endif /* NK_INCLUDE_FONT_BAKING */
 
 #endif
-
 
 
 
@@ -7939,7 +7934,7 @@ nk_parse_hex(const char *p, int length)
     return i;
 }
 NK_API struct nk_color
-nk_rgb_factor(struct nk_color col, const float factor)
+nk_rgb_factor(struct nk_color col, float factor)
 {
     if (factor == 1.0f)
         return col;
@@ -8162,7 +8157,7 @@ nk_hsva_colorf(float h, float s, float v, float a)
     return out;
 }
 NK_API struct nk_colorf
-nk_hsva_colorfv(float *c)
+nk_hsva_colorfv(const float *c)
 {
     return nk_hsva_colorf(c[0], c[1], c[2], c[3]);
 }
@@ -8337,7 +8332,6 @@ nk_color_hsv_bv(nk_byte *out, struct nk_color in)
     out[1] = (nk_byte)tmp[1];
     out[2] = (nk_byte)tmp[2];
 }
-
 
 
 
@@ -8728,7 +8722,7 @@ nk_buffer_free(struct nk_buffer *b)
     b->pool.free(b->pool.userdata, b->memory.ptr);
 }
 NK_API void
-nk_buffer_info(struct nk_memory_status *s, struct nk_buffer *b)
+nk_buffer_info(struct nk_memory_status *s, const struct nk_buffer *b)
 {
     NK_ASSERT(b);
     NK_ASSERT(s);
@@ -8754,13 +8748,12 @@ nk_buffer_memory_const(const struct nk_buffer *buffer)
     return buffer->memory.ptr;
 }
 NK_API nk_size
-nk_buffer_total(struct nk_buffer *buffer)
+nk_buffer_total(const struct nk_buffer *buffer)
 {
     NK_ASSERT(buffer);
     if (!buffer) return 0;
     return buffer->memory.size;
 }
-
 
 
 
@@ -9183,14 +9176,14 @@ nk_str_get_const(const struct nk_str *s)
     return (const char*)s->buffer.memory.ptr;
 }
 NK_API int
-nk_str_len(struct nk_str *s)
+nk_str_len(const struct nk_str *s)
 {
     NK_ASSERT(s);
     if (!s || !s->len || !s->buffer.allocated) return 0;
     return s->len;
 }
 NK_API int
-nk_str_len_char(struct nk_str *s)
+nk_str_len_char(const struct nk_str *s)
 {
     NK_ASSERT(s);
     if (!s || !s->len || !s->buffer.allocated) return 0;
@@ -9210,7 +9203,6 @@ nk_str_free(struct nk_str *str)
     nk_buffer_free(&str->buffer);
     str->len = 0;
 }
-
 
 
 
@@ -9543,7 +9535,7 @@ nk_fill_triangle(struct nk_command_buffer *b, float x0, float y0, float x1,
     cmd->color = c;
 }
 NK_API void
-nk_stroke_polygon(struct nk_command_buffer *b,  float *points, int point_count,
+nk_stroke_polygon(struct nk_command_buffer *b, const float *points, int point_count,
     float line_thickness, struct nk_color col)
 {
     int i;
@@ -9564,7 +9556,7 @@ nk_stroke_polygon(struct nk_command_buffer *b,  float *points, int point_count,
     }
 }
 NK_API void
-nk_fill_polygon(struct nk_command_buffer *b, float *points, int point_count,
+nk_fill_polygon(struct nk_command_buffer *b, const float *points, int point_count,
     struct nk_color col)
 {
     int i;
@@ -9585,7 +9577,7 @@ nk_fill_polygon(struct nk_command_buffer *b, float *points, int point_count,
     }
 }
 NK_API void
-nk_stroke_polyline(struct nk_command_buffer *b, float *points, int point_count,
+nk_stroke_polyline(struct nk_command_buffer *b, const float *points, int point_count,
     float line_thickness, struct nk_color col)
 {
     int i;
@@ -9769,7 +9761,6 @@ nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
     NK_MEMCPY(cmd->string, string, (nk_size)length);
     cmd->string[length] = '\0';
 }
-
 
 
 
@@ -17320,7 +17311,7 @@ nk_font_query_font_glyph(nk_handle handle, float height,
 }
 #endif
 NK_API const struct nk_font_glyph*
-nk_font_find_glyph(struct nk_font *font, nk_rune unicode)
+nk_font_find_glyph(const struct nk_font *font, nk_rune unicode)
 {
     int i = 0;
     int count;
@@ -18186,7 +18177,6 @@ nk_font_atlas_clear(struct nk_font_atlas *atlas)
     nk_zero_struct(*atlas);
 }
 #endif
-
 
 
 
@@ -19325,7 +19315,7 @@ nk_style_load_cursor(struct nk_context *ctx, enum nk_style_cursor cursor,
     style->cursors[cursor] = c;
 }
 NK_API void
-nk_style_load_all_cursors(struct nk_context *ctx, struct nk_cursor *cursors)
+nk_style_load_all_cursors(struct nk_context *ctx, const struct nk_cursor *cursors)
 {
     int i = 0;
     struct nk_style *style;
@@ -19336,7 +19326,6 @@ nk_style_load_all_cursors(struct nk_context *ctx, struct nk_cursor *cursors)
         style->cursors[i] = &cursors[i];
     style->cursor_visible = nk_true;
 }
-
 
 
 
@@ -19886,7 +19875,7 @@ nk_add_value(struct nk_context *ctx, struct nk_window *win,
     return &win->tables->values[win->tables->size++];
 }
 NK_LIB nk_uint*
-nk_find_value(struct nk_window *win, nk_hash name)
+nk_find_value(const struct nk_window *win, nk_hash name)
 {
     struct nk_table *iter = win->tables;
     while (iter) {
@@ -19902,7 +19891,6 @@ nk_find_value(struct nk_window *win, nk_hash name)
     }
     return 0;
 }
-
 
 
 
@@ -20571,7 +20559,7 @@ nk_free_window(struct nk_context *ctx, struct nk_window *win)
     nk_free_page_element(ctx, pe);}
 }
 NK_LIB struct nk_window*
-nk_find_window(struct nk_context *ctx, nk_hash hash, const char *name)
+nk_find_window(const struct nk_context *ctx, nk_hash hash, const char *name)
 {
     struct nk_window *iter;
     iter = ctx->begin;
@@ -20880,7 +20868,7 @@ nk_window_get_height(const struct nk_context *ctx)
     return ctx->current->bounds.h;
 }
 NK_API struct nk_rect
-nk_window_get_content_region(struct nk_context *ctx)
+nk_window_get_content_region(const struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -20888,7 +20876,7 @@ nk_window_get_content_region(struct nk_context *ctx)
     return ctx->current->layout->clip;
 }
 NK_API struct nk_vec2
-nk_window_get_content_region_min(struct nk_context *ctx)
+nk_window_get_content_region_min(const struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -20897,7 +20885,7 @@ nk_window_get_content_region_min(struct nk_context *ctx)
     return nk_vec2(ctx->current->layout->clip.x, ctx->current->layout->clip.y);
 }
 NK_API struct nk_vec2
-nk_window_get_content_region_max(struct nk_context *ctx)
+nk_window_get_content_region_max(const struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -20907,7 +20895,7 @@ nk_window_get_content_region_max(struct nk_context *ctx)
         ctx->current->layout->clip.y + ctx->current->layout->clip.h);
 }
 NK_API struct nk_vec2
-nk_window_get_content_region_size(struct nk_context *ctx)
+nk_window_get_content_region_size(const struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -20916,7 +20904,7 @@ nk_window_get_content_region_size(struct nk_context *ctx)
     return nk_vec2(ctx->current->layout->clip.w, ctx->current->layout->clip.h);
 }
 NK_API struct nk_command_buffer*
-nk_window_get_canvas(struct nk_context *ctx)
+nk_window_get_canvas(const struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -20925,7 +20913,7 @@ nk_window_get_canvas(struct nk_context *ctx)
     return &ctx->current->buffer;
 }
 NK_API struct nk_panel*
-nk_window_get_panel(struct nk_context *ctx)
+nk_window_get_panel(const struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -20933,7 +20921,7 @@ nk_window_get_panel(struct nk_context *ctx)
     return ctx->current->layout;
 }
 NK_API void
-nk_window_get_scroll(struct nk_context *ctx, nk_uint *offset_x, nk_uint *offset_y)
+nk_window_get_scroll(const struct nk_context *ctx, nk_uint *offset_x, nk_uint *offset_y)
 {
     struct nk_window *win;
     NK_ASSERT(ctx);
@@ -20956,7 +20944,7 @@ nk_window_has_focus(const struct nk_context *ctx)
     return ctx->current == ctx->active;
 }
 NK_API nk_bool
-nk_window_is_hovered(struct nk_context *ctx)
+nk_window_is_hovered(const struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -20971,7 +20959,7 @@ nk_window_is_hovered(struct nk_context *ctx)
     }
 }
 NK_API nk_bool
-nk_window_is_any_hovered(struct nk_context *ctx)
+nk_window_is_any_hovered(const struct nk_context *ctx)
 {
     struct nk_window *iter;
     NK_ASSERT(ctx);
@@ -20998,14 +20986,14 @@ nk_window_is_any_hovered(struct nk_context *ctx)
     return 0;
 }
 NK_API nk_bool
-nk_item_is_any_active(struct nk_context *ctx)
+nk_item_is_any_active(const struct nk_context *ctx)
 {
     int any_hovered = nk_window_is_any_hovered(ctx);
     int any_active = (ctx->last_widget_state & NK_WIDGET_STATE_MODIFIED);
     return any_hovered || any_active;
 }
 NK_API nk_bool
-nk_window_is_collapsed(struct nk_context *ctx, const char *name)
+nk_window_is_collapsed(const struct nk_context *ctx, const char *name)
 {
     int title_len;
     nk_hash title_hash;
@@ -21020,7 +21008,7 @@ nk_window_is_collapsed(struct nk_context *ctx, const char *name)
     return win->flags & NK_WINDOW_MINIMIZED;
 }
 NK_API nk_bool
-nk_window_is_closed(struct nk_context *ctx, const char *name)
+nk_window_is_closed(const struct nk_context *ctx, const char *name)
 {
     int title_len;
     nk_hash title_hash;
@@ -21035,7 +21023,7 @@ nk_window_is_closed(struct nk_context *ctx, const char *name)
     return (win->flags & NK_WINDOW_CLOSED);
 }
 NK_API nk_bool
-nk_window_is_hidden(struct nk_context *ctx, const char *name)
+nk_window_is_hidden(const struct nk_context *ctx, const char *name)
 {
     int title_len;
     nk_hash title_hash;
@@ -21050,7 +21038,7 @@ nk_window_is_hidden(struct nk_context *ctx, const char *name)
     return (win->flags & NK_WINDOW_HIDDEN);
 }
 NK_API nk_bool
-nk_window_is_active(struct nk_context *ctx, const char *name)
+nk_window_is_active(const struct nk_context *ctx, const char *name)
 {
     int title_len;
     nk_hash title_hash;
@@ -21065,7 +21053,7 @@ nk_window_is_active(struct nk_context *ctx, const char *name)
     return win == ctx->active;
 }
 NK_API struct nk_window*
-nk_window_find(struct nk_context *ctx, const char *name)
+nk_window_find(const struct nk_context *ctx, const char *name)
 {
     int title_len;
     nk_hash title_hash;
@@ -21439,7 +21427,7 @@ nk_popup_end(struct nk_context *ctx)
     nk_push_scissor(&win->buffer, win->layout->clip);
 }
 NK_API void
-nk_popup_get_scroll(struct nk_context *ctx, nk_uint *offset_x, nk_uint *offset_y)
+nk_popup_get_scroll(const struct nk_context *ctx, nk_uint *offset_x, nk_uint *offset_y)
 {
     struct nk_window *popup;
 
@@ -22132,7 +22120,7 @@ nk_row_layout(struct nk_context *ctx, enum nk_layout_format fmt,
     win->layout->row.item_width = (float)width;
 }
 NK_API float
-nk_layout_ratio_from_pixel(struct nk_context *ctx, float pixel_width)
+nk_layout_ratio_from_pixel(const struct nk_context *ctx, float pixel_width)
 {
     struct nk_window *win;
     NK_ASSERT(ctx);
@@ -22461,7 +22449,7 @@ nk_layout_space_push(struct nk_context *ctx, struct nk_rect rect)
     layout->row.item = rect;
 }
 NK_API struct nk_rect
-nk_layout_space_bounds(struct nk_context *ctx)
+nk_layout_space_bounds(const struct nk_context *ctx)
 {
     struct nk_rect ret;
     struct nk_window *win;
@@ -22480,7 +22468,7 @@ nk_layout_space_bounds(struct nk_context *ctx)
     return ret;
 }
 NK_API struct nk_rect
-nk_layout_widget_bounds(struct nk_context *ctx)
+nk_layout_widget_bounds(const struct nk_context *ctx)
 {
     struct nk_rect ret;
     struct nk_window *win;
@@ -22499,7 +22487,7 @@ nk_layout_widget_bounds(struct nk_context *ctx)
     return ret;
 }
 NK_API struct nk_vec2
-nk_layout_space_to_screen(struct nk_context *ctx, struct nk_vec2 ret)
+nk_layout_space_to_screen(const struct nk_context *ctx, struct nk_vec2 ret)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -22515,7 +22503,7 @@ nk_layout_space_to_screen(struct nk_context *ctx, struct nk_vec2 ret)
     return ret;
 }
 NK_API struct nk_vec2
-nk_layout_space_to_local(struct nk_context *ctx, struct nk_vec2 ret)
+nk_layout_space_to_local(const struct nk_context *ctx, struct nk_vec2 ret)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -22531,7 +22519,7 @@ nk_layout_space_to_local(struct nk_context *ctx, struct nk_vec2 ret)
     return ret;
 }
 NK_API struct nk_rect
-nk_layout_space_rect_to_screen(struct nk_context *ctx, struct nk_rect ret)
+nk_layout_space_rect_to_screen(const struct nk_context *ctx, struct nk_rect ret)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -22547,7 +22535,7 @@ nk_layout_space_rect_to_screen(struct nk_context *ctx, struct nk_rect ret)
     return ret;
 }
 NK_API struct nk_rect
-nk_layout_space_rect_to_local(struct nk_context *ctx, struct nk_rect ret)
+nk_layout_space_rect_to_local(const struct nk_context *ctx, struct nk_rect ret)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -22728,7 +22716,7 @@ nk_panel_alloc_space(struct nk_rect *bounds, const struct nk_context *ctx)
     layout->row.index++;
 }
 NK_LIB void
-nk_layout_peek(struct nk_rect *bounds, struct nk_context *ctx)
+nk_layout_peek(struct nk_rect *bounds, const struct nk_context *ctx)
 {
     float y;
     int index;
@@ -23446,7 +23434,7 @@ nk_list_view_end(struct nk_list_view *view)
  *
  * ===============================================================*/
 NK_API struct nk_rect
-nk_widget_bounds(struct nk_context *ctx)
+nk_widget_bounds(const struct nk_context *ctx)
 {
     struct nk_rect bounds;
     NK_ASSERT(ctx);
@@ -23457,7 +23445,7 @@ nk_widget_bounds(struct nk_context *ctx)
     return bounds;
 }
 NK_API struct nk_vec2
-nk_widget_position(struct nk_context *ctx)
+nk_widget_position(const struct nk_context *ctx)
 {
     struct nk_rect bounds;
     NK_ASSERT(ctx);
@@ -23469,7 +23457,7 @@ nk_widget_position(struct nk_context *ctx)
     return nk_vec2(bounds.x, bounds.y);
 }
 NK_API struct nk_vec2
-nk_widget_size(struct nk_context *ctx)
+nk_widget_size(const struct nk_context *ctx)
 {
     struct nk_rect bounds;
     NK_ASSERT(ctx);
@@ -23481,7 +23469,7 @@ nk_widget_size(struct nk_context *ctx)
     return nk_vec2(bounds.w, bounds.h);
 }
 NK_API float
-nk_widget_width(struct nk_context *ctx)
+nk_widget_width(const struct nk_context *ctx)
 {
     struct nk_rect bounds;
     NK_ASSERT(ctx);
@@ -23493,7 +23481,7 @@ nk_widget_width(struct nk_context *ctx)
     return bounds.w;
 }
 NK_API float
-nk_widget_height(struct nk_context *ctx)
+nk_widget_height(const struct nk_context *ctx)
 {
     struct nk_rect bounds;
     NK_ASSERT(ctx);
@@ -23505,7 +23493,7 @@ nk_widget_height(struct nk_context *ctx)
     return bounds.h;
 }
 NK_API nk_bool
-nk_widget_is_hovered(struct nk_context *ctx)
+nk_widget_is_hovered(const struct nk_context *ctx)
 {
     struct nk_rect c, v;
     struct nk_rect bounds;
@@ -23527,7 +23515,7 @@ nk_widget_is_hovered(struct nk_context *ctx)
     return nk_input_is_mouse_hovering_rect(&ctx->input, bounds);
 }
 NK_API nk_bool
-nk_widget_is_mouse_clicked(struct nk_context *ctx, enum nk_buttons btn)
+nk_widget_is_mouse_clicked(const struct nk_context *ctx, enum nk_buttons btn)
 {
     struct nk_rect c, v;
     struct nk_rect bounds;
@@ -23549,7 +23537,7 @@ nk_widget_is_mouse_clicked(struct nk_context *ctx, enum nk_buttons btn)
     return nk_input_mouse_clicked(&ctx->input, btn, bounds);
 }
 NK_API nk_bool
-nk_widget_has_mouse_click_down(struct nk_context *ctx, enum nk_buttons btn, nk_bool down)
+nk_widget_has_mouse_click_down(const struct nk_context *ctx, enum nk_buttons btn, nk_bool down)
 {
     struct nk_rect c, v;
     struct nk_rect bounds;
@@ -23621,7 +23609,7 @@ nk_widget(struct nk_rect *bounds, const struct nk_context *ctx)
     return NK_WIDGET_VALID;
 }
 NK_API enum nk_widget_layout_states
-nk_widget_fitting(struct nk_rect *bounds, struct nk_context *ctx,
+nk_widget_fitting(struct nk_rect *bounds, const struct nk_context *ctx,
     struct nk_vec2 item_padding)
 {
     /* update the bounds to stand without padding  */
@@ -30399,7 +30387,7 @@ NK_API void nk_combo_close(struct nk_context *ctx)
     nk_contextual_close(ctx);
 }
 NK_API int
-nk_combo(struct nk_context *ctx, const char **items, int count,
+nk_combo(struct nk_context *ctx, const char *const *items, int count,
     int selected, int item_height, struct nk_vec2 size)
 {
     int i = 0;
@@ -30517,7 +30505,7 @@ nk_combo_callback(struct nk_context *ctx, void(*item_getter)(void*, int, const c
     } return selected;
 }
 NK_API void
-nk_combobox(struct nk_context *ctx, const char **items, int count,
+nk_combobox(struct nk_context *ctx, const char *const *items, int count,
     int *selected, int item_height, struct nk_vec2 size)
 {
     *selected = nk_combo(ctx, items, count, *selected, item_height, size);
@@ -30542,7 +30530,6 @@ nk_combobox_callback(struct nk_context *ctx,
 {
     *selected = nk_combo_callback(ctx, item_getter, userdata,  *selected, count, item_height, size);
 }
-
 
 
 

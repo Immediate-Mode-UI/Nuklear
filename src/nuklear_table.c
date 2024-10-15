@@ -71,7 +71,7 @@ nk_add_value(struct nk_context *ctx, struct nk_window *win,
     return &win->tables->values[win->tables->size++];
 }
 NK_LIB nk_uint*
-nk_find_value(struct nk_window *win, nk_hash name)
+nk_find_value(const struct nk_window *win, nk_hash name)
 {
     struct nk_table *iter = win->tables;
     while (iter) {
@@ -87,4 +87,3 @@ nk_find_value(struct nk_window *win, nk_hash name)
     }
     return 0;
 }
-

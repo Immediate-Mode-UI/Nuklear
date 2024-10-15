@@ -186,7 +186,7 @@ enum nk_window_insert_location {
 NK_LIB void *nk_create_window(struct nk_context *ctx);
 NK_LIB void nk_remove_window(struct nk_context*, struct nk_window*);
 NK_LIB void nk_free_window(struct nk_context *ctx, struct nk_window *win);
-NK_LIB struct nk_window *nk_find_window(struct nk_context *ctx, nk_hash hash, const char *name);
+NK_LIB struct nk_window *nk_find_window(const struct nk_context *ctx, nk_hash hash, const char *name);
 NK_LIB void nk_insert_window(struct nk_context *ctx, struct nk_window *win, enum nk_window_insert_location loc);
 
 /* pool */
@@ -206,7 +206,7 @@ NK_LIB void nk_remove_table(struct nk_window *win, struct nk_table *tbl);
 NK_LIB void nk_free_table(struct nk_context *ctx, struct nk_table *tbl);
 NK_LIB void nk_push_table(struct nk_window *win, struct nk_table *tbl);
 NK_LIB nk_uint *nk_add_value(struct nk_context *ctx, struct nk_window *win, nk_hash name, nk_uint value);
-NK_LIB nk_uint *nk_find_value(struct nk_window *win, nk_hash name);
+NK_LIB nk_uint *nk_find_value(const struct nk_window *win, nk_hash name);
 
 /* panel */
 NK_LIB void *nk_create_panel(struct nk_context *ctx);
@@ -227,7 +227,7 @@ NK_LIB void nk_row_layout(struct nk_context *ctx, enum nk_layout_format fmt, flo
 NK_LIB void nk_panel_alloc_row(const struct nk_context *ctx, struct nk_window *win);
 NK_LIB void nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx, struct nk_window *win, int modify);
 NK_LIB void nk_panel_alloc_space(struct nk_rect *bounds, const struct nk_context *ctx);
-NK_LIB void nk_layout_peek(struct nk_rect *bounds, struct nk_context *ctx);
+NK_LIB void nk_layout_peek(struct nk_rect *bounds, const struct nk_context *ctx);
 
 /* popup */
 NK_LIB nk_bool nk_nonblock_begin(struct nk_context *ctx, nk_flags flags, struct nk_rect body, struct nk_rect header, enum nk_panel_type panel_type);
@@ -375,4 +375,3 @@ nk_stbtt_free(void *ptr, void *user_data) {
 #endif /* NK_INCLUDE_FONT_BAKING */
 
 #endif
-
