@@ -7,7 +7,7 @@
  *
  * ===============================================================*/
 NK_API struct nk_rect
-nk_widget_bounds(struct nk_context *ctx)
+nk_widget_bounds(const struct nk_context *ctx)
 {
     struct nk_rect bounds;
     NK_ASSERT(ctx);
@@ -18,7 +18,7 @@ nk_widget_bounds(struct nk_context *ctx)
     return bounds;
 }
 NK_API struct nk_vec2
-nk_widget_position(struct nk_context *ctx)
+nk_widget_position(const struct nk_context *ctx)
 {
     struct nk_rect bounds;
     NK_ASSERT(ctx);
@@ -30,7 +30,7 @@ nk_widget_position(struct nk_context *ctx)
     return nk_vec2(bounds.x, bounds.y);
 }
 NK_API struct nk_vec2
-nk_widget_size(struct nk_context *ctx)
+nk_widget_size(const struct nk_context *ctx)
 {
     struct nk_rect bounds;
     NK_ASSERT(ctx);
@@ -42,7 +42,7 @@ nk_widget_size(struct nk_context *ctx)
     return nk_vec2(bounds.w, bounds.h);
 }
 NK_API float
-nk_widget_width(struct nk_context *ctx)
+nk_widget_width(const struct nk_context *ctx)
 {
     struct nk_rect bounds;
     NK_ASSERT(ctx);
@@ -54,7 +54,7 @@ nk_widget_width(struct nk_context *ctx)
     return bounds.w;
 }
 NK_API float
-nk_widget_height(struct nk_context *ctx)
+nk_widget_height(const struct nk_context *ctx)
 {
     struct nk_rect bounds;
     NK_ASSERT(ctx);
@@ -66,7 +66,7 @@ nk_widget_height(struct nk_context *ctx)
     return bounds.h;
 }
 NK_API nk_bool
-nk_widget_is_hovered(struct nk_context *ctx)
+nk_widget_is_hovered(const struct nk_context *ctx)
 {
     struct nk_rect c, v;
     struct nk_rect bounds;
@@ -88,7 +88,7 @@ nk_widget_is_hovered(struct nk_context *ctx)
     return nk_input_is_mouse_hovering_rect(&ctx->input, bounds);
 }
 NK_API nk_bool
-nk_widget_is_mouse_clicked(struct nk_context *ctx, enum nk_buttons btn)
+nk_widget_is_mouse_clicked(const struct nk_context *ctx, enum nk_buttons btn)
 {
     struct nk_rect c, v;
     struct nk_rect bounds;
@@ -110,7 +110,7 @@ nk_widget_is_mouse_clicked(struct nk_context *ctx, enum nk_buttons btn)
     return nk_input_mouse_clicked(&ctx->input, btn, bounds);
 }
 NK_API nk_bool
-nk_widget_has_mouse_click_down(struct nk_context *ctx, enum nk_buttons btn, nk_bool down)
+nk_widget_has_mouse_click_down(const struct nk_context *ctx, enum nk_buttons btn, nk_bool down)
 {
     struct nk_rect c, v;
     struct nk_rect bounds;
@@ -182,7 +182,7 @@ nk_widget(struct nk_rect *bounds, const struct nk_context *ctx)
     return NK_WIDGET_VALID;
 }
 NK_API enum nk_widget_layout_states
-nk_widget_fitting(struct nk_rect *bounds, struct nk_context *ctx,
+nk_widget_fitting(struct nk_rect *bounds, const struct nk_context *ctx,
     struct nk_vec2 item_padding)
 {
     /* update the bounds to stand without padding  */
