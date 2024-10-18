@@ -31,6 +31,12 @@ nk_draw_checkbox(struct nk_command_buffer *out,
     const struct nk_style_item *background;
     const struct nk_style_item *cursor;
     struct nk_text text;
+    struct nk_rect toggle_active_box = *cursors;
+    toggle_active_box.x += 1;
+    toggle_active_box.y += 1;
+    toggle_active_box.w -= 2;
+    toggle_active_box.h -= 2;
+    
 
     /* select correct colors/images */
     if (state & NK_WIDGET_STATE_HOVER) {
@@ -55,12 +61,12 @@ nk_draw_checkbox(struct nk_command_buffer *out,
     
     /* draw background and cursor */
     if (background->type == NK_STYLE_ITEM_COLOR) {
-        nk_stroke_rect(out, *selector, 2, 2, nk_rgb_factor(background->data.color, style->color_factor));
+        nk_stroke_rect(out, *selector, 2, 0, nk_rgb_factor(background->data.color, style->color_factor));
     } else nk_draw_image(out, *selector, &background->data.image, nk_rgb_factor(nk_white, style->color_factor));
     if (active) {
         if (cursor->type == NK_STYLE_ITEM_IMAGE)
             nk_draw_image(out, *cursors, &cursor->data.image, nk_rgb_factor(nk_white, style->color_factor));
-        else nk_fill_rect(out, *cursors, 0, nk_rgb_factor(background->data.color, style->color_factor));
+        else nk_fill_rect(out, toggle_active_box, 0, nk_rgb_factor(background->data.color, style->color_factor));
     }
 
 
