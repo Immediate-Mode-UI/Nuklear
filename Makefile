@@ -32,4 +32,5 @@ all: docs nuke
 install:
 
 clean:
+	rm -rf $(docs_path)/html
 
