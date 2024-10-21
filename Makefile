@@ -1,5 +1,6 @@
 
 docs_path:=./doc
+doxyfile:=$(docs_path)/Doxyfile
 
 
 
@@ -12,14 +13,13 @@ usage:
 	echo "make install 	to "install" man files"
 
 
-docs: $(docs_path)/Doxyfile  $(docs_path)/html/index.html $(docs_path)/doxygen-awesome-css/doxygen-awesome.css
+docs: $(docs_path)/html/index.html 
 
-$(docs_path)/html/index.html: $(docs_path)/Doxyfile
-	doxygen $<
+$(docs_path)/html/index.html: $(docs_path)/doxygen-awesome-css/doxygen-awesome.css $(doxyfile)
+	doxygen $(doxyfile)
 
-$(docs_path)/Doxyfile:
+$(doxyfile):
 	doxygen -g $@
-
 
 $(docs_path)/doxygen-awesome-css/doxygen-awesome.css:
 	git clone https://github.com/jothepro/doxygen-awesome-css.git $(docs_path)/doxygen-awesome-css --branch v2.3.4
