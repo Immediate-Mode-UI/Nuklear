@@ -25,7 +25,7 @@ $(docs_path)/doxygen-awesome-css/doxygen-awesome.css:
 	git clone https://github.com/jothepro/doxygen-awesome-css.git $(docs_path)/doxygen-awesome-css --branch v2.3.4
 
 nuke:
-
+	cd ./src && ./paq.sh
 
 all: docs nuke
 

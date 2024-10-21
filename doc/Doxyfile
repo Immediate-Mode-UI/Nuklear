@@ -498,7 +498,7 @@ NUM_PROC_THREADS       = 0
 # normally produced when WARNINGS is set to YES.
 # The default value is: NO.
 
-EXTRACT_ALL            = YES
+EXTRACT_ALL            = NO
 
 # If the EXTRACT_PRIVATE tag is set to YES, all private members of a class will
 # be included in the documentation.
@@ -907,7 +907,7 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  =    "./src" \
-                            "./src/HEADER.c" \
+                            "./src/HEADER.md" \
                             "./Readme.md"
 
 
