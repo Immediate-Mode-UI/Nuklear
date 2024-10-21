@@ -63,6 +63,7 @@ nk_command_buffer_push(struct nk_command_buffer* b,
     cmd->userdata = b->userdata;
 #endif
     b->end = cmd->next;
+    nk_crc_update((NK_UINT8*)cmd,size);
     return cmd;
 }
 NK_API void

@@ -126,6 +126,8 @@ NK_LIB nk_bool nk_is_lower(int c);
 NK_LIB nk_bool nk_is_upper(int c);
 NK_LIB int nk_to_upper(int c);
 NK_LIB int nk_to_lower(int c);
+NK_LIB void nk_crc_update(NK_UINT8 *data, NK_SIZE_TYPE len);
+NK_LIB void nk_crc_clear();
 
 #ifndef NK_MEMCPY
 NK_LIB void* nk_memcopy(void *dst, const void *src, nk_size n);
