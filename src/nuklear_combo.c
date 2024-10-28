@@ -821,7 +821,7 @@ nk_combo_callback(struct nk_context *ctx, void(*item_getter)(void*, int, const c
 }
 
 
-NK_API int nk_combo_alt(struct nk_context *ctx, const void *items, int count, int item_sz, int stride, int selected, int item_height, struct nk_vec2 size)
+NK_API int nk_combo_from_struct_array(struct nk_context *ctx, const void *items, int count, int item_sz, int stride, int selected, int item_height, struct nk_vec2 size)
 {
     int i = 0;
     int max_height;
@@ -840,14 +840,14 @@ NK_API int nk_combo_alt(struct nk_context *ctx, const void *items, int count, in
     max_height = count * item_height + count * (int)item_spacing.y;
     max_height += (int)item_spacing.y * 2 + (int)window_padding.y * 2;
     size.y = NK_MIN(size.y, (float)max_height);
-    sel = *(char**)(items + (item_sz*selected) + stride);
+    sel = *(char**)((char*)items + (item_sz*selected) + stride);
     if (nk_combo_begin_label(ctx, sel, size)) {
         nk_layout_row_dynamic(ctx, (float)item_height, 1);
         for (i = 0; i < count; ++i) {
-            name = *(char**)(items + stride);
+            name = *(char**)((char*)items + stride);
             if (nk_combo_item_label(ctx, name, NK_TEXT_LEFT))
                 selected = i;
-            items += item_sz;
+            items = (char*)items + item_sz;
         }
         nk_combo_end(ctx);
     }
