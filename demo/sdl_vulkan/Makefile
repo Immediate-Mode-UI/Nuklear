@@ -3,6 +3,7 @@ BIN = demo
 
 # Flags
 CFLAGS += -std=c89 -Wall -Wextra -pedantic -fsanitize=address -O2
+CFLAGS += -DSDL_DISABLE_IMMINTRIN_H
 
 SRC = main.c
 OBJ = $(SRC:.c=.o)
