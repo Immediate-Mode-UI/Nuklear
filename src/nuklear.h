@@ -832,13 +832,17 @@ NK_API void nk_input_end(struct nk_context*);
 /// The second probably more applicable trick is to only draw if anything changed.
 /// It is not really useful for applications with continuous draw loop but
 /// quite useful for desktop applications. To actually get nuklear to only
-/// draw on changes you first have to define `NK_ZERO_COMMAND_MEMORY` and
-/// allocate a memory buffer that will store each unique drawing output.
-/// After each frame you compare the draw command memory inside the library
-/// with your allocated buffer by memcmp. If memcmp detects differences
-/// you have to copy the command buffer into the allocated buffer
-/// and then draw like usual (this example uses fixed memory but you could
-/// use dynamically allocated memory).
+/// draw on changes you can do one of 2 things. First, nuklear generates a
+/// checksum of the draw commands that clears on nk_clear. You can get this
+/// checksum at the end of your gui updates by calling `nk_buffer_crc()`. If
+/// this number is different from the previous frame; then you know something
+/// different happened in the command tree. Secondly, you could define
+/// `NK_ZERO_COMMAND_MEMORY` and allocate a memory buffer that will store each
+/// unique drawing output.  After each frame you compare the draw command memory
+/// inside the library with your allocated buffer by memcmp. If memcmp detects
+/// differences you have to copy the command buffer into the allocated buffer
+/// and then draw like usual (this example uses fixed memory but you could use
+/// dynamically allocated memory).
 ///
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
 /// //[... other defines ...]
@@ -1100,6 +1104,13 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
 /// __buf__     | Must point to an previously by `nk_convert` filled out vertex draw command buffer
 /// __ctx__     | Must point to an previously initialized `nk_context` struct at the end of a frame
 */
+
+
+/**
+ * \brief returns the crc of the command buffer.
+ */
+NK_API NK_UINT32 nk_buffer_crc();
+
 #define nk_draw_foreach(cmd,ctx, b) for((cmd)=nk__draw_begin(ctx, b); (cmd)!=0; (cmd)=nk__draw_next(cmd, b, ctx))
 #endif
 /* =============================================================================
