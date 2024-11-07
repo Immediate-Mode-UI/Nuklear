@@ -419,14 +419,14 @@ nk_str_get_const(const struct nk_str *s)
     return (const char*)s->buffer.memory.ptr;
 }
 NK_API int
-nk_str_len(struct nk_str *s)
+nk_str_len(const struct nk_str *s)
 {
     NK_ASSERT(s);
     if (!s || !s->len || !s->buffer.allocated) return 0;
     return s->len;
 }
 NK_API int
-nk_str_len_char(struct nk_str *s)
+nk_str_len_char(const struct nk_str *s)
 {
     NK_ASSERT(s);
     if (!s || !s->len || !s->buffer.allocated) return 0;
@@ -446,4 +446,3 @@ nk_str_free(struct nk_str *str)
     nk_buffer_free(&str->buffer);
     str->len = 0;
 }
-
