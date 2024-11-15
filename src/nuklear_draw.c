@@ -330,7 +330,7 @@ nk_fill_triangle(struct nk_command_buffer *b, float x0, float y0, float x1,
     cmd->color = c;
 }
 NK_API void
-nk_stroke_polygon(struct nk_command_buffer *b,  float *points, int point_count,
+nk_stroke_polygon(struct nk_command_buffer *b, const float *points, int point_count,
     float line_thickness, struct nk_color col)
 {
     int i;
@@ -351,7 +351,7 @@ nk_stroke_polygon(struct nk_command_buffer *b,  float *points, int point_count,
     }
 }
 NK_API void
-nk_fill_polygon(struct nk_command_buffer *b, float *points, int point_count,
+nk_fill_polygon(struct nk_command_buffer *b, const float *points, int point_count,
     struct nk_color col)
 {
     int i;
@@ -372,7 +372,7 @@ nk_fill_polygon(struct nk_command_buffer *b, float *points, int point_count,
     }
 }
 NK_API void
-nk_stroke_polyline(struct nk_command_buffer *b, float *points, int point_count,
+nk_stroke_polyline(struct nk_command_buffer *b, const float *points, int point_count,
     float line_thickness, struct nk_color col)
 {
     int i;
@@ -556,4 +556,3 @@ nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
     NK_MEMCPY(cmd->string, string, (nk_size)length);
     cmd->string[length] = '\0';
 }
-
