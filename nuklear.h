@@ -6175,6 +6175,8 @@ NK_LIB nk_bool nk_is_lower(int c);
 NK_LIB nk_bool nk_is_upper(int c);
 NK_LIB int nk_to_upper(int c);
 NK_LIB int nk_to_lower(int c);
+NK_LIB void nk_crc_update(NK_UINT8 *data, NK_SIZE_TYPE len);
+NK_LIB void nk_crc_clear();
 
 #ifndef NK_MEMCPY
 NK_LIB void* nk_memcopy(void *dst, const void *src, nk_size n);
@@ -9269,6 +9271,7 @@ nk_command_buffer_push(struct nk_command_buffer* b,
     cmd->userdata = b->userdata;
 #endif
     b->end = cmd->next;
+    nk_crc_update((NK_UINT8*)cmd,size);
     return cmd;
 }
 NK_API void
@@ -19446,6 +19449,7 @@ nk_clear(struct nk_context *ctx)
     if (ctx->use_pool)
         nk_buffer_clear(&ctx->memory);
     else nk_buffer_reset(&ctx->memory, NK_BUFFER_FRONT);
+    nk_crc_clear(); /*clear the draw buffer crc*/
 
     ctx->build = 0;
     ctx->memory.calls = 0;
