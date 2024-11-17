@@ -1,5 +1,5 @@
 # Flags
-CFLAGS += -std=c99 -Wall -Wextra -pedantic -Wno-misleading-indentation -Wno-shift-negative-value -O2
+CFLAGS += -std=c99 -Wall -Wextra -pedantic -Wno-misleading-indentation -Wno-shift-negative-value
 LIBS :=
 
 ifeq ($(OS),Windows_NT)
@@ -24,7 +24,7 @@ generate: clean
 ifeq ($(OS),Windows_NT)
 	@mkdir bin 2> nul || exit 0
 else
-	@mkdir -p bin	
+	@mkdir -p bin
 endif
 
 clean:
