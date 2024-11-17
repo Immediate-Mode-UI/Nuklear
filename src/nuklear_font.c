@@ -504,7 +504,7 @@ nk_font_query_font_glyph(nk_handle handle, float height,
 }
 #endif
 NK_API const struct nk_font_glyph*
-nk_font_find_glyph(struct nk_font *font, nk_rune unicode)
+nk_font_find_glyph(const struct nk_font *font, nk_rune unicode)
 {
     int i = 0;
     int count;
@@ -567,8 +567,8 @@ nk_font_init(struct nk_font *font, float pixel_height,
  *
  * ProggyClean.ttf
  * Copyright (c) 2004, 2005 Tristan Grimmer
- * MIT license (see License.txt in http://www.upperbounds.net/download/ProggyClean.ttf.zip)
- * Download and more information at http://upperbounds.net
+ * MIT license https://github.com/bluescan/proggyfonts/blob/master/LICENSE
+ * Download and more information at https://github.com/bluescan/proggyfonts
  *-----------------------------------------------------------------------------*/
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -1370,4 +1370,3 @@ nk_font_atlas_clear(struct nk_font_atlas *atlas)
     nk_zero_struct(*atlas);
 }
 #endif
-

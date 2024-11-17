@@ -62,7 +62,7 @@ struct nk_wayland {
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
-/*#define INCLUDE_OVERVIEW */
+#define INCLUDE_OVERVIEW
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
