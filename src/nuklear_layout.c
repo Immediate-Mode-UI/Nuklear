@@ -134,7 +134,7 @@ nk_row_layout(struct nk_context *ctx, enum nk_layout_format fmt,
     win->layout->row.item_width = (float)width;
 }
 NK_API float
-nk_layout_ratio_from_pixel(struct nk_context *ctx, float pixel_width)
+nk_layout_ratio_from_pixel(const struct nk_context *ctx, float pixel_width)
 {
     struct nk_window *win;
     NK_ASSERT(ctx);
@@ -463,7 +463,7 @@ nk_layout_space_push(struct nk_context *ctx, struct nk_rect rect)
     layout->row.item = rect;
 }
 NK_API struct nk_rect
-nk_layout_space_bounds(struct nk_context *ctx)
+nk_layout_space_bounds(const struct nk_context *ctx)
 {
     struct nk_rect ret;
     struct nk_window *win;
@@ -482,7 +482,7 @@ nk_layout_space_bounds(struct nk_context *ctx)
     return ret;
 }
 NK_API struct nk_rect
-nk_layout_widget_bounds(struct nk_context *ctx)
+nk_layout_widget_bounds(const struct nk_context *ctx)
 {
     struct nk_rect ret;
     struct nk_window *win;
@@ -501,7 +501,7 @@ nk_layout_widget_bounds(struct nk_context *ctx)
     return ret;
 }
 NK_API struct nk_vec2
-nk_layout_space_to_screen(struct nk_context *ctx, struct nk_vec2 ret)
+nk_layout_space_to_screen(const struct nk_context *ctx, struct nk_vec2 ret)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -517,7 +517,7 @@ nk_layout_space_to_screen(struct nk_context *ctx, struct nk_vec2 ret)
     return ret;
 }
 NK_API struct nk_vec2
-nk_layout_space_to_local(struct nk_context *ctx, struct nk_vec2 ret)
+nk_layout_space_to_local(const struct nk_context *ctx, struct nk_vec2 ret)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -533,7 +533,7 @@ nk_layout_space_to_local(struct nk_context *ctx, struct nk_vec2 ret)
     return ret;
 }
 NK_API struct nk_rect
-nk_layout_space_rect_to_screen(struct nk_context *ctx, struct nk_rect ret)
+nk_layout_space_rect_to_screen(const struct nk_context *ctx, struct nk_rect ret)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -549,7 +549,7 @@ nk_layout_space_rect_to_screen(struct nk_context *ctx, struct nk_rect ret)
     return ret;
 }
 NK_API struct nk_rect
-nk_layout_space_rect_to_local(struct nk_context *ctx, struct nk_rect ret)
+nk_layout_space_rect_to_local(const struct nk_context *ctx, struct nk_rect ret)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -730,7 +730,7 @@ nk_panel_alloc_space(struct nk_rect *bounds, const struct nk_context *ctx)
     layout->row.index++;
 }
 NK_LIB void
-nk_layout_peek(struct nk_rect *bounds, struct nk_context *ctx)
+nk_layout_peek(struct nk_rect *bounds, const struct nk_context *ctx)
 {
     float y;
     int index;

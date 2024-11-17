@@ -504,7 +504,7 @@ nk_font_query_font_glyph(nk_handle handle, float height,
 }
 #endif
 NK_API const struct nk_font_glyph*
-nk_font_find_glyph(struct nk_font *font, nk_rune unicode)
+nk_font_find_glyph(const struct nk_font *font, nk_rune unicode)
 {
     int i = 0;
     int count;
@@ -1370,4 +1370,3 @@ nk_font_atlas_clear(struct nk_font_atlas *atlas)
     nk_zero_struct(*atlas);
 }
 #endif
-

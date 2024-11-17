@@ -41,7 +41,7 @@ static void die(const char *fmt, ...)
 /*#define INCLUDE_ALL */
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
-/*#define INCLUDE_OVERVIEW */
+#define INCLUDE_OVERVIEW
 /*#define INCLUDE_NODE_EDITOR */
 /*#define INCLUDE_CANVAS */
 
