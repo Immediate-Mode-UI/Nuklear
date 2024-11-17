@@ -18669,10 +18669,10 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     toggle->text_normal     = table[NK_COLOR_TEXT];
     toggle->text_hover      = table[NK_COLOR_TEXT];
     toggle->text_active     = table[NK_COLOR_TEXT];
-    toggle->padding         = nk_vec2(2.0f, 2.0f);
+    toggle->padding         = nk_vec2(1.0f, 1.0f);
     toggle->touch_padding   = nk_vec2(0,0);
     toggle->border_color    = nk_rgba(0,0,0,0);
-    toggle->border          = 0.0f;
+    toggle->border          = 1.0f;
     toggle->spacing         = 4;
     toggle->color_factor    = 1.0f;
     toggle->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
@@ -18690,10 +18690,10 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     toggle->text_normal     = table[NK_COLOR_TEXT];
     toggle->text_hover      = table[NK_COLOR_TEXT];
     toggle->text_active     = table[NK_COLOR_TEXT];
-    toggle->padding         = nk_vec2(3.0f, 3.0f);
+    toggle->padding         = nk_vec2(1.0f, 1.0f);
     toggle->touch_padding   = nk_vec2(0,0);
     toggle->border_color    = nk_rgba(0,0,0,0);
-    toggle->border          = 0.0f;
+    toggle->border          = 1.0f;
     toggle->spacing         = 4;
     toggle->color_factor    = 1.0f;
     toggle->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
@@ -25070,18 +25070,18 @@ nk_draw_checkbox(struct nk_command_buffer *out,
     text.padding.y = 0;
     text.background = style->text_background;
     nk_widget_text(out, *label, string, len, &text, text_alignment, font);
-    
+
     /* draw background and cursor */
     if (background->type == NK_STYLE_ITEM_COLOR) {
-        nk_stroke_rect(out, *selector, 2, 2, nk_rgb_factor(background->data.color, style->color_factor));
+        nk_stroke_rect(out, *selector, 0, style->border, nk_rgb_factor(background->data.color, style->color_factor));
     } else nk_draw_image(out, *selector, &background->data.image, nk_rgb_factor(nk_white, style->color_factor));
+
+    /* active state */
     if (active) {
         if (cursor->type == NK_STYLE_ITEM_IMAGE)
             nk_draw_image(out, *cursors, &cursor->data.image, nk_rgb_factor(nk_white, style->color_factor));
         else nk_fill_rect(out, *cursors, 0, nk_rgb_factor(background->data.color, style->color_factor));
     }
-
-
 }
 NK_LIB void
 nk_draw_option(struct nk_command_buffer *out,
@@ -25117,8 +25117,10 @@ nk_draw_option(struct nk_command_buffer *out,
 
     /* draw background and cursor */
     if (background->type == NK_STYLE_ITEM_COLOR) {
-        nk_stroke_circle(out, *selector, 2, nk_rgb_factor(background->data.color, style->color_factor));
+        nk_stroke_circle(out, *selector, style->border, nk_rgb_factor(background->data.color, style->color_factor));
     } else nk_draw_image(out, *selector, &background->data.image, nk_rgb_factor(nk_white, style->color_factor));
+
+    /* active state */
     if (active) {
         if (cursor->type == NK_STYLE_ITEM_IMAGE)
             nk_draw_image(out, *cursors, &cursor->data.image, nk_rgb_factor(nk_white, style->color_factor));
