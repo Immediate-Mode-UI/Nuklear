@@ -2,7 +2,7 @@ name: Documentation on github.io
 
 on:
   push:
-    branches: [ github.io ]
+    branches: [ master ]
 
 jobs:
   build-documentation:
