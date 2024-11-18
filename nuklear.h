@@ -4857,6 +4857,9 @@ struct nk_command_buffer {
     int use_clipping;
     nk_handle userdata;
     nk_size begin, end, last;
+#ifdef NK_DRAW_BUFFER_CRC
+    NK_UINT32 crc;
+#endif
 };
 
 /** shape outlines */
@@ -6175,8 +6178,10 @@ NK_LIB nk_bool nk_is_lower(int c);
 NK_LIB nk_bool nk_is_upper(int c);
 NK_LIB int nk_to_upper(int c);
 NK_LIB int nk_to_lower(int c);
-NK_LIB void nk_crc_update(NK_UINT8 *data, NK_SIZE_TYPE len);
-NK_LIB void nk_crc_clear();
+#ifdef NK_DRAW_BUFFER_CRC
+NK_LIB void nk_crc_update(struct nk_command_buffer*, NK_UINT8 *data, NK_SIZE_TYPE len);
+NK_LIB void nk_crc_clear(struct nk_command_buffer* );
+#endif
 
 #ifndef NK_MEMCPY
 NK_LIB void* nk_memcopy(void *dst, const void *src, nk_size n);
@@ -9271,7 +9276,9 @@ nk_command_buffer_push(struct nk_command_buffer* b,
     cmd->userdata = b->userdata;
 #endif
     b->end = cmd->next;
-    nk_crc_update((NK_UINT8*)cmd,size);
+#ifdef NK_DRAW_BUFFER_CRC
+    nk_crc_update(b, (NK_UINT8*)cmd,size);
+#endif
     return cmd;
 }
 NK_API void
@@ -16808,6 +16815,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------------
 */
 
+#ifdef NK_DRAW_BUFFER_CRC
 
 
 
@@ -16858,8 +16866,6 @@ NK_STORAGE NK_UINT32 crc32c_table[] = {
 };
 
 
-#define NK_CRC_SEED 0xffffffff /**< seed value of the crc*/
-NK_GLOBAL NK_UINT32 NK_BUFFER_CRC = NK_CRC_SEED; /**< the CRC value of the command buffer.*/
 
 /**
  * \brief steps the crc value by the amount of new data.
@@ -16874,9 +16880,9 @@ NK_GLOBAL NK_UINT32 NK_BUFFER_CRC = NK_CRC_SEED; /**< the CRC value of the comma
  * \param[in] data is a pointer to the data to run the CRC on.
  * \param[in] len is the size in bytes of the data.
  */
-NK_LIB void nk_crc_update(NK_UINT8 *data, NK_SIZE_TYPE len)
+NK_LIB void nk_crc_update(struct nk_command_buffer *buf, NK_UINT8 *data, NK_SIZE_TYPE len)
 {
-   while (len--) NK_BUFFER_CRC = (NK_BUFFER_CRC<<8) ^ crc32c_table[(NK_BUFFER_CRC >> 24) ^ *data++];
+   while (len--) buf->crc = (buf->crc<<8) ^ crc32c_table[(buf->crc >> 24) ^ *data++];
 }
 
 /**
@@ -16885,18 +16891,20 @@ NK_LIB void nk_crc_update(NK_UINT8 *data, NK_SIZE_TYPE len)
  * \details
  * should be called on nk_clear such that the CRC can start over.
  */
-NK_LIB void nk_crc_clear()
+NK_LIB void nk_crc_clear(struct nk_command_buffer *buf)
 {
-    NK_BUFFER_CRC = NK_CRC_SEED;
+#define NK_CRC_SEED 0xffffffff /**< seed value of the crc*/
+    buf->crc = NK_CRC_SEED;
 }
 
 /**
  * \brief returns the crc of the command buffer.
  */
-NK_API NK_UINT32 nk_buffer_crc()
+NK_API NK_UINT32 nk_buffer_crc(struct nk_command_buffer *buf)
 {
-    return NK_BUFFER_CRC;
+    return buf->crc;
 }
+#endif
 
 
 
@@ -19539,13 +19547,15 @@ nk_clear(struct nk_context *ctx)
     if (ctx->use_pool)
         nk_buffer_clear(&ctx->memory);
     else nk_buffer_reset(&ctx->memory, NK_BUFFER_FRONT);
-    nk_crc_clear(); /*clear the draw buffer crc*/
 
     ctx->build = 0;
     ctx->memory.calls = 0;
     ctx->last_widget_state = 0;
     ctx->style.cursor_active = ctx->style.cursors[NK_CURSOR_ARROW];
     NK_MEMSET(&ctx->overlay, 0, sizeof(ctx->overlay));
+#ifdef NK_DRAW_BUFFER_CRC
+    nk_crc_clear(ctx->overlay); /*clear the draw buffer crc*/
+#endif
 
     /* garbage collector */
     iter = ctx->begin;
@@ -30792,6 +30802,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2024/11/18 (4.12.2) - Adds CRC check on draw command buffer 
 /// - 2024/03/07 (4.12.1) - Fix bitwise operations warnings in C++20
 /// - 2023/11/26 (4.12.0) - Added an alignment option to checkboxes and radio buttons.
 /// - 2023/10/11 (4.11.0) - Added nk_widget_disable_begin() and nk_widget_disable_end()
