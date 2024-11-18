@@ -1,3 +1,4 @@
+#ifdef NK_DRAW_BUFFER_CRC
 #include "nuklear.h"
 #include "nuklear_internal.h"
 
@@ -87,3 +88,4 @@ NK_API NK_UINT32 nk_buffer_crc()
 {
     return NK_BUFFER_CRC;
 }
+#endif

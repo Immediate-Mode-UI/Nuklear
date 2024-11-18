@@ -117,7 +117,9 @@ nk_clear(struct nk_context *ctx)
     if (ctx->use_pool)
         nk_buffer_clear(&ctx->memory);
     else nk_buffer_reset(&ctx->memory, NK_BUFFER_FRONT);
+#ifdef NK_DRAW_BUFFER_CRC
     nk_crc_clear(); /*clear the draw buffer crc*/
+#endif
 
     ctx->build = 0;
     ctx->memory.calls = 0;
