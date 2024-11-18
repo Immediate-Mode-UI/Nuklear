@@ -13,14 +13,23 @@ jobs:
     - name: apt-update
       run: sudo apt-get update -qq
     - name: apt-get doxygen
-      run: sudo apt-get install -y doxygen
-    - name: build doc
+      run: sudo apt-get install -y doxygen graphviz
+    - name: build docs
       run: make docs
-    - name: deploy
-      uses: peaceiris/actions-gh-pages@v4
+    - name: Upload static files as artifact
+      id: deployment
+      uses: actions/upload-pages-artifact@v3 # or specific "vX.X.X" version tag for this action
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./doc/html/
-        enable_jekyll: false
-        allow_empty_commit: false
-        force_orphan: true
+          path: docs/html/
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build-documentation
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
