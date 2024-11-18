@@ -4,7 +4,7 @@
 ######################################################################################
 
 ## path stuff
-DOCS_PATH:=./doc
+DOCS_PATH:=./docs
 DEMO_PATH=demo
 SRC_PATH=src
 
