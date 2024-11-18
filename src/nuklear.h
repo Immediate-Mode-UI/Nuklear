@@ -4635,6 +4635,9 @@ struct nk_command_buffer {
     int use_clipping;
     nk_handle userdata;
     nk_size begin, end, last;
+#ifdef NK_DRAW_BUFFER_CRC
+    NK_UINT32 crc;
+#endif
 };
 
 /** shape outlines */

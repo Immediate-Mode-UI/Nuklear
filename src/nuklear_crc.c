@@ -49,8 +49,6 @@ NK_STORAGE NK_UINT32 crc32c_table[] = {
 };
 
 
-#define NK_CRC_SEED 0xffffffff /**< seed value of the crc*/
-NK_GLOBAL NK_UINT32 NK_BUFFER_CRC = NK_CRC_SEED; /**< the CRC value of the command buffer.*/
 
 /**
  * \brief steps the crc value by the amount of new data.
@@ -65,9 +63,9 @@ NK_GLOBAL NK_UINT32 NK_BUFFER_CRC = NK_CRC_SEED; /**< the CRC value of the comma
  * \param[in] data is a pointer to the data to run the CRC on.
  * \param[in] len is the size in bytes of the data.
  */
-NK_LIB void nk_crc_update(NK_UINT8 *data, NK_SIZE_TYPE len)
+NK_LIB void nk_crc_update(struct nk_command_buffer *buf, NK_UINT8 *data, NK_SIZE_TYPE len)
 {
-   while (len--) NK_BUFFER_CRC = (NK_BUFFER_CRC<<8) ^ crc32c_table[(NK_BUFFER_CRC >> 24) ^ *data++];
+   while (len--) buf->crc = (buf->crc<<8) ^ crc32c_table[(buf->crc >> 24) ^ *data++];
 }
 
 /**
@@ -76,16 +74,17 @@ NK_LIB void nk_crc_update(NK_UINT8 *data, NK_SIZE_TYPE len)
  * \details
  * should be called on nk_clear such that the CRC can start over.
  */
-NK_LIB void nk_crc_clear()
+NK_LIB void nk_crc_clear(struct nk_command_buffer *buf)
 {
-    NK_BUFFER_CRC = NK_CRC_SEED;
+#define NK_CRC_SEED 0xffffffff /**< seed value of the crc*/
+    buf->crc = NK_CRC_SEED;
 }
 
 /**
  * \brief returns the crc of the command buffer.
  */
-NK_API NK_UINT32 nk_buffer_crc()
+NK_API NK_UINT32 nk_buffer_crc(struct nk_command_buffer *buf)
 {
-    return NK_BUFFER_CRC;
+    return buf->crc;
 }
 #endif
