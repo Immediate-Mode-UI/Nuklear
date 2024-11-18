@@ -2,7 +2,7 @@
  *
  * Nuklear XCB/Cairo Render Backend - v0.0.2
  * Copyright 2021 Richard Gill
- * 
+ *
  * Grabbed and adapted from https://github.com/griebd/nuklear_xcb
  * Copyright 2017 Adriano Grieb
  *
@@ -378,7 +378,7 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
                 xcb_client_message_event_t *cm = (xcb_client_message_event_t *)event;
                 if (cm->data.data32[0] == xcb_ctx->del_atom->atom)
                 {
-                    return NK_XCB_EVENT_STOP;
+                    events = NK_XCB_EVENT_STOP;
                 }
             }
             break;
@@ -388,7 +388,7 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
         }
         free(event);
     }
-    while ((event = xcb_poll_for_event(xcb_ctx->conn)));
+    while ((events != NK_XCB_EVENT_STOP) && (event = xcb_poll_for_event(xcb_ctx->conn)));
     nk_input_end(nk_ctx);
 
     return events;
@@ -802,7 +802,7 @@ NK_API int nk_cairo_render(struct nk_cairo_context *cairo_ctx, struct nk_context
                 /* the coordinates system in cairo is not intuitive, scale, translate,
                  * are applied to source. Refer to
                  * "https://www.cairographics.org/FAQ/#paint_from_a_surface" for details
-                 * 
+                 *
                  * if you set source_origin to (0,0), it would be like source origin
                  * aligned to dest origin, then if you draw a rectangle on (x, y, w, h).
                  * it would clip out the (x, y, w, h) of the source on you dest as well.
