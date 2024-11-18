@@ -907,8 +907,7 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  =    "./src" \
-                            "./src/HEADER.md" \
-                            "./Readme.md"
+                            "./src/HEADER.md"
 
 
 
@@ -1001,7 +1000,7 @@ RECURSIVE              = NO
 
 EXCLUDE                = "./src/Readme.md" \
                             "./src/paq.sh" \
-                            "./src/paq.bat" 
+                            "./src/paq.bat"
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
@@ -1110,7 +1109,7 @@ FILTER_SOURCE_PATTERNS =
 # (index.html). This can be useful if you have a project on for instance GitHub
 # and want to reuse the introduction page also for the doxygen output.
 
-USE_MDFILE_AS_MAINPAGE = Readme.md
+USE_MDFILE_AS_MAINPAGE = src/HEADER.md
 
 #---------------------------------------------------------------------------
 # Configuration options related to source browsing
