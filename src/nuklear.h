@@ -4635,7 +4635,7 @@ struct nk_command_buffer {
     int use_clipping;
     nk_handle userdata;
     nk_size begin, end, last;
-#ifdef NK_DRAW_BUFFER_CRC
+#if defined( NK_DRAW_BUFFER_CRC) || defined( NK_DRAW_BUFFER_CRC_CUSTOM)
     NK_UINT32 crc;
 #endif
 };

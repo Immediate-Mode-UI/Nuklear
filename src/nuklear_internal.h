@@ -126,9 +126,9 @@ NK_LIB nk_bool nk_is_lower(int c);
 NK_LIB nk_bool nk_is_upper(int c);
 NK_LIB int nk_to_upper(int c);
 NK_LIB int nk_to_lower(int c);
-#ifdef NK_DRAW_BUFFER_CRC
-NK_LIB void nk_crc_update(struct nk_command_buffer*, NK_UINT8 *data, NK_SIZE_TYPE len);
-NK_LIB void nk_crc_clear(struct nk_command_buffer* );
+#if defined( NK_DRAW_BUFFER_CRC) || defined(NK_DRAW_BUFFER_CRC_CUSTOM)
+NK_LIB NK_UINT32 nk_crc_update(NK_UINT32 crc, NK_UINT8 *data, NK_SIZE_TYPE len);
+NK_LIB void nk_crc_clear(struct nk_command_buffer *buf);
 #endif
 
 #ifndef NK_MEMCPY

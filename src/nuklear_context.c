@@ -123,8 +123,8 @@ nk_clear(struct nk_context *ctx)
     ctx->last_widget_state = 0;
     ctx->style.cursor_active = ctx->style.cursors[NK_CURSOR_ARROW];
     NK_MEMSET(&ctx->overlay, 0, sizeof(ctx->overlay));
-#ifdef NK_DRAW_BUFFER_CRC
-    nk_crc_clear(ctx->overlay); /*clear the draw buffer crc*/
+#if defined( NK_DRAW_BUFFER_CRC) || defined( NK_DRAW_BUFFER_CRC_CUSTOM)
+    nk_crc_clear(&ctx->overlay); /*clear the draw buffer crc*/
 #endif
 
     /* garbage collector */

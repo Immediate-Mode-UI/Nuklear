@@ -82,7 +82,7 @@
 
 #ifdef NK_DRAW_BUFFER_CRC
 #define NK_CRC_SEED 0xffffffff /**< seed value of the crc*/
-#define NK_CRC_FUNC(c,d,l) nk_crc_update(b, d, l)
+#define NK_CRC_FUNC(c,d,l) nk_crc_update(c, d, l)
 #include "nuklear.h"
 #include "nuklear_internal.h"
 
@@ -157,6 +157,7 @@ NK_LIB NK_UINT32 nk_crc_update(NK_UINT32 crc, NK_UINT8 *data, NK_SIZE_TYPE len)
 }
 #endif
 
+#if defined(NK_DRAW_BUFFER_CRC) || defined(NK_DRAW_BUFFER_CRC_CUSTOM)
 /**
  * \brief re-initializes the command buffer crc.
  *
@@ -174,8 +175,9 @@ NK_LIB void nk_crc_clear(struct nk_command_buffer *buf)
  * \brief returns the crc of the command buffer.
  * \param[in] buf is the command buffer for which crc to clear
  */
-NK_API NK_UINT32 nk_buffer_crc(struct nk_command_buffer *buf)
+NK_API NK_UINT32 nk_buffer_crc(struct nk_context *ctx)
 {
-    return buf->crc;
+    return ctx->overlay.crc;
 }
 /** @} *//*end documentation grouping*/
+#endif
