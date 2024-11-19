@@ -63,8 +63,8 @@ nk_command_buffer_push(struct nk_command_buffer* b,
     cmd->userdata = b->userdata;
 #endif
     b->end = cmd->next;
-#ifdef NK_DRAW_BUFFER_CRC
-    nk_crc_update(b, (NK_UINT8*)cmd,size);
+#ifdef NK_DRAW_BUFFER_CRC || NK_DRAW_BUFFER_CRC_CUSTOM
+    b->crc = NK_CRC_FUNC(b->crc, (NK_UINT8*)cmd,size);
 #endif
     return cmd;
 }

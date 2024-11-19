@@ -1,4 +1,88 @@
+/** 
+ * \file nuklear_crc.c 
+ * \brief Implements CRC checking of the draw command buffer.
+ * 
+ * \details Implements a rolling CRC that gets updated with every draw_push
+ * function call. That is, for every `nk_xxx` api function call between
+ * `nk_begin()` and `nk_end()` there is one to many draw commands pushed into
+ * the draw buffer.  For each one of those pushes, the command type is XOR'd
+ * then stored into that buffer's CRC member. Then on the next `nk_xxx` function
+ * call, another command push is executed and the previous crc is updated with
+ * the new XOR of the new command. This will result in a unique CRC value in the
+ * buffers crc member at the end of the draw execution. 
+ *
+ * The purpose of this is to allow super cheap and fast detection of unique'ness
+ * between draw loops, such that the user can determine if they need to redraw
+ * the screen or not. The original method was to have the user store a copy of
+ * the entire draw buffer, then loop through the buffer and compare that with
+ * the most recent draw buffer. Once done, you can determine if something
+ * changed on the screen and needs to be `nk_convert`'d. Doing it that way would
+ * require 1 loop to fill the command buffer, 1 loop to check the command buffer
+ * against the previously stored buffer, then 1 more loop to copy the new buffer
+ * into the old for the next draw loop iteration. That is 3 loops of
+ * `command_buffer'length()` which could end up being quite large; making this
+ * an expensive operation. Which almost defeats the purpose of detecting
+ * unique'ness in the first place.
+ * 
+ * Yet implementing this CRC, we cruch all of that down into just the initial
+ * draw loop. Then you have a unique code stored in a 32-bit integer that
+ * represents the buffer. So if you need to know if the current draw command
+ * buffer is different from the previous one; you simply need to retain a single
+ * interger value and then check whether the old interger is equal to the new
+ * one. We reduced 3x O(n) loop complexity and 2x O(n) memory/space complexity
+ * down to 1x O(n) loop complexity and O(1) memory complexity. The CRC
+ * calculation (depending on default or custom implementation) simply adds 1
+ * table lookup and 1 XOR operation to a single integer. Practically a free
+ * upgrade by comparison.
+ *
+ * If you want to use the CRC, then you must either `#define NK_DRAW_BUFFER_CRC`
+ * or `#define NK_DRAW_BUFFER_CRC_CUSTOM` 
+ *
+ * `#define NK_DRAW_BUFFER_CRC` will implement the default CRC algorithm which is
+ * a 32 bit castagnoli (CRC-32C). This is a very common CRC that is used in
+ * iSCSI, SMPTE, ext-4, etc. So common that intel processors have dedicated
+ * hardware for it and lots of libraries have SIMD acceleration for it (not that
+ * its necessary for this application) 
+ *
+ * `#define NK_DRAW_BUFFER_CRC_CUSTOM` will allow the user to define their own CRC
+ * implementation. This is available because most embedded systems already have
+ * a CRC calculation of some kind, usually defined by their system constraints,
+ * so it would be redundant to create yet another CRC method. 
+ *
+ * To use the `NK_DRAW_BUFFER_CRC_CUSTOM` the user will need to `#define
+ * NK_CRC_SEED` to their desired seed and also `#define NK_CRC_FUNC(c,d,l)` to
+ * point to a user defined implementation of the crc.
+ *
+ * The user defined implementation of the CRC **SHALL** have the declaration of
+ * ```c
+ * NK_UINT32 <xxCustomNamexx>(NK_UINT32 crc, NK_UINT8 *data, NK_SIZE_TYPE len)
+ * ```
+ * That is, Shall :
+ * - return a 32 bit integer (the new CRC value)
+ * - accept, as the first argument, a 32 bit integer. The initial value of the crc.
+ * - accept, as the second argument, a pointer to a byte buffer to be CRC'd.
+ * - accept, as the third argument, the length of the byte buffer.
+ *
+ * other than that, the user is free to use any CRC algorithm, table,
+ * implementation they choose.
+ *
+ * \addtogroup crc 
+ * \brief Command buffer CRC Implementation
+ * @{
+ */
+
+#ifdef NK_DRAW_BUFFER_CRC_CUSTOM
+#ifndef NK_CRC_SEED
+#error "Must #define NK_CRC_SEED when using NK_DRAW_BUFFER_CRC_CUSTOM"
+#endif
+#ifndef NK_CRC_FUNC(b,d,l)
+#error "Must #define NK_CRC_FUNC(c,d,l) when using NK_DRAW_BUFFER_CRC_CUSTOM"
+#endif
+#endif
+
 #ifdef NK_DRAW_BUFFER_CRC
+#define NK_CRC_SEED 0xffffffff /**< seed value of the crc*/
+#define NK_CRC_FUNC(c,d,l) nk_crc_update(b, d, l)
 #include "nuklear.h"
 #include "nuklear_internal.h"
 
@@ -60,31 +144,38 @@ NK_STORAGE NK_UINT32 crc32c_table[] = {
  * value. Never clearing will result is a proper CRC at the end of the drawing
  * updates.
  *
+ * \param[in] crc is the previous value of the CRC from which to build on.
  * \param[in] data is a pointer to the data to run the CRC on.
  * \param[in] len is the size in bytes of the data.
+ *
+ * \returns the new crc value 
  */
-NK_LIB void nk_crc_update(struct nk_command_buffer *buf, NK_UINT8 *data, NK_SIZE_TYPE len)
+NK_LIB NK_UINT32 nk_crc_update(NK_UINT32 crc, NK_UINT8 *data, NK_SIZE_TYPE len)
 {
-   while (len--) buf->crc = (buf->crc<<8) ^ crc32c_table[(buf->crc >> 24) ^ *data++];
+   while (len--) crc = (crc<<8) ^ crc32c_table[(crc >> 24) ^ *data++];
+   return crc;
 }
+#endif
 
 /**
  * \brief re-initializes the command buffer crc.
  *
  * \details
  * should be called on nk_clear such that the CRC can start over.
+ *
+ * \param[in] buf is the command buffer for which crc to clear
  */
 NK_LIB void nk_crc_clear(struct nk_command_buffer *buf)
 {
-#define NK_CRC_SEED 0xffffffff /**< seed value of the crc*/
     buf->crc = NK_CRC_SEED;
 }
 
 /**
  * \brief returns the crc of the command buffer.
+ * \param[in] buf is the command buffer for which crc to clear
  */
 NK_API NK_UINT32 nk_buffer_crc(struct nk_command_buffer *buf)
 {
     return buf->crc;
 }
-#endif
+/** @} *//*end documentation grouping*/
