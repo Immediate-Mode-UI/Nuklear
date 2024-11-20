@@ -123,9 +123,6 @@ nk_clear(struct nk_context *ctx)
     ctx->last_widget_state = 0;
     ctx->style.cursor_active = ctx->style.cursors[NK_CURSOR_ARROW];
     NK_MEMSET(&ctx->overlay, 0, sizeof(ctx->overlay));
-#if defined( NK_DRAW_BUFFER_CRC) || defined( NK_DRAW_BUFFER_CRC_CUSTOM)
-    nk_crc_clear(&ctx->overlay); /*clear the draw buffer crc*/
-#endif
 
     /* garbage collector */
     iter = ctx->begin;
@@ -173,6 +170,9 @@ nk_clear(struct nk_context *ctx)
             iter = next;
         } else iter = iter->next;
     }
+#ifdef NK_DRAW_CRC
+    ctx->crc = NK_CRC_SEED;
+#endif
     ctx->seq++;
 }
 NK_LIB void
@@ -185,6 +185,9 @@ nk_start_buffer(struct nk_context *ctx, struct nk_command_buffer *buffer)
     buffer->end = buffer->begin;
     buffer->last = buffer->begin;
     buffer->clip = nk_null_rect;
+#ifdef NK_DRAW_CRC
+    buffer->crc = NK_CRC_SEED;
+#endif
 }
 NK_LIB void
 nk_start(struct nk_context *ctx, struct nk_window *win)
@@ -239,6 +242,9 @@ nk_finish(struct nk_context *ctx, struct nk_window *win)
     NK_ASSERT(ctx);
     NK_ASSERT(win);
     if (!ctx || !win) return;
+#ifdef NK_DRAW_CRC
+    ctx->crc = NK_CRC_FUNC(ctx->crc, &win->buffer.crc, sizeof(win->buffer.crc));
+#endif
     nk_finish_buffer(ctx, &win->buffer);
     if (!win->popup.buf.active) return;
 

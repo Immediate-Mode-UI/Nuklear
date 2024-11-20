@@ -4635,7 +4635,7 @@ struct nk_command_buffer {
     int use_clipping;
     nk_handle userdata;
     nk_size begin, end, last;
-#if defined( NK_DRAW_BUFFER_CRC) || defined( NK_DRAW_BUFFER_CRC_CUSTOM)
+#ifdef NK_DRAW_CRC
     NK_UINT32 crc;
 #endif
 };
@@ -5743,6 +5743,9 @@ struct nk_context {
     struct nk_page_element *freelist;
     unsigned int count;
     unsigned int seq;
+#ifdef NK_DRAW_CRC
+    NK_UINT32 crc;
+#endif
 };
 
 /* ==============================================================

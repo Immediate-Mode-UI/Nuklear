@@ -35,21 +35,21 @@
  * table lookup and 1 XOR operation to a single integer. Practically a free
  * upgrade by comparison.
  *
- * If you want to use the CRC, then you must either `#define NK_DRAW_BUFFER_CRC`
- * or `#define NK_DRAW_BUFFER_CRC_CUSTOM` 
+ * If you want to use the CRC, then you must either `#define NK_DRAW_CRC`
+ * or `#define NK_DRAW_CRC_CUSTOM` 
  *
- * `#define NK_DRAW_BUFFER_CRC` will implement the default CRC algorithm which is
+ * `#define NK_DRAW_CRC` will implement the default CRC algorithm which is
  * a 32 bit castagnoli (CRC-32C). This is a very common CRC that is used in
  * iSCSI, SMPTE, ext-4, etc. So common that intel processors have dedicated
  * hardware for it and lots of libraries have SIMD acceleration for it (not that
  * its necessary for this application) 
  *
- * `#define NK_DRAW_BUFFER_CRC_CUSTOM` will allow the user to define their own CRC
+ * `#define NK_DRAW_CRC_CUSTOM` will allow the user to define their own CRC
  * implementation. This is available because most embedded systems already have
  * a CRC calculation of some kind, usually defined by their system constraints,
  * so it would be redundant to create yet another CRC method. 
  *
- * To use the `NK_DRAW_BUFFER_CRC_CUSTOM` the user will need to `#define
+ * To use the `NK_DRAW_CRC_CUSTOM` the user will need to `#define
  * NK_CRC_SEED` to their desired seed and also `#define NK_CRC_FUNC(c,d,l)` to
  * point to a user defined implementation of the crc.
  *
@@ -66,26 +66,56 @@
  * other than that, the user is free to use any CRC algorithm, table,
  * implementation they choose.
  *
+ * \internal
+ * Information for nuklear developers. Each context includes a command buffer
+ * for drawing, usually called `ctx->current->buffer`. This is the buffer with
+ * the draw commands and we grab the CRC value stored with this buffer
+ * `ctx->current->buffer.crc`. The buffer, in regards to a context, only exists
+ * to draw a panel and will _dissappear_ once `nk_end()` is called. This is
+ * because nk_end commits the draw buffer to the context's overal draw array and
+ * closes out the `current` buffer to wait for another `nk_begin()` to start a
+ * new panel using the `nk_buffer_start()` command. 
+ *
+ * What this means for the CRC is that, when a user decides they want to check
+ * on the CRC, they will do so **after** the `nk_end()` call (because you need
+ * to make sure all of the information is there). But attempting to grab the CRC
+ * at `ctx->current->buffer.crc` will result in a Seg Fault because that memory
+ * was deallocated with the `nk_end()` call. But not only that, we determined
+ * that the `current->buffer` is meant to be used for all sequences of
+ * `nk_begin()` to `nk_end()`. Meaning that we will get new CRCs for each panel;
+ * but only be able to look at the final CRC (unless we grab them as we go, but
+ * thats silly when we just want to know whether to draw or not). That means we
+ * better hope the user only ever interacts with which ever panel was the final
+ * one drawn, otherwise we wont see a crc change.
+ *
+ * The solution was to store the CRC at the Context level. So now `struct
+ * nk_context` contains a `crc` member that gets rolled when the current buffer
+ * finishes (i.e. `nk_end()` was called). This means that, whenever
+ * `nk_finish` is called, we calc the context CRC based off the current buffer
+ * crc. This retains the CRC value through successive calls to `nk_begin()` and
+ * `nk_end()` and rolls the number appropriately.
  * \addtogroup crc 
  * \brief Command buffer CRC Implementation
  * @{
  */
 
-#ifdef NK_DRAW_BUFFER_CRC_CUSTOM
+#ifdef NK_DRAW_CRC_CUSTOM
 #ifndef NK_CRC_SEED
-#error "Must #define NK_CRC_SEED when using NK_DRAW_BUFFER_CRC_CUSTOM"
+#error "Must #define NK_CRC_SEED when using NK_DRAW_CRC_CUSTOM"
 #endif
 #ifndef NK_CRC_FUNC(b,d,l)
-#error "Must #define NK_CRC_FUNC(c,d,l) when using NK_DRAW_BUFFER_CRC_CUSTOM"
+#error "Must #define NK_CRC_FUNC(c,d,l) when using NK_DRAW_CRC_CUSTOM"
 #endif
+#define NK_DRAW_CRC
 #endif
 
-#ifdef NK_DRAW_BUFFER_CRC
+#ifdef NK_DRAW_CRC
 #define NK_CRC_SEED 0xffffffff /**< seed value of the crc*/
 #define NK_CRC_FUNC(c,d,l) nk_crc_update(c, d, l)
 #include "nuklear.h"
 #include "nuklear_internal.h"
 
+#ifndef NK_DRAW_CRC_CUSTOM
 NK_STORAGE NK_UINT32 crc32c_table[] = {
  0x00000000L, 0xF26B8303L, 0xE13B70F7L, 0x1350F3F4L, 0xC79A971FL, 0x35F1141CL,
  0x26A1E7E8L, 0xD4CA64EBL, 0x8AD958CFL, 0x78B2DBCCL, 0x6BE22838L, 0x9989AB3BL,
@@ -132,6 +162,7 @@ NK_STORAGE NK_UINT32 crc32c_table[] = {
  0xBE2DA0A5L, 0x4C4623A6L, 0x5F16D052L, 0xAD7D5351L
 };
 
+#endif
 
 
 /**
@@ -155,29 +186,14 @@ NK_LIB NK_UINT32 nk_crc_update(NK_UINT32 crc, NK_UINT8 *data, NK_SIZE_TYPE len)
    while (len--) crc = (crc<<8) ^ crc32c_table[(crc >> 24) ^ *data++];
    return crc;
 }
-#endif
-
-#if defined(NK_DRAW_BUFFER_CRC) || defined(NK_DRAW_BUFFER_CRC_CUSTOM)
-/**
- * \brief re-initializes the command buffer crc.
- *
- * \details
- * should be called on nk_clear such that the CRC can start over.
- *
- * \param[in] buf is the command buffer for which crc to clear
- */
-NK_LIB void nk_crc_clear(struct nk_command_buffer *buf)
-{
-    buf->crc = NK_CRC_SEED;
-}
 
 /**
- * \brief returns the crc of the command buffer.
- * \param[in] buf is the command buffer for which crc to clear
+ * \brief returns the crc of the context
+ * \param[in] buf is the context for which to retrieve the CRC
  */
-NK_API NK_UINT32 nk_buffer_crc(struct nk_context *ctx)
+NK_API NK_UINT32 nk_get_crc(struct nk_context *ctx)
 {
-    return ctx->overlay.crc;
+    return (ctx) ? ctx->crc : NK_CRC_SEED;
 }
 /** @} *//*end documentation grouping*/
-#endif
+#endif /* NK_DRAW_CRC
