@@ -6627,7 +6627,7 @@ nk_log10(double n)
 NK_LIB float
 nk_roundf(float x)
 {
-    return (x >= 0.0) ? nk_ifloorf(x + 0.5) : nk_iceilf(x - 0.5);
+    return (x >= 0.0f) ? (float)nk_ifloorf(x + 0.5f) : (float)nk_iceilf(x - 0.5f);
 }
 NK_API struct nk_rect
 nk_get_null_rect(void)
@@ -30698,6 +30698,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2024/11/20 (4.12.2) - Fix int/float type conversion warnings in `nk_roundf`
 /// - 2024/03/07 (4.12.1) - Fix bitwise operations warnings in C++20
 /// - 2023/11/26 (4.12.0) - Added an alignment option to checkboxes and radio buttons.
 /// - 2023/10/11 (4.11.0) - Added nk_widget_disable_begin() and nk_widget_disable_end()
