@@ -1,6 +1,6 @@
 # Target
 BIN = demo
-CFLAGS += -std=c89 -pedantic
+CFLAGS += -std=c89 -pedantic -g
 LDFLAGS += -lm
 SRC = ${wildcard *.c}
 OBJ = $(SRC:.c=.o)
@@ -10,8 +10,8 @@ CFLAGS += ${shell pkg-config --cflags freetype2}
 LDFLAGS += ${shell pkg-config --libs freetype2}
 
 # XCB
-CFLAGS += ${shell pkg-config --cflags xcb xcb-util xcb-keysyms}
-LDFLAGS += ${shell pkg-config --libs xcb xcb-util xcb-keysyms}
+CFLAGS += ${shell pkg-config --cflags xcb xcb-util xcb-keysyms xkbcommon xkbcommon-x11}
+LDFLAGS += ${shell pkg-config --libs xcb xcb-util xcb-keysyms xkbcommon xkbcommon-x11}
 
 # Cairo
 CFLAGS += ${shell pkg-config --cflags cairo}
