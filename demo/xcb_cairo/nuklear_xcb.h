@@ -205,7 +205,7 @@ NK_API struct nk_xcb_context *nk_xcb_init(const char *title, int pos_x, int pos_
     xcb_map_window(conn, window);
     xcb_flush(conn);
 
-    xcb_ctx = malloc(sizeof (struct nk_xcb_context));
+    xcb_ctx = (struct nk_xcb_context *)malloc(sizeof (struct nk_xcb_context));
     xcb_ctx->conn = conn;
     xcb_ctx->screennum = screenNum;
     xcb_ctx->window = window;
@@ -468,7 +468,7 @@ NK_API void nk_xcb_resize_cairo_surface(struct nk_xcb_context *xcb_ctx, void *su
 
 NK_INTERN float nk_cairo_text_width(nk_handle handle, float height __attribute__ ((__unused__)), const char *text, int len)
 {
-    cairo_scaled_font_t *font = handle.ptr;
+    cairo_scaled_font_t *font = (cairo_scaled_font_t *)handle.ptr;
     cairo_glyph_t *glyphs = NULL;
     int num_glyphs;
     cairo_text_extents_t extents;
@@ -482,7 +482,7 @@ NK_INTERN float nk_cairo_text_width(nk_handle handle, float height __attribute__
 
 NK_API struct nk_cairo_context *nk_cairo_init(struct nk_color *bg, const char *font_file, double font_size, void *surf)
 {
-    cairo_surface_t *surface = surf;
+    cairo_surface_t *surface = (cairo_surface_t *)surf;
     struct nk_cairo_context *cairo_ctx;
     cairo_t *cr;
     cairo_font_extents_t extents;
@@ -490,12 +490,12 @@ NK_API struct nk_cairo_context *nk_cairo_init(struct nk_color *bg, const char *f
     struct nk_user_font *font;
 
     cr = cairo_create(surface);
-    font = malloc(sizeof (struct nk_user_font));
+    font = (struct nk_user_font *)malloc(sizeof (struct nk_user_font));
     if (font_file != NULL) {
         FT_Library library;
         FT_Face face;
         cairo_font_face_t *font_face;
-        static const cairo_user_data_key_t key;
+        static const cairo_user_data_key_t key = {0};
 
         FT_Init_FreeType(&library);
         FT_New_Face(library, font_file, 0, &face);
@@ -513,7 +513,7 @@ NK_API struct nk_cairo_context *nk_cairo_init(struct nk_color *bg, const char *f
     font->height = extents.height;
     font->width = nk_cairo_text_width;
 
-    cairo_ctx = malloc(sizeof(struct nk_cairo_context));
+    cairo_ctx = (struct nk_cairo_context *)malloc(sizeof(struct nk_cairo_context));
     cairo_ctx->surface = (cairo_surface_t *)surface;
     cairo_ctx->cr = cr;
     cairo_ctx->font = font;
@@ -794,8 +794,8 @@ NK_API int nk_cairo_render(struct nk_cairo_context *cairo_ctx, struct nk_context
                 cairo_font_extents_t extents;
 
                 cairo_set_source_rgba(cr, NK_TO_CAIRO(t->foreground.r), NK_TO_CAIRO(t->foreground.g), NK_TO_CAIRO(t->foreground.b), NK_TO_CAIRO(t->foreground.a));
-                cairo_scaled_font_extents(t->font->userdata.ptr, &extents);
-                cairo_scaled_font_text_to_glyphs(t->font->userdata.ptr,
+                cairo_scaled_font_extents((cairo_scaled_font_t *)t->font->userdata.ptr, &extents);
+                cairo_scaled_font_text_to_glyphs((cairo_scaled_font_t *)t->font->userdata.ptr,
                         t->x, t->y + extents.ascent, t->string, t->length,
                         &glyphs, &num_glyphs, &clusters, &num_clusters,
                         &cluster_flags);
@@ -817,7 +817,7 @@ NK_API int nk_cairo_render(struct nk_cairo_context *cairo_ctx, struct nk_context
                 int stride = cairo_format_stride_for_width(format, im->img.w);
 
                 if (!im->img.handle.ptr) return nk_false;
-                img_surf = cairo_image_surface_create_for_data(im->img.handle.ptr, format, im->img.w, im->img.h, stride);
+                img_surf = cairo_image_surface_create_for_data((unsigned char *)im->img.handle.ptr, format, im->img.w, im->img.h, stride);
                 if (!img_surf) return nk_false;
                 cairo_save(cr);
 
