@@ -42,6 +42,7 @@ static void die(const char *fmt, ...)
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 #define INCLUDE_OVERVIEW
+/*#define INCLUDE_CONFIGURATOR */
 /*#define INCLUDE_NODE_EDITOR */
 /*#define INCLUDE_CANVAS */
 
@@ -50,6 +51,7 @@ static void die(const char *fmt, ...)
   #define INCLUDE_CALCULATOR
   #define INCLUDE_OVERVIEW
   #define INCLUDE_NODE_EDITOR
+  #define INCLUDE_CONFIGURATOR
   #define INCLUDE_CANVAS
 #endif
 
@@ -61,6 +63,9 @@ static void die(const char *fmt, ...)
 #endif
 #ifdef INCLUDE_OVERVIEW
   #include "../common/overview.c"
+#endif
+#ifdef INCLUDE_CONFIGURATOR
+  #include "../../demo/common/style_configurator.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
   #include "../common/node_editor.c"
@@ -84,6 +89,11 @@ main(void)
     struct nk_context* ctx;
     int running = 1;
     int events;
+
+    #ifdef INCLUDE_CONFIGURATOR
+    static struct nk_color color_table[NK_COLOR_COUNT];
+    memcpy(color_table, nk_default_color_style, sizeof(color_table));
+    #endif
 
     xcb_ctx = nk_xcb_init("Nuklear XCB/Cairo", 20, 20, 600, 800);
     cairo_ctx = nk_cairo_init(&background, NULL, 0, nk_xcb_create_cairo_surface(xcb_ctx));
@@ -144,6 +154,9 @@ main(void)
         #endif
         #ifdef INCLUDE_OVERVIEW
         overview(ctx);
+        #endif
+        #ifdef INCLUDE_CONFIGURATOR
+          style_configurator(ctx, color_table);
         #endif
         #ifdef INCLUDE_NODE_EDITOR
         node_editor(ctx);

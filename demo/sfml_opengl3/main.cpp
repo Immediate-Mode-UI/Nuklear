@@ -41,6 +41,7 @@
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
 #define INCLUDE_OVERVIEW
+/*#define INCLUDE_CONFIGURATOR */
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
@@ -48,6 +49,7 @@
   #define INCLUDE_CALCULATOR
   #define INCLUDE_CANVAS
   #define INCLUDE_OVERVIEW
+  #define INCLUDE_CONFIGURATOR
   #define INCLUDE_NODE_EDITOR
 #endif
 
@@ -62,6 +64,9 @@
 #endif
 #ifdef INCLUDE_OVERVIEW
   #include "../../demo/common/overview.c"
+#endif
+#ifdef INCLUDE_CONFIGURATOR
+  #include "../../demo/common/style_configurator.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
   #include "../../demo/common/node_editor.c"
@@ -101,6 +106,11 @@ int main(void)
     nk_sfml_font_stash_end();
     /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
     /*nk_style_set_font(ctx, &droid->handle);*/
+
+    #ifdef INCLUDE_CONFIGURATOR
+    static struct nk_color color_table[NK_COLOR_COUNT];
+    memcpy(color_table, nk_default_color_style, sizeof(color_table));
+    #endif
 
     struct nk_colorf bg;
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
@@ -163,6 +173,9 @@ int main(void)
         #endif
         #ifdef INCLUDE_OVERVIEW
           overview(ctx);
+        #endif
+        #ifdef INCLUDE_CONFIGURATOR
+          style_configurator(ctx, color_table);
         #endif
         #ifdef INCLUDE_NODE_EDITOR
           node_editor(ctx);
