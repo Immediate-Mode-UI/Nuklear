@@ -98,7 +98,11 @@ style_global_colors(struct nk_context* ctx, struct nk_color color_table[NK_COLOR
 		"COLOR_SCROLLBAR_CURSOR:",
 		"COLOR_SCROLLBAR_CURSOR_HOVER:",
 		"COLOR_SCROLLBAR_CURSOR_ACTIVE:",
-		"COLOR_TAB_HEADER:"
+		"COLOR_TAB_HEADER:",
+		"COLOR_KNOB:",
+		"COLOR_KNOB_CURSOR:",
+		"COLOR_KNOB_CURSOR_HOVER:",
+		"COLOR_KNOB_CURSOR_ACTIVE:"
 	};
 
 	int clicked = 0;
