@@ -195,6 +195,15 @@ NK_API struct nk_xcb_context *nk_xcb_init(const char *title, int pos_x, int pos_
             pos_x, pos_y, width, height, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
             XCB_COPY_FROM_PARENT, XCB_CW_EVENT_MASK, values);
 
+	xcb_change_property(conn,
+		XCB_PROP_MODE_REPLACE,
+		window,
+		XCB_ATOM_WM_NAME,
+		XCB_ATOM_STRING,
+		8,
+		strlen(title),
+		title);
+
     cookie = xcb_intern_atom(conn, 1, 12, "WM_PROTOCOLS");
     reply = xcb_intern_atom_reply(conn, cookie, 0);
     cookie = xcb_intern_atom(conn, 0, 16, "WM_DELETE_WINDOW");
