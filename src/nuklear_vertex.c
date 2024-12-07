@@ -1135,10 +1135,9 @@ nk_draw_list_add_text(struct nk_draw_list *list, const struct nk_user_font *font
     float x = 0;
     int text_len = 0;
     nk_rune unicode = 0;
-    nk_rune next = 0;
     int glyph_len = 0;
-    int next_glyph_len = 0;
     struct nk_user_font_glyph g;
+    struct nk_color og_fg;
 
     NK_ASSERT(list);
     if (!list || !len || !text) return;
@@ -1147,20 +1146,58 @@ nk_draw_list_add_text(struct nk_draw_list *list, const struct nk_user_font *font
 
     nk_draw_list_push_image(list, font->texture);
     x = rect.x;
-    glyph_len = nk_utf_decode(text, &unicode, len);
-    if (!glyph_len) return;
 
     /* draw every glyph image */
     fg.a = (nk_byte)((float)fg.a * list->config.global_alpha);
-    while (text_len < len && glyph_len) {
+    og_fg = fg;
+
+    if(*text == '\0') return;
+
+    do {
         float gx, gy, gh, gw;
         float char_width = 0;
-        if (unicode == NK_UTF_INVALID) break;
 
         /* query currently drawn glyph information */
-        next_glyph_len = nk_utf_decode(text + text_len + glyph_len, &next, (int)len - text_len);
-        font->query(font->userdata, font_height, &g, unicode,
-                    (next == NK_UTF_INVALID) ? '\0' : next);
+        glyph_len = nk_utf_decode(text + text_len, &unicode, (int)len - text_len);
+
+        if (unicode == NK_UTF_INVALID) break;
+
+        /* check for inline instructions */
+        if (NK_UTF_IS_INSTRUCTION(unicode)) {
+            const char* read_ptr = text + text_len + glyph_len;
+            int payload_size = nk_utf_instruction_payload_size(unicode);
+
+            switch(unicode){
+                case NK_INSTRUCT_CODEPOINT_SET_RGB: { /* rgb inline instruction */
+                    nk_uint color = (unsigned)nk_parse_hex(read_ptr, 6);
+                    fg.r = (NK_UINT8)( (color & 0x00FF0000) >> 16 );
+                    fg.g = (NK_UINT8)( (color & 0x0000FF00) >> 8  );
+                    fg.b = (NK_UINT8)( (color & 0x000000FF) >> 0  );
+                    } break;
+                case NK_INSTRUCT_CODEPOINT_SET_RGBA: { /* rgba inline instruction */
+                    nk_uint color = (unsigned)nk_parse_hex(read_ptr, 8);
+                    fg.r = (NK_UINT8)( (color & 0xFF000000) >> 24 );
+                    fg.g = (NK_UINT8)( (color & 0x00FF0000) >> 16 );
+                    fg.b = (NK_UINT8)( (color & 0x0000FF00) >> 8  );
+                    fg.a = (NK_UINT8)( (color & 0x000000FF) >> 0  );
+                    } break;
+                case NK_INSTRUCT_CODEPOINT_RESET_COLOR:
+                    fg = og_fg;
+                    break;
+                default:
+                    NK_ASSERT(0 && "Invalid UTF-8 instruction.");
+                    break;
+            }
+
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+
+            goto no_draw;
+        }
+
+        font->query(font->userdata, font_height, &g, unicode, unicode);
 
         /* calculate and draw glyph drawing rectangle and image */
         gx = x + g.offset.x;
@@ -1171,11 +1208,10 @@ nk_draw_list_add_text(struct nk_draw_list *list, const struct nk_user_font *font
             g.uv[0], g.uv[1], fg);
 
         /* offset next glyph */
+        no_draw:
         text_len += glyph_len;
         x += char_width;
-        glyph_len = next_glyph_len;
-        unicode = next;
-    }
+    } while (text_len < len && glyph_len);
 }
 NK_API nk_flags
 nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
