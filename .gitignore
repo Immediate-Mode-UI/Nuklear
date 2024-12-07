@@ -11,3 +11,4 @@ doc/*
 *.swo
 *.swp
 /private/
+*/app/build
