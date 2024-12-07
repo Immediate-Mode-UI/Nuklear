@@ -11,3 +11,5 @@ doc/*
 *.swo
 *.swp
 /private/
+*build*
+.idea
