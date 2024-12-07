@@ -63,6 +63,7 @@ struct nk_wayland {
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
 #define INCLUDE_OVERVIEW
+/*#define INCLUDE_CONFIGURATOR */
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
@@ -70,6 +71,7 @@ struct nk_wayland {
   #define INCLUDE_CALCULATOR
   #define INCLUDE_CANVAS
   #define INCLUDE_OVERVIEW
+  #define INCLUDE_CONFIGURATOR
   #define INCLUDE_NODE_EDITOR
 #endif
 
@@ -84,6 +86,9 @@ struct nk_wayland {
 #endif
 #ifdef INCLUDE_OVERVIEW
   #include "../../common/overview.c"
+#endif
+#ifdef INCLUDE_CONFIGURATOR
+  #include "../../common/style_configurator.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
   #include "../../common/node_editor.c"
@@ -452,6 +457,11 @@ int main ()
     int running = 1;
     struct rawfb_pl pl;
 
+    #ifdef INCLUDE_CONFIGURATOR
+    static struct nk_color color_table[NK_COLOR_COUNT];
+    memcpy(color_table, nk_default_color_style, sizeof(color_table));
+    #endif
+
     //1. Initialize display
 	nk_wayland_ctx.display = wl_display_connect (NULL);
     if (nk_wayland_ctx.display == NULL) {
@@ -544,6 +554,9 @@ int main ()
         #endif
         #ifdef INCLUDE_OVERVIEW
           overview(&(nk_wayland_ctx.rawfb->ctx));
+        #endif
+        #ifdef INCLUDE_CONFIGURATOR
+          style_configurator(&(nk_wayland_ctx.rawfb->ctx), color_table);
         #endif
         #ifdef INCLUDE_NODE_EDITOR
           node_editor(&(nk_wayland_ctx.rawfb->ctx));

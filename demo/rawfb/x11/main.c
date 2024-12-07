@@ -115,6 +115,7 @@ sleep_for(long t)
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
 #define INCLUDE_OVERVIEW
+/*#define INCLUDE_CONFIGURATOR */
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
@@ -122,6 +123,7 @@ sleep_for(long t)
   #define INCLUDE_CALCULATOR
   #define INCLUDE_CANVAS
   #define INCLUDE_OVERVIEW
+  #define INCLUDE_CONFIGURATOR
   #define INCLUDE_NODE_EDITOR
 #endif
 
@@ -136,6 +138,9 @@ sleep_for(long t)
 #endif
 #ifdef INCLUDE_OVERVIEW
   #include "../../common/overview.c"
+#endif
+#ifdef INCLUDE_CONFIGURATOR
+  #include "../../common/style_configurator.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
   #include "../../common/node_editor.c"
@@ -158,6 +163,11 @@ main(void)
     void *fb = NULL;
     struct rawfb_pl pl;
     unsigned char tex_scratch[512 * 512];
+
+    #ifdef INCLUDE_CONFIGURATOR
+    static struct nk_color color_table[NK_COLOR_COUNT];
+    memcpy(color_table, nk_default_color_style, sizeof(color_table));
+    #endif
 
     /* X11 */
     memset(&xw, 0, sizeof xw);
@@ -233,6 +243,9 @@ main(void)
         #endif
         #ifdef INCLUDE_OVERVIEW
           overview(&rawfb->ctx);
+        #endif
+        #ifdef INCLUDE_CONFIGURATOR
+          style_configurator(&rawfb->ctx, color_table);
         #endif
         #ifdef INCLUDE_NODE_EDITOR
           node_editor(&rawfb->ctx);

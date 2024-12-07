@@ -2,7 +2,7 @@ WAYLAND=`pkg-config wayland-client --cflags --libs`
 WAYLAND_SCANNER=wayland-scanner
 WAYLAND_PROTOCOLS_DIR=/usr/share/wayland-protocols
 
-CFLAGS?=-std=c99 -Wall -Wextra -pedantic -Wno-unused-function -O3 -fvisibility=hidden
+CFLAGS+=-std=c99 -Wall -Wextra -pedantic -Wno-unused-function -O3 -fvisibility=hidden
 
 .PHONY: clean
 
