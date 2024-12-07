@@ -1,0 +1,17 @@
+digraph "nk_str"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="nk_str",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip="=============================================================="];
+  Node2 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" buffer" ,fontname="Helvetica"];
+  Node2 [label="nk_buffer",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structnk__buffer.html",tooltip=" "];
+  Node3 -> Node2 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" pool" ,fontname="Helvetica"];
+  Node3 [label="nk_allocator",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structnk__allocator.html",tooltip=" "];
+  Node4 -> Node3 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" alloc\nfree\nuserdata" ,fontname="Helvetica"];
+  Node4 [label="nk_handle",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$unionnk__handle.html",tooltip=" "];
+  Node5 -> Node2 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" marker" ,fontname="Helvetica"];
+  Node5 [label="nk_buffer_marker",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structnk__buffer__marker.html",tooltip=" "];
+  Node6 -> Node2 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" memory" ,fontname="Helvetica"];
+  Node6 [label="nk_memory",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structnk__memory.html",tooltip=" "];
+}

@@ -1,0 +1,18 @@
+digraph "nk_input"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="nk_input",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip=" "];
+  Node2 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" keyboard" ,fontname="Helvetica"];
+  Node2 [label="nk_keyboard",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structnk__keyboard.html",tooltip=" "];
+  Node3 -> Node2 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" keys" ,fontname="Helvetica"];
+  Node3 [label="nk_key",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structnk__key.html",tooltip=" "];
+  Node4 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" mouse" ,fontname="Helvetica"];
+  Node4 [label="nk_mouse",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structnk__mouse.html",tooltip=" "];
+  Node5 -> Node4 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" delta\npos\nprev\nscroll_delta" ,fontname="Helvetica"];
+  Node5 [label="nk_vec2",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structnk__vec2.html",tooltip=" "];
+  Node6 -> Node4 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" buttons" ,fontname="Helvetica"];
+  Node6 [label="nk_mouse_button",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structnk__mouse__button.html",tooltip=" "];
+  Node5 -> Node6 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" clicked_pos" ,fontname="Helvetica"];
+}

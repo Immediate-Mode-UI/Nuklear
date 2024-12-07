@@ -1,0 +1,23 @@
+digraph "nk_style_chart"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="nk_style_chart",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip=" "];
+  Node2 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" background" ,fontname="Helvetica"];
+  Node2 [label="nk_style_item",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structnk__style__item.html",tooltip=" "];
+  Node3 -> Node2 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" data" ,fontname="Helvetica"];
+  Node3 [label="nk_style_item_data",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$unionnk__style__item__data.html",tooltip=" "];
+  Node4 -> Node3 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" color" ,fontname="Helvetica"];
+  Node4 [label="nk_color",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structnk__color.html",tooltip=" "];
+  Node5 -> Node3 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" image" ,fontname="Helvetica"];
+  Node5 [label="nk_image",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structnk__image.html",tooltip=" "];
+  Node6 -> Node5 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" handle" ,fontname="Helvetica"];
+  Node6 [label="nk_handle",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$unionnk__handle.html",tooltip=" "];
+  Node7 -> Node3 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" slice" ,fontname="Helvetica"];
+  Node7 [label="nk_nine_slice",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structnk__nine__slice.html",tooltip=" "];
+  Node5 -> Node7 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" img" ,fontname="Helvetica"];
+  Node4 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" border_color\ncolor\nselected_color" ,fontname="Helvetica"];
+  Node8 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" padding" ,fontname="Helvetica"];
+  Node8 [label="nk_vec2",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structnk__vec2.html",tooltip=" "];
+}
