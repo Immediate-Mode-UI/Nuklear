@@ -633,7 +633,7 @@ nk_vsnprintf(char *buf, int buf_size, const char *fmt, va_list args)
         /* width argument */
         width = NK_DEFAULT;
         if (*iter >= '1' && *iter <= '9') {
-            const char *end;
+            char *end;
             width = nk_strtoi(iter, &end);
             if (end == iter)
                 width = -1;
@@ -651,7 +651,7 @@ nk_vsnprintf(char *buf, int buf_size, const char *fmt, va_list args)
                 precision = va_arg(args, int);
                 iter++;
             } else {
-                const char *end;
+                char *end;
                 precision = nk_strtoi(iter, &end);
                 if (end == iter)
                     precision = -1;

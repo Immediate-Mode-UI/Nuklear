@@ -702,7 +702,7 @@ NK_API void nk_combo_close(struct nk_context *ctx)
     nk_contextual_close(ctx);
 }
 NK_API int
-nk_combo(struct nk_context *ctx, const char **items, int count,
+nk_combo(struct nk_context *ctx, const char *const *items, int count,
     int selected, int item_height, struct nk_vec2 size)
 {
     int i = 0;
@@ -855,7 +855,7 @@ NK_API int nk_combo_from_struct_array(struct nk_context *ctx, const void *items,
 }
 
 NK_API void
-nk_combobox(struct nk_context *ctx, const char **items, int count,
+nk_combobox(struct nk_context *ctx, const char *const *items, int count,
     int *selected, int item_height, struct nk_vec2 size)
 {
     *selected = nk_combo(ctx, items, count, *selected, item_height, size);
@@ -880,4 +880,3 @@ nk_combobox_callback(struct nk_context *ctx,
 {
     *selected = nk_combo_callback(ctx, item_getter, userdata,  *selected, count, item_height, size);
 }
-

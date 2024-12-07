@@ -850,7 +850,7 @@ nk_style_load_cursor(struct nk_context *ctx, enum nk_style_cursor cursor,
     style->cursors[cursor] = c;
 }
 NK_API void
-nk_style_load_all_cursors(struct nk_context *ctx, struct nk_cursor *cursors)
+nk_style_load_all_cursors(struct nk_context *ctx, const struct nk_cursor *cursors)
 {
     int i = 0;
     struct nk_style *style;
@@ -861,4 +861,3 @@ nk_style_load_all_cursors(struct nk_context *ctx, struct nk_cursor *cursors)
         style->cursors[i] = &cursors[i];
     style->cursor_visible = nk_true;
 }
-
