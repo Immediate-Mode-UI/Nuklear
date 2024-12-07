@@ -27979,10 +27979,10 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         return ret;
 
     /* visible text area calculation */
-    area.x = bounds.x + style->padding.x + style->border;
-    area.y = bounds.y + style->padding.y + style->border;
-    area.w = bounds.w - (2.0f * style->padding.x + 2 * style->border);
-    area.h = bounds.h - (2.0f * style->padding.y + 2 * style->border);
+    area.x = bounds.x + style->padding.x;
+    area.y = bounds.y + style->padding.y;
+    area.w = bounds.w - (2.0f * style->padding.x);
+    area.h = bounds.h - (2.0f * style->padding.y);
     if (flags & NK_EDIT_MULTILINE)
         area.w = NK_MAX(0, area.w - style->scrollbar_size.x);
     row_height = (flags & NK_EDIT_MULTILINE)? font->height + style->row_padding: area.h;
@@ -30698,6 +30698,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2024/12/07 (4.12.3) - Fix border impacting edit widget's text
 /// - 2024/11/20 (4.12.2) - Fix int/float type conversion warnings in `nk_roundf`
 /// - 2024/03/07 (4.12.1) - Fix bitwise operations warnings in C++20
 /// - 2023/11/26 (4.12.0) - Added an alignment option to checkboxes and radio buttons.
