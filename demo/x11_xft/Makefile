@@ -1,8 +1,8 @@
 # Install
-BIN = zahnrad
+BIN = demo
 
 # Flags
-CFLAGS += -std=c89 -Wall -Wextra -pedantic -Wno-unused-function -O2
+CFLAGS += -std=c89 -Wall -Wextra -pedantic -Wno-unused-function
 
 SRC = main.c
 OBJ = $(SRC:.c=.o)

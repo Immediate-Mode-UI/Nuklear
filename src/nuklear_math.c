@@ -197,6 +197,11 @@ nk_log10(double n)
     if (neg) exp = -exp;
     return exp;
 }
+NK_LIB float
+nk_roundf(float x)
+{
+    return (x >= 0.0f) ? (float)nk_ifloorf(x + 0.5f) : (float)nk_iceilf(x - 0.5f);
+}
 NK_API struct nk_rect
 nk_get_null_rect(void)
 {
