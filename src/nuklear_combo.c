@@ -845,6 +845,8 @@ NK_API int nk_combo_from_struct_array(struct nk_context *ctx, const void *items,
         nk_layout_row_dynamic(ctx, (float)item_height, 1);
         for (i = 0; i < count; ++i) {
             name = *(char**)((char*)items + stride);
+            if(!name)
+                name = "";
             if (nk_combo_item_label(ctx, name, NK_TEXT_LEFT))
                 selected = i;
             items = (char*)items + item_sz;
