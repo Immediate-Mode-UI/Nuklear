@@ -18,7 +18,7 @@ overview(struct nk_context *ctx)
 
 #ifdef INCLUDE_STYLE
     /* styles */
-    static const char* themes[] = {"Black", "White", "Red", "Blue", "Dark", "Dracula", 
+    static const char* themes[] = {"Black", "White", "Red", "Blue", "Dark", "Dracula",
       "Catppucin Latte", "Catppucin Frappe", "Catppucin Macchiato", "Catppucin Mocha"};
     static int current_theme = 0;
 #endif
@@ -582,6 +582,36 @@ overview(struct nk_context *ctx)
                             }
                         }}
                         nk_combo_end(ctx);
+                    }
+                }
+                {
+                    /* Combobox from array of struct */
+                    static int sel=0;
+                    struct student {
+                        int id;
+                        char* name;
+                        int age;
+                        char* major;
+                    };
+
+                    static struct student students[4] = {
+                        {0, "----", 0, "----"},
+                        {1, "Mike", 20, "CS"},
+                        {2, "Jim", 19, "Maths"},
+                        {3, "Julia", 20, "Biology"}
+                    };
+                    sel = nk_combo_from_struct_array(ctx, &students, 4,
+                                sizeof(struct student),
+                                offsetof(struct student, name),
+                                sel, 15, nk_vec2(200,200));
+                    if(sel>0){
+                        nk_layout_row_static(ctx, 30,300, 2);
+                        nk_labelf(ctx, NK_TEXT_LEFT, "id:%d | name:%s | age:%d | major:%s",
+                                   students[sel].id,
+                                   students[sel].name,
+                                   students[sel].age,
+                                   students[sel].major
+                                  );
                     }
                 }
 
