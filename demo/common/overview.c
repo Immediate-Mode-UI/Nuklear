@@ -594,13 +594,27 @@ overview(struct nk_context *ctx)
                         char* major;
                     };
 
-                    static struct student students[4] = {
-                        {0, "----", 0, "----"},
-                        {1, "Mike", 20, "CS"},
-                        {2, "Jim", 19, "Maths"},
-                        {3, "Julia", 20, "Biology"}
+                    static struct student students[3] = {
+                        {
+                            .id = 1,
+                            .name = "Mike",
+                            .age = 20,
+                            .major = "CS"
+                        },
+                        {
+                            .id = 2,
+                            .name = "Jim",
+                            .age = 19,
+                            .major = "Maths"
+                        },
+                        {
+                            .id = 3,
+                            .name = "Julia",
+                            .age = 20,
+                            .major = "Biology"
+                        }
                     };
-                    sel = nk_combo_from_struct_array(ctx, &students, 4,
+                    sel = nk_combo_from_struct_array(ctx, &students, 3,
                                 sizeof(struct student),
                                 offsetof(struct student, name),
                                 sel, 15, nk_vec2(200,200));
