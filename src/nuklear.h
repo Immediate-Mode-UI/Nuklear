@@ -4495,6 +4495,7 @@ struct nk_command_curve {
     struct nk_color color;
 };
 
+enum nk_stroke_type { NK_STROKE_CENTER, NK_STROKE_INNER, NK_STROKE_OUTER };
 struct nk_command_rect {
     struct nk_command header;
     unsigned short rounding;
@@ -4502,6 +4503,7 @@ struct nk_command_rect {
     short x, y;
     unsigned short w, h;
     struct nk_color color;
+    enum nk_stroke_type stroke_type;
 };
 
 struct nk_command_rect_filled {
@@ -4641,6 +4643,7 @@ struct nk_command_buffer {
 NK_API void nk_stroke_line(struct nk_command_buffer *b, float x0, float y0, float x1, float y1, float line_thickness, struct nk_color);
 NK_API void nk_stroke_curve(struct nk_command_buffer*, float, float, float, float, float, float, float, float, float line_thickness, struct nk_color);
 NK_API void nk_stroke_rect(struct nk_command_buffer*, struct nk_rect, float rounding, float line_thickness, struct nk_color);
+NK_API void nk_stroke_rect_ex(struct nk_command_buffer*, struct nk_rect, float rounding, float line_thickness, struct nk_color, enum nk_stroke_type);
 NK_API void nk_stroke_circle(struct nk_command_buffer*, struct nk_rect, float line_thickness, struct nk_color);
 NK_API void nk_stroke_arc(struct nk_command_buffer*, float cx, float cy, float radius, float a_min, float a_max, float line_thickness, struct nk_color);
 NK_API void nk_stroke_triangle(struct nk_command_buffer*, float, float, float, float, float, float, float line_thichness, struct nk_color);
@@ -5771,6 +5774,7 @@ struct nk_context {
 #define nk_ptr_add(t, p, i) ((t*)((void*)((nk_byte*)(p) + (i))))
 #define nk_ptr_add_const(t, p, i) ((const t*)((const void*)((const nk_byte*)(p) + (i))))
 #define nk_zero_struct(s) nk_zero(&s, sizeof(s))
+#define nk_div_round_closest(n, d) ((((n) < 0) == ((d) < 0)) ? (((n) + (d)/2)/(d)) : (((n) - (d)/2)/(d)))
 
 /* ==============================================================
  *                          ALIGNMENT
