@@ -42,7 +42,7 @@ DEMO_LIST = $(shell find $(DEMO_PATH) -type f -name Makefile -printf "%h ")
 usage:
 	echo "make docs		to create documentation"
 	echo "make nuke		to rebuild the single header nuklear.h from source"
-	echo "make demos	to build all of the demos
+	echo "make demos	to build all of the demos"
 	echo "make all 		to re-pack the header and create documentation"
 
 all: docs nuke demos 
