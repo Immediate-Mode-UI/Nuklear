@@ -774,6 +774,8 @@ nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt)
                 nk_input_key(ctx, NK_KEY_TEXT_LINE_START, down);
             else if (*code == 'e' && (evt->xkey.state & ControlMask))
                 nk_input_key(ctx, NK_KEY_TEXT_LINE_END, down);
+            else if (*code == 'a' && (evt->xkey.state & ControlMask))
+                nk_input_key(ctx,NK_KEY_TEXT_SELECT_ALL, down);
             else {
                 if (*code == 'i')
                     nk_input_key(ctx, NK_KEY_TEXT_INSERT_MODE, down);
