@@ -46,6 +46,7 @@ NK_API void                   nk_allegro5_font_set_font(NkAllegro5Font *font);
  * ===============================================================
  */
 #ifdef NK_ALLEGRO5_IMPLEMENTATION
+#include <stdio.h>
 
 #ifndef NK_ALLEGRO5_TEXT_MAX
 #define NK_ALLEGRO5_TEXT_MAX 256
@@ -65,6 +66,7 @@ static struct nk_allegro5 {
     int touch_down_id;
     struct nk_context ctx;
     struct nk_buffer cmds;
+    float delta_time_seconds_last;
 } allegro5;
 
 
@@ -175,6 +177,11 @@ NK_API void
 nk_allegro5_render()
 {
     const struct nk_command *cmd;
+
+    /* Update the timer */
+    float now = (float)al_get_time();
+    allegro5.ctx.delta_time_seconds = now - allegro5.delta_time_seconds_last;
+    allegro5.delta_time_seconds_last = now;
 
     al_set_target_backbuffer(allegro5.dsp);
 
@@ -317,7 +324,17 @@ nk_allegro5_render()
         } break;
         case NK_COMMAND_IMAGE: {
             const struct nk_command_image *i = (const struct nk_command_image *)cmd;
-            al_draw_bitmap_region(i->img.handle.ptr, 0, 0, i->w, i->h, i->x, i->y, 0);
+            nk_ushort
+                x = i->img.region[0],
+                y = i->img.region[1],
+                w = i->img.region[2],
+                h = i->img.region[3];
+            if(w == 0 && h == 0)
+            {
+                x = i->x; y = i->y; w = i->w; h = i->h;
+            }
+            al_draw_scaled_bitmap(i->img.handle.ptr,
+                                  x, y, w, h, i->x, i->y, i->w, i->h, 0);
         } break;
         case NK_COMMAND_RECT_MULTI_COLOR:
         default: break;
@@ -497,6 +514,7 @@ nk_allegro5_init(NkAllegro5Font *allegro5font, ALLEGRO_DISPLAY *dsp,
     allegro5.height = height;
     allegro5.is_touch_down = 0;
     allegro5.touch_down_id = -1;
+    allegro5.delta_time_seconds_last = (float)al_get_time();
 
     nk_init_default(&allegro5.ctx, font);
     allegro5.ctx.clip.copy = nk_allegro5_clipboard_copy;

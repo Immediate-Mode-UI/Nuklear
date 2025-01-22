@@ -63,7 +63,7 @@ nk_init_custom(struct nk_context *ctx, struct nk_buffer *cmds,
     return 1;
 }
 NK_API nk_bool
-nk_init(struct nk_context *ctx, struct nk_allocator *alloc,
+nk_init(struct nk_context *ctx, const struct nk_allocator *alloc,
     const struct nk_user_font *font)
 {
     NK_ASSERT(alloc);

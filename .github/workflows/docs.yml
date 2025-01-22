@@ -1,0 +1,26 @@
+name: Documentation on github.io
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build-documentation:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+    - name: apt-update
+      run: sudo apt-get update -qq
+    - name: apt-get doxygen
+      run: sudo apt-get install -y doxygen
+    - name: build doc
+      run: make docs
+    - name: deploy
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./doc/html/
+        enable_jekyll: false
+        allow_empty_commit: false
+        force_orphan: true

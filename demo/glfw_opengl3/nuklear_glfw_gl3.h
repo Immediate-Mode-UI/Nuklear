@@ -53,6 +53,7 @@ struct nk_glfw {
     double last_button_click;
     int is_double_click_down;
     struct nk_vec2 double_click_pos;
+    float delta_time_seconds_last;
 };
 
 NK_API struct nk_context*   nk_glfw3_init(struct nk_glfw* glfw, GLFWwindow *win, enum nk_glfw_init_state);
@@ -78,6 +79,9 @@ NK_API void                 nk_glfw3_mouse_button_callback(GLFWwindow *win, int 
  * ===============================================================
  */
 #ifdef NK_GLFW_GL3_IMPLEMENTATION
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
 
 #ifndef NK_GLFW_DOUBLE_CLICK_LO
 #define NK_GLFW_DOUBLE_CLICK_LO 0.02
@@ -311,7 +315,7 @@ nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int max_vertex_b
 NK_API void
 nk_glfw3_char_callback(GLFWwindow *win, unsigned int codepoint)
 {
-    struct nk_glfw* glfw = glfwGetWindowUserPointer(win);
+    struct nk_glfw* glfw = (struct nk_glfw *)glfwGetWindowUserPointer(win);
     if (glfw->text_len < NK_GLFW_TEXT_MAX)
         glfw->text[glfw->text_len++] = codepoint;
 }
@@ -319,7 +323,7 @@ nk_glfw3_char_callback(GLFWwindow *win, unsigned int codepoint)
 NK_API void
 nk_gflw3_scroll_callback(GLFWwindow *win, double xoff, double yoff)
 {
-    struct nk_glfw* glfw = glfwGetWindowUserPointer(win);
+    struct nk_glfw* glfw = (struct nk_glfw *)glfwGetWindowUserPointer(win);
     (void)xoff;
     glfw->scroll.x += (float)xoff;
     glfw->scroll.y += (float)yoff;
@@ -328,7 +332,7 @@ nk_gflw3_scroll_callback(GLFWwindow *win, double xoff, double yoff)
 NK_API void
 nk_glfw3_mouse_button_callback(GLFWwindow* win, int button, int action, int mods)
 {
-    struct nk_glfw* glfw = glfwGetWindowUserPointer(win);
+    struct nk_glfw* glfw = (struct nk_glfw *)glfwGetWindowUserPointer(win);
     double x, y;
     NK_UNUSED(mods);
     if (button != GLFW_MOUSE_BUTTON_LEFT) return;
@@ -386,6 +390,8 @@ nk_glfw3_init(struct nk_glfw* glfw, GLFWwindow *win, enum nk_glfw_init_state ini
     glfw->is_double_click_down = nk_false;
     glfw->double_click_pos = nk_vec2(0, 0);
 
+    glfw->delta_time_seconds_last = (float)glfwGetTime();
+
     return &glfw->ctx;
 }
 
@@ -415,6 +421,11 @@ nk_glfw3_new_frame(struct nk_glfw* glfw)
     double x, y;
     struct nk_context *ctx = &glfw->ctx;
     struct GLFWwindow *win = glfw->win;
+
+    /* update the timer */
+    float delta_time_now = (float)glfwGetTime();
+    glfw->ctx.delta_time_seconds = delta_time_now - glfw->delta_time_seconds_last;
+    glfw->delta_time_seconds_last = delta_time_now;
 
     glfwGetWindowSize(win, &glfw->width, &glfw->height);
     glfwGetFramebufferSize(win, &glfw->display_width, &glfw->display_height);
@@ -465,7 +476,6 @@ nk_glfw3_new_frame(struct nk_glfw* glfw)
         nk_input_key(ctx, NK_KEY_COPY, 0);
         nk_input_key(ctx, NK_KEY_PASTE, 0);
         nk_input_key(ctx, NK_KEY_CUT, 0);
-        nk_input_key(ctx, NK_KEY_SHIFT, 0);
     }
 
     glfwGetCursorPos(win, &x, &y);

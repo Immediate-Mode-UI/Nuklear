@@ -38,7 +38,8 @@
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
-/*#define INCLUDE_OVERVIEW */
+#define INCLUDE_OVERVIEW
+/*#define INCLUDE_CONFIGURATOR */
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
@@ -46,6 +47,7 @@
   #define INCLUDE_CALCULATOR
   #define INCLUDE_CANVAS
   #define INCLUDE_OVERVIEW
+  #define INCLUDE_CONFIGURATOR
   #define INCLUDE_NODE_EDITOR
 #endif
 
@@ -60,6 +62,9 @@
 #endif
 #ifdef INCLUDE_OVERVIEW
   #include "../../demo/common/overview.c"
+#endif
+#ifdef INCLUDE_CONFIGURATOR
+  #include "../../demo/common/style_configurator.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
   #include "../../demo/common/node_editor.c"
@@ -82,6 +87,11 @@ main(int argc, char *argv[])
     /* GUI */
     struct nk_context *ctx;
     struct nk_colorf bg;
+
+    #ifdef INCLUDE_CONFIGURATOR
+    static struct nk_color color_table[NK_COLOR_COUNT];
+    memcpy(color_table, nk_default_color_style, sizeof(color_table));
+    #endif
 
     NK_UNUSED(argc);
     NK_UNUSED(argv);
@@ -116,19 +126,6 @@ main(int argc, char *argv[])
     /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
     /*nk_style_set_font(ctx, &roboto->handle)*/;}
 
-    #ifdef INCLUDE_STYLE
-    /* ease regression testing during Nuklear release process; not needed for anything else */
-    #ifdef STYLE_WHITE
-    set_style(ctx, THEME_WHITE);
-    #elif defined(STYLE_RED)
-    set_style(ctx, THEME_RED);
-    #elif defined(STYLE_BLUE)
-    set_style(ctx, THEME_BLUE);
-    #elif defined(STYLE_DARK)
-    set_style(ctx, THEME_DARK);
-    #endif
-    #endif
-
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
     while (running)
     {
@@ -139,6 +136,7 @@ main(int argc, char *argv[])
             if (evt.type == SDL_QUIT) goto cleanup;
             nk_sdl_handle_event(&evt);
         }
+        nk_sdl_handle_grab(); /* optional grabbing behavior */
         nk_input_end(ctx);
 
         /* GUI */
@@ -184,6 +182,9 @@ main(int argc, char *argv[])
         #endif
         #ifdef INCLUDE_OVERVIEW
           overview(ctx);
+        #endif
+        #ifdef INCLUDE_CONFIGURATOR
+          style_configurator(ctx, color_table);
         #endif
         #ifdef INCLUDE_NODE_EDITOR
           node_editor(ctx);

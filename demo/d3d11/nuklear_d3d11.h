@@ -41,6 +41,7 @@ NK_API void nk_d3d11_shutdown(void);
 #define COBJMACROS
 #include <d3d11.h>
 
+#include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
 #include <float.h>
@@ -238,6 +239,14 @@ nk_d3d11_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             nk_input_key(&d3d11.ctx, NK_KEY_TAB, down);
             return 1;
 
+        case VK_UP:
+            nk_input_key(&d3d11.ctx, NK_KEY_UP, down);
+            return 1;
+
+        case VK_DOWN:
+            nk_input_key(&d3d11.ctx, NK_KEY_DOWN, down);
+            return 1;
+
         case VK_LEFT:
             if (ctrl)
                 nk_input_key(&d3d11.ctx, NK_KEY_TEXT_WORD_LEFT, down);
@@ -273,6 +282,20 @@ nk_d3d11_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case VK_PRIOR:
             nk_input_key(&d3d11.ctx, NK_KEY_SCROLL_UP, down);
             return 1;
+
+        case 'B':
+            if (ctrl) {
+                nk_input_key(&d3d11.ctx, NK_KEY_TEXT_LINE_START, down);
+                return 1;
+            }
+            break;
+
+        case 'E':
+            if (ctrl) {
+                nk_input_key(&d3d11.ctx, NK_KEY_TEXT_LINE_END, down);
+                return 1;
+            }
+            break;
 
         case 'C':
             if (ctrl) {
