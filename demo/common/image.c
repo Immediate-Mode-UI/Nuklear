@@ -1,6 +1,6 @@
 /* STB Image does not compile as C89 :[ */
 #define STB_IMAGE_IMPLEMENTATION
-#include "../../demo/common/filebrowser/stb_image.h"
+#include "../../demo/common/libs/stb_image_c89.h"
 
 struct testImage {
 	GLuint gpuTextureID;
