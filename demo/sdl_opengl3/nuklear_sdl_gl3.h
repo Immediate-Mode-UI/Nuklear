@@ -383,7 +383,10 @@ nk_sdl_handle_event(SDL_Event *evt)
                     case SDLK_RSHIFT: /* RSHIFT & LSHIFT share same routine */
                     case SDLK_LSHIFT:    nk_input_key(ctx, NK_KEY_SHIFT, down); break;
                     case SDLK_DELETE:    nk_input_key(ctx, NK_KEY_DEL, down); break;
+
+                    case SDLK_KP_ENTER:
                     case SDLK_RETURN:    nk_input_key(ctx, NK_KEY_ENTER, down); break;
+
                     case SDLK_TAB:       nk_input_key(ctx, NK_KEY_TAB, down); break;
                     case SDLK_BACKSPACE: nk_input_key(ctx, NK_KEY_BACKSPACE, down); break;
                     case SDLK_HOME:      nk_input_key(ctx, NK_KEY_TEXT_START, down);
