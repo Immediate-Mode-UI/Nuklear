@@ -1,4 +1,7 @@
 /*
+ * Nuklear - 4.9.4 - public domain
+ */
+/*
  * ==============================================================
  *
  *                              API
@@ -8,25 +11,16 @@
 #ifndef NK_SDL3_RENDERER_H_
 #define NK_SDL3_RENDERER_H_
 
-#ifndef NK_SDL3_RENDERER_SDL_H
-#define NK_SDL3_RENDERER_SDL_H <SDL3/SDL.h>
-#endif
-#include NK_SDL3_RENDERER_SDL_H
-
-#define NK_SIZE_TYPE size_t
-
-#ifndef NUKLEAR_H
-#define NUKLEAR_H "nuklear.h"
-#endif
-#include NUKLEAR_H
-
 NK_API struct nk_context*   nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer);
 NK_API void                 nk_sdl_font_stash_begin(struct nk_font_atlas **atlas);
 NK_API void                 nk_sdl_font_stash_end(void);
 NK_API int                  nk_sdl_handle_event(SDL_Event *evt);
 NK_API void                 nk_sdl_render(enum nk_anti_aliasing);
 NK_API void                 nk_sdl_shutdown(void);
-NK_API void                 nk_sdl_handle_grab(void);
+
+#if SDL_MAJOR_VERSION < 3
+#error "nuklear_sdl3_renderer requires at least SDL 3.0.0"
+#endif
 
 #endif /* NK_SDL_RENDERER_H_ */
 
@@ -37,17 +31,7 @@ NK_API void                 nk_sdl_handle_grab(void);
  *
  * ===============================================================
  */
-#ifdef NK_SDL_RENDERER_IMPLEMENTATION
-
-/* Nuklear SDL3 Renderer defines some macros for Nuklear SDL use */
-#define NK_MEMCPY SDL_memcpy
-#define NK_IMPLEMENTATION
-
-#include <stddef.h>
-
-#if SDL_MAJOR_VERSION < 3
-#error "nuklear_sdl3_renderer requires at least SDL 3.0.0"
-#endif
+#ifdef NK_SDL3_RENDERER_IMPLEMENTATION
 
 struct nk_sdl_device {
     struct nk_buffer cmds;
@@ -58,17 +42,16 @@ struct nk_sdl_device {
 struct nk_sdl_vertex {
     float position[2];
     float uv[2];
-    nk_byte col[4];
+    float col[4];
 };
 
-struct nk_sdl {
+static struct nk_sdl {
     SDL_Window *win;
     SDL_Renderer *renderer;
     struct nk_sdl_device ogl;
     struct nk_context ctx;
     struct nk_font_atlas atlas;
-    Uint64 time_of_last_frame;
-} nk_sdl;
+} sdl;
 
 NK_INTERN void
 nk_sdl_device_upload_atlas(const void *image, int width, int height)
@@ -93,7 +76,7 @@ nk_sdl_render(enum nk_anti_aliasing AA)
 
     {
         SDL_Rect saved_clip;
-        SDL_bool clipping_enabled;
+        bool clipping_enabled;
         int vs = sizeof(struct nk_sdl_vertex);
         size_t vp = offsetof(struct nk_sdl_vertex, position);
         size_t vt = offsetof(struct nk_sdl_vertex, uv);
@@ -107,16 +90,11 @@ nk_sdl_render(enum nk_anti_aliasing AA)
         /* fill converting configuration */
         struct nk_convert_config config;
         static const struct nk_draw_vertex_layout_element vertex_layout[] = {
-            {NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(struct nk_sdl_vertex, position)},
-            {NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(struct nk_sdl_vertex, uv)},
-            {NK_VERTEX_COLOR, NK_FORMAT_R8G8B8A8, NK_OFFSETOF(struct nk_sdl_vertex, col)},
+            {NK_VERTEX_POSITION,    NK_FORMAT_FLOAT,                NK_OFFSETOF(struct nk_sdl_vertex, position)},
+            {NK_VERTEX_TEXCOORD,    NK_FORMAT_FLOAT,                NK_OFFSETOF(struct nk_sdl_vertex, uv)},
+            {NK_VERTEX_COLOR,       NK_FORMAT_R32G32B32A32_FLOAT,   NK_OFFSETOF(struct nk_sdl_vertex, col)},
             {NK_VERTEX_LAYOUT_END}
         };
-
-        Uint64 now = SDL_GetTicks64();
-        sdl.ctx.delta_time_seconds = (float)(now - sdl.time_of_last_frame) / 1000;
-        sdl.time_of_last_frame = now;
-
         NK_MEMSET(&config, 0, sizeof(config));
         config.vertex_layout = vertex_layout;
         config.vertex_size = sizeof(struct nk_sdl_vertex);
@@ -137,8 +115,8 @@ nk_sdl_render(enum nk_anti_aliasing AA)
         /* iterate over and execute each draw command */
         offset = (const nk_draw_index*)nk_buffer_memory_const(&ebuf);
 
-        clipping_enabled = SDL_RenderIsClipEnabled(sdl.renderer);
-        SDL_RenderGetClipRect(sdl.renderer, &saved_clip);
+        clipping_enabled = SDL_RenderClipEnabled(sdl.renderer);
+        SDL_GetRenderClipRect(sdl.renderer, &saved_clip);
 
         nk_draw_foreach(cmd, &sdl.ctx, &dev->cmds)
         {
@@ -150,7 +128,7 @@ nk_sdl_render(enum nk_anti_aliasing AA)
                 r.y = cmd->clip_rect.y;
                 r.w = cmd->clip_rect.w;
                 r.h = cmd->clip_rect.h;
-                SDL_RenderSetClipRect(sdl.renderer, &r);
+                SDL_SetRenderClipRect(sdl.renderer, &r);
             }
 
             {
@@ -159,7 +137,7 @@ nk_sdl_render(enum nk_anti_aliasing AA)
                 SDL_RenderGeometryRaw(sdl.renderer,
                         (SDL_Texture *)cmd->texture.ptr,
                         (const float*)((const nk_byte*)vertices + vp), vs,
-                        (const SDL_Color*)((const nk_byte*)vertices + vc), vs,
+                        (const SDL_FColor*)((const nk_byte*)vertices + vc), vs,
                         (const float*)((const nk_byte*)vertices + vt), vs,
                         (vbuf.needed / vs),
                         (void *) offset, cmd->elem_count, 2);
@@ -168,9 +146,9 @@ nk_sdl_render(enum nk_anti_aliasing AA)
             }
         }
 
-        SDL_RenderSetClipRect(sdl.renderer, &saved_clip);
+        SDL_SetRenderClipRect(sdl.renderer, &saved_clip);
         if (!clipping_enabled) {
-            SDL_RenderSetClipRect(sdl.renderer, NULL);
+            SDL_SetRenderClipRect(sdl.renderer, NULL);
         }
 
         nk_clear(&sdl.ctx);
@@ -194,12 +172,12 @@ nk_sdl_clipboard_copy(nk_handle usr, const char *text, int len)
     char *str = 0;
     (void)usr;
     if (!len) return;
-    str = (char*)SDL_malloc((size_t)len+1);
+    str = (char*)malloc((size_t)len+1);
     if (!str) return;
-    SDL_memcpy(str, text, (size_t)len);
+    memcpy(str, text, (size_t)len);
     str[len] = '\0';
     SDL_SetClipboardText(str);
-    SDL_free(str);
+    free(str);
 }
 
 NK_API struct nk_context*
@@ -207,7 +185,6 @@ nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer)
 {
     sdl.win = win;
     sdl.renderer = renderer;
-    sdl.time_of_last_frame = SDL_GetTicks64();
     nk_init_default(&sdl.ctx, 0);
     sdl.ctx.clip.copy = nk_sdl_clipboard_copy;
     sdl.ctx.clip.paste = nk_sdl_clipboard_paste;
@@ -235,22 +212,6 @@ nk_sdl_font_stash_end(void)
         nk_style_set_font(&sdl.ctx, &sdl.atlas.default_font->handle);
 }
 
-NK_API void
-nk_sdl_handle_grab(void)
-{
-    struct nk_context *ctx = &sdl.ctx;
-    if (ctx->input.mouse.grab) {
-        SDL_SetRelativeMouseMode(SDL_TRUE);
-    } else if (ctx->input.mouse.ungrab) {
-        /* better support for older SDL by setting mode first; causes an extra mouse motion event */
-        SDL_SetRelativeMouseMode(SDL_FALSE);
-        SDL_WarpMouseInWindow(sdl.win, (int)ctx->input.mouse.prev.x, (int)ctx->input.mouse.prev.y);
-    } else if (ctx->input.mouse.grabbed) {
-        ctx->input.mouse.pos.x = ctx->input.mouse.prev.x;
-        ctx->input.mouse.pos.y = ctx->input.mouse.prev.y;
-    }
-}
-
 NK_API int
 nk_sdl_handle_event(SDL_Event *evt)
 {
@@ -258,12 +219,12 @@ nk_sdl_handle_event(SDL_Event *evt)
 
     switch(evt->type)
     {
-        case SDL_EVENT_KEY_UP:
+        case SDL_EVENT_KEY_UP: /* KEYUP & KEYDOWN share same routine */
         case SDL_EVENT_KEY_DOWN:
             {
-                int down = evt->type == SDL_KEYDOWN;
-                const Uint8* state = SDL_GetKeyboardState(0);
-                switch(evt->key.keysym.sym)
+                int down = evt->type == SDL_EVENT_KEY_DOWN;
+                const bool* state = SDL_GetKeyboardState(0);
+                switch(evt->key.key)
                 {
                     case SDLK_RSHIFT: /* RSHIFT & LSHIFT share same routine */
                     case SDLK_LSHIFT:    nk_input_key(ctx, NK_KEY_SHIFT, down); break;
@@ -297,13 +258,13 @@ nk_sdl_handle_event(SDL_Event *evt)
                         else nk_input_key(ctx, NK_KEY_RIGHT, down);
                         break;
                 }
+                return 1;
             }
-            return 1;
 
-        case SDL_EVENT_MOUSE_BUTTON_UP:
+        case SDL_EVENT_MOUSE_BUTTON_UP: /* MOUSEBUTTONUP & MOUSEBUTTONDOWN share same routine */
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
             {
-                int down = evt->type == SDL_MOUSEBUTTONDOWN;
+                int down = evt->button.down;
                 const int x = evt->button.x, y = evt->button.y;
                 switch(evt->button.button)
                 {
@@ -328,7 +289,7 @@ nk_sdl_handle_event(SDL_Event *evt)
         case SDL_EVENT_TEXT_INPUT:
             {
                 nk_glyph glyph;
-                SDL_memcpy(glyph, evt->text.text, NK_UTF_SIZE);
+                memcpy(glyph, evt->text.text, NK_UTF_SIZE);
                 nk_input_glyph(ctx, glyph);
             }
             return 1;
@@ -341,15 +302,15 @@ nk_sdl_handle_event(SDL_Event *evt)
 }
 
 NK_API
-void nk_sdl_shutdown(struct nk_sdl* sdl)
+void nk_sdl_shutdown(void)
 {
-    struct nk_sdl_device *dev = &sdl->ogl;
-    nk_font_atlas_clear(&sdl->atlas);
-    SDL_free(&sdl->ctx);
+    struct nk_sdl_device *dev = &sdl.ogl;
+    nk_font_atlas_clear(&sdl.atlas);
+    nk_free(&sdl.ctx);
     SDL_DestroyTexture(dev->font_tex);
     /* glDeleteTextures(1, &dev->font_tex); */
     nk_buffer_free(&dev->cmds);
-    NK_MEMSET(sdl, 0, sizeof(sdl));
+    memset(&sdl, 0, sizeof(sdl));
 }
 
-#endif /* NK_SDL_RENDERER_IMPLEMENTATION */
+#endif /* NK_SDL3_RENDERER_IMPLEMENTATION */

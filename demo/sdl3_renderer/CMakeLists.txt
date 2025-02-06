@@ -24,7 +24,8 @@ target_sources(${EXECUTABLE_NAME} PRIVATE main.c)
 
 find_package(SDL3 REQUIRED)
 
-target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3::SDL3)
+# TODO: remove libm and fallback on Nuklear floor()
+target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3::SDL3 m)
 
 # Nuklear Include Directory
 target_include_directories(${EXECUTABLE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../..)
