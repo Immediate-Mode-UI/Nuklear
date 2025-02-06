@@ -43,6 +43,7 @@
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
 #define INCLUDE_OVERVIEW
+#define INCLUDE_IMAGE
 /*#define INCLUDE_CONFIGURATOR */
 /*#define INCLUDE_NODE_EDITOR */
 
@@ -52,6 +53,7 @@
   #define INCLUDE_CANVAS
   #define INCLUDE_OVERVIEW
   #define INCLUDE_CONFIGURATOR
+  #define INCLUDE_IMAGE
   #define INCLUDE_NODE_EDITOR
 #endif
 
@@ -69,6 +71,9 @@
 #endif
 #ifdef INCLUDE_CONFIGURATOR
   #include "../../demo/common/style_configurator.c"
+#endif
+#ifdef INCLUDE_IMAGE
+  #include "../../demo/common/image.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
   #include "../../demo/common/node_editor.c"
@@ -193,6 +198,9 @@ int main(void)
         #ifdef INCLUDE_NODE_EDITOR
           node_editor(ctx);
         #endif
+        #ifdef INCLUDE_IMAGE
+		  image_demo(ctx);
+		#endif
         /* ----------------------------------------- */
 
         /* Draw */
