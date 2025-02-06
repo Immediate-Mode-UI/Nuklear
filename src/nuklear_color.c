@@ -23,7 +23,7 @@ nk_parse_hex(const char *p, int length)
     return i;
 }
 NK_API struct nk_color
-nk_rgb_factor(struct nk_color col, const float factor)
+nk_rgb_factor(struct nk_color col, float factor)
 {
     if (factor == 1.0f)
         return col;
@@ -246,7 +246,7 @@ nk_hsva_colorf(float h, float s, float v, float a)
     return out;
 }
 NK_API struct nk_colorf
-nk_hsva_colorfv(float *c)
+nk_hsva_colorfv(const float *c)
 {
     return nk_hsva_colorf(c[0], c[1], c[2], c[3]);
 }
@@ -421,4 +421,3 @@ nk_color_hsv_bv(nk_byte *out, struct nk_color in)
     out[1] = (nk_byte)tmp[1];
     out[2] = (nk_byte)tmp[2];
 }
-

@@ -40,6 +40,7 @@
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
 /*#define INCLUDE_OVERVIEW*/
+/*#define INCLUDE_CONFIGURATOR */
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
@@ -47,6 +48,7 @@
 #define INCLUDE_CALCULATOR
 #define INCLUDE_CANVAS
 #define INCLUDE_OVERVIEW
+  #define INCLUDE_CONFIGURATOR
 #define INCLUDE_NODE_EDITOR
 #endif
 
@@ -61,6 +63,9 @@
 #endif
 #ifdef INCLUDE_OVERVIEW
 #include "../../demo/common/overview.c"
+#endif
+#ifdef INCLUDE_CONFIGURATOR
+#include "../../demo/common/style_configurator.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
 #include "../../demo/common/node_editor.c"
@@ -139,7 +144,18 @@ struct vulkan_demo {
     VkDeviceMemory demo_texture_memory;
 
     VkFence render_fence;
+
+    bool framebuffer_resized;
 };
+
+static void glfw_framebuffer_resize_callback(GLFWwindow* window, int width, int height) {
+    struct vulkan_demo* demo;
+
+    (void)width;
+    (void)height;
+    demo = glfwGetWindowUserPointer(window);
+    demo->framebuffer_resized = true;
+}
 
 static void glfw_error_callback(int e, const char *d) {
     fprintf(stderr, "Error %d: %s\n", e, d);
@@ -299,7 +315,7 @@ bool create_instance(struct vulkan_demo *demo) {
         if (i > 0) {
             printf(", ");
         }
-        printf(enabled_extensions[i]);
+        printf("%s\n", enabled_extensions[i]);
     }
     printf("\n");
     for (i = 0; i < enabled_extension_count; i++) {
@@ -1227,8 +1243,8 @@ bool create_graphics_pipeline(struct vulkan_demo *demo) {
     bool ret = false;
     char *vert_shader_code = NULL;
     char *frag_shader_code = NULL;
-    VkShaderModule vert_shader_module;
-    VkShaderModule frag_shader_module;
+    VkShaderModule vert_shader_module = VK_NULL_HANDLE;
+    VkShaderModule frag_shader_module = VK_NULL_HANDLE;
     FILE *fp;
     size_t file_len;
     VkPipelineShaderStageCreateInfo vert_shader_stage_info;
@@ -1246,8 +1262,9 @@ bool create_graphics_pipeline(struct vulkan_demo *demo) {
     VkPipelineLayoutCreateInfo pipeline_layout_info;
     VkResult result;
     VkGraphicsPipelineCreateInfo pipeline_info;
+    size_t read_result;
 
-    fp = fopen("shaders/demo.vert.spv", "r");
+    fp = fopen("shaders/demo.vert.spv", "rb");
     if (!fp) {
         fprintf(stderr, "Couldn't open shaders/demo.vert.spv\n");
         return false;
@@ -1256,15 +1273,19 @@ bool create_graphics_pipeline(struct vulkan_demo *demo) {
     file_len = ftell(fp);
     vert_shader_code = malloc(file_len);
     fseek(fp, 0, 0);
-    fread(vert_shader_code, 1, file_len, fp);
+    read_result = fread(vert_shader_code, file_len, 1, fp);
     fclose(fp);
+    if (read_result != 1) {
+        fprintf(stderr, "Could not read fragment shader\n");
+        goto cleanup;
+    }
 
     if (!create_shader_module(demo->device, vert_shader_code, file_len,
                               &vert_shader_module)) {
         goto cleanup;
     }
 
-    fp = fopen("shaders/demo.frag.spv", "r");
+    fp = fopen("shaders/demo.frag.spv", "rb");
     if (!fp) {
         fprintf(stderr, "Couldn't open shaders/demo.frag.spv\n");
         return false;
@@ -1273,8 +1294,12 @@ bool create_graphics_pipeline(struct vulkan_demo *demo) {
     file_len = ftell(fp);
     frag_shader_code = malloc(file_len);
     fseek(fp, 0, 0);
-    fread(frag_shader_code, 1, file_len, fp);
+    read_result = fread(frag_shader_code, file_len, 1, fp);
     fclose(fp);
+    if (read_result != 1) {
+        fprintf(stderr, "Could not read fragment shader\n");
+        goto cleanup;
+    }
 
     if (!create_shader_module(demo->device, frag_shader_code, file_len,
                               &frag_shader_module)) {
@@ -1862,6 +1887,8 @@ bool create_vulkan_demo(struct vulkan_demo *demo) {
         return false;
     }
 
+    demo->framebuffer_resized = false;
+
     return true;
 }
 
@@ -1876,6 +1903,9 @@ bool recreate_swap_chain(struct vulkan_demo *demo) {
     update_descriptor_sets(demo);
     nk_glfw3_resize(demo->swap_chain_image_extent.width,
                     demo->swap_chain_image_extent.height);
+
+    demo->framebuffer_resized = false;
+
     return true;
 }
 
@@ -1961,7 +1991,7 @@ bool render(struct vulkan_demo *demo, struct nk_colorf *bg,
 
     result = vkQueuePresentKHR(demo->present_queue, &present_info);
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || demo->framebuffer_resized) {
         recreate_swap_chain(demo);
     } else if (result != VK_SUCCESS) {
         fprintf(stderr, "vkQueuePresentKHR failed: %d\n", result);
@@ -2064,6 +2094,11 @@ int main(void) {
     VkResult result;
     VkSemaphore nk_semaphore;
 
+    #ifdef INCLUDE_CONFIGURATOR
+    static struct nk_color color_table[NK_COLOR_COUNT];
+    memcpy(color_table, nk_default_color_style, sizeof(color_table));
+    #endif
+
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit()) {
         fprintf(stderr, "[GFLW] failed to init!\n");
@@ -2073,6 +2108,8 @@ int main(void) {
     memset(&demo, 0, sizeof(struct vulkan_demo));
     demo.win =
         glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Demo", NULL, NULL);
+    glfwSetWindowUserPointer(demo.win, &demo);
+    glfwSetFramebufferSizeCallback(demo.win, glfw_framebuffer_resize_callback);
 
     if (!create_vulkan_demo(&demo)) {
         fprintf(stderr, "failed to create vulkan demo!\n");
@@ -2168,6 +2205,9 @@ int main(void) {
 #ifdef INCLUDE_OVERVIEW
         overview(ctx);
 #endif
+#ifdef INCLUDE_CONFIGURATOR
+        style_configurator(ctx, color_table);
+#endif
 #ifdef INCLUDE_NODE_EDITOR
         node_editor(ctx);
 #endif
@@ -2192,6 +2232,10 @@ int main(void) {
                                   demo.image_available, NULL, &image_index);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+            recreate_swap_chain(&demo);
+
+            /* If vkAcquireNextImageKHR does not successfully acquire an image,
+             * semaphore and fence are unaffected. */
             continue;
         }
         if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {

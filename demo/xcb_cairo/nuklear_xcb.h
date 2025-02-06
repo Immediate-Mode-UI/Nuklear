@@ -2,7 +2,7 @@
  *
  * Nuklear XCB/Cairo Render Backend - v0.0.2
  * Copyright 2021 Richard Gill
- * 
+ *
  * Grabbed and adapted from https://github.com/griebd/nuklear_xcb
  * Copyright 2017 Adriano Grieb
  *
@@ -87,6 +87,10 @@ NK_API void nk_xcb_resize_cairo_surface(struct nk_xcb_context *xcb_ctx, void *su
 #include <cairo/cairo-xcb.h>
 #include <cairo/cairo-ft.h>
 
+#include <xkbcommon/xkbcommon.h>
+#include <xkbcommon/xkbcommon-x11.h>
+
+
 #if defined _XOPEN_SOURCE && _XOPEN_SOURCE >= 600 || \
     defined _POSIX_C_SOURCE && _POSIX_C_SOURCE >= 200112L
 #include <time.h>
@@ -110,6 +114,23 @@ NK_API void nk_xcb_resize_cairo_surface(struct nk_xcb_context *xcb_ctx, void *su
 #define NK_XCB_TO_CAIRO(x) ((double) x / 255.0)
 #define NK_XCB_DEG_TO_RAD(x) ((double) x * NK_XCB_PI / 180.0)
 
+typedef struct xkb_context xkb_context; 
+typedef struct xkb_keymap xkb_keymap;
+typedef struct xkb_state xkb_state;
+typedef struct xkbcommon_context xkbcommon_context;
+typedef struct nk_xcb_context nk_xcb_context;
+
+struct xkbcommon_context 
+{
+	struct xkb_context *ctx;
+	struct xkb_keymap *keymap;
+	struct xkb_state *state;
+};
+
+NK_INTERN void xkbcommon_free(xkbcommon_context *kbdctx);
+NK_INTERN xkbcommon_context *xkbcommon_init(xcb_connection_t *conn);
+NK_INTERN xkb_keysym_t keycode_to_keysym(nk_xcb_context *ctx, xkb_keycode_t keycode, int pressed);
+
 struct nk_cairo_context {
     cairo_surface_t *surface;
     cairo_t *cr;
@@ -126,7 +147,8 @@ struct nk_xcb_context {
     xcb_connection_t *conn;
     int screennum;
     xcb_window_t window;
-    xcb_key_symbols_t *key_symbols;
+    /* xcb_key_symbols_t *key_symbols; */
+    xkbcommon_context *xkbcommon_ctx;
 #ifdef NK_XCB_MIN_FRAME_TIME
     unsigned long last_render;
 #endif /* NK_XCB_MIN_FRAME_TIME */
@@ -173,6 +195,15 @@ NK_API struct nk_xcb_context *nk_xcb_init(const char *title, int pos_x, int pos_
             pos_x, pos_y, width, height, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
             XCB_COPY_FROM_PARENT, XCB_CW_EVENT_MASK, values);
 
+	xcb_change_property(conn,
+		XCB_PROP_MODE_REPLACE,
+		window,
+		XCB_ATOM_WM_NAME,
+		XCB_ATOM_STRING,
+		8,
+		strlen(title),
+		title);
+
     cookie = xcb_intern_atom(conn, 1, 12, "WM_PROTOCOLS");
     reply = xcb_intern_atom_reply(conn, cookie, 0);
     cookie = xcb_intern_atom(conn, 0, 16, "WM_DELETE_WINDOW");
@@ -183,11 +214,12 @@ NK_API struct nk_xcb_context *nk_xcb_init(const char *title, int pos_x, int pos_
     xcb_map_window(conn, window);
     xcb_flush(conn);
 
-    xcb_ctx = malloc(sizeof (struct nk_xcb_context));
+    xcb_ctx = (struct nk_xcb_context *)malloc(sizeof (struct nk_xcb_context));
     xcb_ctx->conn = conn;
     xcb_ctx->screennum = screenNum;
     xcb_ctx->window = window;
-    xcb_ctx->key_symbols = xcb_key_symbols_alloc(xcb_ctx->conn);
+    /* xcb_ctx->key_symbols = xcb_key_symbols_alloc(xcb_ctx->conn); */
+    xcb_ctx->xkbcommon_ctx = xkbcommon_init(conn);
     xcb_ctx->del_atom = del_atom;
     xcb_ctx->width = width;
     xcb_ctx->height = height;
@@ -197,8 +229,9 @@ NK_API struct nk_xcb_context *nk_xcb_init(const char *title, int pos_x, int pos_
 
 NK_API void nk_xcb_free(struct nk_xcb_context *xcb_ctx)
 {
+	xkbcommon_free(xcb_ctx->xkbcommon_ctx);
     free(xcb_ctx->del_atom);
-    xcb_key_symbols_free(xcb_ctx->key_symbols);
+    /* xcb_key_symbols_free(xcb_ctx->key_symbols); */
     xcb_disconnect(xcb_ctx->conn);
     free(xcb_ctx);
 }
@@ -225,7 +258,9 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
             {
                 int press = (XCB_EVENT_RESPONSE_TYPE(event)) == XCB_KEY_PRESS;
                 xcb_key_press_event_t *kp = (xcb_key_press_event_t *)event;
-                xcb_keysym_t sym = xcb_key_symbols_get_keysym(xcb_ctx->key_symbols, kp->detail, kp->state);
+                /* xcb_keysym_t sym = xcb_key_symbols_get_keysym(xcb_ctx->key_symbols, kp->detail, kp->state);*/
+                xcb_keysym_t sym = keycode_to_keysym(xcb_ctx, kp->detail, press);
+                
                 switch (sym) {
                 case XK_Shift_L:
                 case XK_Shift_R:
@@ -302,7 +337,8 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
                             !xcb_is_misc_function_key(sym) &&
                             !xcb_is_modifier_key(sym)
                             ) {
-                        nk_input_char(nk_ctx, sym);
+                        /* nk_input_char(nk_ctx, sym); */
+                        nk_input_unicode(nk_ctx, sym);
                     }
                     else {
                         printf("state: %x code: %x sum: %x\n", kp->state, kp->detail, sym);
@@ -366,7 +402,7 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
             }
             break;
         case XCB_KEYMAP_NOTIFY:
-            xcb_refresh_keyboard_mapping(xcb_ctx->key_symbols, (xcb_mapping_notify_event_t *)event);
+            /* xcb_refresh_keyboard_mapping(xcb_ctx->key_symbols, (xcb_mapping_notify_event_t *)event); */
             break;
         case XCB_EXPOSE:
         case XCB_REPARENT_NOTIFY:
@@ -378,7 +414,7 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
                 xcb_client_message_event_t *cm = (xcb_client_message_event_t *)event;
                 if (cm->data.data32[0] == xcb_ctx->del_atom->atom)
                 {
-                    return NK_XCB_EVENT_STOP;
+                    events = NK_XCB_EVENT_STOP;
                 }
             }
             break;
@@ -388,7 +424,7 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
         }
         free(event);
     }
-    while ((event = xcb_poll_for_event(xcb_ctx->conn)));
+    while ((events != NK_XCB_EVENT_STOP) && (event = xcb_poll_for_event(xcb_ctx->conn)));
     nk_input_end(nk_ctx);
 
     return events;
@@ -441,7 +477,7 @@ NK_API void nk_xcb_resize_cairo_surface(struct nk_xcb_context *xcb_ctx, void *su
 
 NK_INTERN float nk_cairo_text_width(nk_handle handle, float height __attribute__ ((__unused__)), const char *text, int len)
 {
-    cairo_scaled_font_t *font = handle.ptr;
+    cairo_scaled_font_t *font = (cairo_scaled_font_t *)handle.ptr;
     cairo_glyph_t *glyphs = NULL;
     int num_glyphs;
     cairo_text_extents_t extents;
@@ -455,7 +491,7 @@ NK_INTERN float nk_cairo_text_width(nk_handle handle, float height __attribute__
 
 NK_API struct nk_cairo_context *nk_cairo_init(struct nk_color *bg, const char *font_file, double font_size, void *surf)
 {
-    cairo_surface_t *surface = surf;
+    cairo_surface_t *surface = (cairo_surface_t *)surf;
     struct nk_cairo_context *cairo_ctx;
     cairo_t *cr;
     cairo_font_extents_t extents;
@@ -463,12 +499,12 @@ NK_API struct nk_cairo_context *nk_cairo_init(struct nk_color *bg, const char *f
     struct nk_user_font *font;
 
     cr = cairo_create(surface);
-    font = malloc(sizeof (struct nk_user_font));
+    font = (struct nk_user_font *)malloc(sizeof (struct nk_user_font));
     if (font_file != NULL) {
         FT_Library library;
         FT_Face face;
         cairo_font_face_t *font_face;
-        static const cairo_user_data_key_t key;
+        static const cairo_user_data_key_t key = {0};
 
         FT_Init_FreeType(&library);
         FT_New_Face(library, font_file, 0, &face);
@@ -486,7 +522,7 @@ NK_API struct nk_cairo_context *nk_cairo_init(struct nk_color *bg, const char *f
     font->height = extents.height;
     font->width = nk_cairo_text_width;
 
-    cairo_ctx = malloc(sizeof(struct nk_cairo_context));
+    cairo_ctx = (struct nk_cairo_context *)malloc(sizeof(struct nk_cairo_context));
     cairo_ctx->surface = (cairo_surface_t *)surface;
     cairo_ctx->cr = cr;
     cairo_ctx->font = font;
@@ -767,8 +803,8 @@ NK_API int nk_cairo_render(struct nk_cairo_context *cairo_ctx, struct nk_context
                 cairo_font_extents_t extents;
 
                 cairo_set_source_rgba(cr, NK_TO_CAIRO(t->foreground.r), NK_TO_CAIRO(t->foreground.g), NK_TO_CAIRO(t->foreground.b), NK_TO_CAIRO(t->foreground.a));
-                cairo_scaled_font_extents(t->font->userdata.ptr, &extents);
-                cairo_scaled_font_text_to_glyphs(t->font->userdata.ptr,
+                cairo_scaled_font_extents((cairo_scaled_font_t *)t->font->userdata.ptr, &extents);
+                cairo_scaled_font_text_to_glyphs((cairo_scaled_font_t *)t->font->userdata.ptr,
                         t->x, t->y + extents.ascent, t->string, t->length,
                         &glyphs, &num_glyphs, &clusters, &num_clusters,
                         &cluster_flags);
@@ -790,7 +826,7 @@ NK_API int nk_cairo_render(struct nk_cairo_context *cairo_ctx, struct nk_context
                 int stride = cairo_format_stride_for_width(format, im->img.w);
 
                 if (!im->img.handle.ptr) return nk_false;
-                img_surf = cairo_image_surface_create_for_data(im->img.handle.ptr, format, im->img.w, im->img.h, stride);
+                img_surf = cairo_image_surface_create_for_data((unsigned char *)im->img.handle.ptr, format, im->img.w, im->img.h, stride);
                 if (!img_surf) return nk_false;
                 cairo_save(cr);
 
@@ -802,7 +838,7 @@ NK_API int nk_cairo_render(struct nk_cairo_context *cairo_ctx, struct nk_context
                 /* the coordinates system in cairo is not intuitive, scale, translate,
                  * are applied to source. Refer to
                  * "https://www.cairographics.org/FAQ/#paint_from_a_surface" for details
-                 * 
+                 *
                  * if you set source_origin to (0,0), it would be like source origin
                  * aligned to dest origin, then if you draw a rectangle on (x, y, w, h).
                  * it would clip out the (x, y, w, h) of the source on you dest as well.
@@ -831,6 +867,94 @@ NK_API int nk_cairo_render(struct nk_cairo_context *cairo_ctx, struct nk_context
     cairo_surface_flush(cairo_ctx->surface);
 
     return nk_true;
+}
+
+NK_INTERN xkbcommon_context *xkbcommon_init(xcb_connection_t *conn)
+{
+	xkbcommon_context *kbdctx;
+	int32_t device_id;
+	
+	int ret = xkb_x11_setup_xkb_extension(conn,
+		XKB_X11_MIN_MAJOR_XKB_VERSION,
+		XKB_X11_MIN_MINOR_XKB_VERSION,
+		XKB_X11_SETUP_XKB_EXTENSION_NO_FLAGS,
+		NULL, NULL, NULL, NULL);
+
+    if (ret == 0)
+	{
+		return NULL;
+	}
+	
+	kbdctx = (xkbcommon_context *)malloc(sizeof(xkbcommon_context));
+	kbdctx->ctx = NULL;
+	kbdctx->keymap = NULL;
+	kbdctx->state = NULL;
+	
+	kbdctx->ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    if (!kbdctx->ctx)
+	{
+		xkbcommon_free(kbdctx);
+		return NULL;
+	}
+	
+	device_id = xkb_x11_get_core_keyboard_device_id(conn);
+	if (device_id == -1)
+	{
+		xkbcommon_free(kbdctx);
+		return NULL;
+	}
+	
+	kbdctx->keymap = xkb_x11_keymap_new_from_device(kbdctx->ctx, conn, device_id, XKB_KEYMAP_COMPILE_NO_FLAGS);
+	if (!kbdctx->keymap)
+	{
+		xkbcommon_free(kbdctx);
+		return NULL;
+	}
+
+	kbdctx->state = xkb_x11_state_new_from_device(kbdctx->keymap, conn, device_id);
+	if (!kbdctx->state)
+	{
+		xkbcommon_free(kbdctx);
+		return NULL;
+	}
+
+	return kbdctx;
+}
+
+NK_INTERN void xkbcommon_free(xkbcommon_context *kbdctx)
+{
+	if (kbdctx != NULL)
+	{
+		if (kbdctx->state) xkb_state_unref(kbdctx->state);
+		if (kbdctx->keymap) xkb_keymap_unref(kbdctx->keymap);
+		if (kbdctx->ctx) xkb_context_unref(kbdctx->ctx);	
+
+		kbdctx->ctx = NULL;
+		kbdctx->keymap = NULL;
+		kbdctx->state = NULL;
+		
+		free(kbdctx);
+	}
+}
+
+NK_INTERN xkb_keysym_t keycode_to_keysym(nk_xcb_context *ctx, xkb_keycode_t keycode, int pressed)
+{
+	xkb_keysym_t keysym;
+	xkbcommon_context *kbdctx = ctx->xkbcommon_ctx;
+	
+	if (kbdctx != NULL)
+	{
+		keysym = xkb_state_key_get_one_sym(kbdctx->state, keycode);
+
+		/*xkb_state_component changed = */
+			xkb_state_update_key(kbdctx->state, keycode, pressed ? XKB_KEY_DOWN : XKB_KEY_UP);
+	}
+	else
+	{
+		keysym = 0;
+	}
+	
+	return keysym;
 }
 
 #endif /* NK_XCB_CAIRO_IMPLEMENTATION */

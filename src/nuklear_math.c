@@ -202,7 +202,7 @@ nk_log10(double n)
 NK_LIB float
 nk_roundf(float x)
 {
-    return (x >= 0.0f) ? nk_ifloorf(x + 0.5f) : nk_iceilf(x - 0.5f);
+    return (x >= 0.0f) ? (float)nk_ifloorf(x + 0.5f) : (float)nk_iceilf(x - 0.5f);
 }
 #endif
 NK_API struct nk_rect
