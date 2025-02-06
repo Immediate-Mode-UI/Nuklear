@@ -1269,6 +1269,7 @@ NK_API int nk_sdl_handle_event(SDL_Event *evt) {
             nk_input_key(ctx, NK_KEY_DEL, down);
             break;
         case SDLK_RETURN:
+        case SDLK_KP_ENTER:
             nk_input_key(ctx, NK_KEY_ENTER, down);
             break;
         case SDLK_TAB:
