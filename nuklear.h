@@ -480,6 +480,16 @@ extern "C" {
   #endif
 #endif
 
+#define NK_FMT_CHAR NK_INT8_FMT
+#define NK_FMT_UCHAR NK_UINT8_FMT
+#define NK_FMT_BYTE NK_UINT8_FMT
+#define NK_FMT_SHORT NK_INT16_FMT
+#define NK_FMT_USHORT NK_UINT16_FMT
+#define NK_FMT_INT NK_INT32_FMT
+#define NK_FMT_UINT NK_UINT32_FMT
+#define NK_FMT_SIZE NK_SIZE_TYPE_FMT
+#define NK_FMT_PTR NK_POINTER_TYPE_FMT
+
 typedef NK_INT8 nk_char;
 typedef NK_UINT8 nk_uchar;
 typedef NK_UINT8 nk_byte;
