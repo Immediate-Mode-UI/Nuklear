@@ -444,7 +444,7 @@ overview(struct nk_context *ctx)
                 }
                 /* progressbar combobox */
                 sum = prog_a + prog_b + prog_c + prog_d;
-                sprintf(buffer, "%" NK_SIZE_TYPE_FMT, sum);
+                sprintf(buffer, "%" NK_FMT_SIZE, sum);
                 if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
                     nk_layout_row_dynamic(ctx, 30, 1);
                     nk_progress(ctx, &prog_a, 100, NK_MODIFIABLE);
@@ -456,7 +456,7 @@ overview(struct nk_context *ctx)
 
                 /* checkbox combobox */
                 sum = (size_t)(check_values[0] + check_values[1] + check_values[2] + check_values[3] + check_values[4]);
-                sprintf(buffer, "%" NK_SIZE_TYPE_FMT, sum);
+                sprintf(buffer, "%" NK_FMT_SIZE, sum);
                 if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
                     nk_layout_row_dynamic(ctx, 30, 1);
                     nk_checkbox_label(ctx, weapons[0], &check_values[0]);
