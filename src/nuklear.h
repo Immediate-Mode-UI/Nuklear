@@ -167,8 +167,8 @@ extern "C" {
     #endif
   #endif
   #ifndef NK_INT32_FMT
-    #if defined(_MSC_VER) /* long is 32bit on Windows */
-      #define NK_INT32_FMT "li"
+    #if defined(_MSC_VER)
+      #define NK_INT32_FMT "I32d"
     #else
       #define NK_INT32_FMT "i"
     #endif
@@ -181,8 +181,8 @@ extern "C" {
     #endif
   #endif
   #ifndef NK_UINT32_FMT
-    #if defined(_MSC_VER) /* long is 32bit on Windows */
-      #define NK_UINT32_FMT "lu"
+    #if defined(_MSC_VER)
+      #define NK_UINT32_FMT "I32u"
     #else
       #define NK_UINT32_FMT "u"
     #endif
