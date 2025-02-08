@@ -115,8 +115,9 @@ extern "C" {
  *
  * ===============================================================
  */
- #ifdef NK_INCLUDE_FIXED_TYPES
+#ifdef NK_INCLUDE_FIXED_TYPES
  #include <stdint.h>
+ #include <inttypes.h>
  #define NK_INT8 int8_t
  #define NK_UINT8 uint8_t
  #define NK_INT16 int16_t
@@ -125,18 +126,38 @@ extern "C" {
  #define NK_UINT32 uint32_t
  #define NK_SIZE_TYPE uintptr_t
  #define NK_POINTER_TYPE uintptr_t
+ #define NK_INT8_FMT PRIi8
+ #define NK_UINT8_FMT PRIu8
+ #define NK_INT16_FMT PRIi16
+ #define NK_UINT16_FMT PRIu16
+ #define NK_INT32_FMT PRIi32
+ #define NK_UINT32_FMT PRIu32
+ #define NK_SIZE_TYPE_FMT PRIuPTR
+ #define NK_POINTER_TYPE_FMT PRIuPTR
 #else
   #ifndef NK_INT8
     #define NK_INT8 signed char
   #endif
+  #ifndef NK_INT8_FMT
+    #define NK_INT8_FMT "hhi"
+  #endif
   #ifndef NK_UINT8
     #define NK_UINT8 unsigned char
+  #endif
+  #ifndef NK_UINT8_FMT
+    #define NK_UINT8_FMT "hhu"
   #endif
   #ifndef NK_INT16
     #define NK_INT16 signed short
   #endif
+  #ifndef NK_INT16_FMT
+    #define NK_INT16_FMT "hi"
+  #endif
   #ifndef NK_UINT16
     #define NK_UINT16 unsigned short
+  #endif
+  #ifndef NK_UINT16_FMT
+    #define NK_UINT16_FMT "hu"
   #endif
   #ifndef NK_INT32
     #if defined(_MSC_VER)
@@ -145,11 +166,25 @@ extern "C" {
       #define NK_INT32 signed int
     #endif
   #endif
+  #ifndef NK_INT32_FMT
+    #if defined(_MSC_VER) /* long is 32bit on Windows */
+      #define NK_INT32_FMT "li"
+    #else
+      #define NK_INT32_FMT "i"
+    #endif
+  #endif
   #ifndef NK_UINT32
     #if defined(_MSC_VER)
       #define NK_UINT32 unsigned __int32
     #else
       #define NK_UINT32 unsigned int
+    #endif
+  #endif
+  #ifndef NK_UINT32_FMT
+    #if defined(_MSC_VER) /* long is 32bit on Windows */
+      #define NK_UINT32_FMT "lu"
+    #else
+      #define NK_UINT32_FMT "u"
     #endif
   #endif
   #ifndef NK_SIZE_TYPE
@@ -167,6 +202,21 @@ extern "C" {
       #define NK_SIZE_TYPE unsigned long
     #endif
   #endif
+  #ifndef NK_SIZE_TYPE_FMT
+    #if defined(_WIN64) && defined(_MSC_VER)
+      #define NK_SIZE_TYPE_FMT "I64u"
+    #elif (defined(_WIN32) || defined(WIN32)) && defined(_MSC_VER)
+      #define NK_SIZE_TYPE_FMT "I32u"
+    #elif defined(__GNUC__) || defined(__clang__)
+      #if defined(__x86_64__) || defined(__ppc64__) || defined(__PPC64__) || defined(__aarch64__)
+        #define NK_SIZE_TYPE_FMT "lu"
+      #else
+        #define NK_SIZE_TYPE_FMT "u"
+      #endif
+    #else
+      #define NK_SIZE_TYPE_FMT "lu"
+    #endif
+  #endif
   #ifndef NK_POINTER_TYPE
     #if defined(_WIN64) && defined(_MSC_VER)
       #define NK_POINTER_TYPE unsigned __int64
@@ -180,6 +230,21 @@ extern "C" {
       #endif
     #else
       #define NK_POINTER_TYPE unsigned long
+    #endif
+  #endif
+  #ifndef NK_POINTER_TYPE_FMT
+    #if defined(_WIN64) && defined(_MSC_VER)
+      #define NK_POINTER_TYPE_FMT "I64u"
+    #elif (defined(_WIN32) || defined(WIN32)) && defined(_MSC_VER)
+      #define NK_POINTER_TYPE_FMT "I32u"
+    #elif defined(__GNUC__) || defined(__clang__)
+      #if defined(__x86_64__) || defined(__ppc64__) || defined(__PPC64__) || defined(__aarch64__)
+        #define NK_POINTER_TYPE_FMT "lu"
+      #else
+        #define NK_POINTER_TYPE_FMT "u"
+      #endif
+    #else
+      #define NK_POINTER_TYPE_FMT "lu"
     #endif
   #endif
 #endif
