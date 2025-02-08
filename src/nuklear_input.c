@@ -253,6 +253,12 @@ nk_input_is_mouse_released(const struct nk_input *i, enum nk_buttons id)
     return (!i->mouse.buttons[id].down && i->mouse.buttons[id].clicked);
 }
 NK_API nk_bool
+nk_input_is_mouse_moved(const struct nk_input *i)
+{
+    if (!i) return nk_false;
+    return i->mouse.delta.x != 0 || i->mouse.delta.y != 0;
+}
+NK_API nk_bool
 nk_input_is_key_pressed(const struct nk_input *i, enum nk_keys key)
 {
     const struct nk_key *k;
