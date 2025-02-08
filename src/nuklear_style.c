@@ -204,10 +204,10 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     toggle->text_normal     = table[NK_COLOR_TEXT];
     toggle->text_hover      = table[NK_COLOR_TEXT];
     toggle->text_active     = table[NK_COLOR_TEXT];
-    toggle->padding         = nk_vec2(2.0f, 2.0f);
+    toggle->padding         = nk_vec2(1.0f, 1.0f);
     toggle->touch_padding   = nk_vec2(0,0);
     toggle->border_color    = nk_rgba(0,0,0,0);
-    toggle->border          = 0.0f;
+    toggle->border          = 1.0f;
     toggle->spacing         = 4;
     toggle->color_factor    = 1.0f;
     toggle->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
@@ -225,10 +225,10 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     toggle->text_normal     = table[NK_COLOR_TEXT];
     toggle->text_hover      = table[NK_COLOR_TEXT];
     toggle->text_active     = table[NK_COLOR_TEXT];
-    toggle->padding         = nk_vec2(3.0f, 3.0f);
+    toggle->padding         = nk_vec2(1.0f, 1.0f);
     toggle->touch_padding   = nk_vec2(0,0);
     toggle->border_color    = nk_rgba(0,0,0,0);
-    toggle->border          = 0.0f;
+    toggle->border          = 1.0f;
     toggle->spacing         = 4;
     toggle->color_factor    = 1.0f;
     toggle->disabled_factor = NK_WIDGET_DISABLED_FACTOR;

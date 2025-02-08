@@ -55,13 +55,14 @@ nk_draw_checkbox(struct nk_command_buffer *out,
 
     /* draw background and cursor */
     if (background->type == NK_STYLE_ITEM_COLOR) {
-        nk_fill_rect(out, *selector, 0, nk_rgb_factor(style->border_color, style->color_factor));
-        nk_fill_rect(out, nk_shrink_rect(*selector, style->border), 0, nk_rgb_factor(background->data.color, style->color_factor));
+        nk_stroke_rect(out, *selector, 0, style->border, nk_rgb_factor(background->data.color, style->color_factor));
     } else nk_draw_image(out, *selector, &background->data.image, nk_rgb_factor(nk_white, style->color_factor));
+
+    /* active state */
     if (active) {
         if (cursor->type == NK_STYLE_ITEM_IMAGE)
             nk_draw_image(out, *cursors, &cursor->data.image, nk_rgb_factor(nk_white, style->color_factor));
-        else nk_fill_rect(out, *cursors, 0, cursor->data.color);
+        else nk_fill_rect(out, *cursors, 0, nk_rgb_factor(background->data.color, style->color_factor));
     }
 }
 NK_LIB void
@@ -98,13 +99,14 @@ nk_draw_option(struct nk_command_buffer *out,
 
     /* draw background and cursor */
     if (background->type == NK_STYLE_ITEM_COLOR) {
-        nk_fill_circle(out, *selector, nk_rgb_factor(style->border_color, style->color_factor));
-        nk_fill_circle(out, nk_shrink_rect(*selector, style->border), nk_rgb_factor(background->data.color, style->color_factor));
+        nk_stroke_circle(out, *selector, style->border, nk_rgb_factor(background->data.color, style->color_factor));
     } else nk_draw_image(out, *selector, &background->data.image, nk_rgb_factor(nk_white, style->color_factor));
+
+    /* active state */
     if (active) {
         if (cursor->type == NK_STYLE_ITEM_IMAGE)
             nk_draw_image(out, *cursors, &cursor->data.image, nk_rgb_factor(nk_white, style->color_factor));
-        else nk_fill_circle(out, *cursors, cursor->data.color);
+        else nk_fill_circle(out, *cursors, background->data.color);
     }
 }
 NK_LIB nk_bool
