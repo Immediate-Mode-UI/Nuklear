@@ -23,6 +23,14 @@ jobs:
       run: make -C demo/glfw_opengl4
 #    - name: build glfw_vulkan
 #      run: make -C demo/glfw_vulkan
+    - name: build rgfw_opengl2
+      run: make -C demo/rgfw_opengl2
+    - name: build rgfw_opengl3
+      run: make -C demo/rgfw_opengl3
+    - name: build rgfw_opengl4
+      run: make -C demo/rgfw_opengl4
+    - name: build rgfw_rawfb
+      run: make -C demo/rawfb/rgfw
     - name: build sdl_opengl2
       run: make -C demo/sdl_opengl2
     - name: build sdl_opengl3
