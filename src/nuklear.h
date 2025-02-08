@@ -133,19 +133,19 @@ extern "C" {
  #define NK_INT32_FMT PRIi32
  #define NK_UINT32_FMT PRIu32
  #define NK_SIZE_TYPE_FMT PRIuPTR
- #define NK_POINTER_TYPE_FMT PRIuPTR
+ #define NK_POINTER_TYPE_FMT PRIxPTR
 #else
   #ifndef NK_INT8
     #define NK_INT8 signed char
   #endif
   #ifndef NK_INT8_FMT
-    #define NK_INT8_FMT "hhi"
+    #define NK_INT8_FMT "hi"
   #endif
   #ifndef NK_UINT8
     #define NK_UINT8 unsigned char
   #endif
   #ifndef NK_UINT8_FMT
-    #define NK_UINT8_FMT "hhu"
+    #define NK_UINT8_FMT "hu"
   #endif
   #ifndef NK_INT16
     #define NK_INT16 signed short
@@ -234,17 +234,17 @@ extern "C" {
   #endif
   #ifndef NK_POINTER_TYPE_FMT
     #if defined(_WIN64) && defined(_MSC_VER)
-      #define NK_POINTER_TYPE_FMT "I64u"
+      #define NK_POINTER_TYPE_FMT "I64x"
     #elif (defined(_WIN32) || defined(WIN32)) && defined(_MSC_VER)
-      #define NK_POINTER_TYPE_FMT "I32u"
+      #define NK_POINTER_TYPE_FMT "I32x"
     #elif defined(__GNUC__) || defined(__clang__)
       #if defined(__x86_64__) || defined(__ppc64__) || defined(__PPC64__) || defined(__aarch64__)
-        #define NK_POINTER_TYPE_FMT "lu"
+        #define NK_POINTER_TYPE_FMT "lx"
       #else
-        #define NK_POINTER_TYPE_FMT "u"
+        #define NK_POINTER_TYPE_FMT "x"
       #endif
     #else
-      #define NK_POINTER_TYPE_FMT "lu"
+      #define NK_POINTER_TYPE_FMT "lx"
     #endif
   #endif
 #endif
