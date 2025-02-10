@@ -139,7 +139,7 @@ print("*/")
 # print("\n#ifndef " + macro + "_SINGLE_HEADER");
 # print("#define " + macro + "_SINGLE_HEADER");
 print("#ifndef NK_SINGLE_FILE");
-print("  #define NK_SINGLE_FILE");
+print("#    define NK_SINGLE_FILE");
 print("#endif");
 print("");
 
