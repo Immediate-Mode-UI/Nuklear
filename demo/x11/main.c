@@ -159,8 +159,14 @@ main(void)
     xw.height = (unsigned int)xw.attr.height;
 
     /* GUI */
+#ifdef NK_XLIB_USE_XFT
+    xw.font = nk_xfont_create(xw.dpy, "Arial");
+    ctx = nk_xlib_init(xw.font, xw.dpy, xw.screen, xw.win,
+                       xw.vis, xw.cmap, xw.width, xw.height);
+#else
     xw.font = nk_xfont_create(xw.dpy, "fixed");
     ctx = nk_xlib_init(xw.font, xw.dpy, xw.screen, xw.win, xw.width, xw.height);
+#endif
 
     while (running)
     {
