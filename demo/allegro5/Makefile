@@ -10,7 +10,7 @@ OBJ = $(SRC:.c=.o)
 # TODO: Handle Windows build
 #ifeq ($(OS),Windows_NT)
 #BIN := $(BIN).exe
-#LIBS = -lglfw3 -lopengl32 -lm -lGLU32 -lGLEW32
+#LIBS = -lglfw3 -lm
 #else
 LIBS = -lallegro -lallegro_main -lallegro_image -lallegro_font \
 	-lallegro_ttf -lallegro_primitives -lm

@@ -9,13 +9,13 @@ OBJ = $(SRC:.c=.o)
 
 ifeq ($(OS),Windows_NT)
 BIN := $(BIN).exe
-LIBS = -lglfw3 -lopengl32 -lm -lGLU32
+LIBS = -lglfw3 -lm
 else
 	UNAME_S := $(shell uname -s)
 	ifeq ($(UNAME_S),Darwin)
-		LIBS := -lglfw3 -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo -lm -lGLEW -L/usr/local/lib
+		LIBS := -lglfw3 -framework Cocoa -framework IOKit -framework CoreVideo -lm -L/usr/local/lib
 	else
-		LIBS = -lglfw -lGL -lm -lGLU
+		LIBS = -lglfw -lm
 	endif
 endif
 

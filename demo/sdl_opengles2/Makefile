@@ -7,12 +7,7 @@ CFLAGS += -std=c89 -Wall -Wextra -pedantic -DSDL_DISABLE_IMMINTRIN_H
 SRC = main.c
 OBJ = $(SRC:.c=.o)
 
-UNAME_S := $(shell uname -s)
-ifeq ($(UNAME_S),Darwin)
-	LIBS = -lSDL2 -framework OpenGLES -lm
-else
-	LIBS = -lSDL2 -lGLESv2 -lm
-endif
+LIBS = -lSDL2 -lm
 
 $(BIN): prepare
 	$(CC) $(SRC) $(CFLAGS) -o bin/$(BIN) $(LIBS)

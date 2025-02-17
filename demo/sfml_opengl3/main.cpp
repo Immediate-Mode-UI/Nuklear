@@ -9,6 +9,9 @@
 #include <limits.h>
 #include <time.h>
 
+#define GLAD_GL_IMPLEMENTATION
+#include "../common/glad.h"
+
 #include <SFML/Window.hpp>
 
 #define NK_INCLUDE_FIXED_TYPES
@@ -84,10 +87,9 @@ int main(void)
     sf::Window win(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Demo", sf::Style::Default, settings);
     win.setVerticalSyncEnabled(true);
     win.setActive(true);
-    if(!gladLoadGL()) { /* Load OpenGL extensions */
-        printf("Failed to load OpenGL extensions!\n");
-        return -1;
-    }
+
+    gladLoadGL(sf::Context::getFunction);
+
     glViewport(0, 0, win.getSize().x, win.getSize().y);
 
     /* GUI */

@@ -9,7 +9,9 @@
 #include <limits.h>
 #include <time.h>
 
-#include <GL/glew.h>
+#define GLAD_GL_IMPLEMENTATION
+#include "../common/glad.h"
+
 #include <GLFW/glfw3.h>
 
 #define NK_INCLUDE_FIXED_TYPES
@@ -112,13 +114,10 @@ int main(void)
     glfwMakeContextCurrent(win);
     glfwGetWindowSize(win, &width, &height);
 
+    gladLoadGL((GLADloadfunc)glfwGetProcAddress);
+
     /* OpenGL */
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-    glewExperimental = 1;
-    if (glewInit() != GLEW_OK) {
-        fprintf(stderr, "Failed to setup GLEW\n");
-        exit(1);
-    }
 
     ctx = nk_glfw3_init(win, NK_GLFW3_INSTALL_CALLBACKS, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
     /* Load Fonts: if none of these are loaded a default font will be used  */

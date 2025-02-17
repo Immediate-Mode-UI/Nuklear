@@ -5,16 +5,16 @@ LIBS :=
 ifeq ($(OS),Windows_NT)
 	DEL_BIN = IF EXIST bin DEL /F /Q bin\*
 	BIN := $(BIN).exe
-	LIBS := -lglfw3 -lopengl32 -lm -lGLU32 -lGLEW32
+	LIBS := -lglfw3 -lm
 else
 	DEL_BIN = rm -rf bin
 	UNAME_S := $(shell uname -s)
 	GLFW3 := $(shell pkg-config --libs glfw3)
 	ifeq ($(UNAME_S),Darwin)
-		LIBS := $(GLFW3) -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo -lm -lGLEW -L/usr/local/lib
+		LIBS := $(GLFW3) -framework Cocoa -framework IOKit -framework CoreVideo -lm -L/usr/local/lib
 		CFLAGS += -I/usr/local/include
 	else
-		LIBS := $(GLFW3) -lGL -lm -lGLU -lGLEW
+		LIBS := $(GLFW3) -lm
 	endif
 endif
 

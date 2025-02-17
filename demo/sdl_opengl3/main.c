@@ -9,9 +9,10 @@
 #include <limits.h>
 #include <time.h>
 
-#include <GL/glew.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
+
+#define GLAD_GL_IMPLEMENTATION
+#include "../common/glad.h"
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -113,13 +114,8 @@ int main(int argc, char *argv[])
     glContext = SDL_GL_CreateContext(win);
     SDL_GetWindowSize(win, &win_width, &win_height);
 
-    /* OpenGL setup */
+    gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress);
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-    glewExperimental = 1;
-    if (glewInit() != GLEW_OK) {
-        fprintf(stderr, "Failed to setup GLEW\n");
-        exit(1);
-    }
 
     ctx = nk_sdl_init(win);
     /* Load Fonts: if none of these are loaded a default font will be used  */

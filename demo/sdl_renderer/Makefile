@@ -11,11 +11,11 @@ OBJ = $(SRC:.c=.o)
 ifeq ($(OS),Windows_NT)
 #TODO
 #BIN := $(BIN).exe
-#LIBS = -lmingw32 -lSDL2main -lSDL2 -lopengl32 -lm -lGLU32
+#LIBS = -lmingw32 -lSDL2main -lSDL2 -lm
 else
 	UNAME_S := $(shell uname -s)
 	ifeq ($(UNAME_S),Darwin)
-#TODO		LIBS = -lSDL2 -framework OpenGL -lm
+#TODO		LIBS = -lSDL2 -lm
 	else
 		LIBS += -lm -ldl `sdl2-config --libs`
 	endif

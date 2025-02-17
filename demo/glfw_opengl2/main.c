@@ -9,6 +9,9 @@
 #include <limits.h>
 #include <time.h>
 
+#define GLAD_GL_IMPLEMENTATION
+#include "../common/glad.h"
+
 #include <GLFW/glfw3.h>
 
 #define NK_INCLUDE_FIXED_TYPES
@@ -114,6 +117,8 @@ int main(void)
     win = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Demo", NULL, NULL);
     glfwMakeContextCurrent(win);
     glfwGetWindowSize(win, &width, &height);
+
+    gladLoadGL((GLADloadfunc)glfwGetProcAddress);
 
     /* GUI */
     ctx = nk_glfw3_init(win, NK_GLFW3_INSTALL_CALLBACKS);

@@ -9,6 +9,9 @@
 #include <time.h>
 #include <limits.h>
 
+#define GLAD_GL_IMPLEMENTATION
+#include "../common/glad.h"
+
 #include <GL/glx.h>
 #include <GL/glxext.h>
 
@@ -249,6 +252,8 @@ int main(void)
         if (gl_err || !glContext)
             die("[X11]: Failed to create an OpenGL context\n");
         glXMakeCurrent(win.dpy, win.win, glContext);
+
+        gladLoadGL((GLADloadfunc)glXGetProcAddressARB);
     }
 
     ctx = nk_x11_init(win.dpy, win.win);

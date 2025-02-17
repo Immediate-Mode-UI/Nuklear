@@ -10,7 +10,9 @@
 #include <time.h>
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
+
+#define GLAD_GL_IMPLEMENTATION
+#include "../common/glad.h"
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -109,6 +111,8 @@ main(int argc, char *argv[])
         WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN|SDL_WINDOW_ALLOW_HIGHDPI);
     glContext = SDL_GL_CreateContext(win);
     SDL_GetWindowSize(win, &win_width, &win_height);
+
+    gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress);
 
     /* GUI */
     ctx = nk_sdl_init(win);
