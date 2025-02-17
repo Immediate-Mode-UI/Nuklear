@@ -12,7 +12,7 @@ jobs:
     - name: apt-update
       run: sudo apt-get update -qq
     - name: apt get demo-libs
-      run: sudo apt-get install -y --no-install-recommends liballegro5-dev liballegro-image5-dev liballegro-ttf5-dev libglfw3 libglfw3-dev libglew-dev libsdl2-dev libwayland-dev libx11-dev libxft-dev wayland-protocols
+      run: sudo apt-get install -y --no-install-recommends glslc liballegro5-dev liballegro-image5-dev liballegro-ttf5-dev libcairo2-dev libglfw3 libglfw3-dev libglew-dev libsdl2-dev libvulkan-dev libwayland-dev libx11-dev libxcb1-dev libxcb-util0-dev libxcb-keysyms1-dev libxft-dev libxkbcommon-x11-dev wayland-protocols
     - name: build allegro5
       run: make -C demo/allegro5
     - name: build glfw_opengl2
@@ -21,8 +21,8 @@ jobs:
       run: make -C demo/glfw_opengl3
     - name: build glfw_opengl4
       run: make -C demo/glfw_opengl4
-#    - name: build glfw_vulkan
-#      run: make -C demo/glfw_vulkan
+    - name: build glfw_vulkan
+      run: make -C demo/glfw_vulkan
     - name: build sdl_opengl2
       run: make -C demo/sdl_opengl2
     - name: build sdl_opengl3
@@ -31,6 +31,8 @@ jobs:
       run: make -C demo/sdl_opengles2
     - name: build sdl_renderer
       run: make -C demo/sdl_renderer
+    - name: build sdl_vulkan
+      run: make -C demo/sdl_vulkan
     - name: build sdl_rawfb
       run: make -C demo/rawfb/sdl
     - name: build wayland_rawfb
@@ -45,5 +47,7 @@ jobs:
       run: make -C demo/rawfb/x11
     - name: build x11_xft
       run: make -C demo/x11_xft
+    - name: build xcb_cairo
+      run: make -C demo/xcb_cairo
     - name: build example
       run: make -C example
