@@ -9,7 +9,9 @@
 #include <time.h>
 #include <limits.h>
 
-#include <GL/glew.h>
+#define GLAD_GL_IMPLEMENTATION
+#include "../demo/common/glad.h"
+
 #include <GLFW/glfw3.h>
 
 #define NK_PRIVATE
@@ -425,12 +427,8 @@ int main(int argc, char *argv[])
     glfwGetWindowSize(win, &width, &height);
 
     /* OpenGL */
+    gladLoadGL((GLADloadfunc)glfwGetProcAddress);
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-    glewExperimental = 1;
-    if (glewInit() != GLEW_OK) {
-        fprintf(stderr, "Failed to setup GLEW\n");
-        exit(1);
-    }
 
     /* GUI */
     {device_init(&device);

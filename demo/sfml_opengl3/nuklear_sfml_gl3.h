@@ -13,10 +13,6 @@
 #ifndef NK_SFML_GL3_H_
 #define NK_SFML_GL3_H_
 
-/* Feel free to edit here and include your own extension wrangler */
-#include <glad/glad.h>
-/* I use GLAD but you can use GLEW or what you like */
-
 #include <SFML/Window.hpp>
 
 NK_API struct nk_context*   nk_sfml_init(sf::Window* window);

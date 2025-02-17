@@ -204,9 +204,6 @@ static struct nk_x11 {
   #define NK_SHADER_VERSION "#version 300 es\n"
 #endif
 
-#ifdef NK_XLIB_LOAD_OPENGL_EXTENSIONS
-#include <GL/glx.h>
-
 NK_INTERN double
 nk_get_time(void)
 {
@@ -214,6 +211,9 @@ nk_get_time(void)
     if (gettimeofday(&tv, NULL) < 0) return 0;
     return ((double)tv.tv_sec + (double)tv.tv_usec/1000000);
 }
+
+#ifdef NK_XLIB_LOAD_OPENGL_EXTENSIONS
+#include <GL/glx.h>
 
 NK_INTERN int
 nk_x11_stricmpn(const char *a, const char *b, int len)

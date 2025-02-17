@@ -16,7 +16,6 @@
 #define NK_SDL_GLES2_H_
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_opengles2.h>
 
 
 NK_API struct nk_context*   nk_sdl_init(SDL_Window *win);

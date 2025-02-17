@@ -23,4 +23,4 @@ clang: $(BIN)
 $(BIN):
 	@mkdir -p bin
 	rm -f bin/$(BIN) $(OBJS)
-	$(CC) $(SRC) $(CFLAGS) -o bin/$(BIN) -lX11 -lm -lGL -lm -lGLU
+	$(CC) $(SRC) $(CFLAGS) -o bin/$(BIN) -lX11 -lGL -lm

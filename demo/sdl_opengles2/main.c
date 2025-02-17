@@ -9,6 +9,9 @@
 #include <limits.h>
 #include <time.h>
 
+#define GLAD_GL_IMPLEMENTATION
+#include "../common/glad.h"
+
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_STANDARD_VARARGS
@@ -202,6 +205,8 @@ int main(int argc, char* argv[])
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN|SDL_WINDOW_ALLOW_HIGHDPI);
     glContext = SDL_GL_CreateContext(win);
+
+    gladLoadGLES2((GLADloadfunc)SDL_GL_GetProcAddress);
 
     /* OpenGL setup */
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
