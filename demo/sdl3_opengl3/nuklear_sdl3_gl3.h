@@ -10,8 +10,8 @@
   *
   * ===============================================================
   */
-#ifndef NK_SDL_GL3_H_
-#define NK_SDL_GL3_H_
+#ifndef NK_SDL3_GL3_H_
+#define NK_SDL3_GL3_H_
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_opengl.h>
@@ -241,8 +241,18 @@ nk_sdl_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, max_element_buffer, NULL, GL_STREAM_DRAW);
 
         /* load vertices/elements directly into vertex/element buffer */
-        vertices = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-        elements = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+        vertices =
+            glMapBufferRange(
+                    GL_ARRAY_BUFFER, 
+                    0, 
+                    max_vertex_buffer,
+                    GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+        elements =
+            glMapBufferRange(
+                GL_ELEMENT_ARRAY_BUFFER, 
+                0, 
+                max_element_buffer,
+                GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
         {
             /* fill convert configuration */
             struct nk_convert_config config;

@@ -1,0 +1,27 @@
+# Install
+BIN = demo
+
+# Flags
+CFLAGS += -std=c89 -Wall -Wextra -pedantic -O2
+CFLAGS += $(shell pkg-config sdl3 --cflags)
+LDFLAGS += $(shell pkg-config sdl3 --libs)
+
+SRC = main.c
+OBJ = $(SRC:.c=.o)
+
+ifeq ($(OS),Windows_NT)
+BIN := $(BIN).exe
+LIBS = -lmingw32 -lopengl32 -lm -lGLU32 -lGLEW32
+else
+	UNAME_S := $(shell uname -s)
+	ifeq ($(UNAME_S),Darwin)
+		LIBS = -framework OpenGL -lm -lGLEW
+	else
+		LIBS = -lGL -lm -lGLU -lGLEW
+	endif
+endif
+
+$(BIN):
+	@mkdir -p bin
+	rm -f bin/$(BIN) $(OBJS)
+	$(CC) $(SRC) $(CFLAGS) -o bin/$(BIN) $(LIBS)
