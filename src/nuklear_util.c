@@ -141,7 +141,7 @@ nk_strlen(const char *str)
     return siz;
 }
 NK_API int
-nk_strtoi(const char *str, const char **endptr)
+nk_strtoi(const char *str, char **endptr)
 {
     int neg = 1;
     const char *p = str;
@@ -161,15 +161,15 @@ nk_strtoi(const char *str, const char **endptr)
         p++;
     }
     if (endptr)
-        *endptr = p;
+        *endptr = (char *)p;
     return neg*value;
 }
 NK_API double
-nk_strtod(const char *str, const char **endptr)
+nk_strtod(const char *str, char **endptr)
 {
     double m;
     double neg = 1.0;
-    const char *p = str;
+    char *p = (char *)str;
     double value = 0;
     double number = 0;
 
@@ -222,7 +222,7 @@ nk_strtod(const char *str, const char **endptr)
     return number;
 }
 NK_API float
-nk_strtof(const char *str, const char **endptr)
+nk_strtof(const char *str, char **endptr)
 {
     float float_value;
     double double_value;
@@ -633,7 +633,7 @@ nk_vsnprintf(char *buf, int buf_size, const char *fmt, va_list args)
         /* width argument */
         width = NK_DEFAULT;
         if (*iter >= '1' && *iter <= '9') {
-            const char *end;
+            char *end;
             width = nk_strtoi(iter, &end);
             if (end == iter)
                 width = -1;
@@ -651,7 +651,7 @@ nk_vsnprintf(char *buf, int buf_size, const char *fmt, va_list args)
                 precision = va_arg(args, int);
                 iter++;
             } else {
-                const char *end;
+                char *end;
                 precision = nk_strtoi(iter, &end);
                 if (end == iter)
                     precision = -1;
@@ -984,7 +984,7 @@ nk_murmur_hash(const void * key, int len, nk_hash seed)
 }
 #ifdef NK_INCLUDE_STANDARD_IO
 NK_LIB char*
-nk_file_load(const char* path, nk_size* siz, struct nk_allocator *alloc)
+nk_file_load(const char* path, nk_size* siz, const struct nk_allocator *alloc)
 {
     char *buf;
     FILE *fd;

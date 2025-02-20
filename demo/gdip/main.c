@@ -29,7 +29,8 @@
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
-/*#define INCLUDE_OVERVIEW */
+#define INCLUDE_OVERVIEW
+/*#define INCLUDE_CONFIGURATOR */
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
@@ -37,6 +38,7 @@
   #define INCLUDE_CALCULATOR
   #define INCLUDE_CANVAS
   #define INCLUDE_OVERVIEW
+  #define INCLUDE_CONFIGURATOR
   #define INCLUDE_NODE_EDITOR
 #endif
 
@@ -51,6 +53,9 @@
 #endif
 #ifdef INCLUDE_OVERVIEW
   #include "../../demo/common/overview.c"
+#endif
+#ifdef INCLUDE_CONFIGURATOR
+  #include "../../demo/common/style_configurator.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
   #include "../../demo/common/node_editor.c"
@@ -87,6 +92,11 @@ int main(void)
     int running = 1;
     int needs_refresh = 1;
 
+    #ifdef INCLUDE_CONFIGURATOR
+    static struct nk_color color_table[NK_COLOR_COUNT];
+    memcpy(color_table, nk_default_color_style, sizeof(color_table));
+    #endif
+
     /* Win32 */
     memset(&wc, 0, sizeof(wc));
     wc.style = CS_DBLCLKS;
@@ -108,20 +118,6 @@ int main(void)
     ctx = nk_gdip_init(wnd, WINDOW_WIDTH, WINDOW_HEIGHT);
     font = nk_gdipfont_create("Arial", 12);
     nk_gdip_set_font(font);
-
-    /* style.c */
-    #ifdef INCLUDE_STYLE
-    /* ease regression testing during Nuklear release process; not needed for anything else */
-    #ifdef STYLE_WHITE
-    set_style(ctx, THEME_WHITE);
-    #elif defined(STYLE_RED)
-    set_style(ctx, THEME_RED);
-    #elif defined(STYLE_BLUE)
-    set_style(ctx, THEME_BLUE);
-    #elif defined(STYLE_DARK)
-    set_style(ctx, THEME_DARK);
-    #endif
-    #endif
 
     while (running)
     {
@@ -175,6 +171,9 @@ int main(void)
         #endif
         #ifdef INCLUDE_OVERVIEW
           overview(ctx);
+        #endif
+        #ifdef INCLUDE_CONFIGURATOR
+          style_configurator(ctx, color_table);
         #endif
         #ifdef INCLUDE_NODE_EDITOR
           node_editor(ctx);

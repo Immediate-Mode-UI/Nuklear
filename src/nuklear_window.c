@@ -43,7 +43,7 @@ nk_free_window(struct nk_context *ctx, struct nk_window *win)
     nk_free_page_element(ctx, pe);}
 }
 NK_LIB struct nk_window*
-nk_find_window(struct nk_context *ctx, nk_hash hash, const char *name)
+nk_find_window(const struct nk_context *ctx, nk_hash hash, const char *name)
 {
     struct nk_window *iter;
     iter = ctx->begin;
@@ -180,6 +180,7 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
         NK_MEMCPY(win->name_string, name, name_length);
         win->name_string[name_length] = 0;
         win->popup.win = 0;
+        win->widgets_disabled = nk_false;
         if (!ctx->active)
             ctx->active = win;
     } else {
@@ -351,7 +352,7 @@ nk_window_get_height(const struct nk_context *ctx)
     return ctx->current->bounds.h;
 }
 NK_API struct nk_rect
-nk_window_get_content_region(struct nk_context *ctx)
+nk_window_get_content_region(const struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -359,7 +360,7 @@ nk_window_get_content_region(struct nk_context *ctx)
     return ctx->current->layout->clip;
 }
 NK_API struct nk_vec2
-nk_window_get_content_region_min(struct nk_context *ctx)
+nk_window_get_content_region_min(const struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -368,7 +369,7 @@ nk_window_get_content_region_min(struct nk_context *ctx)
     return nk_vec2(ctx->current->layout->clip.x, ctx->current->layout->clip.y);
 }
 NK_API struct nk_vec2
-nk_window_get_content_region_max(struct nk_context *ctx)
+nk_window_get_content_region_max(const struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -378,7 +379,7 @@ nk_window_get_content_region_max(struct nk_context *ctx)
         ctx->current->layout->clip.y + ctx->current->layout->clip.h);
 }
 NK_API struct nk_vec2
-nk_window_get_content_region_size(struct nk_context *ctx)
+nk_window_get_content_region_size(const struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -387,7 +388,7 @@ nk_window_get_content_region_size(struct nk_context *ctx)
     return nk_vec2(ctx->current->layout->clip.w, ctx->current->layout->clip.h);
 }
 NK_API struct nk_command_buffer*
-nk_window_get_canvas(struct nk_context *ctx)
+nk_window_get_canvas(const struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -396,7 +397,7 @@ nk_window_get_canvas(struct nk_context *ctx)
     return &ctx->current->buffer;
 }
 NK_API struct nk_panel*
-nk_window_get_panel(struct nk_context *ctx)
+nk_window_get_panel(const struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -404,7 +405,7 @@ nk_window_get_panel(struct nk_context *ctx)
     return ctx->current->layout;
 }
 NK_API void
-nk_window_get_scroll(struct nk_context *ctx, nk_uint *offset_x, nk_uint *offset_y)
+nk_window_get_scroll(const struct nk_context *ctx, nk_uint *offset_x, nk_uint *offset_y)
 {
     struct nk_window *win;
     NK_ASSERT(ctx);
@@ -427,7 +428,7 @@ nk_window_has_focus(const struct nk_context *ctx)
     return ctx->current == ctx->active;
 }
 NK_API nk_bool
-nk_window_is_hovered(struct nk_context *ctx)
+nk_window_is_hovered(const struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -442,7 +443,7 @@ nk_window_is_hovered(struct nk_context *ctx)
     }
 }
 NK_API nk_bool
-nk_window_is_any_hovered(struct nk_context *ctx)
+nk_window_is_any_hovered(const struct nk_context *ctx)
 {
     struct nk_window *iter;
     NK_ASSERT(ctx);
@@ -469,14 +470,14 @@ nk_window_is_any_hovered(struct nk_context *ctx)
     return 0;
 }
 NK_API nk_bool
-nk_item_is_any_active(struct nk_context *ctx)
+nk_item_is_any_active(const struct nk_context *ctx)
 {
     int any_hovered = nk_window_is_any_hovered(ctx);
     int any_active = (ctx->last_widget_state & NK_WIDGET_STATE_MODIFIED);
     return any_hovered || any_active;
 }
 NK_API nk_bool
-nk_window_is_collapsed(struct nk_context *ctx, const char *name)
+nk_window_is_collapsed(const struct nk_context *ctx, const char *name)
 {
     int title_len;
     nk_hash title_hash;
@@ -491,7 +492,7 @@ nk_window_is_collapsed(struct nk_context *ctx, const char *name)
     return win->flags & NK_WINDOW_MINIMIZED;
 }
 NK_API nk_bool
-nk_window_is_closed(struct nk_context *ctx, const char *name)
+nk_window_is_closed(const struct nk_context *ctx, const char *name)
 {
     int title_len;
     nk_hash title_hash;
@@ -506,7 +507,7 @@ nk_window_is_closed(struct nk_context *ctx, const char *name)
     return (win->flags & NK_WINDOW_CLOSED);
 }
 NK_API nk_bool
-nk_window_is_hidden(struct nk_context *ctx, const char *name)
+nk_window_is_hidden(const struct nk_context *ctx, const char *name)
 {
     int title_len;
     nk_hash title_hash;
@@ -521,7 +522,7 @@ nk_window_is_hidden(struct nk_context *ctx, const char *name)
     return (win->flags & NK_WINDOW_HIDDEN);
 }
 NK_API nk_bool
-nk_window_is_active(struct nk_context *ctx, const char *name)
+nk_window_is_active(const struct nk_context *ctx, const char *name)
 {
     int title_len;
     nk_hash title_hash;
@@ -536,7 +537,7 @@ nk_window_is_active(struct nk_context *ctx, const char *name)
     return win == ctx->active;
 }
 NK_API struct nk_window*
-nk_window_find(struct nk_context *ctx, const char *name)
+nk_window_find(const struct nk_context *ctx, const char *name)
 {
     int title_len;
     nk_hash title_hash;
@@ -566,7 +567,6 @@ nk_window_set_bounds(struct nk_context *ctx,
     if (!ctx) return;
     win = nk_window_find(ctx, name);
     if (!win) return;
-    NK_ASSERT(ctx->current != win && "You cannot update a currently in procecss window");
     win->bounds = bounds;
 }
 NK_API void
@@ -668,4 +668,13 @@ nk_window_set_focus(struct nk_context *ctx, const char *name)
         nk_insert_window(ctx, win, NK_INSERT_BACK);
     }
     ctx->active = win;
+}
+NK_API void
+nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, nk_bool rounding)
+{
+    struct nk_rect space;
+    enum nk_widget_layout_states state = nk_widget(&space, ctx);
+    struct nk_command_buffer *canvas = nk_window_get_canvas(ctx);
+    if (!state) return;
+    nk_fill_rect(canvas, space, rounding && space.h > 1.5f ? space.h / 2.0f : 0, color);
 }

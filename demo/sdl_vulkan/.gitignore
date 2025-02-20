@@ -1,0 +1,3 @@
+src/nuklearshaders/*.spv
+src/nuklear_sdl_vulkan.h
+shaders/*.spv

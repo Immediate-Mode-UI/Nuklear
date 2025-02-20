@@ -6,6 +6,7 @@ docs/xml
 docs/build
 docs/src
 doc/doc*
+doc/*
 *.tmp
 *.swo
 *.swp
