@@ -7,18 +7,37 @@
  *
  * ===============================================================*/
 #ifdef NK_INCLUDE_DEFAULT_ALLOCATOR
+
+/**
+ * Allows overriding which malloc() function is used in nk_malloc().
+ *
+ * @see nk_malloc()
+ */
+#ifndef NK_MALLOC
+#define NK_MALLOC(userdata, old, size) malloc(size)
+#endif
+
+/**
+ * Allows overriding which free() function is used in nk_mfree().
+ *
+ * @see nk_mfree()
+ */
+#ifndef NK_MFREE
+#define NK_MFREE(userdata, ptr) free(ptr)
+#endif
+
 NK_LIB void*
 nk_malloc(nk_handle unused, void *old,nk_size size)
 {
     NK_UNUSED(unused);
     NK_UNUSED(old);
-    return malloc(size);
+    return NK_MALLOC(unused, old, size);
 }
 NK_LIB void
 nk_mfree(nk_handle unused, void *ptr)
 {
     NK_UNUSED(unused);
-    free(ptr);
+    NK_MFREE(unused, ptr);
 }
 NK_API void
 nk_buffer_init_default(struct nk_buffer *buffer)

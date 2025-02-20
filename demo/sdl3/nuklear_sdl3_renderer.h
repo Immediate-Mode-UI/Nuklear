@@ -8,21 +8,24 @@
  *
  * ===============================================================
  */
+
 #ifndef NK_SDL3_RENDERER_H_
 #define NK_SDL3_RENDERER_H_
-
-NK_API struct nk_context*   nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer);
-NK_API void                 nk_sdl_font_stash_begin(struct nk_font_atlas **atlas);
-NK_API void                 nk_sdl_font_stash_end(void);
-NK_API int                  nk_sdl_handle_event(SDL_Event *evt);
-NK_API void                 nk_sdl_render(enum nk_anti_aliasing);
-NK_API void                 nk_sdl_shutdown(void);
 
 #if SDL_MAJOR_VERSION < 3
 #error "nuklear_sdl3_renderer requires at least SDL 3.0.0"
 #endif
 
-#endif /* NK_SDL_RENDERER_H_ */
+NK_API struct nk_context*   nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer);
+NK_API struct nk_font_atlas* nk_sdl_font_stash_begin(struct nk_context* ctx);
+NK_API void                 nk_sdl_font_stash_end(struct nk_context* ctx);
+NK_API int                  nk_sdl_handle_event(struct nk_context* ctx, SDL_Event *evt);
+NK_API void                 nk_sdl_render(struct nk_context* ctx, enum nk_anti_aliasing);
+NK_API void                 nk_sdl_shutdown(struct nk_context* ctx);
+NK_API nk_handle            nk_sdl_userdata(struct nk_context* ctx);
+NK_API void                 nk_sdl_set_userdata(struct nk_context* ctx, nk_handle userdata);
+
+#endif /* NK_SDL3_RENDERER_H_ */
 
 /*
  * ==============================================================
@@ -32,6 +35,10 @@ NK_API void                 nk_sdl_shutdown(void);
  * ===============================================================
  */
 #ifdef NK_SDL3_RENDERER_IMPLEMENTATION
+
+#ifndef NK_INCLUDE_COMMAND_USERDATA
+#error "nuklear_sdl3 requires the NK_INCLUDE_COMMAND_USERDATA define"
+#endif
 
 struct nk_sdl_device {
     struct nk_buffer cmds;
@@ -45,34 +52,44 @@ struct nk_sdl_vertex {
     float col[4];
 };
 
-static struct nk_sdl {
+struct nk_sdl {
     SDL_Window *win;
     SDL_Renderer *renderer;
     struct nk_sdl_device ogl;
     struct nk_context ctx;
     struct nk_font_atlas atlas;
-} sdl;
+    nk_handle userdata;
+};
+
+NK_API nk_handle nk_sdl_userdata(struct nk_context* ctx) {
+    struct nk_sdl* sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    return sdl->userdata;
+}
+
+NK_API void nk_sdl_set_userdata(struct nk_context* ctx, nk_handle userdata) {
+    struct nk_sdl* sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    sdl->userdata = userdata;
+}
 
 NK_INTERN void
-nk_sdl_device_upload_atlas(const void *image, int width, int height)
+nk_sdl_device_upload_atlas(struct nk_context* ctx, const void *image, int width, int height)
 {
-    struct nk_sdl_device *dev = &sdl.ogl;
-
-    SDL_Texture *g_SDLFontTexture = SDL_CreateTexture(sdl.renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, width, height);
+    struct nk_sdl* sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    SDL_Texture *g_SDLFontTexture = SDL_CreateTexture(sdl->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, width, height);
     if (g_SDLFontTexture == NULL) {
         SDL_Log("error creating texture");
         return;
     }
     SDL_UpdateTexture(g_SDLFontTexture, NULL, image, 4 * width);
     SDL_SetTextureBlendMode(g_SDLFontTexture, SDL_BLENDMODE_BLEND);
-    dev->font_tex = g_SDLFontTexture;
+    sdl->ogl.font_tex = g_SDLFontTexture;
 }
 
 NK_API void
-nk_sdl_render(enum nk_anti_aliasing AA)
+nk_sdl_render(struct nk_context* ctx, enum nk_anti_aliasing AA)
 {
     /* setup global state */
-    struct nk_sdl_device *dev = &sdl.ogl;
+    struct nk_sdl* sdl = (struct nk_sdl*)ctx->userdata.ptr;
 
     {
         SDL_Rect saved_clip;
@@ -99,7 +116,7 @@ nk_sdl_render(enum nk_anti_aliasing AA)
         config.vertex_layout = vertex_layout;
         config.vertex_size = sizeof(struct nk_sdl_vertex);
         config.vertex_alignment = NK_ALIGNOF(struct nk_sdl_vertex);
-        config.tex_null = dev->tex_null;
+        config.tex_null = sdl->ogl.tex_null;
         config.circle_segment_count = 22;
         config.curve_segment_count = 22;
         config.arc_segment_count = 22;
@@ -110,15 +127,15 @@ nk_sdl_render(enum nk_anti_aliasing AA)
         /* convert shapes into vertexes */
         nk_buffer_init_default(&vbuf);
         nk_buffer_init_default(&ebuf);
-        nk_convert(&sdl.ctx, &dev->cmds, &vbuf, &ebuf, &config);
+        nk_convert(&sdl->ctx, &sdl->ogl.cmds, &vbuf, &ebuf, &config);
 
         /* iterate over and execute each draw command */
         offset = (const nk_draw_index*)nk_buffer_memory_const(&ebuf);
 
-        clipping_enabled = SDL_RenderClipEnabled(sdl.renderer);
-        SDL_GetRenderClipRect(sdl.renderer, &saved_clip);
+        clipping_enabled = SDL_RenderClipEnabled(sdl->renderer);
+        SDL_GetRenderClipRect(sdl->renderer, &saved_clip);
 
-        nk_draw_foreach(cmd, &sdl.ctx, &dev->cmds)
+        nk_draw_foreach(cmd, &sdl->ctx, &sdl->ogl.cmds)
         {
             if (!cmd->elem_count) continue;
 
@@ -128,13 +145,13 @@ nk_sdl_render(enum nk_anti_aliasing AA)
                 r.y = cmd->clip_rect.y;
                 r.w = cmd->clip_rect.w;
                 r.h = cmd->clip_rect.h;
-                SDL_SetRenderClipRect(sdl.renderer, &r);
+                SDL_SetRenderClipRect(sdl->renderer, &r);
             }
 
             {
                 const void *vertices = nk_buffer_memory_const(&vbuf);
 
-                SDL_RenderGeometryRaw(sdl.renderer,
+                SDL_RenderGeometryRaw(sdl->renderer,
                         (SDL_Texture *)cmd->texture.ptr,
                         (const float*)((const nk_byte*)vertices + vp), vs,
                         (const SDL_FColor*)((const nk_byte*)vertices + vc), vs,
@@ -146,13 +163,13 @@ nk_sdl_render(enum nk_anti_aliasing AA)
             }
         }
 
-        SDL_SetRenderClipRect(sdl.renderer, &saved_clip);
+        SDL_SetRenderClipRect(sdl->renderer, &saved_clip);
         if (!clipping_enabled) {
-            SDL_SetRenderClipRect(sdl.renderer, NULL);
+            SDL_SetRenderClipRect(sdl->renderer, NULL);
         }
 
-        nk_clear(&sdl.ctx);
-        nk_buffer_clear(&dev->cmds);
+        nk_clear(&sdl->ctx);
+        nk_buffer_clear(&sdl->ogl.cmds);
         nk_buffer_free(&vbuf);
         nk_buffer_free(&ebuf);
     }
@@ -162,7 +179,10 @@ static void
 nk_sdl_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
 {
     const char *text = SDL_GetClipboardText();
-    if (text) nk_textedit_paste(edit, text, nk_strlen(text));
+    if (text) {
+        nk_textedit_paste(edit, text, nk_strlen(text));
+        SDL_free((void  *)text);
+    }
     (void)usr;
 }
 
@@ -172,50 +192,58 @@ nk_sdl_clipboard_copy(nk_handle usr, const char *text, int len)
     char *str = 0;
     (void)usr;
     if (!len) return;
-    str = (char*)malloc((size_t)len+1);
+    str = (char*)SDL_malloc((size_t)len+1);
     if (!str) return;
-    memcpy(str, text, (size_t)len);
+    SDL_memcpy(str, text, (size_t)len);
     str[len] = '\0';
     SDL_SetClipboardText(str);
-    free(str);
+    SDL_free((void*)str);
 }
 
 NK_API struct nk_context*
 nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer)
 {
-    sdl.win = win;
-    sdl.renderer = renderer;
-    nk_init_default(&sdl.ctx, 0);
-    sdl.ctx.clip.copy = nk_sdl_clipboard_copy;
-    sdl.ctx.clip.paste = nk_sdl_clipboard_paste;
-    sdl.ctx.clip.userdata = nk_handle_ptr(0);
-    nk_buffer_init_default(&sdl.ogl.cmds);
-    return &sdl.ctx;
+    struct nk_sdl* sdl = SDL_malloc(sizeof(struct nk_sdl));
+    NK_ASSERT(sdl);
+    sdl->win = win;
+    sdl->renderer = renderer;
+    nk_init_default(&sdl->ctx, 0);
+    sdl->ctx.userdata = nk_handle_ptr((void*)sdl);
+    sdl->ctx.clip.copy = nk_sdl_clipboard_copy;
+    sdl->ctx.clip.paste = nk_sdl_clipboard_paste;
+    sdl->ctx.clip.userdata = nk_handle_ptr(0);
+    nk_buffer_init_default(&sdl->ogl.cmds);
+    return &sdl->ctx;
+}
+
+NK_API struct nk_font_atlas*
+nk_sdl_font_stash_begin(struct nk_context* ctx)
+{
+    struct nk_sdl* sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    nk_font_atlas_init_default(&sdl->atlas);
+    nk_font_atlas_begin(&sdl->atlas);
+    return &sdl->atlas;
 }
 
 NK_API void
-nk_sdl_font_stash_begin(struct nk_font_atlas **atlas)
+nk_sdl_font_stash_end(struct nk_context* ctx)
 {
-    nk_font_atlas_init_default(&sdl.atlas);
-    nk_font_atlas_begin(&sdl.atlas);
-    *atlas = &sdl.atlas;
-}
-
-NK_API void
-nk_sdl_font_stash_end(void)
-{
+    struct nk_sdl* sdl = (struct nk_sdl*)ctx->userdata.ptr;
     const void *image; int w, h;
-    image = nk_font_atlas_bake(&sdl.atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
-    nk_sdl_device_upload_atlas(image, w, h);
-    nk_font_atlas_end(&sdl.atlas, nk_handle_ptr(sdl.ogl.font_tex), &sdl.ogl.tex_null);
-    if (sdl.atlas.default_font)
-        nk_style_set_font(&sdl.ctx, &sdl.atlas.default_font->handle);
+    image = nk_font_atlas_bake(&sdl->atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
+    nk_sdl_device_upload_atlas(&sdl->ctx, image, w, h);
+    nk_font_atlas_end(&sdl->atlas, nk_handle_ptr(sdl->ogl.font_tex), &sdl->ogl.tex_null);
+    if (sdl->atlas.default_font) {
+        nk_style_set_font(&sdl->ctx, &sdl->atlas.default_font->handle);
+    }
 }
 
 NK_API int
-nk_sdl_handle_event(SDL_Event *evt)
+nk_sdl_handle_event(struct nk_context* ctx, SDL_Event *evt)
 {
-    struct nk_context *ctx = &sdl.ctx;
+    if (ctx == NULL) {
+        return 0;
+    }
 
     switch(evt->type)
     {
@@ -289,7 +317,7 @@ nk_sdl_handle_event(SDL_Event *evt)
         case SDL_EVENT_TEXT_INPUT:
             {
                 nk_glyph glyph;
-                memcpy(glyph, evt->text.text, NK_UTF_SIZE);
+                SDL_memcpy(glyph, evt->text.text, NK_UTF_SIZE);
                 nk_input_glyph(ctx, glyph);
             }
             return 1;
@@ -302,15 +330,22 @@ nk_sdl_handle_event(SDL_Event *evt)
 }
 
 NK_API
-void nk_sdl_shutdown(void)
+void nk_sdl_shutdown(struct nk_context* ctx)
 {
-    struct nk_sdl_device *dev = &sdl.ogl;
-    nk_font_atlas_clear(&sdl.atlas);
-    nk_free(&sdl.ctx);
-    SDL_DestroyTexture(dev->font_tex);
-    /* glDeleteTextures(1, &dev->font_tex); */
-    nk_buffer_free(&dev->cmds);
-    memset(&sdl, 0, sizeof(sdl));
+    struct nk_sdl* sdl = (struct nk_sdl*)ctx->userdata.ptr;
+
+    nk_font_atlas_clear(&sdl->atlas);
+    nk_buffer_free(&sdl->ogl.cmds);
+
+    if (sdl->ogl.font_tex != NULL) {
+        SDL_DestroyTexture(sdl->ogl.font_tex);
+        sdl->ogl.font_tex = NULL;
+    }
+
+    ctx->userdata = nk_handle_ptr(0);
+    SDL_free(sdl);
+    nk_free(ctx);
+    /* TODO: Need to call SDL_free(ctx)? */
 }
 
 #endif /* NK_SDL3_RENDERER_IMPLEMENTATION */
