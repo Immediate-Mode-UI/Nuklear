@@ -29,6 +29,13 @@ extern "C" {
 #ifndef NK_SCROLLBAR_HIDING_TIMEOUT
   #define NK_SCROLLBAR_HIDING_TIMEOUT 4.0f
 #endif
+/* for use in inline color code escape */
+#ifndef NK_ESC
+  #define NK_ESC "\033"
+#endif
+#ifndef NK_ESC_CHAR
+  #define NK_ESC_CHAR (NK_ESC[0])
+#endif
 /*
  * ==============================================================
  *
@@ -4635,6 +4642,22 @@ struct nk_command_buffer {
     int use_clipping;
     nk_handle userdata;
     nk_size begin, end, last;
+    struct nk_draw_config *draw_config;
+};
+
+#ifndef NK_INLINE_TAG_STACK_SIZE
+#define NK_INLINE_TAG_STACK_SIZE 16
+#endif
+
+enum nk_inline_tag_color {
+    NK_INLINE_TAG_COLOR,
+    NK_INLINE_TAG_BGCOLOR,
+    NK_INLINE_TAG_MAX
+};
+
+struct nk_inline_tag_stack {
+    nk_size head[NK_INLINE_TAG_MAX];
+    struct nk_color colors[NK_INLINE_TAG_MAX][NK_INLINE_TAG_STACK_SIZE];
 };
 
 /** shape outlines */
@@ -4659,6 +4682,8 @@ NK_API void nk_fill_polygon(struct nk_command_buffer*, const float *points, int 
 NK_API void nk_draw_image(struct nk_command_buffer*, struct nk_rect, const struct nk_image*, struct nk_color);
 NK_API void nk_draw_nine_slice(struct nk_command_buffer*, struct nk_rect, const struct nk_nine_slice*, struct nk_color);
 NK_API void nk_draw_text(struct nk_command_buffer*, struct nk_rect, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color);
+NK_API int nk_draw_coded_text(struct nk_command_buffer*, struct nk_rect*, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color, nk_bool wrap, struct nk_inline_tag_stack *stack);
+NK_API int nk_draw_raw_text(struct nk_command_buffer*, struct nk_rect*, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color, nk_bool wrap, nk_bool wrap_at_sep_only, float *w);
 NK_API void nk_push_scissor(struct nk_command_buffer*, struct nk_rect);
 NK_API void nk_push_custom(struct nk_command_buffer*, struct nk_rect, nk_command_custom_callback, nk_handle usr);
 
@@ -4875,6 +4900,10 @@ NK_API void nk_draw_list_push_userdata(struct nk_draw_list*, nk_handle userdata)
  *                          GUI
  *
  * ===============================================================*/
+#ifndef NK_NAME_COLOR_MAX_NAME
+#define NK_NAME_COLOR_MAX_NAME 32
+#endif
+
 enum nk_style_item_type {
     NK_STYLE_ITEM_COLOR,
     NK_STYLE_ITEM_IMAGE,
@@ -5370,10 +5399,44 @@ struct nk_style {
     struct nk_style_window window;
 };
 
+struct nk_name_color {
+    nk_hash name;
+    char name_string[NK_NAME_COLOR_MAX_NAME];
+    struct nk_color color;
+};
+
+struct nk_map_name_color {
+    struct nk_buffer buffer;
+    int count;
+};
+
+enum nk_color_inline_type {
+    NK_COLOR_INLINE_NONE,
+    NK_COLOR_INLINE_TAG,
+    NK_COLOR_INLINE_ESCAPE_TAG,
+    NK_COLOR_INLINE_MAX
+};
+
 NK_API struct nk_style_item nk_style_item_color(struct nk_color);
 NK_API struct nk_style_item nk_style_item_image(struct nk_image img);
 NK_API struct nk_style_item nk_style_item_nine_slice(struct nk_nine_slice slice);
 NK_API struct nk_style_item nk_style_item_hide(void);
+
+NK_API void nk_name_color_init(struct nk_name_color *, const char *, struct nk_color);
+
+#ifdef NK_INCLUDE_DEFAULT_ALLOCATOR
+NK_API void nk_map_name_color_init_default(struct nk_map_name_color *);
+#endif
+NK_API void nk_map_name_color_init(struct nk_map_name_color *, const struct nk_allocator *, const struct nk_name_color *, int count);
+NK_API void nk_map_name_color_init_colors(struct nk_map_name_color *, const struct nk_allocator *, const char **, struct nk_color *, int count);
+NK_API void nk_map_name_color_init_map_name_color(struct nk_map_name_color *, const struct nk_allocator *, const struct nk_map_name_color *, const char **filter_out, int count);
+NK_API void nk_map_name_color_init_fixed(struct nk_map_name_color *, struct nk_name_color *, int count, int capacity);
+NK_API void nk_map_name_color_free(struct nk_map_name_color *);
+NK_API void nk_map_name_color_push(struct nk_map_name_color *, const struct nk_name_color *, int count);
+NK_API void nk_map_name_color_push_colors(struct nk_map_name_color *, const char **, struct nk_color *, int count);
+NK_API void nk_map_name_color_push_map_name_color(struct nk_map_name_color *, const struct nk_map_name_color *);
+NK_API void nk_map_name_color_delete(struct nk_map_name_color *, const char **, int count);
+NK_API void nk_map_name_color_clear(struct nk_map_name_color *);
 
 /*==============================================================
  *                          PANEL
@@ -5620,6 +5683,10 @@ struct nk_window {
 #define NK_COLOR_STACK_SIZE 32
 #endif
 
+#ifndef NK_COLOR_INLINE_STACK_SIZE
+#define NK_COLOR_INLINE_STACK_SIZE 8
+#endif
+
 #define NK_CONFIGURATION_STACK_TYPE(prefix, name, type)\
     struct nk_config_stack_##name##_element {\
         prefix##_##type *address;\
@@ -5639,6 +5706,9 @@ NK_CONFIGURATION_STACK_TYPE(nk ,flags, flags);
 NK_CONFIGURATION_STACK_TYPE(struct nk, color, color);
 NK_CONFIGURATION_STACK_TYPE(const struct nk, user_font, user_font*);
 NK_CONFIGURATION_STACK_TYPE(enum nk, button_behavior, button_behavior);
+struct nk_config_stack_color_inline_element {
+    enum nk_color_inline_type old_value;
+};
 
 NK_CONFIG_STACK(style_item, NK_STYLE_ITEM_STACK_SIZE);
 NK_CONFIG_STACK(float, NK_FLOAT_STACK_SIZE);
@@ -5647,6 +5717,7 @@ NK_CONFIG_STACK(flags, NK_FLAGS_STACK_SIZE);
 NK_CONFIG_STACK(color, NK_COLOR_STACK_SIZE);
 NK_CONFIG_STACK(user_font, NK_FONT_STACK_SIZE);
 NK_CONFIG_STACK(button_behavior, NK_BUTTON_BEHAVIOR_STACK_SIZE);
+NK_CONFIG_STACK(color_inline, NK_COLOR_INLINE_STACK_SIZE);
 
 struct nk_configuration_stacks {
     struct nk_config_stack_style_item style_items;
@@ -5656,6 +5727,7 @@ struct nk_configuration_stacks {
     struct nk_config_stack_color colors;
     struct nk_config_stack_user_font fonts;
     struct nk_config_stack_button_behavior button_behaviors;
+    struct nk_config_stack_color_inline color_inline;
 };
 
 /*==============================================================
@@ -5701,6 +5773,20 @@ struct nk_pool {
     nk_size cap;
 };
 
+#ifndef NK_MAP_NAME_COLOR_STACK_SIZE
+#define NK_MAP_NAME_COLOR_STACK_SIZE 32
+#endif
+
+struct nk_map_name_color_stack {
+    int head;
+    struct nk_map_name_color *elements[NK_MAP_NAME_COLOR_STACK_SIZE];
+};
+
+struct nk_draw_config {
+    enum nk_color_inline_type color_inline;
+    struct nk_map_name_color_stack map_name_color;
+};
+
 struct nk_context {
 /* public: can be accessed freely */
     struct nk_input input;
@@ -5709,6 +5795,7 @@ struct nk_context {
     struct nk_clipboard clip;
     nk_flags last_widget_state;
     enum nk_button_behavior button_behavior;
+    struct nk_draw_config draw_config;
     struct nk_configuration_stacks stacks;
     float delta_time_seconds;
 
@@ -5742,6 +5829,15 @@ struct nk_context {
     unsigned int seq;
 };
 
+NK_API void nk_draw_set_color_inline(struct nk_context*, enum nk_color_inline_type);
+NK_API nk_bool nk_draw_push_color_inline(struct nk_context*, enum nk_color_inline_type);
+NK_API nk_bool nk_draw_pop_color_inline(struct nk_context*);
+NK_API nk_bool nk_draw_push_map_name_color(struct nk_context*, struct nk_map_name_color *); /* map is held by reference, not copied */
+NK_API struct nk_map_name_color *nk_draw_get_map_name_color(struct nk_context*, int index); /* 0-index for most-recently pushed */
+NK_API int nk_draw_get_map_name_color_index_range(struct nk_context*); /* one past the max index */
+NK_API struct nk_map_name_color *nk_draw_pop_map_name_color(struct nk_context*);
+NK_API struct nk_name_color *nk_draw_get_name_color(struct nk_map_name_color_stack *stack, const char *name, int len);
+
 /* ==============================================================
  *                          MATH
  * =============================================================== */
@@ -5762,6 +5858,8 @@ struct nk_context {
     (y1 < (y0 + h0)) && (y0 < (y1 + h1)))
 #define NK_CONTAINS(x, y, w, h, bx, by, bw, bh)\
     (NK_INBOX(x,y, bx, by, bw, bh) && NK_INBOX(x+w,y+h, bx, by, bw, bh))
+#define NK_CHAR_IS_HEX_DIGIT(c)\
+    (((c) >= '0' && (c) <= '9') || ((c) >= 'a' && (c) <= 'f') || ((c) >= 'A' && (c) <= 'F'))
 
 #define nk_vec2_sub(a, b) nk_vec2((a).x - (b).x, (a).y - (b).y)
 #define nk_vec2_add(a, b) nk_vec2((a).x + (b).x, (a).y + (b).y)
