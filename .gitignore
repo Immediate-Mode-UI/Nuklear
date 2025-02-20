@@ -1,5 +1,4 @@
-demo/*/*.exe
-demo/*/*.obj
+demo/*/*/demo
 demo/*/bin/*
 example/bin/*
 docs/xml
@@ -9,5 +8,9 @@ doc/*
 *.tmp
 *.swo
 *.swp
+*.o
+*.obj
+*.exe
+*.dSYM
 /private/
 build
