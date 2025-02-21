@@ -199,11 +199,9 @@ nk_sdl_clipboard_copy(nk_handle usr, const char *text, int len)
 {
     char *str = 0;
     (void)usr;
-    if (!len) return;
-    str = (char*)SDL_malloc((size_t)len+1);
-    if (!str) return;
-    SDL_memcpy(str, text, (size_t)len);
-    str[len] = '\0';
+    if (len <= 0 || text == NULL) return;
+    str = SDL_strndup(text, (size_t)len);
+    if (str == NULL) return;
     SDL_SetClipboardText(str);
     SDL_free((void*)str);
 }
