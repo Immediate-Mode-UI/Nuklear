@@ -95,9 +95,9 @@ nk_sdl_render(struct nk_context* ctx, enum nk_anti_aliasing AA)
         SDL_Rect saved_clip;
         bool clipping_enabled;
         int vs = sizeof(struct nk_sdl_vertex);
-        size_t vp = offsetof(struct nk_sdl_vertex, position);
-        size_t vt = offsetof(struct nk_sdl_vertex, uv);
-        size_t vc = offsetof(struct nk_sdl_vertex, col);
+        size_t vp = NK_OFFSETOF(struct nk_sdl_vertex, position);
+        size_t vt = NK_OFFSETOF(struct nk_sdl_vertex, uv);
+        size_t vc = NK_OFFSETOF(struct nk_sdl_vertex, col);
 
         /* convert from command queue into draw list and draw to screen */
         const struct nk_draw_command *cmd;

@@ -1,6 +1,4 @@
 /* nuklear - public domain */
-#include <stdio.h>
-#include <stddef.h> /* offsetof TODO: sdl2_renderer didn't need this header? */
 
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL.h>
@@ -184,8 +182,9 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
         static int property = 20;
 
         nk_layout_row_static(ctx, 30, 80, 1);
-        if (nk_button_label(ctx, "button"))
-            printf("button pressed\n");
+        if (nk_button_label(ctx, "button")) {
+            SDL_Log("button pressed");
+        }
         nk_layout_row_dynamic(ctx, 30, 2);
         if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
         if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
