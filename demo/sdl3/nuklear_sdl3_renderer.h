@@ -187,18 +187,18 @@ static void
 nk_sdl_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
 {
     const char *text = SDL_GetClipboardText();
+    NK_UNUSED(usr);
     if (text) {
         nk_textedit_paste(edit, text, nk_strlen(text));
         SDL_free((void  *)text);
     }
-    (void)usr;
 }
 
 static void
 nk_sdl_clipboard_copy(nk_handle usr, const char *text, int len)
 {
     char *str = 0;
-    (void)usr;
+    NK_UNUSED(usr);
     if (len <= 0 || text == NULL) return;
     str = SDL_strndup(text, (size_t)len);
     if (str == NULL) return;

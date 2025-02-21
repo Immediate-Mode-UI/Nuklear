@@ -87,6 +87,8 @@ SDL_AppResult SDL_Fail(){
 }
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
+    NK_UNUSED(argc);
+    NK_UNUSED(argv);
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
         return SDL_Fail();
     }
@@ -238,6 +240,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
 void SDL_AppQuit(void* appstate, SDL_AppResult result) {
     AppContext* app = (AppContext*)appstate;
+    NK_UNUSED(result);
 
     if (app) {
         nk_sdl_shutdown(app->ctx);

@@ -40,4 +40,14 @@ if (NUKLEAR_SDL3_EXAMPLES)
 
     # on Visual Studio, set our app as the default project
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT "nuklear_sdl3_renderer")
+
+    # Enable Warnings
+    if(MSVC)
+        target_compile_options(nuklear_sdl3_renderer PRIVATE /W4 /WX)
+    else()
+        target_compile_options(nuklear_sdl3_renderer PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    endif()
+
+    # SDL3 does not support C89/C90
+    set_property(TARGET nuklear_sdl3_renderer PROPERTY C_STANDARD 99)
 endif()
