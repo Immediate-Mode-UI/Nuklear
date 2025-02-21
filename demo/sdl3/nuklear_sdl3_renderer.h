@@ -62,19 +62,25 @@ struct nk_sdl {
 };
 
 NK_API nk_handle nk_sdl_userdata(struct nk_context* ctx) {
-    struct nk_sdl* sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    struct nk_sdl* sdl;
+    NK_ASSERT(ctx);
+    sdl = (struct nk_sdl*)ctx->userdata.ptr;
     return sdl->userdata;
 }
 
 NK_API void nk_sdl_set_userdata(struct nk_context* ctx, nk_handle userdata) {
-    struct nk_sdl* sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    struct nk_sdl* sdl;
+    NK_ASSERT(ctx);
+    sdl = (struct nk_sdl*)ctx->userdata.ptr;
     sdl->userdata = userdata;
 }
 
 NK_INTERN void
 nk_sdl_device_upload_atlas(struct nk_context* ctx, const void *image, int width, int height)
 {
-    struct nk_sdl* sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    struct nk_sdl* sdl;
+    NK_ASSERT(ctx);
+    sdl = (struct nk_sdl*)ctx->userdata.ptr;
     SDL_Texture *g_SDLFontTexture = SDL_CreateTexture(sdl->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, width, height);
     if (g_SDLFontTexture == NULL) {
         SDL_Log("error creating texture");
@@ -89,7 +95,9 @@ NK_API void
 nk_sdl_render(struct nk_context* ctx, enum nk_anti_aliasing AA)
 {
     /* setup global state */
-    struct nk_sdl* sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    struct nk_sdl* sdl;
+    NK_ASSERT(ctx);
+    sdl = (struct nk_sdl*)ctx->userdata.ptr;
 
     {
         SDL_Rect saved_clip;
@@ -203,7 +211,10 @@ nk_sdl_clipboard_copy(nk_handle usr, const char *text, int len)
 NK_API struct nk_context*
 nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer)
 {
-    struct nk_sdl* sdl = SDL_malloc(sizeof(struct nk_sdl));
+    struct nk_sdl* sdl;
+    NK_ASSERT(win);
+    NK_ASSERT(renderer);
+    sdl = SDL_malloc(sizeof(struct nk_sdl));
     NK_ASSERT(sdl);
     sdl->win = win;
     sdl->renderer = renderer;
@@ -219,7 +230,9 @@ nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer)
 NK_API struct nk_font_atlas*
 nk_sdl_font_stash_begin(struct nk_context* ctx)
 {
-    struct nk_sdl* sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    struct nk_sdl* sdl;
+    NK_ASSERT(ctx);
+    sdl = (struct nk_sdl*)ctx->userdata.ptr;
     nk_font_atlas_init_default(&sdl->atlas);
     nk_font_atlas_begin(&sdl->atlas);
     return &sdl->atlas;
@@ -228,8 +241,10 @@ nk_sdl_font_stash_begin(struct nk_context* ctx)
 NK_API void
 nk_sdl_font_stash_end(struct nk_context* ctx)
 {
-    struct nk_sdl* sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    struct nk_sdl* sdl;
     const void *image; int w, h;
+    NK_ASSERT(ctx);
+    sdl = (struct nk_sdl*)ctx->userdata.ptr;
     image = nk_font_atlas_bake(&sdl->atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
     nk_sdl_device_upload_atlas(&sdl->ctx, image, w, h);
     nk_font_atlas_end(&sdl->atlas, nk_handle_ptr(sdl->ogl.font_tex), &sdl->ogl.tex_null);
@@ -241,9 +256,8 @@ nk_sdl_font_stash_end(struct nk_context* ctx)
 NK_API int
 nk_sdl_handle_event(struct nk_context* ctx, SDL_Event *evt)
 {
-    if (ctx == NULL) {
-        return 0;
-    }
+    NK_ASSERT(ctx);
+    NK_ASSERT(evt);
 
     switch(evt->type)
     {
@@ -332,7 +346,9 @@ nk_sdl_handle_event(struct nk_context* ctx, SDL_Event *evt)
 NK_API
 void nk_sdl_shutdown(struct nk_context* ctx)
 {
-    struct nk_sdl* sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    struct nk_sdl* sdl;
+    NK_ASSERT(ctx);
+    sdl = (struct nk_sdl*)ctx->userdata.ptr;
 
     nk_font_atlas_clear(&sdl->atlas);
     nk_buffer_free(&sdl->ogl.cmds);
