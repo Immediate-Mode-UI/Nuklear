@@ -337,7 +337,7 @@ nk_sdl_handle_event(struct nk_context* ctx, SDL_Event *evt)
             return 1;
 
         case SDL_EVENT_MOUSE_WHEEL:
-            nk_input_scroll(ctx,nk_vec2((float)evt->wheel.x,(float)evt->wheel.y));
+            nk_input_scroll(ctx, nk_vec2(evt->wheel.x, evt->wheel.y));
             return 1;
     }
     return 0;
