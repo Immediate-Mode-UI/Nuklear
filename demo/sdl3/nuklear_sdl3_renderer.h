@@ -345,7 +345,6 @@ void nk_sdl_shutdown(struct nk_context* ctx)
     ctx->userdata = nk_handle_ptr(0);
     SDL_free(sdl);
     nk_free(ctx);
-    /* TODO: Need to call SDL_free(ctx)? */
 }
 
 #endif /* NK_SDL3_RENDERER_IMPLEMENTATION */
