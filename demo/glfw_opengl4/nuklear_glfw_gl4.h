@@ -113,7 +113,6 @@ static struct nk_glfw {
 
 #define NK_SHADER_VERSION "#version 450 core\n"
 #define NK_SHADER_BINDLESS "#extension GL_ARB_bindless_texture : require\n"
-#define NK_SHADER_64BIT "#extension GL_ARB_gpu_shader_int64 : require\n"
 
 NK_API void
 nk_glfw3_device_create()
@@ -123,7 +122,6 @@ nk_glfw3_device_create()
     static const GLchar *vertex_shader =
         NK_SHADER_VERSION
         NK_SHADER_BINDLESS
-        NK_SHADER_64BIT
         "uniform mat4 ProjMtx;\n"
         "in vec2 Position;\n"
         "in vec2 TexCoord;\n"
@@ -138,15 +136,13 @@ nk_glfw3_device_create()
     static const GLchar *fragment_shader =
         NK_SHADER_VERSION
         NK_SHADER_BINDLESS
-        NK_SHADER_64BIT
         "precision mediump float;\n"
-        "uniform uint64_t Texture;\n"
+        "layout(bindless_sampler) uniform sampler2D Texture;\n"
         "in vec2 Frag_UV;\n"
         "in vec4 Frag_Color;\n"
         "out vec4 Out_Color;\n"
         "void main(){\n"
-        "   sampler2D smp = sampler2D(Texture);\n"
-        "   Out_Color = Frag_Color * texture(smp, Frag_UV.st);\n"
+        "   Out_Color = Frag_Color * texture(Texture, Frag_UV.st);\n"
         "}\n";
 
     struct nk_glfw_device *dev = &glfw.ogl;
