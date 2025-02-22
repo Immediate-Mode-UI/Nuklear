@@ -65,6 +65,7 @@ NK_API nk_handle nk_sdl_userdata(struct nk_context* ctx) {
     struct nk_sdl* sdl;
     NK_ASSERT(ctx);
     sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    NK_ASSERT(sdl);
     return sdl->userdata;
 }
 
@@ -72,6 +73,7 @@ NK_API void nk_sdl_set_userdata(struct nk_context* ctx, nk_handle userdata) {
     struct nk_sdl* sdl;
     NK_ASSERT(ctx);
     sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    NK_ASSERT(sdl);
     sdl->userdata = userdata;
 }
 
@@ -81,6 +83,7 @@ nk_sdl_device_upload_atlas(struct nk_context* ctx, const void *image, int width,
     struct nk_sdl* sdl;
     NK_ASSERT(ctx);
     sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    NK_ASSERT(sdl);
     SDL_Texture *g_SDLFontTexture = SDL_CreateTexture(sdl->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, width, height);
     if (g_SDLFontTexture == NULL) {
         SDL_Log("error creating texture");
@@ -98,6 +101,7 @@ nk_sdl_render(struct nk_context* ctx, enum nk_anti_aliasing AA)
     struct nk_sdl* sdl;
     NK_ASSERT(ctx);
     sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    NK_ASSERT(sdl);
 
     {
         SDL_Rect saved_clip;
@@ -231,6 +235,7 @@ nk_sdl_font_stash_begin(struct nk_context* ctx)
     struct nk_sdl* sdl;
     NK_ASSERT(ctx);
     sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    NK_ASSERT(sdl);
     nk_font_atlas_init_default(&sdl->atlas);
     nk_font_atlas_begin(&sdl->atlas);
     return &sdl->atlas;
@@ -243,6 +248,7 @@ nk_sdl_font_stash_end(struct nk_context* ctx)
     const void *image; int w, h;
     NK_ASSERT(ctx);
     sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    NK_ASSERT(sdl);
     image = nk_font_atlas_bake(&sdl->atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
     nk_sdl_device_upload_atlas(&sdl->ctx, image, w, h);
     nk_font_atlas_end(&sdl->atlas, nk_handle_ptr(sdl->ogl.font_tex), &sdl->ogl.tex_null);
@@ -347,6 +353,7 @@ void nk_sdl_shutdown(struct nk_context* ctx)
     struct nk_sdl* sdl;
     NK_ASSERT(ctx);
     sdl = (struct nk_sdl*)ctx->userdata.ptr;
+    NK_ASSERT(sdl);
 
     nk_font_atlas_clear(&sdl->atlas);
     nk_buffer_free(&sdl->ogl.cmds);
