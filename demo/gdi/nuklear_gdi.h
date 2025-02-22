@@ -76,7 +76,7 @@ nk_create_image(struct nk_image * image, const char * frame_buffer, const int wi
         image->region[1] = 0;
         image->region[2] = width;
         image->region[3] = height;
-        
+
         bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
         bi.bmiHeader.biWidth = width;
         bi.bmiHeader.biHeight = height;
@@ -84,9 +84,9 @@ nk_create_image(struct nk_image * image, const char * frame_buffer, const int wi
         bi.bmiHeader.biBitCount = 24;
         bi.bmiHeader.biCompression = BI_RGB;
         bi.bmiHeader.biSizeImage = row * height;
-        
+
         hbm = CreateDIBSection(NULL, &bi, DIB_RGB_COLORS, (void**)&lpBuf, NULL, 0);
-        
+
         pb = lpBuf + row * height;
         for (v = 0; v < height; v++)
         {
@@ -98,7 +98,7 @@ nk_create_image(struct nk_image * image, const char * frame_buffer, const int wi
                 pb[i + 2] = src[2];
                 src += 3;
             }
-        }        
+        }
         SetDIBits(NULL, hbm, 0, height, lpBuf, &bi, DIB_RGB_COLORS);
         image->handle.ptr = hbm;
     }
@@ -122,10 +122,10 @@ nk_gdi_draw_image(short x, short y, unsigned short w, unsigned short h,
     HBITMAP hbm = (HBITMAP)img.handle.ptr;
     HDC     hDCBits;
     BITMAP  bitmap;
-    
+
     if (!gdi.memory_dc || !hbm)
         return;
-    
+
     hDCBits = CreateCompatibleDC(gdi.memory_dc);
     GetObject(hbm, sizeof(BITMAP), (LPSTR)&bitmap);
     SelectObject(hDCBits, hbm);
@@ -192,7 +192,7 @@ nk_gdi_stroke_rect(HDC dc, short x, short y, unsigned short w,
     }
     SelectObject(dc, br);
 
-    if (pen) { 
+    if (pen) {
         SelectObject(dc, GetStockObject(DC_PEN));
         DeleteObject(pen);
     }
@@ -470,7 +470,7 @@ nk_gdi_stroke_circle(HDC dc, short x, short y, unsigned short w,
         pen = CreatePen(PS_SOLID, line_thickness, color);
         SelectObject(dc, pen);
     }
-    
+
     HGDIOBJ br = SelectObject(dc, GetStockObject(NULL_BRUSH));
     SetDCBrushColor(dc, OPAQUE);
     Ellipse(dc, x, y, x + w, y + h);
@@ -524,7 +524,7 @@ nk_gdi_draw_text(HDC dc, short x, short y, unsigned short w, unsigned short h,
     wsize = MultiByteToWideChar(CP_UTF8, 0, text, len, NULL, 0);
     wstr = (WCHAR*)_alloca(wsize * sizeof(wchar_t));
     MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
-    
+
     SetBkMode(dc, TRANSPARENT); /* Transparent Text Background */
     SetBkColor(dc, convert_color(cbg));
     SetTextColor(dc, convert_color(cfg));
@@ -599,14 +599,14 @@ nk_gdi_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
     (void)usr;
     if (IsClipboardFormatAvailable(CF_UNICODETEXT) && OpenClipboard(NULL))
     {
-        HGLOBAL mem = GetClipboardData(CF_UNICODETEXT); 
+        HGLOBAL mem = GetClipboardData(CF_UNICODETEXT);
         if (mem)
         {
             SIZE_T size = GlobalSize(mem) - 1;
             if (size)
             {
                 LPCWSTR wstr = (LPCWSTR)GlobalLock(mem);
-                if (wstr) 
+                if (wstr)
                 {
                     int utf8size = WideCharToMultiByte(CP_UTF8, 0, wstr, (int)(size / sizeof(wchar_t)), NULL, 0, NULL, NULL);
                     if (utf8size)
@@ -619,7 +619,7 @@ nk_gdi_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
                             free(utf8);
                         }
                     }
-                    GlobalUnlock(mem); 
+                    GlobalUnlock(mem);
                 }
             }
         }
@@ -643,9 +643,9 @@ nk_gdi_clipboard_copy(nk_handle usr, const char *text, int len)
                 {
                     MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
                     wstr[wsize] = 0;
-                    GlobalUnlock(mem); 
+                    GlobalUnlock(mem);
 
-                    SetClipboardData(CF_UNICODETEXT, mem); 
+                    SetClipboardData(CF_UNICODETEXT, mem);
                 }
             }
         }
@@ -734,6 +734,7 @@ nk_gdi_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             return 1;
 
         case VK_RETURN:
+        case VK_SEPARATOR:
             nk_input_key(&gdi.ctx, NK_KEY_ENTER, down);
             return 1;
 
@@ -776,7 +777,7 @@ nk_gdi_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case VK_PRIOR:
             nk_input_key(&gdi.ctx, NK_KEY_SCROLL_UP, down);
             return 1;
-                
+
         case 'A':
             if (ctrl) {
                 nk_input_key(&gdi.ctx, NK_KEY_TEXT_SELECT_ALL, down);
