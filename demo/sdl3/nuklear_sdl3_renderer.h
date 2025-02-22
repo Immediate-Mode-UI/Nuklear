@@ -84,6 +84,13 @@ nk_sdl_device_upload_atlas(struct nk_context* ctx, const void *image, int width,
     NK_ASSERT(ctx);
     sdl = (struct nk_sdl*)ctx->userdata.ptr;
     NK_ASSERT(sdl);
+
+    /* Clean up if the texture already exists. */
+    if (sdl->ogl.font_tex != NULL) {
+        SDL_DestroyTexture(sdl->ogl.font_tex);
+        sdl->ogl.font_tex = NULL;
+    }
+
     SDL_Texture *g_SDLFontTexture = SDL_CreateTexture(sdl->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, width, height);
     if (g_SDLFontTexture == NULL) {
         SDL_Log("error creating texture");
@@ -218,6 +225,7 @@ nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer)
     NK_ASSERT(renderer);
     sdl = SDL_malloc(sizeof(struct nk_sdl));
     NK_ASSERT(sdl);
+    nk_zero(sdl, sizeof(struct nk_sdl));
     sdl->win = win;
     sdl->renderer = renderer;
     nk_init_default(&sdl->ctx, 0);
@@ -250,6 +258,7 @@ nk_sdl_font_stash_end(struct nk_context* ctx)
     sdl = (struct nk_sdl*)ctx->userdata.ptr;
     NK_ASSERT(sdl);
     image = nk_font_atlas_bake(&sdl->atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
+    NK_ASSERT(image);
     nk_sdl_device_upload_atlas(&sdl->ctx, image, w, h);
     nk_font_atlas_end(&sdl->atlas, nk_handle_ptr(sdl->ogl.font_tex), &sdl->ogl.tex_null);
     if (sdl->atlas.default_font) {
