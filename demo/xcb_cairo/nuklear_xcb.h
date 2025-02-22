@@ -114,13 +114,13 @@ NK_API void nk_xcb_resize_cairo_surface(struct nk_xcb_context *xcb_ctx, void *su
 #define NK_XCB_TO_CAIRO(x) ((double) x / 255.0)
 #define NK_XCB_DEG_TO_RAD(x) ((double) x * NK_XCB_PI / 180.0)
 
-typedef struct xkb_context xkb_context; 
+typedef struct xkb_context xkb_context;
 typedef struct xkb_keymap xkb_keymap;
 typedef struct xkb_state xkb_state;
 typedef struct xkbcommon_context xkbcommon_context;
 typedef struct nk_xcb_context nk_xcb_context;
 
-struct xkbcommon_context 
+struct xkbcommon_context
 {
 	struct xkb_context *ctx;
 	struct xkb_keymap *keymap;
@@ -260,7 +260,7 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
                 xcb_key_press_event_t *kp = (xcb_key_press_event_t *)event;
                 /* xcb_keysym_t sym = xcb_key_symbols_get_keysym(xcb_ctx->key_symbols, kp->detail, kp->state);*/
                 xcb_keysym_t sym = keycode_to_keysym(xcb_ctx, kp->detail, press);
-                
+
                 switch (sym) {
                 case XK_Shift_L:
                 case XK_Shift_R:
@@ -274,6 +274,7 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
                     nk_input_key(nk_ctx, NK_KEY_DEL, press);
                     break;
                 case XK_Return:
+                case XK_KP_Enter:
                     nk_input_key(nk_ctx, NK_KEY_ENTER, press);
                     break;
                 case XK_Tab:
@@ -873,7 +874,7 @@ NK_INTERN xkbcommon_context *xkbcommon_init(xcb_connection_t *conn)
 {
 	xkbcommon_context *kbdctx;
 	int32_t device_id;
-	
+
 	int ret = xkb_x11_setup_xkb_extension(conn,
 		XKB_X11_MIN_MAJOR_XKB_VERSION,
 		XKB_X11_MIN_MINOR_XKB_VERSION,
@@ -884,26 +885,26 @@ NK_INTERN xkbcommon_context *xkbcommon_init(xcb_connection_t *conn)
 	{
 		return NULL;
 	}
-	
+
 	kbdctx = (xkbcommon_context *)malloc(sizeof(xkbcommon_context));
 	kbdctx->ctx = NULL;
 	kbdctx->keymap = NULL;
 	kbdctx->state = NULL;
-	
+
 	kbdctx->ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!kbdctx->ctx)
 	{
 		xkbcommon_free(kbdctx);
 		return NULL;
 	}
-	
+
 	device_id = xkb_x11_get_core_keyboard_device_id(conn);
 	if (device_id == -1)
 	{
 		xkbcommon_free(kbdctx);
 		return NULL;
 	}
-	
+
 	kbdctx->keymap = xkb_x11_keymap_new_from_device(kbdctx->ctx, conn, device_id, XKB_KEYMAP_COMPILE_NO_FLAGS);
 	if (!kbdctx->keymap)
 	{
@@ -927,12 +928,12 @@ NK_INTERN void xkbcommon_free(xkbcommon_context *kbdctx)
 	{
 		if (kbdctx->state) xkb_state_unref(kbdctx->state);
 		if (kbdctx->keymap) xkb_keymap_unref(kbdctx->keymap);
-		if (kbdctx->ctx) xkb_context_unref(kbdctx->ctx);	
+		if (kbdctx->ctx) xkb_context_unref(kbdctx->ctx);
 
 		kbdctx->ctx = NULL;
 		kbdctx->keymap = NULL;
 		kbdctx->state = NULL;
-		
+
 		free(kbdctx);
 	}
 }
@@ -941,7 +942,7 @@ NK_INTERN xkb_keysym_t keycode_to_keysym(nk_xcb_context *ctx, xkb_keycode_t keyc
 {
 	xkb_keysym_t keysym;
 	xkbcommon_context *kbdctx = ctx->xkbcommon_ctx;
-	
+
 	if (kbdctx != NULL)
 	{
 		keysym = xkb_state_key_get_one_sym(kbdctx->state, keycode);
@@ -953,7 +954,7 @@ NK_INTERN xkb_keysym_t keycode_to_keysym(nk_xcb_context *ctx, xkb_keycode_t keyc
 	{
 		keysym = 0;
 	}
-	
+
 	return keysym;
 }
 
