@@ -417,7 +417,7 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
 
             if (kc == ALLEGRO_KEY_LSHIFT || kc == ALLEGRO_KEY_RSHIFT) nk_input_key(ctx, NK_KEY_SHIFT, down);
             else if (kc == ALLEGRO_KEY_DELETE)    nk_input_key(ctx, NK_KEY_DEL, down);
-            else if (kc == ALLEGRO_KEY_ENTER)     nk_input_key(ctx, NK_KEY_ENTER, down);
+            else if (kc == ALLEGRO_KEY_ENTER || kc == ALLEGRO_KEY_PAD_ENTER)     nk_input_key(ctx, NK_KEY_ENTER, down);
             else if (kc == ALLEGRO_KEY_TAB)       nk_input_key(ctx, NK_KEY_TAB, down);
             else if (kc == ALLEGRO_KEY_LEFT)      nk_input_key(ctx, NK_KEY_LEFT, down);
             else if (kc == ALLEGRO_KEY_RIGHT)     nk_input_key(ctx, NK_KEY_RIGHT, down);
