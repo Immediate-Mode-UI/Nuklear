@@ -48,7 +48,7 @@ struct nk_glfw {
     struct nk_font_atlas atlas;
     struct nk_vec2 fb_scale;
     unsigned int text[NK_GLFW_TEXT_MAX];
-    char key_events[NK_KEY_MAX];
+    nk_char key_events[NK_KEY_MAX];
     int text_len;
     struct nk_vec2 scroll;
     double last_button_click;
@@ -68,6 +68,7 @@ NK_API void                 nk_glfw3_device_destroy(struct nk_glfw* glfw);
 NK_API void                 nk_glfw3_device_create(struct nk_glfw* glfw);
 
 NK_API void                 nk_glfw3_char_callback(GLFWwindow *win, unsigned int codepoint);
+NK_API void                 nk_glfw3_key_callback(GLFWwindow *win, int key, int scancode, int action, int mods);
 NK_API void                 nk_gflw3_scroll_callback(GLFWwindow *win, double xoff, double yoff);
 NK_API void                 nk_glfw3_mouse_button_callback(GLFWwindow *win, int button, int action, int mods);
 
@@ -321,19 +322,18 @@ nk_glfw3_char_callback(GLFWwindow *win, unsigned int codepoint)
         glfw->text[glfw->text_len++] = codepoint;
 }
 
-
 NK_API void
 nk_glfw3_key_callback(GLFWwindow *win, int key, int scancode, int action, int mods)
 {
     struct nk_glfw* glfw = (struct nk_glfw *)glfwGetWindowUserPointer(win);
-    char a = (action == GLFW_RELEASE) ? nk_false : nk_true;
+    /*
+     * convert GLFW_REPEAT to down (technically GLFW_RELEASE, GLFW_PRESS, GLFW_REPEAT are
+     * already 0, 1, 2 but just to be clearer)
+     */
+    nk_char a = (action == GLFW_RELEASE) ? nk_false : nk_true;
 
     NK_UNUSED(scancode);
     NK_UNUSED(mods);
-    /* convert GLFW_REPEAT to down (technically GLFW_RELEASE and GLFW_PRESS are
-    // already 0 and 1 but just to be clearer
-    //int a = (action == GLFW_RELEASE) ? GLFW_RELEASE : GLFW_PRESS;
-    */
 
     switch (key) {
     case GLFW_KEY_DELETE:    glfw->key_events[NK_KEY_DEL] = a; break;
@@ -347,6 +347,15 @@ nk_glfw3_key_callback(GLFWwindow *win, int key, int scancode, int action, int mo
     case GLFW_KEY_PAGE_UP:   glfw->key_events[NK_KEY_SCROLL_UP] = a; break;
     case GLFW_KEY_PAGE_DOWN: glfw->key_events[NK_KEY_SCROLL_DOWN] = a; break;
 
+    case GLFW_KEY_C:         glfw->key_events[NK_KEY_COPY] = a; break;
+    case GLFW_KEY_V:         glfw->key_events[NK_KEY_PASTE] = a; break;
+    case GLFW_KEY_X:         glfw->key_events[NK_KEY_CUT] = a; break;
+    case GLFW_KEY_Z:         glfw.key_events[NK_KEY_TEXT_UNDO] = a; break;
+    case GLFW_KEY_R:         glfw.key_events[NK_KEY_TEXT_REDO] = a; break;
+    case GLFW_KEY_B:         glfw->key_events[NK_KEY_TEXT_LINE_START] = a; break;
+    case GLFW_KEY_E:         glfw->key_events[NK_KEY_TEXT_LINE_END] = a; break;
+    case GLFW_KEY_A:         glfw->key_events[NK_KEY_TEXT_SELECT_ALL] = a; break;
+
     case GLFW_KEY_ENTER:
     case GLFW_KEY_KP_ENTER:
         glfw->key_events[NK_KEY_ENTER] = a;
@@ -354,31 +363,6 @@ nk_glfw3_key_callback(GLFWwindow *win, int key, int scancode, int action, int mo
     default:
         ;
     }
-
-/*
-    // If I think repeats are really likely to happen multiple times per frame
-    if (action == GLFW_REPEAT) {
-        switch (key) {
-        case GLFW_KEY_DEL:       glfw->key_clicks[NK_KEY_DEL]++; break;
-        case GLFW_KEY_TAB:       glfw->key_clicks[NK_KEY_TAB]++; break;
-        case GLFW_KEY_BACKSPACE: glfw->key_clicks[NK_KEY_BACKSPACE]++; break;
-        case GLFW_KEY_UP:        glfw->key_clicks[NK_KEY_UP]++; break;
-        case GLFW_KEY_DOWN:      glfw->key_clicks[NK_KEY_DOWN]++; break;
-        case GLFW_KEY_LEFT:      glfw->key_clicks[NK_KEY_LEFT]++; break;
-        case GLFW_KEY_RIGHT:     glfw->key_clicks[NK_KEY_RIGHT]++; break;
-
-        case GLFW_KEY_PAGE_UP:   glfw->key_clicks[NK_KEY_SCROLL_UP]++; break;
-        case GLFW_KEY_PAGE_DOWN: glfw->key_clicks[NK_KEY_SCROLL_DOWN]++; break;
-
-        case GLFW_KEY_ENTER:
-        case GLFW_KEY_KP_ENTER:
-            glfw->key_clicks[NK_KEY_DEL]++;
-            break;
-        default:
-            ;
-        }
-    }
-*/
 }
 
 NK_API void
@@ -483,7 +467,7 @@ nk_glfw3_new_frame(struct nk_glfw* glfw)
     double x, y;
     struct nk_context *ctx = &glfw->ctx;
     struct GLFWwindow *win = glfw->win;
-    char* k_state = glfw->key_events;
+    nk_char* k_state = glfw->key_events;
 
     /* update the timer */
     float delta_time_now = (float)glfwGetTime();
@@ -527,14 +511,14 @@ nk_glfw3_new_frame(struct nk_glfw* glfw)
     if (glfwGetKey(win, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ||
         glfwGetKey(win, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
         /* Note these are physical keys and won't respect any layouts/key mapping */
-        nk_input_key(ctx, NK_KEY_COPY, glfwGetKey(win, GLFW_KEY_C) == GLFW_PRESS);
-        nk_input_key(ctx, NK_KEY_PASTE, glfwGetKey(win, GLFW_KEY_V) == GLFW_PRESS);
-        nk_input_key(ctx, NK_KEY_CUT, glfwGetKey(win, GLFW_KEY_X) == GLFW_PRESS);
-        nk_input_key(ctx, NK_KEY_TEXT_UNDO, glfwGetKey(win, GLFW_KEY_Z) == GLFW_PRESS);
-        nk_input_key(ctx, NK_KEY_TEXT_REDO, glfwGetKey(win, GLFW_KEY_R) == GLFW_PRESS);
-        nk_input_key(ctx, NK_KEY_TEXT_LINE_START, glfwGetKey(win, GLFW_KEY_B) == GLFW_PRESS);
-        nk_input_key(ctx, NK_KEY_TEXT_LINE_END, glfwGetKey(win, GLFW_KEY_E) == GLFW_PRESS);
-        nk_input_key(ctx, NK_KEY_TEXT_SELECT_ALL, glfwGetKey(win, GLFW_KEY_A) == GLFW_PRESS);
+        if (k_state[NK_KEY_COPY] >= 0) nk_input_key(ctx, NK_KEY_COPY, k_state[NK_KEY_COPY]);
+        if (k_state[NK_KEY_PASTE] >= 0) nk_input_key(ctx, NK_KEY_PASTE, k_state[NK_KEY_PASTE]);
+        if (k_state[NK_KEY_CUT] >= 0) nk_input_key(ctx, NK_KEY_CUT, k_state[NK_KEY_CUT]);
+        if (k_state[NK_KEY_TEXT_UNDO] >= 0) nk_input_key(ctx, NK_KEY_TEXT_UNDO, k_state[NK_KEY_TEXT_UNDO]);
+        if (k_state[NK_KEY_TEXT_REDO] >= 0) nk_input_key(ctx, NK_KEY_TEXT_REDO, k_state[NK_KEY_TEXT_REDO]);
+        if (k_state[NK_KEY_TEXT_LINE_START] >= 0) nk_input_key(ctx, NK_KEY_TEXT_LINE_START, k_state[NK_KEY_TEXT_LINE_START]);
+        if (k_state[NK_KEY_TEXT_LINE_END] >= 0) nk_input_key(ctx, NK_KEY_TEXT_LINE_END, k_state[NK_KEY_TEXT_LINE_END]);
+        if (k_state[NK_KEY_TEXT_SELECT_ALL] >= 0) nk_input_key(ctx, NK_KEY_TEXT_SELECT_ALL, k_state[NK_KEY_TEXT_SELECT_ALL]);
         if (k_state[NK_KEY_LEFT] >= 0) nk_input_key(ctx, NK_KEY_TEXT_WORD_LEFT, k_state[NK_KEY_LEFT]);
         if (k_state[NK_KEY_RIGHT] >= 0) nk_input_key(ctx, NK_KEY_TEXT_WORD_RIGHT, k_state[NK_KEY_RIGHT]);
     } else {
@@ -561,7 +545,7 @@ nk_glfw3_new_frame(struct nk_glfw* glfw)
     nk_input_scroll(ctx, glfw->scroll);
     nk_input_end(&glfw->ctx);
 
-    /* clear after nk_input_end *(-1 since we're doing up/down boolean, 0 if I do clicks */
+    /* clear after nk_input_end (-1 since we're doing up/down boolean) */
     memset(glfw->key_events, -1, sizeof(glfw->key_events));
 
     glfw->text_len = 0;
