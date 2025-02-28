@@ -1081,12 +1081,10 @@ nk_text_calculate_text_bounds(const struct nk_user_font *font,
     if (!begin || byte_len <= 0 || !font)
         return nk_vec2(0,row_height);
 
-    glyph_len = nk_utf_decode(begin, &unicode, byte_len);
-    if (!glyph_len) return text_size;
-    glyph_width = font->width(font->userdata, font->height, begin, glyph_len);
-
     *glyphs = 0;
-    while ((text_len < byte_len) && glyph_len) {
+    do {
+        glyph_len = nk_utf_decode(begin + text_len, &unicode, byte_len-text_len);
+
         if (unicode == '\n') {
             text_size.x = NK_MAX(text_size.x, line_width);
             text_size.y += line_height;
@@ -1107,13 +1105,23 @@ nk_text_calculate_text_bounds(const struct nk_user_font *font,
             continue;
         }
 
-        *glyphs = *glyphs + 1;
+        if (NK_UTF_IS_INSTRUCTION(unicode)) {
+            int payload_size = nk_utf_instruction_payload_size(unicode);
+
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+            glyph_width = 0;
+        }else
+            glyph_width = font->width(font->userdata, font->height, begin+text_len, glyph_len);
+
+
+        (*glyphs)++;
         text_len += glyph_len;
         line_width += (float)glyph_width;
-        glyph_len = nk_utf_decode(begin + text_len, &unicode, byte_len-text_len);
-        glyph_width = font->width(font->userdata, font->height, begin+text_len, glyph_len);
         continue;
-    }
+    } while (text_len < byte_len && glyph_len);
 
     if (text_size.x < line_width)
         text_size.x = line_width;
@@ -1125,4 +1133,3 @@ nk_text_calculate_text_bounds(const struct nk_user_font *font,
         *remaining = begin+text_len;
     return text_size;
 }
-
