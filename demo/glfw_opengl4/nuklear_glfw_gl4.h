@@ -35,10 +35,8 @@ NK_API void                 nk_glfw3_char_callback(GLFWwindow *win, unsigned int
 NK_API void                 nk_gflw3_scroll_callback(GLFWwindow *win, double xoff, double yoff);
 NK_API void                 nk_glfw3_mouse_button_callback(GLFWwindow *win, int button, int action, int mods);
 
-NK_API GLuint               nk_glfw3_get_tex_ogl_id(int tex_index);
-NK_API GLuint64             nk_glfw3_get_tex_ogl_handle(int tex_index);
-NK_API int                  nk_glfw3_create_texture(const void* image, int width, int height);
-NK_API void                 nk_glfw3_destroy_texture(int tex_index);
+NK_API unsigned int                  nk_glfw3_create_texture(const void* image, int width, int height);
+NK_API void                 nk_glfw3_destroy_texture(unsigned int tex_index);
 
 #endif
 /*
@@ -62,9 +60,6 @@ NK_API void                 nk_glfw3_destroy_texture(int tex_index);
 #endif
 #ifndef NK_GLFW_DOUBLE_CLICK_HI
 #define NK_GLFW_DOUBLE_CLICK_HI 0.2
-#endif
-#ifndef NK_GLFW_MAX_TEXTURES
-#define NK_GLFW_MAX_TEXTURES 256
 #endif
 
 struct nk_glfw_vertex {
@@ -91,8 +86,6 @@ struct nk_glfw_device {
     struct nk_glfw_vertex *vert_buffer;
     int *elem_buffer;
     GLsync buffer_sync;
-    GLuint tex_ids[NK_GLFW_MAX_TEXTURES];
-    GLuint64 tex_handles[NK_GLFW_MAX_TEXTURES];
 };
 
 static struct nk_glfw {
@@ -150,12 +143,10 @@ nk_glfw3_device_create()
     dev->prog = glCreateProgram();
     dev->vert_shdr = glCreateShader(GL_VERTEX_SHADER);
     dev->frag_shdr = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(dev->vert_shdr, 1, &vertex_shader, 0);
-    glShaderSource(dev->frag_shdr, 1, &fragment_shader, 0);
-    glCompileShader(dev->vert_shdr);
-    glCompileShader(dev->frag_shdr);
-    glGetShaderiv(dev->vert_shdr, GL_COMPILE_STATUS, &status);
 
+    glShaderSource(dev->vert_shdr, 1, &vertex_shader, 0);
+    glCompileShader(dev->vert_shdr);
+    glGetShaderiv(dev->vert_shdr, GL_COMPILE_STATUS, &status);
     glGetShaderiv(dev->vert_shdr, GL_INFO_LOG_LENGTH, &len);
     if (len > 1) {
         char *log = (char*)calloc((size_t)len, sizeof(char));
@@ -163,7 +154,11 @@ nk_glfw3_device_create()
         fprintf(stdout, "[GL]: failed to compile shader: %s", log);
         free(log);
     }
+    assert(status == GL_TRUE);
 
+    glShaderSource(dev->frag_shdr, 1, &fragment_shader, 0);
+    glCompileShader(dev->frag_shdr);
+    glGetShaderiv(dev->frag_shdr, GL_COMPILE_STATUS, &status);
     glGetShaderiv(dev->frag_shdr, GL_INFO_LOG_LENGTH, &len);
     if (len > 1) {
         char *log = (char*)calloc((size_t)len, sizeof(char));
@@ -171,10 +166,8 @@ nk_glfw3_device_create()
         fprintf(stdout, "[GL]: failed to compile shader: %s", log);
         free(log);
     }
+    assert(status == GL_TRUE);
 
-    assert(status == GL_TRUE);
-    glGetShaderiv(dev->frag_shdr, GL_COMPILE_STATUS, &status);
-    assert(status == GL_TRUE);
     glAttachShader(dev->prog, dev->vert_shdr);
     glAttachShader(dev->prog, dev->frag_shdr);
     glLinkProgram(dev->prog);
@@ -227,51 +220,16 @@ nk_glfw3_device_create()
     dev->vert_buffer = (struct nk_glfw_vertex*) glMapNamedBufferRange(dev->vbo, 0, vb_size, flags);
     dev->elem_buffer = (int*) glMapNamedBufferRange(dev->ebo, 0, eb_size, flags);}
 
-    memset(dev->tex_ids, 0, sizeof(dev->tex_ids));
-    memset(dev->tex_handles, 0, sizeof(dev->tex_handles));
 }
 
-NK_INTERN int
-nk_glfw3_get_available_tex_index()
-{
-    int i = 0;
-    struct nk_glfw_device *dev = &glfw.ogl;
-    for (i = 0; i < NK_GLFW_MAX_TEXTURES; i++) {
-        if (dev->tex_ids[i] == 0)
-            return i;
-    } assert(0); /* max textures reached */
-    return -1;
-}
-
-NK_API GLuint
-nk_glfw3_get_tex_ogl_id(int tex_index)
-{
-    struct nk_glfw_device *dev = &glfw.ogl;
-    assert(tex_index >= 0 && tex_index < NK_GLFW_MAX_TEXTURES);
-    return dev->tex_ids[tex_index];
-}
-
-NK_API GLuint64
-nk_glfw3_get_tex_ogl_handle(int tex_index)
-{
-    struct nk_glfw_device *dev = &glfw.ogl;
-    assert(tex_index >= 0 && tex_index < NK_GLFW_MAX_TEXTURES);
-    return dev->tex_handles[tex_index];
-}
-
-NK_API int
+NK_API unsigned int
 nk_glfw3_create_texture(const void* image, int width, int height)
 {
     GLuint id;
     GLsizei w = (GLsizei)width;
     GLsizei h = (GLsizei)height;
-    struct nk_glfw_device *dev = &glfw.ogl;
-    int tex_index = nk_glfw3_get_available_tex_index();
-    if (tex_index < 0)
-        return -1;
 
     glCreateTextures(GL_TEXTURE_2D, 1, &id);
-    dev->tex_ids[tex_index] = id;
 
     glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -283,23 +241,15 @@ nk_glfw3_create_texture(const void* image, int width, int height)
     else glClearTexImage(id, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
     {GLuint64 handle = glGetTextureHandleARB(id);
-    glMakeTextureHandleResidentARB(handle);
-    dev->tex_handles[tex_index] = handle;
-    return tex_index;}
+    glMakeTextureHandleResidentARB(handle);}
+    return id;
 }
 
 NK_API void
-nk_glfw3_destroy_texture(int tex_index)
+nk_glfw3_destroy_texture(unsigned int id)
 {
-    struct nk_glfw_device *dev = &glfw.ogl;
-    GLuint id = nk_glfw3_get_tex_ogl_id(tex_index);
-    if (id == 0) return;
-
-    {GLuint64 handle = nk_glfw3_get_tex_ogl_handle(tex_index);
-    glMakeTextureHandleNonResidentARB(handle);
+    glMakeTextureHandleNonResidentARB(glGetTextureHandleARB(id));
     glDeleteTextures(1, &id);
-    dev->tex_ids[tex_index] = 0;
-    dev->tex_handles[tex_index] = 0;}
 }
 
 NK_INTERN void
@@ -312,7 +262,6 @@ nk_glfw3_device_upload_atlas(const void *image, int width, int height)
 NK_API void
 nk_glfw3_device_destroy(void)
 {
-    int i = 0;
     struct nk_glfw_device *dev = &glfw.ogl;
     glDetachShader(dev->prog, dev->vert_shdr);
     glDetachShader(dev->prog, dev->frag_shdr);
@@ -321,8 +270,6 @@ nk_glfw3_device_destroy(void)
     glDeleteProgram(dev->prog);
     nk_glfw3_destroy_texture(dev->font_tex_index);
 
-    for (i = 0; i < NK_GLFW_MAX_TEXTURES; i++)
-        nk_glfw3_destroy_texture(i);
     glUnmapNamedBuffer(dev->vbo);
     glUnmapNamedBuffer(dev->ebo);
     glDeleteBuffers(1, &dev->vbo);
@@ -424,12 +371,10 @@ nk_glfw3_render(enum nk_anti_aliasing AA)
         /* iterate over and execute each draw command */
         nk_draw_foreach(cmd, &glfw.ctx, &dev->cmds)
         {
-            int tex_index;
             GLuint64 tex_handle;
             if (!cmd->elem_count) continue;
 
-            tex_index = cmd->texture.id;
-            tex_handle = nk_glfw3_get_tex_ogl_handle(tex_index);
+            tex_handle = glGetTextureHandleARB((unsigned int)cmd->texture.id);
 
             /* tex handle must be made resident in each context that uses it */
             if (!glIsTextureHandleResidentARB(tex_handle))
