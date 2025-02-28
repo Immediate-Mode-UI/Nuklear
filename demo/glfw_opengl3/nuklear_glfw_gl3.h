@@ -350,8 +350,8 @@ nk_glfw3_key_callback(GLFWwindow *win, int key, int scancode, int action, int mo
     case GLFW_KEY_C:         glfw->key_events[NK_KEY_COPY] = a; break;
     case GLFW_KEY_V:         glfw->key_events[NK_KEY_PASTE] = a; break;
     case GLFW_KEY_X:         glfw->key_events[NK_KEY_CUT] = a; break;
-    case GLFW_KEY_Z:         glfw.key_events[NK_KEY_TEXT_UNDO] = a; break;
-    case GLFW_KEY_R:         glfw.key_events[NK_KEY_TEXT_REDO] = a; break;
+    case GLFW_KEY_Z:         glfw->key_events[NK_KEY_TEXT_UNDO] = a; break;
+    case GLFW_KEY_R:         glfw->key_events[NK_KEY_TEXT_REDO] = a; break;
     case GLFW_KEY_B:         glfw->key_events[NK_KEY_TEXT_LINE_START] = a; break;
     case GLFW_KEY_E:         glfw->key_events[NK_KEY_TEXT_LINE_END] = a; break;
     case GLFW_KEY_A:         glfw->key_events[NK_KEY_TEXT_SELECT_ALL] = a; break;
