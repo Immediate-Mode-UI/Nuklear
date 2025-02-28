@@ -102,7 +102,10 @@ nk_free(struct nk_context *ctx)
     ctx->begin = 0;
     ctx->end = 0;
     ctx->active = 0;
-    ctx->current = 0;
+    if (ctx->current) {
+        ctx->current->buffer.draw_config = 0;
+        ctx->current = 0;
+    }
     ctx->freelist = 0;
     ctx->count = 0;
 }
