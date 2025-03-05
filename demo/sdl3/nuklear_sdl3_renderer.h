@@ -280,7 +280,7 @@ nk_sdl_handle_event(struct nk_context* ctx, SDL_Event *evt)
         case SDL_EVENT_KEY_DOWN:
             {
                 int down = evt->type == SDL_EVENT_KEY_DOWN;
-                int ctrl_down = SDL_GetModState() & (SDL_KMOD_LCTRL | SDL_KMOD_RCTRL);
+                int ctrl_down = evt->key.mod & (SDL_KMOD_LCTRL | SDL_KMOD_RCTRL);
 
                 switch(evt->key.key)
                 {
