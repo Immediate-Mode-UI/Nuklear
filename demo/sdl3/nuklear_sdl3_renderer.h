@@ -35,6 +35,8 @@ NK_API void                 nk_sdl_set_userdata(struct nk_context* ctx, nk_handl
  * ===============================================================
  */
 #ifdef NK_SDL3_RENDERER_IMPLEMENTATION
+#ifndef NK_SDL3_RENDERER_IMPLEMENTATION_ONCE
+#define NK_SDL3_RENDERER_IMPLEMENTATION_ONCE
 
 #ifndef NK_INCLUDE_COMMAND_USERDATA
 #error "nuklear_sdl3 requires the NK_INCLUDE_COMMAND_USERDATA define"
@@ -278,7 +280,8 @@ nk_sdl_handle_event(struct nk_context* ctx, SDL_Event *evt)
         case SDL_EVENT_KEY_DOWN:
             {
                 int down = evt->type == SDL_EVENT_KEY_DOWN;
-                const bool* state = SDL_GetKeyboardState(0);
+                int ctrl_down = SDL_GetModState() & (SDL_KMOD_LCTRL | SDL_KMOD_RCTRL);
+
                 switch(evt->key.key)
                 {
                     case SDLK_RSHIFT: /* RSHIFT & LSHIFT share same routine */
@@ -293,24 +296,27 @@ nk_sdl_handle_event(struct nk_context* ctx, SDL_Event *evt)
                                          nk_input_key(ctx, NK_KEY_SCROLL_END, down); break;
                     case SDLK_PAGEDOWN:  nk_input_key(ctx, NK_KEY_SCROLL_DOWN, down); break;
                     case SDLK_PAGEUP:    nk_input_key(ctx, NK_KEY_SCROLL_UP, down); break;
-                    case SDLK_Z:         nk_input_key(ctx, NK_KEY_TEXT_UNDO, down && state[SDL_SCANCODE_LCTRL]); break;
-                    case SDLK_R:         nk_input_key(ctx, NK_KEY_TEXT_REDO, down && state[SDL_SCANCODE_LCTRL]); break;
-                    case SDLK_C:         nk_input_key(ctx, NK_KEY_COPY, down && state[SDL_SCANCODE_LCTRL]); break;
-                    case SDLK_V:         nk_input_key(ctx, NK_KEY_PASTE, down && state[SDL_SCANCODE_LCTRL]); break;
-                    case SDLK_X:         nk_input_key(ctx, NK_KEY_CUT, down && state[SDL_SCANCODE_LCTRL]); break;
-                    case SDLK_B:         nk_input_key(ctx, NK_KEY_TEXT_LINE_START, down && state[SDL_SCANCODE_LCTRL]); break;
-                    case SDLK_E:         nk_input_key(ctx, NK_KEY_TEXT_LINE_END, down && state[SDL_SCANCODE_LCTRL]); break;
+                    case SDLK_A:         nk_input_key(ctx, NK_KEY_TEXT_SELECT_ALL, down && ctrl_down); break;
+                    case SDLK_Z:         nk_input_key(ctx, NK_KEY_TEXT_UNDO, down && ctrl_down); break;
+                    case SDLK_R:         nk_input_key(ctx, NK_KEY_TEXT_REDO, down && ctrl_down); break;
+                    case SDLK_C:         nk_input_key(ctx, NK_KEY_COPY, down && ctrl_down); break;
+                    case SDLK_V:         nk_input_key(ctx, NK_KEY_PASTE, down && ctrl_down); break;
+                    case SDLK_X:         nk_input_key(ctx, NK_KEY_CUT, down && ctrl_down); break;
+                    case SDLK_B:         nk_input_key(ctx, NK_KEY_TEXT_LINE_START, down && ctrl_down); break;
+                    case SDLK_E:         nk_input_key(ctx, NK_KEY_TEXT_LINE_END, down && ctrl_down); break;
                     case SDLK_UP:        nk_input_key(ctx, NK_KEY_UP, down); break;
                     case SDLK_DOWN:      nk_input_key(ctx, NK_KEY_DOWN, down); break;
                     case SDLK_LEFT:
-                        if (state[SDL_SCANCODE_LCTRL])
+                        if (ctrl_down)
                             nk_input_key(ctx, NK_KEY_TEXT_WORD_LEFT, down);
-                        else nk_input_key(ctx, NK_KEY_LEFT, down);
+                        else
+                            nk_input_key(ctx, NK_KEY_LEFT, down);
                         break;
                     case SDLK_RIGHT:
-                        if (state[SDL_SCANCODE_LCTRL])
+                        if (ctrl_down)
                             nk_input_key(ctx, NK_KEY_TEXT_WORD_RIGHT, down);
-                        else nk_input_key(ctx, NK_KEY_RIGHT, down);
+                        else
+                            nk_input_key(ctx, NK_KEY_RIGHT, down);
                         break;
                 }
                 return 1;
@@ -326,7 +332,9 @@ nk_sdl_handle_event(struct nk_context* ctx, SDL_Event *evt)
                     case SDL_BUTTON_LEFT:
                         if (evt->button.clicks > 1)
                             nk_input_button(ctx, NK_BUTTON_DOUBLE, x, y, down);
-                        nk_input_button(ctx, NK_BUTTON_LEFT, x, y, down); break;
+                        else
+                            nk_input_button(ctx, NK_BUTTON_LEFT, x, y, down);
+                        break;
                     case SDL_BUTTON_MIDDLE: nk_input_button(ctx, NK_BUTTON_MIDDLE, x, y, down); break;
                     case SDL_BUTTON_RIGHT:  nk_input_button(ctx, NK_BUTTON_RIGHT, x, y, down); break;
                 }
@@ -377,4 +385,5 @@ void nk_sdl_shutdown(struct nk_context* ctx)
     nk_free(ctx);
 }
 
+#endif /* NK_SDL3_RENDERER_IMPLEMENTATION_ONCE */
 #endif /* NK_SDL3_RENDERER_IMPLEMENTATION */
