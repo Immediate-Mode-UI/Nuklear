@@ -227,7 +227,11 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     #endif
     /* ----------------------------------------- */
 
-    SDL_SetRenderDrawColor(app->renderer, 255, 0, 255, SDL_ALPHA_OPAQUE);
+    SDL_SetRenderDrawColor(app->renderer,
+        (Uint8)(app->bg.r * 255.0f),
+        (Uint8)(app->bg.g * 255.0f),
+        (Uint8)(app->bg.b * 255.0f),
+        SDL_ALPHA_OPAQUE);
     SDL_RenderClear(app->renderer);
 
     nk_sdl_render(ctx, NK_ANTI_ALIASING_ON);
