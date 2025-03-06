@@ -2,7 +2,6 @@ demo/*/*/demo
 demo/*/bin/*
 example/bin/*
 docs/xml
-docs/build
 docs/src
 doc/doc*
 doc/*
@@ -14,3 +13,4 @@ doc/*
 *.exe
 *.dSYM
 /private/
+build
