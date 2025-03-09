@@ -247,7 +247,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         int old_mode = edit->mode;
         for (i = 0; i < NK_KEY_MAX; ++i) {
             if (i == NK_KEY_ENTER || i == NK_KEY_TAB) continue; /* special case */
-            if (nk_input_is_key_pressed(in, (enum nk_keys)i)) {
+            if (nk_input_is_key_fired(in, (enum nk_keys)i)) {
                 nk_textedit_key(edit, (enum nk_keys)i, shift_mod, font, row_height);
                 cursor_follow = nk_true;
             }
