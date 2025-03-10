@@ -76,10 +76,13 @@ nk_scrollbar_behavior(nk_flags *state, struct nk_input *in,
             if (o == NK_VERTICAL) scroll_offset = target - scroll->h;
         }
     }
-    if (*state & NK_WIDGET_STATE_HOVER && !nk_input_is_mouse_prev_hovering_rect(in, *scroll))
-        *state |= NK_WIDGET_STATE_ENTERED;
-    else if (nk_input_is_mouse_prev_hovering_rect(in, *scroll))
-        *state |= NK_WIDGET_STATE_LEFT;
+    if (*state & NK_WIDGET_STATE_HOVER) {
+        if (!nk_input_is_mouse_prev_hovering_rect(in, *scroll))
+            *state |= NK_WIDGET_STATE_ENTERED;
+    } else {
+        if (nk_input_is_mouse_prev_hovering_rect(in, *scroll))
+            *state |= NK_WIDGET_STATE_LEFT;
+    }
     return scroll_offset;
 }
 NK_LIB void
