@@ -342,11 +342,10 @@ nk_sdl_handle_event(struct nk_context* ctx, SDL_Event *evt)
             return 1;
 
         case SDL_EVENT_MOUSE_MOTION:
-            ctx->input.mouse.prev = ctx->input.mouse.pos;
-            ctx->input.mouse.delta.x = evt->motion.xrel;
-            ctx->input.mouse.delta.y = evt->motion.yrel;
             ctx->input.mouse.pos.x = evt->motion.x;
             ctx->input.mouse.pos.y = evt->motion.y;
+            ctx->input.mouse.delta.x = ctx->input.mouse.pos.x - ctx->input.mouse.prev.x;
+            ctx->input.mouse.delta.y = ctx->input.mouse.pos.y - ctx->input.mouse.prev.y;
             return 1;
 
         case SDL_EVENT_TEXT_INPUT:
