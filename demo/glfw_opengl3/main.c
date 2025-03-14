@@ -73,6 +73,7 @@
   #include "../../demo/common/style_configurator.c"
 #endif
 #ifdef INCLUDE_IMAGE
+  #define USING_OPENGL
   #include "../../demo/common/image.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
