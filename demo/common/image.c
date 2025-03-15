@@ -46,8 +46,8 @@ struct nk_image createTextureOpenGL(struct nk_image img)
 
 /*
 // assumes RGBA for now, creates range [0,0] to [uv.x, uv.y] so if you want to start
-// at go from [-.5, -.5] to [1.5, 1.5], just give >[2.5,2.5] and use nk_subimage to select
-// [.5, .5] to [2.5,2.5] for the same appearance
+// at go from [-.5, -.5] to [1.5, 1.5], just give [2.5,2.5] and use nk_subimage to select
+// [.2, .2] to [1.0, 1.0] for the same appearance
 
 */
 struct nk_image nk_tile_image(struct nk_image img, struct nk_vec2 uv)
@@ -132,22 +132,25 @@ image_demo(struct nk_context *ctx)
 #ifdef NO_TILING
 		{
 		struct nk_image tmp = nk_tile_image(bunny_wide, nk_vec2(10, 1));
-		bw_tile = create_nk_image(tmp); free(tmp.handle.ptr);
+		bw_tile = create_nk_image(tmp); /* free(tmp.handle.ptr); */
 		bw_tile.type = NK_IMAGE_TILE;
 
 		tmp = nk_tile_image(bunny_portrait, nk_vec2(15, 1));
-		bp_tile = create_nk_image(tmp); free(tmp.handle.ptr);
+		bp_tile = create_nk_image(tmp); /* free(tmp.handle.ptr); */
 		bp_tile.type = NK_IMAGE_TILE;
 
 		tmp = nk_tile_image(tile, nk_vec2(50, 4));
-		tile_tile = create_nk_image(tmp); free(tmp.handle.ptr);
+		tile_tile = create_nk_image(tmp); /* free(tmp.handle.ptr); */
 		tile_tile.type = NK_IMAGE_TILE;
 		}
 #endif
 
-		free(bunny_wide.handle.ptr);
-		free(bunny_portrait.handle.ptr);
-		free(tile.handle.ptr);
+		/*
+		 * Can't free because xlib doesn't actualy copy the data
+		//free(bunny_wide.handle.ptr);
+		//free(bunny_portrait.handle.ptr);
+		//free(tile.handle.ptr);
+		*/
 
 		imagesLoaded = nk_true;
 	}
