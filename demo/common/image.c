@@ -97,6 +97,8 @@ struct nk_image bw_stretch, bw_fill, bw_fit, bw_center, bw_tile;
 struct nk_image bp_stretch, bp_fill, bp_fit, bp_center, bp_tile;
 struct nk_image tile_stretch, tile_fill, tile_fit, tile_center, tile_tile;
 
+struct nk_image bp_si_stretch, bp_si_fill, bp_si_fit, bp_si_center;
+
 static void
 image_demo(struct nk_context *ctx)
 {
@@ -128,6 +130,12 @@ image_demo(struct nk_context *ctx)
 		tile_fit = tile_stretch; tile_fit.type = NK_IMAGE_FIT;
 		tile_center = tile_stretch; tile_center.type = NK_IMAGE_CENTER;
 		tile_tile = tile_stretch; tile_tile.type = NK_IMAGE_TILE;
+
+		nk_ushort region[4] = { 76, 144, 146, 189 };
+		bp_si_stretch = bp_stretch; memcpy(bp_si_stretch.region, region, sizeof(region));
+		bp_si_fill = bp_fill; memcpy(bp_si_fill.region, region, sizeof(region));
+		bp_si_fit = bp_fit; memcpy(bp_si_fit.region, region, sizeof(region));
+		bp_si_center = bp_center; memcpy(bp_si_center.region, region, sizeof(region));
 
 #ifdef NO_TILING
 		{
@@ -251,4 +259,34 @@ image_demo(struct nk_context *ctx)
 		nk_image(ctx, tile_tile);
 	}
 	nk_end(ctx);
+
+	if (nk_begin(ctx, "Subimages", nk_rect(5, 25, 250, 700),
+	             NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
+	             NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR))
+	{
+
+		nk_layout_row_dynamic(ctx, 15, 1);
+		nk_label(ctx, "NK_IMAGE_STRETCH", NK_TEXT_LEFT);
+		nk_layout_row_dynamic(ctx, 100, 1);
+		nk_image(ctx, bp_si_stretch);
+
+		nk_layout_row_dynamic(ctx, 15, 1);
+		nk_label(ctx, "NK_IMAGE_FILL", NK_TEXT_LEFT);
+		nk_layout_row_dynamic(ctx, 100, 1);
+		nk_image(ctx, bp_si_fill);
+
+		nk_layout_row_dynamic(ctx, 15, 1);
+		nk_label(ctx, "NK_IMAGE_FIT", NK_TEXT_LEFT);
+		nk_layout_row_dynamic(ctx, 100, 1);
+		nk_image(ctx, bp_si_fit);
+
+		nk_layout_row_dynamic(ctx, 15, 1);
+		nk_label(ctx, "NK_IMAGE_CENTER", NK_TEXT_LEFT);
+		nk_layout_row_dynamic(ctx, 100, 1);
+		nk_image(ctx, bp_si_center);
+
+		nk_label_wrap(ctx, "NK_IMAGE_TILE is not supported for subimages");
+	}
+	nk_end(ctx);
+
 }
