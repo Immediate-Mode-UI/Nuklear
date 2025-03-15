@@ -3,19 +3,29 @@
 #include "../../demo/common/libs/stb_image_c89.h"
 
 
-#ifdef USING_OPENGL
-#define load_nk_image loadTextureOpenGL
-struct nk_image loadTextureOpenGL(const char *filepath)
+/* abusing nk_image type to avoid dependency issues */
+#ifndef load_image
+struct nk_image load_image(const char* filepath)
 {
-	int width, height, channels;
-	GLuint textureID;
-	unsigned char *data = stbi_load(filepath, &width, &height, &channels, 0);
-	if (!data)
-	{
+	int w, h;
+	struct nk_image img = {0};
+	img.handle.ptr = stbi_load(filepath, &w, &h, NULL, STBI_rgb_alpha);
+	if (!img.handle.ptr) {
 		fprintf(stderr, "Failed to load image: %s\n", filepath);
-		return nk_image_type_id(0, 0, 0, 0);
+		return img;
 	}
 
+	img.w = w;
+	img.h = h;
+	return img;
+}
+#endif
+
+#ifdef USING_OPENGL
+#define create_nk_image createTextureOpenGL
+struct nk_image createTextureOpenGL(struct nk_image img)
+{
+	GLuint textureID;
 	glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_2D, textureID);
 
@@ -25,18 +35,57 @@ struct nk_image loadTextureOpenGL(const char *filepath)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	/* Use GL_RGB or GL_RGBA for internal format because GLES2 only supports
-	 * GL_ALPHA, GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA for both format args */
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-	stbi_image_free(data);
-
-	return nk_image_type_id(textureID, width, height, NK_IMAGE_STRETCH);
+	 * GL_ALPHA, GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA for both format args
+	 *
+	 * RGBA because that's the format img is in
+	 * */
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.w, img.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.handle.ptr);
+	return nk_image_type_id(textureID, img.w, img.h, NK_IMAGE_STRETCH);
 }
 #endif
 
+/*
+// assumes RGBA for now, creates range [0,0] to [uv.x, uv.y] so if you want to start
+// at go from [-.5, -.5] to [1.5, 1.5], just give >[2.5,2.5] and use nk_subimage to select
+// [.5, .5] to [2.5,2.5] for the same appearance
+
+*/
+struct nk_image nk_tile_image(struct nk_image img, struct nk_vec2 uv)
+{
+	int w,h,i,j;
+	nk_uint* tiled; /* 32-bit uint */
+	nk_uint* orig;
+	struct nk_image out = {0};
+
+	NK_ASSERT(img.handle.ptr);
+	NK_ASSERT(img.w && img.h);
+	NK_ASSERT(uv.x > 0 && uv.y > 0);
+
+	w = nk_iceilf(img.w * uv.x);
+	h = nk_iceilf(img.h * uv.y);
+
+	orig = img.handle.ptr;
+	tiled = malloc(w*h*sizeof(nk_uint));
+	if (!tiled) { return out; }
+	for (i=0; i<h; ++i) {
+		for (j=0; j<w; ++j) {
+			tiled[i*w + j] = orig[(i % img.h) * img.w + j % img.w];
+		}
+	}
+
+	out.handle.ptr = tiled;
+	out.w = w;
+	out.h = h;
+
+	out.type = NK_IMAGE_TILE;
+
+	return out;
+}
 
 
-#ifndef load_nk_image
-#error "Must define load_nk_image() for the image demo!"
+
+#ifndef create_nk_image
+#error "Must define create_nk_image() for the image demo!"
 #endif
 
 int imagesLoaded = nk_false;
@@ -44,9 +93,9 @@ struct nk_image bunny_wide;
 struct nk_image bunny_portrait;
 struct nk_image tile;
 
-struct nk_image bw_fill, bw_fit, bw_center, bw_tile;
-struct nk_image bp_fill, bp_fit, bp_center, bp_tile;
-struct nk_image tile_fill, tile_fit, tile_center, tile_tile;
+struct nk_image bw_stretch, bw_fill, bw_fit, bw_center, bw_tile;
+struct nk_image bp_stretch, bp_fill, bp_fit, bp_center, bp_tile;
+struct nk_image tile_stretch, tile_fill, tile_fit, tile_center, tile_tile;
 
 static void
 image_demo(struct nk_context *ctx)
@@ -56,25 +105,49 @@ image_demo(struct nk_context *ctx)
 		 * to nk_image() but that would be a breaking change and require a few more
 		 * internal changes */
 
+		bunny_wide = load_image("../../demo/common/img/bunny_wide.jpg");
+		bunny_portrait = load_image("../../demo/common/img/bunny_portrait.jpg");
+		tile = load_image("../../demo/common/img/tile.jpg");
+
 		/* stretch as the default */
-		bunny_wide = load_nk_image("../../demo/common/img/bunny_wide.jpg");
-		bunny_portrait = load_nk_image("../../demo/common/img/bunny_portrait.jpg");
-		tile = load_nk_image("../../demo/common/img/tile.jpg");
+		bw_stretch = create_nk_image(bunny_wide);
+		bp_stretch = create_nk_image(bunny_portrait);
+		tile_stretch = create_nk_image(tile);
 
-		bw_fill = bunny_wide; bw_fill.type = NK_IMAGE_FILL;
-		bw_fit = bunny_wide; bw_fit.type = NK_IMAGE_FIT;
-		bw_center = bunny_wide; bw_center.type = NK_IMAGE_CENTER;
-		bw_tile = bunny_wide; bw_tile.type = NK_IMAGE_TILE;
+		bw_fill = bw_stretch; bw_fill.type = NK_IMAGE_FILL;
+		bw_fit = bw_stretch; bw_fit.type = NK_IMAGE_FIT;
+		bw_center = bw_stretch; bw_center.type = NK_IMAGE_CENTER;
+		bw_tile = bw_stretch; bw_tile.type = NK_IMAGE_TILE;
 
-		bp_fill = bunny_portrait; bp_fill.type = NK_IMAGE_FILL;
-		bp_fit = bunny_portrait; bp_fit.type = NK_IMAGE_FIT;
-		bp_center = bunny_portrait; bp_center.type = NK_IMAGE_CENTER;
-		bp_tile = bunny_portrait; bp_tile.type = NK_IMAGE_TILE;
+		bp_fill = bp_stretch; bp_fill.type = NK_IMAGE_FILL;
+		bp_fit = bp_stretch; bp_fit.type = NK_IMAGE_FIT;
+		bp_center = bp_stretch; bp_center.type = NK_IMAGE_CENTER;
+		bp_tile = bp_stretch; bp_tile.type = NK_IMAGE_TILE;
 
-		tile_fill = tile; tile_fill.type = NK_IMAGE_FILL;
-		tile_fit = tile; tile_fit.type = NK_IMAGE_FIT;
-		tile_center = tile; tile_center.type = NK_IMAGE_CENTER;
-		tile_tile = tile; tile_tile.type = NK_IMAGE_TILE;
+		tile_fill = tile_stretch; tile_fill.type = NK_IMAGE_FILL;
+		tile_fit = tile_stretch; tile_fit.type = NK_IMAGE_FIT;
+		tile_center = tile_stretch; tile_center.type = NK_IMAGE_CENTER;
+		tile_tile = tile_stretch; tile_tile.type = NK_IMAGE_TILE;
+
+#ifdef NO_TILING
+		{
+		struct nk_image tmp = nk_tile_image(bunny_wide, nk_vec2(10, 1));
+		bw_tile = create_nk_image(tmp); free(tmp.handle.ptr);
+		bw_tile.type = NK_IMAGE_TILE;
+
+		tmp = nk_tile_image(bunny_portrait, nk_vec2(15, 1));
+		bp_tile = create_nk_image(tmp); free(tmp.handle.ptr);
+		bp_tile.type = NK_IMAGE_TILE;
+
+		tmp = nk_tile_image(tile, nk_vec2(50, 4));
+		tile_tile = create_nk_image(tmp); free(tmp.handle.ptr);
+		tile_tile.type = NK_IMAGE_TILE;
+		}
+#endif
+
+		free(bunny_wide.handle.ptr);
+		free(bunny_portrait.handle.ptr);
+		free(tile.handle.ptr);
 
 		imagesLoaded = nk_true;
 	}
@@ -90,7 +163,7 @@ image_demo(struct nk_context *ctx)
 		nk_layout_row_dynamic(ctx, 15, 1);
 		nk_label(ctx, "NK_IMAGE_STRETCH", NK_TEXT_LEFT);
 		nk_layout_row_dynamic(ctx, 100, 1);
-		nk_image(ctx, bunny_wide);
+		nk_image(ctx, bw_stretch);
 
 		nk_layout_row_dynamic(ctx, 15, 1);
 		nk_label(ctx, "NK_IMAGE_FILL", NK_TEXT_LEFT);
@@ -107,12 +180,10 @@ image_demo(struct nk_context *ctx)
 		nk_layout_row_dynamic(ctx, 100, 1);
 		nk_image(ctx, bw_center);
 
-#ifndef NO_TILING
 		nk_layout_row_dynamic(ctx, 15, 1);
 		nk_label(ctx, "NK_IMAGE_TILE", NK_TEXT_LEFT);
 		nk_layout_row_dynamic(ctx, 100, 1);
 		nk_image(ctx, bw_tile);
-#endif
 	}
 	nk_end(ctx);
 
@@ -123,7 +194,7 @@ image_demo(struct nk_context *ctx)
 		nk_layout_row_dynamic(ctx, 15, 1);
 		nk_label(ctx, "NK_IMAGE_STRETCH", NK_TEXT_LEFT);
 		nk_layout_row_dynamic(ctx, 100, 1);
-		nk_image(ctx, bunny_portrait);
+		nk_image(ctx, bp_stretch);
 
 		nk_layout_row_dynamic(ctx, 15, 1);
 		nk_label(ctx, "NK_IMAGE_FILL", NK_TEXT_LEFT);
@@ -140,12 +211,10 @@ image_demo(struct nk_context *ctx)
 		nk_layout_row_dynamic(ctx, 100, 1);
 		nk_image(ctx, bp_center);
 
-#ifndef NO_TILING
 		nk_layout_row_dynamic(ctx, 15, 1);
 		nk_label(ctx, "NK_IMAGE_TILE", NK_TEXT_LEFT);
 		nk_layout_row_dynamic(ctx, 100, 1);
 		nk_image(ctx, bp_tile);
-#endif
 	}
 	nk_end(ctx);
 
@@ -156,7 +225,7 @@ image_demo(struct nk_context *ctx)
 		nk_layout_row_dynamic(ctx, 15, 1);
 		nk_label(ctx, "NK_IMAGE_STRETCH", NK_TEXT_LEFT);
 		nk_layout_row_dynamic(ctx, 100, 1);
-		nk_image(ctx, tile);
+		nk_image(ctx, tile_stretch);
 
 		nk_layout_row_dynamic(ctx, 15, 1);
 		nk_label(ctx, "NK_IMAGE_FILL", NK_TEXT_LEFT);
@@ -173,12 +242,10 @@ image_demo(struct nk_context *ctx)
 		nk_layout_row_dynamic(ctx, 100, 1);
 		nk_image(ctx, tile_center);
 
-#ifndef NO_TILING
 		nk_layout_row_dynamic(ctx, 15, 1);
 		nk_label(ctx, "NK_IMAGE_TILE", NK_TEXT_LEFT);
 		nk_layout_row_dynamic(ctx, 100, 1);
 		nk_image(ctx, tile_tile);
-#endif
 	}
 	nk_end(ctx);
 }

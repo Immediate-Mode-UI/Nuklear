@@ -52,7 +52,7 @@
   #define INCLUDE_NODE_EDITOR
 #endif
 
-struct nk_image load_SDL_Texture(const char *filepath);
+struct nk_image create_SDL_Texture(struct nk_image img);
 
 #ifdef INCLUDE_STYLE
   #include "../../demo/common/style.c"
@@ -70,7 +70,7 @@ struct nk_image load_SDL_Texture(const char *filepath);
   #include "../../demo/common/style_configurator.c"
 #endif
 #ifdef INCLUDE_IMAGE
-  #define load_nk_image load_SDL_Texture
+  #define create_nk_image create_SDL_Texture
   #define NO_TILING
   #include "../../demo/common/image.c"
 #endif
@@ -260,29 +260,17 @@ cleanup:
 }
 
 
-struct nk_image load_SDL_Texture(const char *filepath)
+struct nk_image create_SDL_Texture(struct nk_image img)
 {
-    int w, h, c;
-    SDL_Texture* tex = NULL;
-
-    unsigned char *data = stbi_load(filepath, &w, &h, &c, STBI_rgb_alpha);
-    if (!data) {
-        fprintf(stderr, "Failed to load image: %s\n", filepath);
-        return nk_image_type_ptr(0, 0, 0, 0);
-    }
-
-    tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, w, h);
+    SDL_Texture* tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, img.w, img.h);
     if (!tex) {
         fprintf(stderr, "Error creating texture: %s\n", SDL_GetError());
         return nk_image_type_ptr(0, 0, 0, 0);
     }
-    if (SDL_UpdateTexture(tex, NULL, data, w*4)) {
+    if (SDL_UpdateTexture(tex, NULL, img.handle.ptr, img.w*4)) {
         fprintf(stderr, "Error updating texture: %s\n", SDL_GetError());
         return nk_image_type_ptr(0, 0, 0, 0);
     }
 
-
-    stbi_image_free(data);
-
-    return nk_image_type_ptr(tex, w, h, NK_IMAGE_STRETCH);
+    return nk_image_type_ptr(tex, img.w, img.h, NK_IMAGE_STRETCH);
 }
