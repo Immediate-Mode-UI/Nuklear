@@ -18304,7 +18304,7 @@ nk_input_glyph(struct nk_context *ctx, const nk_glyph glyph)
 NK_API void
 nk_input_char(struct nk_context *ctx, char c)
 {
-    nk_glyph glyph;
+    nk_glyph glyph = {0};
     NK_ASSERT(ctx);
     if (!ctx) return;
     glyph[0] = c;
@@ -30700,6 +30700,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2025/03/29 (4.12.6) - Fix unitialized data in nk_input_char
 /// - 2025/03/05 (4.12.5) - Fix scrolling knob also scrolling parent window, remove dead code
 /// - 2024/12/11 (4.12.4) - Fix array subscript [0, 0] is outside array bounds of ‘char[1]’
 /// - 2024/12/11 (4.12.3) - Fix border color for property widgets
