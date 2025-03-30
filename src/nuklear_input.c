@@ -124,7 +124,7 @@ nk_input_glyph(struct nk_context *ctx, const nk_glyph glyph)
 NK_API void
 nk_input_char(struct nk_context *ctx, char c)
 {
-    nk_glyph glyph;
+    nk_glyph glyph = {0};
     NK_ASSERT(ctx);
     if (!ctx) return;
     glyph[0] = c;
