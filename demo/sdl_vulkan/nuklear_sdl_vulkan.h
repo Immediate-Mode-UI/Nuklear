@@ -1382,7 +1382,7 @@ NK_API int nk_sdl_handle_event(SDL_Event *evt) {
     }
 
     case SDL_MOUSEWHEEL:
-        nk_input_scroll(ctx, nk_vec2((float)evt->wheel.x, (float)evt->wheel.y));
+        nk_input_scroll(ctx,nk_vec2(evt->wheel.preciseX, evt->wheel.preciseY));
         return 1;
     }
     return 0;
