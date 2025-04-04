@@ -27058,9 +27058,8 @@ nk_is_word_boundary( struct nk_text_edit *state, int idx)
     if (idx < 0) return 1;
     if (!nk_str_at_rune(&state->string, idx, &c, &len)) return 1;
 #ifndef NK_IS_WORD_BOUNDARY
-    return (c == ' ' || c == '\t' ||c == 0x3000 || c == ',' || c == ';' ||
-            c == '(' || c == ')' || c == '{' || c == '}' || c == '[' || c == ']' ||
-            c == '|');
+    return (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' ||
+            c == '\v' || c == 0x3000);
 #else
     return NK_IS_WORD_BOUNDARY(c);
 #endif
