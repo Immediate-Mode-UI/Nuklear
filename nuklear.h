@@ -109,6 +109,7 @@ NK_BUTTON_TRIGGER_ON_RELEASE    | Different platforms require button clicks occu
 NK_ZERO_COMMAND_MEMORY          | Defining this will zero out memory for each drawing command added to a drawing queue (inside nk_command_buffer_push). Zeroing command memory is very useful for fast checking (using memcmp) if command buffers are equal and avoid drawing frames when nothing on screen has changed since previous frame.
 NK_UINT_DRAW_INDEX              | Defining this will set the size of vertex index elements when using NK_VERTEX_BUFFER_OUTPUT to 32bit instead of the default of 16bit
 NK_KEYSTATE_BASED_INPUT         | Define this if your backend uses key state for each frame rather than key press/release events
+NK_IS_WORD_BOUNDARY(c)          | Define this to a function macro that takes a single nk_rune (nk_uint) and returns true if it's a word separator. If not defined, uses the default definition (see nk_is_word_boundary())
 
 !!! WARNING
     The following flags will pull in the standard C library:
@@ -27054,21 +27055,29 @@ nk_is_word_boundary( struct nk_text_edit *state, int idx)
 {
     int len;
     nk_rune c;
-    if (idx <= 0) return 1;
+    if (idx < 0) return 1;
     if (!nk_str_at_rune(&state->string, idx, &c, &len)) return 1;
+#ifndef NK_IS_WORD_BOUNDARY
     return (c == ' ' || c == '\t' ||c == 0x3000 || c == ',' || c == ';' ||
             c == '(' || c == ')' || c == '{' || c == '}' || c == '[' || c == ']' ||
             c == '|');
+#else
+    return NK_IS_WORD_BOUNDARY(c);
+#endif
 }
 NK_INTERN int
 nk_textedit_move_to_word_previous(struct nk_text_edit *state)
 {
    int c = state->cursor - 1;
-   while( c >= 0 && !nk_is_word_boundary(state, c))
-      --c;
-
-   if( c < 0 )
-      c = 0;
+   if (c > 0) {
+      if (nk_is_word_boundary(state, c)) {
+         while (c >= 0 && nk_is_word_boundary(state, --c));
+      }
+      while (!nk_is_word_boundary(state, --c));
+      c++;
+   } else {
+      return 0;
+   }
 
    return c;
 }
@@ -27076,12 +27085,15 @@ NK_INTERN int
 nk_textedit_move_to_word_next(struct nk_text_edit *state)
 {
    const int len = state->string.len;
-   int c = state->cursor+1;
-   while( c < len && !nk_is_word_boundary(state, c))
-      ++c;
-
-   if( c > len )
-      c = len;
+   int c = state->cursor;
+   if (c < len) {
+      if (!nk_is_word_boundary(state, c)) {
+         while (c < len && !nk_is_word_boundary(state, ++c));
+      }
+      while (c < len && nk_is_word_boundary(state, ++c));
+   } else {
+      return len;
+   }
 
    return c;
 }
