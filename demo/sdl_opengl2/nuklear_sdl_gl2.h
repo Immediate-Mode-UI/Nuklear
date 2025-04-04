@@ -15,25 +15,17 @@
 
 #include <SDL2/SDL.h>
 
-struct nk_sdl_device {
-    struct nk_buffer cmds;
-    struct nk_draw_null_texture tex_null;
-    GLuint font_tex;
-};
-
-struct nk_sdl {
-    struct nk_sdl_device ogl;
-    struct nk_font_atlas atlas;
-    Uint64 time_of_last_frame;
-};
-
-NK_API void                 nk_sdl_init(struct nk_context *ctx, struct nk_sdl *sdl);
-NK_API void                 nk_sdl_font_stash_begin(struct nk_sdl *sdl);
-NK_API void                 nk_sdl_font_stash_end(struct nk_context *ctx, struct nk_sdl *sdl);
-NK_API int                  nk_sdl_handle_event(struct nk_context *ctx, SDL_Event *evt);
-NK_API void                 nk_sdl_render(struct nk_context *ctx, struct nk_sdl *sdl, SDL_Window *win, enum nk_anti_aliasing);
-NK_API void                 nk_sdl_shutdown(struct nk_context *ctx, struct nk_sdl *sdl);
-NK_API void                 nk_sdl_handle_grab(struct nk_context *ctx, SDL_Window *win);
+NK_API void nk_sdl_init(struct nk_context *ctx, struct nk_buffer *cmds, Uint64 *time_of_last_frame);
+NK_API void nk_sdl_font_stash_begin(struct nk_font_atlas *atlas);
+NK_API void nk_sdl_font_stash_end(struct nk_context *ctx, struct nk_font_atlas *atlas,
+                                  struct nk_draw_null_texture *tex_null, GLuint *font_tex);
+NK_API int  nk_sdl_handle_event(struct nk_context *ctx, SDL_Event *evt);
+NK_API void nk_sdl_render(struct nk_context *ctx, struct nk_buffer *cmds,
+                          struct nk_draw_null_texture *tex_null, SDL_Window *win,
+                          enum nk_anti_aliasing AA, Uint64 *time_of_last_frame);
+NK_API void nk_sdl_shutdown(struct nk_context *ctx, struct nk_font_atlas *atlas,
+                            struct nk_buffer *cmds, GLuint font_tex);
+NK_API void nk_sdl_handle_grab(struct nk_context *ctx, SDL_Window *win);
 
 #endif
 /*
@@ -54,10 +46,10 @@ struct nk_sdl_vertex {
 };
 
 NK_INTERN void
-nk_sdl_device_upload_atlas(struct nk_sdl_device *dev, const void *image, int width, int height)
+nk_sdl_device_upload_atlas(GLuint *font_tex, const void *image, int width, int height)
 {
-    glGenTextures(1, &dev->font_tex);
-    glBindTexture(GL_TEXTURE_2D, dev->font_tex);
+    glGenTextures(1, font_tex);
+    glBindTexture(GL_TEXTURE_2D, *font_tex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)width, (GLsizei)height, 0,
@@ -65,17 +57,16 @@ nk_sdl_device_upload_atlas(struct nk_sdl_device *dev, const void *image, int wid
 }
 
 NK_API void
-nk_sdl_render(struct nk_context *ctx, struct nk_sdl *sdl, SDL_Window *win, enum nk_anti_aliasing AA)
+nk_sdl_render(struct nk_context *ctx, struct nk_buffer *cmds, struct nk_draw_null_texture *tex_null, SDL_Window *win, enum nk_anti_aliasing AA, Uint64 *time_of_last_frame)
 {
     /* setup global state */
-    struct nk_sdl_device *dev = &sdl->ogl;
     int width, height;
     int display_width, display_height;
     struct nk_vec2 scale;
 
     Uint64 now = SDL_GetTicks();
-    ctx->delta_time_seconds = (float)(now - sdl->time_of_last_frame) / 1000;
-    sdl->time_of_last_frame = now;
+    ctx->delta_time_seconds = (float)(now - *time_of_last_frame) / 1000;
+    *time_of_last_frame = now;
 
     SDL_GetWindowSize(win, &width, &height);
     SDL_GL_GetDrawableSize(win, &display_width, &display_height);
@@ -126,7 +117,7 @@ nk_sdl_render(struct nk_context *ctx, struct nk_sdl *sdl, SDL_Window *win, enum 
         config.vertex_layout = vertex_layout;
         config.vertex_size = sizeof(struct nk_sdl_vertex);
         config.vertex_alignment = NK_ALIGNOF(struct nk_sdl_vertex);
-        config.tex_null = dev->tex_null;
+        config.tex_null = *tex_null;
         config.circle_segment_count = 22;
         config.curve_segment_count = 22;
         config.arc_segment_count = 22;
@@ -137,7 +128,7 @@ nk_sdl_render(struct nk_context *ctx, struct nk_sdl *sdl, SDL_Window *win, enum 
         /* convert shapes into vertexes */
         nk_buffer_init_default(&vbuf);
         nk_buffer_init_default(&ebuf);
-        nk_convert(ctx, &dev->cmds, &vbuf, &ebuf, &config);
+        nk_convert(ctx, cmds, &vbuf, &ebuf, &config);
 
         /* setup vertex buffer pointer */
         {const void *vertices = nk_buffer_memory_const(&vbuf);
@@ -147,7 +138,7 @@ nk_sdl_render(struct nk_context *ctx, struct nk_sdl *sdl, SDL_Window *win, enum 
 
         /* iterate over and execute each draw command */
         offset = (const nk_draw_index*)nk_buffer_memory_const(&ebuf);
-        nk_draw_foreach(cmd, ctx, &dev->cmds)
+        nk_draw_foreach(cmd, ctx, cmds)
         {
             if (!cmd->elem_count) continue;
             glBindTexture(GL_TEXTURE_2D, (GLuint)cmd->texture.id);
@@ -160,7 +151,7 @@ nk_sdl_render(struct nk_context *ctx, struct nk_sdl *sdl, SDL_Window *win, enum 
             offset += cmd->elem_count;
         }
         nk_clear(ctx);
-        nk_buffer_clear(&dev->cmds);
+        nk_buffer_clear(cmds);
         nk_buffer_free(&vbuf);
         nk_buffer_free(&ebuf);
     }
@@ -210,32 +201,32 @@ nk_sdl_clipboard_copy(nk_handle usr, const char *text, int len)
 }
 
 NK_API void
-nk_sdl_init(struct nk_context *ctx, struct nk_sdl *sdl)
+nk_sdl_init(struct nk_context *ctx, struct nk_buffer *cmds, Uint64 *time_of_last_frame)
 {
     nk_init_default(ctx, 0);
     ctx->clip.copy = nk_sdl_clipboard_copy;
     ctx->clip.paste = nk_sdl_clipboard_paste;
     ctx->clip.userdata = nk_handle_ptr(0);
-    nk_buffer_init_default(&sdl->ogl.cmds);
-    sdl->time_of_last_frame = SDL_GetTicks();
+    nk_buffer_init_default(cmds);
+    *time_of_last_frame = SDL_GetTicks();
 }
 
 NK_API void
-nk_sdl_font_stash_begin(struct nk_sdl *sdl)
+nk_sdl_font_stash_begin(struct nk_font_atlas *atlas)
 {
-    nk_font_atlas_init_default(&sdl->atlas);
-    nk_font_atlas_begin(&sdl->atlas);
+    nk_font_atlas_init_default(atlas);
+    nk_font_atlas_begin(atlas);
 }
 
 NK_API void
-nk_sdl_font_stash_end(struct nk_context *ctx, struct nk_sdl *sdl)
+nk_sdl_font_stash_end(struct nk_context *ctx, struct nk_font_atlas *atlas, struct nk_draw_null_texture *tex_null, GLuint *font_tex)
 {
     const void *image; int w, h;
-    image = nk_font_atlas_bake(&sdl->atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
-    nk_sdl_device_upload_atlas(&sdl->ogl, image, w, h);
-    nk_font_atlas_end(&sdl->atlas, nk_handle_id((int)sdl->ogl.font_tex), &sdl->ogl.tex_null);
-    if (sdl->atlas.default_font)
-        nk_style_set_font(ctx, &sdl->atlas.default_font->handle);
+    image = nk_font_atlas_bake(atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
+    nk_sdl_device_upload_atlas(font_tex, image, w, h);
+    nk_font_atlas_end(atlas, nk_handle_id((int)*font_tex), tex_null);
+    if (atlas->default_font)
+        nk_style_set_font(ctx, &atlas->default_font->handle);
 }
 
 NK_API void
@@ -349,14 +340,14 @@ nk_sdl_handle_event(struct nk_context *ctx, SDL_Event *evt)
 }
 
 NK_API
-void nk_sdl_shutdown(struct nk_context *ctx, struct nk_sdl *sdl)
+void nk_sdl_shutdown(struct nk_context *ctx, struct nk_font_atlas *atlas, struct nk_buffer *cmds, GLuint font_tex)
 {
-    struct nk_sdl_device *dev = &sdl->ogl;
-    nk_font_atlas_clear(&sdl->atlas);
+    nk_font_atlas_clear(atlas);
     nk_free(ctx);
-    glDeleteTextures(1, &dev->font_tex);
-    nk_buffer_free(&dev->cmds);
-    memset(&sdl, 0, sizeof(sdl));
+    glDeleteTextures(1, &font_tex);
+    nk_buffer_free(cmds);
+    memset(atlas, 0, sizeof(*atlas));
+    memset(cmds, 0, sizeof(*cmds));
 }
 
 #endif

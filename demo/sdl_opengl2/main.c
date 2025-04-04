@@ -79,7 +79,11 @@ int
 main(int argc, char *argv[])
 {
     /* Platform */
-    struct nk_sdl sdl;
+    struct nk_buffer cmds;
+    struct nk_draw_null_texture tex_null;
+    GLuint font_tex;
+    struct nk_font_atlas atlas;
+    Uint64 time_of_last_frame;
     SDL_Window *win;
     SDL_GLContext glContext;
     int win_width, win_height;
@@ -112,18 +116,18 @@ main(int argc, char *argv[])
     SDL_GetWindowSize(win, &win_width, &win_height);
 
     /* GUI */
-    nk_sdl_init(&ctx, &sdl);
+    nk_sdl_init(&ctx, &cmds, &time_of_last_frame);
     /* Load Fonts: if none of these are loaded a default font will be used  */
     /* Load Cursor: if you uncomment cursor loading please hide the cursor */
     {
-    nk_sdl_font_stash_begin(&sdl);
-    /*struct nk_font *droid = nk_font_atlas_add_from_file(sdl.atlas, "../../../extra_font/DroidSans.ttf", 14, 0);*/
-    /*struct nk_font *roboto = nk_font_atlas_add_from_file(sdl.atlas, "../../../extra_font/Roboto-Regular.ttf", 16, 0);*/
-    /*struct nk_font *future = nk_font_atlas_add_from_file(sdl.atlas, "../../../extra_font/kenvector_future_thin.ttf", 13, 0);*/
-    /*struct nk_font *clean = nk_font_atlas_add_from_file(sdl.atlas, "../../../extra_font/ProggyClean.ttf", 12, 0);*/
-    /*struct nk_font *tiny = nk_font_atlas_add_from_file(sdl.atlas, "../../../extra_font/ProggyTiny.ttf", 10, 0);*/
-    /*struct nk_font *cousine = nk_font_atlas_add_from_file(sdl.atlas, "../../../extra_font/Cousine-Regular.ttf", 13, 0);*/
-    nk_sdl_font_stash_end(&ctx, &sdl);
+    nk_sdl_font_stash_begin(&atlas);
+    /*struct nk_font *droid = nk_font_atlas_add_from_file(&atlas, "../../../extra_font/DroidSans.ttf", 14, 0);*/
+    /*struct nk_font *roboto = nk_font_atlas_add_from_file(&atlas, "../../../extra_font/Roboto-Regular.ttf", 16, 0);*/
+    /*struct nk_font *future = nk_font_atlas_add_from_file(&atlas, "../../../extra_font/kenvector_future_thin.ttf", 13, 0);*/
+    /*struct nk_font *clean = nk_font_atlas_add_from_file(&atlas, "../../../extra_font/ProggyClean.ttf", 12, 0);*/
+    /*struct nk_font *tiny = nk_font_atlas_add_from_file(&atlas, "../../../extra_font/ProggyTiny.ttf", 10, 0);*/
+    /*struct nk_font *cousine = nk_font_atlas_add_from_file(&atlas, "../../../extra_font/Cousine-Regular.ttf", 13, 0);*/
+    nk_sdl_font_stash_end(&ctx, &atlas, &tex_null, &font_tex);
     /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
     /*nk_style_set_font(ctx, &roboto->handle)*/;}
 
@@ -202,12 +206,12 @@ main(int argc, char *argv[])
          * defaults everything back into a default state.
          * Make sure to either a.) save and restore or b.) reset your own state after
          * rendering the UI. */
-        nk_sdl_render(&ctx, &sdl, win, NK_ANTI_ALIASING_ON);
+        nk_sdl_render(&ctx, &cmds, &tex_null, win, NK_ANTI_ALIASING_ON, &time_of_last_frame);
         SDL_GL_SwapWindow(win);
     }
 
 cleanup:
-    nk_sdl_shutdown(&ctx, &sdl);
+    nk_sdl_shutdown(&ctx, &atlas, &cmds, font_tex);
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(win);
     SDL_Quit();
