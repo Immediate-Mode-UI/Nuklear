@@ -22034,14 +22034,16 @@ nk_layout_row_calculate_usable_space(const struct nk_style *style, enum nk_panel
     float panel_space;
 
     struct nk_vec2 spacing;
+    struct nk_vec2 padding;
 
     NK_UNUSED(type);
 
     spacing = style->window.spacing;
+    padding = nk_panel_get_padding(style, type);
 
     /* calculate the usable panel space */
     panel_spacing = (float)NK_MAX(columns - 1, 0) * spacing.x;
-    panel_space  = total_space - panel_spacing;
+    panel_space  = total_space - (2 * padding.x) - panel_spacing;
     return panel_space;
 }
 NK_LIB void
@@ -22565,6 +22567,7 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
     struct nk_panel *layout;
     const struct nk_style *style;
 
+    struct nk_vec2 padding;
     struct nk_vec2 spacing;
 
     float item_offset = 0;
@@ -22584,6 +22587,7 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
     NK_ASSERT(bounds);
 
     spacing = style->window.spacing;
+    padding = nk_panel_get_padding(style, layout->type);
     panel_space = nk_layout_row_calculate_usable_space(&ctx->style, layout->type,
                                             layout->bounds.w, layout->row.columns);
 
@@ -22688,7 +22692,7 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
     bounds->w = item_width;
     bounds->h = layout->row.height - spacing.y;
     bounds->y = layout->at_y - (float)*layout->offset_y;
-    bounds->x = layout->at_x + item_offset + item_spacing;
+    bounds->x = layout->at_x + item_offset + item_spacing + padding.x;
     if (((bounds->x + bounds->w) > layout->max_x) && modify)
         layout->max_x = bounds->x + bounds->w;
     bounds->x -= (float)*layout->offset_x;
