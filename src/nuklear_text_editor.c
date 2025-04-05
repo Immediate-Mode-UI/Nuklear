@@ -499,7 +499,7 @@ retry:
     case NK_KEY_TEXT_WORD_LEFT:
         if (shift_mod) {
             if( !NK_TEXT_HAS_SELECTION( state ) )
-            nk_textedit_prep_selection_at_cursor(state);
+                nk_textedit_prep_selection_at_cursor(state);
             state->cursor = nk_textedit_move_to_word_previous(state);
             state->select_end = state->cursor;
             nk_textedit_clamp(state );

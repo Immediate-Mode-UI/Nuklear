@@ -27277,7 +27277,7 @@ retry:
     case NK_KEY_TEXT_WORD_LEFT:
         if (shift_mod) {
             if( !NK_TEXT_HAS_SELECTION( state ) )
-            nk_textedit_prep_selection_at_cursor(state);
+                nk_textedit_prep_selection_at_cursor(state);
             state->cursor = nk_textedit_move_to_word_previous(state);
             state->select_end = state->cursor;
             nk_textedit_clamp(state );
@@ -28298,10 +28298,12 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                 } else edit->scrollbar.x = 0;
 
                 if (flags & NK_EDIT_MULTILINE) {
-                    /* vertical scroll */
+                    /* vertical scroll: like horizontal, it only adjusts if the
+                     * cursor leaves the visible area, and then only just enough
+                     * to keep it visible */
                     if (cursor_pos.y < edit->scrollbar.y)
-                        edit->scrollbar.y = NK_MAX(0.0f, cursor_pos.y - row_height);
-                    if (cursor_pos.y >= edit->scrollbar.y + row_height)
+                        edit->scrollbar.y = NK_MAX(0.0f, cursor_pos.y);
+                    if (cursor_pos.y > edit->scrollbar.y + area.h - row_height)
                         edit->scrollbar.y = edit->scrollbar.y + row_height;
                 } else edit->scrollbar.y = 0;
             }
@@ -28324,9 +28326,13 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                 scroll_step = scroll.h * 0.10f;
                 scroll_inc = scroll.h * 0.01f;
                 scroll_target = text_size.y;
-                edit->scrollbar.y = nk_do_scrollbarv(&ws, out, scroll, 0,
+                edit->scrollbar.y = nk_do_scrollbarv(&ws, out, scroll, edit->active && in,
                         scroll_offset, scroll_target, scroll_step, scroll_inc,
                         &style->scrollbar, in, font);
+                /* Eat mouse scroll if we're active */
+                if (edit->active && in && in->mouse.scroll_delta.y) {
+                    in->mouse.scroll_delta.y = 0;
+                }
             }
         }
 
