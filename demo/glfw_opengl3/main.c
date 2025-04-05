@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <limits.h>
 #include <time.h>
+#include <ctype.h>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -21,6 +22,7 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
 #define NK_GLFW_GL3_IMPLEMENTATION
+/*#define NK_IS_WORD_BOUNDARY(c) (!isalnum(c))*/
 #include "../../nuklear.h"
 #include "nuklear_glfw_gl3.h"
 
