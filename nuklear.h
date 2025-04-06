@@ -27070,7 +27070,7 @@ nk_textedit_move_to_word_previous(struct nk_text_edit *state)
    int c = state->cursor - 1;
    if (c > 0) {
       if (nk_is_word_boundary(state, c)) {
-         while (c >= 0 && nk_is_word_boundary(state, --c));
+         while (c > 0 && nk_is_word_boundary(state, --c));
       }
       while (!nk_is_word_boundary(state, --c));
       c++;
@@ -28006,7 +28006,6 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
 
     /* update edit state */
     prev_state = (char)edit->active;
-    is_hovered = (char)nk_input_is_mouse_hovering_rect(in, bounds);
     if (in && in->mouse.buttons[NK_BUTTON_LEFT].clicked && in->mouse.buttons[NK_BUTTON_LEFT].down) {
         edit->active = NK_INBOX(in->mouse.pos.x, in->mouse.pos.y,
                                 bounds.x, bounds.y, bounds.w, bounds.h);
@@ -28326,11 +28325,11 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                 scroll_step = scroll.h * 0.10f;
                 scroll_inc = scroll.h * 0.01f;
                 scroll_target = text_size.y;
-                edit->scrollbar.y = nk_do_scrollbarv(&ws, out, scroll, edit->active && in,
+                edit->scrollbar.y = nk_do_scrollbarv(&ws, out, scroll, is_hovered,
                         scroll_offset, scroll_target, scroll_step, scroll_inc,
                         &style->scrollbar, in, font);
                 /* Eat mouse scroll if we're active */
-                if (edit->active && in && in->mouse.scroll_delta.y) {
+                if (is_hovered && in->mouse.scroll_delta.y) {
                     in->mouse.scroll_delta.y = 0;
                 }
             }

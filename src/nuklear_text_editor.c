@@ -292,7 +292,7 @@ nk_textedit_move_to_word_previous(struct nk_text_edit *state)
    int c = state->cursor - 1;
    if (c > 0) {
       if (nk_is_word_boundary(state, c)) {
-         while (c >= 0 && nk_is_word_boundary(state, --c));
+         while (c > 0 && nk_is_word_boundary(state, --c));
       }
       while (!nk_is_word_boundary(state, --c));
       c++;
