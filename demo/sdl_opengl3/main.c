@@ -45,6 +45,7 @@
 #define INCLUDE_OVERVIEW
 /*#define INCLUDE_CONFIGURATOR */
 /*#define INCLUDE_NODE_EDITOR */
+/*#define INCLUDE_WEB_COLORS */
 
 #ifdef INCLUDE_ALL
   #define INCLUDE_STYLE
@@ -53,6 +54,7 @@
   #define INCLUDE_OVERVIEW
   #define INCLUDE_CONFIGURATOR
   #define INCLUDE_NODE_EDITOR
+  #define INCLUDE_WEB_COLORS
 #endif
 
 #ifdef INCLUDE_STYLE
@@ -72,6 +74,9 @@
 #endif
 #ifdef INCLUDE_NODE_EDITOR
   #include "../../demo/common/node_editor.c"
+#endif
+#ifdef INCLUDE_WEB_COLORS
+  #include "../../demo/common/web_colors.c"
 #endif
 
 /* ===============================================================
@@ -150,6 +155,11 @@ int main(int argc, char *argv[])
     #endif
     #endif
 
+    #ifdef INCLUDE_WEB_COLORS
+    web_colors_init(ctx);
+    web_colors_add(ctx);
+    #endif
+
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
     while (running)
     {
@@ -212,6 +222,9 @@ int main(int argc, char *argv[])
         #endif
         #ifdef INCLUDE_NODE_EDITOR
           node_editor(ctx);
+        #endif
+        #ifdef INCLUDE_WEB_COLORS
+          web_colors_preview(ctx);
         #endif
         /* ----------------------------------------- */
 

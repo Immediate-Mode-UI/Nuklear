@@ -252,6 +252,13 @@ extern "C" {
 #ifndef NK_SCROLLBAR_HIDING_TIMEOUT
   #define NK_SCROLLBAR_HIDING_TIMEOUT 4.0f
 #endif
+/* for use in inline color code escape */
+#ifndef NK_ESC
+  #define NK_ESC "\033"
+#endif
+#ifndef NK_ESC_CHAR
+  #define NK_ESC_CHAR (NK_ESC[0])
+#endif
 /*
  * ==============================================================
  *
@@ -4858,6 +4865,22 @@ struct nk_command_buffer {
     int use_clipping;
     nk_handle userdata;
     nk_size begin, end, last;
+    struct nk_draw_config *draw_config;
+};
+
+#ifndef NK_INLINE_TAG_STACK_SIZE
+#define NK_INLINE_TAG_STACK_SIZE 16
+#endif
+
+enum nk_inline_tag_color {
+    NK_INLINE_TAG_COLOR,
+    NK_INLINE_TAG_BGCOLOR,
+    NK_INLINE_TAG_MAX
+};
+
+struct nk_inline_tag_stack {
+    nk_size head[NK_INLINE_TAG_MAX];
+    struct nk_color colors[NK_INLINE_TAG_MAX][NK_INLINE_TAG_STACK_SIZE];
 };
 
 /** shape outlines */
@@ -4882,6 +4905,8 @@ NK_API void nk_fill_polygon(struct nk_command_buffer*, const float *points, int 
 NK_API void nk_draw_image(struct nk_command_buffer*, struct nk_rect, const struct nk_image*, struct nk_color);
 NK_API void nk_draw_nine_slice(struct nk_command_buffer*, struct nk_rect, const struct nk_nine_slice*, struct nk_color);
 NK_API void nk_draw_text(struct nk_command_buffer*, struct nk_rect, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color);
+NK_API int nk_draw_coded_text(struct nk_command_buffer*, struct nk_rect*, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color, nk_bool wrap, struct nk_inline_tag_stack *stack);
+NK_API int nk_draw_raw_text(struct nk_command_buffer*, struct nk_rect*, const char *text, int len, const struct nk_user_font*, struct nk_color, struct nk_color, nk_bool wrap, nk_bool wrap_at_sep_only, float *w);
 NK_API void nk_push_scissor(struct nk_command_buffer*, struct nk_rect);
 NK_API void nk_push_custom(struct nk_command_buffer*, struct nk_rect, nk_command_custom_callback, nk_handle usr);
 
@@ -5098,6 +5123,10 @@ NK_API void nk_draw_list_push_userdata(struct nk_draw_list*, nk_handle userdata)
  *                          GUI
  *
  * ===============================================================*/
+#ifndef NK_NAME_COLOR_MAX_NAME
+#define NK_NAME_COLOR_MAX_NAME 32
+#endif
+
 enum nk_style_item_type {
     NK_STYLE_ITEM_COLOR,
     NK_STYLE_ITEM_IMAGE,
@@ -5593,10 +5622,44 @@ struct nk_style {
     struct nk_style_window window;
 };
 
+struct nk_name_color {
+    nk_hash name;
+    char name_string[NK_NAME_COLOR_MAX_NAME];
+    struct nk_color color;
+};
+
+struct nk_map_name_color {
+    struct nk_buffer buffer;
+    int count;
+};
+
+enum nk_color_inline_type {
+    NK_COLOR_INLINE_NONE,
+    NK_COLOR_INLINE_TAG,
+    NK_COLOR_INLINE_ESCAPE_TAG,
+    NK_COLOR_INLINE_MAX
+};
+
 NK_API struct nk_style_item nk_style_item_color(struct nk_color);
 NK_API struct nk_style_item nk_style_item_image(struct nk_image img);
 NK_API struct nk_style_item nk_style_item_nine_slice(struct nk_nine_slice slice);
 NK_API struct nk_style_item nk_style_item_hide(void);
+
+NK_API void nk_name_color_init(struct nk_name_color *, const char *, struct nk_color);
+
+#ifdef NK_INCLUDE_DEFAULT_ALLOCATOR
+NK_API void nk_map_name_color_init_default(struct nk_map_name_color *);
+#endif
+NK_API void nk_map_name_color_init(struct nk_map_name_color *, const struct nk_allocator *, const struct nk_name_color *, int count);
+NK_API void nk_map_name_color_init_colors(struct nk_map_name_color *, const struct nk_allocator *, const char **, struct nk_color *, int count);
+NK_API void nk_map_name_color_init_map_name_color(struct nk_map_name_color *, const struct nk_allocator *, const struct nk_map_name_color *, const char **filter_out, int count);
+NK_API void nk_map_name_color_init_fixed(struct nk_map_name_color *, struct nk_name_color *, int count, int capacity);
+NK_API void nk_map_name_color_free(struct nk_map_name_color *);
+NK_API void nk_map_name_color_push(struct nk_map_name_color *, const struct nk_name_color *, int count);
+NK_API void nk_map_name_color_push_colors(struct nk_map_name_color *, const char **, struct nk_color *, int count);
+NK_API void nk_map_name_color_push_map_name_color(struct nk_map_name_color *, const struct nk_map_name_color *);
+NK_API void nk_map_name_color_delete(struct nk_map_name_color *, const char **, int count);
+NK_API void nk_map_name_color_clear(struct nk_map_name_color *);
 
 /*==============================================================
  *                          PANEL
@@ -5843,6 +5906,10 @@ struct nk_window {
 #define NK_COLOR_STACK_SIZE 32
 #endif
 
+#ifndef NK_COLOR_INLINE_STACK_SIZE
+#define NK_COLOR_INLINE_STACK_SIZE 8
+#endif
+
 #define NK_CONFIGURATION_STACK_TYPE(prefix, name, type)\
     struct nk_config_stack_##name##_element {\
         prefix##_##type *address;\
@@ -5862,6 +5929,9 @@ NK_CONFIGURATION_STACK_TYPE(nk ,flags, flags);
 NK_CONFIGURATION_STACK_TYPE(struct nk, color, color);
 NK_CONFIGURATION_STACK_TYPE(const struct nk, user_font, user_font*);
 NK_CONFIGURATION_STACK_TYPE(enum nk, button_behavior, button_behavior);
+struct nk_config_stack_color_inline_element {
+    enum nk_color_inline_type old_value;
+};
 
 NK_CONFIG_STACK(style_item, NK_STYLE_ITEM_STACK_SIZE);
 NK_CONFIG_STACK(float, NK_FLOAT_STACK_SIZE);
@@ -5870,6 +5940,7 @@ NK_CONFIG_STACK(flags, NK_FLAGS_STACK_SIZE);
 NK_CONFIG_STACK(color, NK_COLOR_STACK_SIZE);
 NK_CONFIG_STACK(user_font, NK_FONT_STACK_SIZE);
 NK_CONFIG_STACK(button_behavior, NK_BUTTON_BEHAVIOR_STACK_SIZE);
+NK_CONFIG_STACK(color_inline, NK_COLOR_INLINE_STACK_SIZE);
 
 struct nk_configuration_stacks {
     struct nk_config_stack_style_item style_items;
@@ -5879,6 +5950,7 @@ struct nk_configuration_stacks {
     struct nk_config_stack_color colors;
     struct nk_config_stack_user_font fonts;
     struct nk_config_stack_button_behavior button_behaviors;
+    struct nk_config_stack_color_inline color_inline;
 };
 
 /*==============================================================
@@ -5924,6 +5996,20 @@ struct nk_pool {
     nk_size cap;
 };
 
+#ifndef NK_MAP_NAME_COLOR_STACK_SIZE
+#define NK_MAP_NAME_COLOR_STACK_SIZE 32
+#endif
+
+struct nk_map_name_color_stack {
+    int head;
+    struct nk_map_name_color *elements[NK_MAP_NAME_COLOR_STACK_SIZE];
+};
+
+struct nk_draw_config {
+    enum nk_color_inline_type color_inline;
+    struct nk_map_name_color_stack map_name_color;
+};
+
 struct nk_context {
 /* public: can be accessed freely */
     struct nk_input input;
@@ -5932,6 +6018,7 @@ struct nk_context {
     struct nk_clipboard clip;
     nk_flags last_widget_state;
     enum nk_button_behavior button_behavior;
+    struct nk_draw_config draw_config;
     struct nk_configuration_stacks stacks;
     float delta_time_seconds;
 
@@ -5965,6 +6052,15 @@ struct nk_context {
     unsigned int seq;
 };
 
+NK_API void nk_draw_set_color_inline(struct nk_context*, enum nk_color_inline_type);
+NK_API nk_bool nk_draw_push_color_inline(struct nk_context*, enum nk_color_inline_type);
+NK_API nk_bool nk_draw_pop_color_inline(struct nk_context*);
+NK_API nk_bool nk_draw_push_map_name_color(struct nk_context*, struct nk_map_name_color *); /* map is held by reference, not copied */
+NK_API struct nk_map_name_color *nk_draw_get_map_name_color(struct nk_context*, int index); /* 0-index for most-recently pushed */
+NK_API int nk_draw_get_map_name_color_index_range(struct nk_context*); /* one past the max index */
+NK_API struct nk_map_name_color *nk_draw_pop_map_name_color(struct nk_context*);
+NK_API struct nk_name_color *nk_draw_get_name_color(struct nk_map_name_color_stack *stack, const char *name, int len);
+
 /* ==============================================================
  *                          MATH
  * =============================================================== */
@@ -5985,6 +6081,8 @@ struct nk_context {
     (y1 < (y0 + h0)) && (y0 < (y1 + h1)))
 #define NK_CONTAINS(x, y, w, h, bx, by, bw, bh)\
     (NK_INBOX(x,y, bx, by, bw, bh) && NK_INBOX(x+w,y+h, bx, by, bw, bh))
+#define NK_CHAR_IS_HEX_DIGIT(c)\
+    (((c) >= '0' && (c) <= '9') || ((c) >= 'a' && (c) <= 'f') || ((c) >= 'A' && (c) <= 'F'))
 
 #define nk_vec2_sub(a, b) nk_vec2((a).x - (b).x, (a).y - (b).y)
 #define nk_vec2_add(a, b) nk_vec2((a).x + (b).x, (a).y + (b).y)
@@ -6061,6 +6159,10 @@ template<typename T> struct nk_alignof{struct Big {T x; char c;}; enum {
 
 #ifndef NK_BUFFER_DEFAULT_INITIAL_SIZE
 #define NK_BUFFER_DEFAULT_INITIAL_SIZE (4*1024)
+#endif
+
+#ifndef NK_DEFAULT_MAP_NAME_COLOR_BUFFER_SIZE
+#define NK_DEFAULT_MAP_NAME_COLOR_BUFFER_SIZE (4*sizeof(struct nk_name_color))
 #endif
 
 /* standard library headers */
@@ -6189,7 +6291,7 @@ NK_LIB int nk_string_float_limit(char *string, int prec);
 #ifndef NK_DTOA
 NK_LIB char *nk_dtoa(char *s, double n);
 #endif
-NK_LIB int nk_text_clamp(const struct nk_user_font *font, const char *text, int text_len, float space, int *glyphs, float *text_width, nk_rune *sep_list, int sep_count);
+NK_LIB int nk_text_clamp(const struct nk_user_font *font, const char *text, int text_len, float space, int *glyphs, float *text_width, nk_rune *sep_list, int sep_count, nk_bool *clamped_at_sep);
 NK_LIB struct nk_vec2 nk_text_calculate_text_bounds(const struct nk_user_font *font, const char *begin, int byte_len, float row_height, const char **remaining, struct nk_vec2 *out_offset, int *glyphs, int op);
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 NK_LIB int nk_strfmt(char *buf, int buf_size, const char *fmt, va_list args);
@@ -6289,6 +6391,7 @@ struct nk_text {
     struct nk_color text;
 };
 NK_LIB void nk_widget_text(struct nk_command_buffer *o, struct nk_rect b, const char *string, int len, const struct nk_text *t, nk_flags a, const struct nk_user_font *f);
+NK_LIB int nk_widget_coded_text(struct nk_command_buffer *o, struct nk_rect b, const char *string, int len, const struct nk_text *t, nk_flags a, const struct nk_user_font *f, nk_bool wrap, struct nk_inline_tag_stack *stack);
 NK_LIB void nk_widget_text_wrap(struct nk_command_buffer *o, struct nk_rect b, const char *string, int len, const struct nk_text *t, const struct nk_user_font *f);
 
 /* button */
@@ -7803,7 +7906,7 @@ nk_file_load(const char* path, nk_size* siz, const struct nk_allocator *alloc)
 NK_LIB int
 nk_text_clamp(const struct nk_user_font *font, const char *text,
     int text_len, float space, int *glyphs, float *text_width,
-    nk_rune *sep_list, int sep_count)
+    nk_rune *sep_list, int sep_count, nk_bool *clamped_at_sep)
 {
     int i = 0;
     int glyph_len = 0;
@@ -7819,33 +7922,66 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
     float sep_width = 0;
     sep_count = NK_MAX(sep_count,0);
 
+    if (sep_count > 0 && !sep_list)
+        return 0;
+
     glyph_len = nk_utf_decode(text, &unicode, text_len);
-    while (glyph_len && (width < space) && (len < text_len)) {
-        len += glyph_len;
-        s = font->width(font->userdata, font->height, text, len);
+    while (glyph_len && (width < space) && (len + glyph_len <= text_len)) {
+        s = font->width(font->userdata, font->height, text, len + glyph_len);
+        if (s > space)
+            break;
+
         for (i = 0; i < sep_count; ++i) {
             if (unicode != sep_list[i]) continue;
+            sep_len = len + glyph_len;
             sep_width = last_width = width;
-            sep_g = g+1;
-            sep_len = len;
+            sep_g = g + 1;
             break;
         }
-        if (i == sep_count){
-            last_width = sep_width = width;
-            sep_g = g+1;
+        if (i == sep_count) {
+            last_width = s;
         }
+        len += glyph_len;
         width = s;
-        glyph_len = nk_utf_decode(&text[len], &unicode, text_len - len);
         g++;
+        glyph_len = nk_utf_decode(&text[len], &unicode, text_len - len);
     }
     if (len >= text_len) {
         *glyphs = g;
         *text_width = last_width;
+        if (clamped_at_sep)
+            *clamped_at_sep = nk_false;
         return len;
     } else {
-        *glyphs = sep_g;
-        *text_width = sep_width;
-        return (!sep_len) ? len: sep_len;
+        /* Skip trailing separators */
+        while (glyph_len && (len + glyph_len <= text_len)) {
+            for (i = 0; i < sep_count; ++i) {
+                if (unicode != sep_list[i]) continue;
+                sep_len = len + glyph_len;
+                sep_g = g + 1;
+                break;
+            }
+            if (i == sep_count)
+                break;
+
+            len += glyph_len;
+            g++;
+            glyph_len = nk_utf_decode(&text[len], &unicode, text_len - len);
+        }
+
+        if (!sep_len) {
+            *glyphs = g;
+            *text_width = last_width;
+            if (clamped_at_sep)
+                *clamped_at_sep = nk_false;
+            return len;
+        } else {
+            *glyphs = sep_g;
+            *text_width = sep_width;
+            if (clamped_at_sep)
+                *clamped_at_sep = nk_true;
+            return sep_len;
+        }
     }
 }
 NK_LIB struct nk_vec2
@@ -8332,6 +8468,348 @@ nk_color_hsv_bv(nk_byte *out, struct nk_color in)
     out[0] = (nk_byte)tmp[0];
     out[1] = (nk_byte)tmp[1];
     out[2] = (nk_byte)tmp[2];
+}
+
+NK_API void nk_name_color_init(struct nk_name_color *cn, const char *n, struct nk_color c)
+{
+    int len;
+
+    NK_ASSERT(cn);
+    NK_ASSERT(n);
+
+    if (!cn || !n)
+        return;
+
+    len = NK_MIN(nk_strlen(n), NK_NAME_COLOR_MAX_NAME - 1);
+    cn->name = nk_murmur_hash(n, len, NK_COLOR_INLINE_TAG);
+    NK_MEMCPY(cn->name_string, n, len);
+    cn->name_string[len] = '\0';
+    cn->color = c;
+}
+
+#ifdef NK_INCLUDE_DEFAULT_ALLOCATOR
+NK_API void nk_map_name_color_init_default(struct nk_map_name_color *c)
+{
+    struct nk_allocator alloc;
+
+    NK_ASSERT(c);
+
+    if (!c)
+        return;
+
+    alloc.userdata.ptr = 0;
+    alloc.alloc = nk_malloc;
+    alloc.free = nk_mfree;
+    nk_buffer_init(&c->buffer, &alloc, NK_DEFAULT_MAP_NAME_COLOR_BUFFER_SIZE);
+    c->count = 0;
+}
+
+#endif
+
+NK_API void nk_map_name_color_init(struct nk_map_name_color *c, const struct nk_allocator *a, const struct nk_name_color *cv, int cc)
+{
+    nk_size size;
+
+    NK_ASSERT(c);
+    NK_ASSERT(a);
+
+    if (!c || !a)
+        return;
+
+    if (cc == 0) {
+        nk_buffer_init(&c->buffer, a, NK_DEFAULT_MAP_NAME_COLOR_BUFFER_SIZE);
+        c->count = 0;
+        return;
+    }
+
+    NK_ASSERT(cv);
+    if (!cv)
+        return;
+
+    size = sizeof(struct nk_name_color) * cc;
+    nk_buffer_init(&c->buffer, a, size);
+    nk_buffer_push(&c->buffer, NK_BUFFER_FRONT, cv, size, sizeof(nk_hash));
+    c->count = cc;
+}
+
+NK_API void nk_map_name_color_init_colors(struct nk_map_name_color *c, const struct nk_allocator *a, const char **nv, struct nk_color *cv, int cc)
+{
+    nk_size size;
+    struct nk_name_color *m;
+    int i;
+
+    NK_ASSERT(c);
+    NK_ASSERT(a);
+
+    if (!c || !a)
+        return;
+
+    if (cc == 0) {
+        nk_buffer_init(&c->buffer, a, NK_DEFAULT_MAP_NAME_COLOR_BUFFER_SIZE);
+        c->count = 0;
+        return;
+    }
+
+    NK_ASSERT(nv);
+    NK_ASSERT(cv);
+    if (!nv || !cv)
+        return;
+
+    size = sizeof(struct nk_name_color) * cc;
+    nk_buffer_init(&c->buffer, a, size);
+    nk_buffer_alloc(&c->buffer, NK_BUFFER_FRONT, size, sizeof(nk_hash));
+    m = (struct nk_name_color *)c->buffer.memory.ptr;
+    for (i = 0; i < cc; ++i)
+        nk_name_color_init(&m[i], nv[i], cv[i]);
+    c->count = cc;
+}
+
+NK_API void nk_map_name_color_init_map_name_color(struct nk_map_name_color *c0, const struct nk_allocator *a, const struct nk_map_name_color *c1, const char **filter_out, int count)
+{
+    nk_size size;
+    struct nk_name_color *cv1;
+    int i, j, len, hashes_count;
+    nk_bool filtered;
+    nk_hash hashes[32];
+
+    NK_ASSERT(c0);
+    NK_ASSERT(a);
+    NK_ASSERT(c1);
+
+    if (!c0 || !a || !c1)
+        return;
+
+    if (c1->count == 0) {
+        nk_buffer_init(&c0->buffer, a, NK_DEFAULT_MAP_NAME_COLOR_BUFFER_SIZE);
+        c0->count = 0;
+        return;
+    }
+
+    size = sizeof(struct nk_name_color) * c1->count;
+    cv1 = (struct nk_name_color *)c1->buffer.memory.ptr;
+
+    if (count == 0) {
+        nk_buffer_init(&c0->buffer, a, size);
+        nk_buffer_push(&c0->buffer, NK_BUFFER_FRONT, cv1, size, sizeof(nk_hash));
+        c0->count = c1->count;
+        return;
+    }
+
+    NK_ASSERT(filter_out);
+    if (!filter_out)
+        return;
+
+    nk_buffer_init(&c0->buffer, a, size);
+
+    c0->count = 0;
+    hashes_count = NK_MIN((int)NK_LEN(hashes), count);
+    for (j = 0; j < hashes_count; ++j) {
+        len = NK_MIN(nk_strlen(filter_out[j]), NK_NAME_COLOR_MAX_NAME - 1);
+        hashes[j] = nk_murmur_hash(filter_out[j], len, NK_COLOR_INLINE_TAG);
+    }
+
+    for (i = 0; i < c1->count; ++i) {
+        filtered = 0;
+        for (j = 0; j < hashes_count; ++j) {
+            if (hashes[j] == cv1[i].name) {
+                if (nk_stricmpn(cv1[i].name_string, filter_out[j], NK_NAME_COLOR_MAX_NAME - 1) == 0) {
+                    filtered = 1;
+                    break;
+                }
+            }
+        }
+        if (!filtered) {
+            nk_buffer_push(&c0->buffer, NK_BUFFER_FRONT, &cv1[i], sizeof(struct nk_name_color), sizeof(nk_hash));
+            ++c0->count;
+        }
+    }
+
+    if (count > hashes_count)
+        nk_map_name_color_delete(c0, filter_out + hashes_count, count - hashes_count);
+}
+
+NK_API void nk_map_name_color_init_fixed(struct nk_map_name_color *c, struct nk_name_color *cv, int count, int capacity)
+{
+    NK_ASSERT(c);
+    NK_ASSERT(cv);
+    NK_ASSERT(count <= capacity);
+    NK_ASSERT(capacity != 0);
+
+    if (!c || !cv || count > capacity || capacity == 0)
+        return;
+
+    nk_buffer_init_fixed(&c->buffer, cv, capacity * sizeof(struct nk_name_color));
+    c->buffer.allocated = count * sizeof(struct nk_name_color);
+    c->count = count;
+}
+
+NK_API void nk_map_name_color_free(struct nk_map_name_color *c)
+{
+    NK_ASSERT(c);
+
+    if (!c)
+        return;
+
+    nk_buffer_free(&c->buffer);
+    c->count = 0;
+}
+
+NK_API void nk_map_name_color_push(struct nk_map_name_color *c, const struct nk_name_color *cv, int cc)
+{
+    nk_size size;
+    void *mem;
+
+    NK_ASSERT(c);
+
+    if (!c)
+        return;
+
+    if (cc == 0)
+        return;
+    NK_ASSERT(cv);
+    if (!cv)
+        return;
+
+    size = cc * sizeof(struct nk_name_color);
+    mem = nk_buffer_alloc(&c->buffer, NK_BUFFER_FRONT, size, sizeof(nk_hash));
+    if (!mem)
+        return;
+    NK_MEMCPY(mem, cv, size);
+    c->count += cc;
+}
+
+NK_API void nk_map_name_color_push_colors(struct nk_map_name_color *c, const char **nv, struct nk_color *cv, int cc)
+{
+    nk_size size;
+    void *mem;
+    struct nk_name_color *m;
+    int i;
+
+    NK_ASSERT(c);
+
+    if (!c)
+        return;
+
+    if (cc == 0)
+        return;
+    NK_ASSERT(nv);
+    NK_ASSERT(cv);
+    if (!nv || !cv)
+        return;
+
+    size = sizeof(struct nk_name_color) * cc;
+    mem = nk_buffer_alloc(&c->buffer, NK_BUFFER_FRONT, size, sizeof(nk_hash));
+    if (!mem)
+        return;
+    m = (struct nk_name_color *)mem;
+    for (i = 0; i < cc; ++i)
+        nk_name_color_init(&m[i], nv[i], cv[i]);
+    c->count += cc;
+}
+
+NK_API void nk_map_name_color_push_map_name_color(struct nk_map_name_color *c0, const struct nk_map_name_color *c1)
+{
+    nk_size size;
+    void *mem;
+
+    NK_ASSERT(c0);
+    NK_ASSERT(c1);
+
+    if (!c0 || !c1)
+        return;
+
+    size = c1->count * sizeof(struct nk_name_color);
+    mem = nk_buffer_alloc(&c0->buffer, NK_BUFFER_FRONT, size, sizeof(nk_hash));
+    if (!mem)
+        return;
+    NK_MEMCPY(mem, c1->buffer.memory.ptr, size);
+    c0->count += c1->count;
+}
+
+NK_API void nk_map_name_color_delete(struct nk_map_name_color *c, const char **filter_out, int count)
+{
+    nk_size size;
+    int hashes_count, out_count = 0;
+    nk_bool filtered;
+    int out_begin, out_end, i, j, len, out_state;
+    struct nk_name_color *cv;
+    nk_hash hashes[32];
+
+    NK_ASSERT(c);
+
+    if (!c || c->count == 0)
+        return;
+
+    if (count == 0)
+        return;
+    NK_ASSERT(filter_out);
+    if (!filter_out)
+        return;
+
+    cv = (struct nk_name_color *)c->buffer.memory.ptr;
+    while (count > 0) {
+        hashes_count = NK_MIN((int)NK_LEN(hashes), count);
+
+        for (j = 0; j < hashes_count; ++j) {
+            len = NK_MIN(nk_strlen(filter_out[j]), NK_NAME_COLOR_MAX_NAME - 1);
+            hashes[j] = nk_murmur_hash(filter_out[j], len, NK_COLOR_INLINE_TAG);
+        }
+
+        out_state = -1;
+        for (i = 0; i < c->count; ++i) {
+            filtered = 0;
+            for (j = 0; j < hashes_count; ++j) {
+                if (hashes[j] == cv[i].name) {
+                    if (nk_stricmpn(cv[i].name_string, filter_out[j], NK_NAME_COLOR_MAX_NAME - 1) == 0) {
+                        filtered = 1;
+                        break;
+                    }
+                }
+            }
+            if (filtered) {
+                if (out_state == 1) {
+                    /* memmove */
+                    size = (i - out_end) * sizeof(struct nk_name_color);
+                    NK_MEMCPY(&cv[out_begin], &cv[out_end], size);
+                    out_count += out_end - out_begin;
+                }
+                if (out_state != 0) {
+                    out_state = 0;
+                    out_begin = i;
+                }
+            } else {
+                if (out_state == 0) {
+                    out_state = 1;
+                    out_end = i;
+                }
+            }
+        }
+        /* copy final stretch if needed */
+        if (out_state == 1) {
+            size = (i - out_end) * sizeof(struct nk_name_color);
+            NK_MEMCPY(&cv[out_begin], &cv[out_end], size);
+            out_count += out_end - out_begin;
+        } else if (out_state == 0) {
+            out_count += i - out_begin;
+        }
+
+        c->buffer.allocated -= out_count * sizeof(struct nk_name_color);
+        c->count -= out_count;
+
+        filter_out += hashes_count;
+        count -= hashes_count;
+    }
+}
+
+NK_API void nk_map_name_color_clear(struct nk_map_name_color *c)
+{
+    NK_ASSERT(c);
+
+    if (!c)
+        return;
+
+    nk_buffer_clear(&c->buffer);
+    c->count = 0;
 }
 
 
@@ -9225,6 +9703,10 @@ nk_command_buffer_init(struct nk_command_buffer *cb,
     cb->begin = b->allocated;
     cb->end = b->allocated;
     cb->last = b->allocated;
+#ifdef NK_INCLUDE_COMMAND_USERDATA
+    cb->userdata.ptr = 0;
+#endif
+    cb->draw_config = 0;
 }
 NK_LIB void
 nk_command_buffer_reset(struct nk_command_buffer *b)
@@ -9238,6 +9720,7 @@ nk_command_buffer_reset(struct nk_command_buffer *b)
 #ifdef NK_INCLUDE_COMMAND_USERDATA
     b->userdata.ptr = 0;
 #endif
+    b->draw_config = 0;
 }
 NK_LIB void*
 nk_command_buffer_push(struct nk_command_buffer* b,
@@ -9722,45 +10205,410 @@ nk_push_custom(struct nk_command_buffer *b, struct nk_rect r,
     cmd->callback = cb;
 }
 NK_API void
+nk_draw_set_color_inline(struct nk_context *ctx, enum nk_color_inline_type color_inline)
+{
+    NK_ASSERT(ctx);
+    if (!ctx) return;
+    ctx->draw_config.color_inline = color_inline;
+}
+NK_API nk_bool
+nk_draw_push_color_inline(struct nk_context *ctx, enum nk_color_inline_type color_inline)
+{
+    struct nk_config_stack_color_inline *color_inline_stack;
+    struct nk_config_stack_color_inline_element *element;
+
+    NK_ASSERT(ctx);
+    if (!ctx) return 0;
+
+    color_inline_stack = &ctx->stacks.color_inline;
+    NK_ASSERT(color_inline_stack->head < (int)NK_LEN(color_inline_stack->elements));
+    if (color_inline_stack->head >= (int)NK_LEN(color_inline_stack->elements))
+        return 0;
+
+    element = &color_inline_stack->elements[color_inline_stack->head++];
+    element->old_value = ctx->draw_config.color_inline;
+    ctx->draw_config.color_inline = color_inline;
+    return 1;
+}
+NK_API nk_bool
+nk_draw_pop_color_inline(struct nk_context *ctx)
+{
+    struct nk_config_stack_color_inline *color_inline_stack;
+    struct nk_config_stack_color_inline_element *element;
+
+    NK_ASSERT(ctx);
+    if (!ctx) return 0;
+
+    color_inline_stack = &ctx->stacks.color_inline;
+    NK_ASSERT(color_inline_stack->head > 0);
+    if (color_inline_stack->head < 1)
+        return 0;
+
+    element = &color_inline_stack->elements[--color_inline_stack->head];
+    ctx->draw_config.color_inline = element->old_value;
+    return 1;
+}
+NK_API nk_bool nk_draw_push_map_name_color(struct nk_context *ctx, struct nk_map_name_color *c)
+{
+    struct nk_map_name_color_stack *stack;
+
+    NK_ASSERT(ctx);
+    NK_ASSERT(c);
+
+    if (!ctx || !c)
+        return 0;
+
+    stack = &ctx->draw_config.map_name_color;
+    NK_ASSERT(stack->head < (int)NK_LEN(stack->elements));
+    if (stack->head >= (int)NK_LEN(stack->elements))
+        return 0;
+
+    stack->elements[stack->head++] = c;
+
+    return 1;
+}
+NK_API struct nk_map_name_color *nk_draw_get_map_name_color(struct nk_context* ctx, int index)
+{
+    struct nk_map_name_color_stack *stack;
+
+    NK_ASSERT(ctx);
+    if (!ctx) return 0;
+
+    stack = &ctx->draw_config.map_name_color;
+    NK_ASSERT(stack->head > index);
+    if (stack->head <= index)
+        return 0;
+
+    return stack->elements[stack->head - 1 - index];
+}
+NK_API int nk_draw_get_map_name_color_index_range(struct nk_context *ctx)
+{
+    struct nk_map_name_color_stack *stack;
+
+    NK_ASSERT(ctx);
+    if (!ctx) return 0;
+
+    stack = &ctx->draw_config.map_name_color;
+    return stack->head;
+}
+NK_API struct nk_map_name_color *nk_draw_pop_map_name_color(struct nk_context *ctx)
+{
+    struct nk_map_name_color_stack *stack;
+
+    NK_ASSERT(ctx);
+
+    if (!ctx)
+        return 0;
+
+    stack = &ctx->draw_config.map_name_color;
+    NK_ASSERT(stack->head > 0);
+    if (stack->head < 1)
+        return 0;
+
+    return stack->elements[--stack->head];
+}
+NK_API struct nk_name_color *nk_draw_get_name_color(struct nk_map_name_color_stack *stack, const char *name, int len)
+{
+    int i, j;
+    struct nk_map_name_color *c;
+    struct nk_name_color *cv;
+    nk_hash hash;
+
+    NK_ASSERT(stack);
+
+    if (!stack || !name)
+        return 0;
+
+    NK_ASSERT(stack->head > 0);
+    if (stack->head < 1)
+        return 0;
+
+    i = stack->head;
+    len = NK_MIN(len, NK_NAME_COLOR_MAX_NAME - 1);
+    hash = nk_murmur_hash(name, len, NK_COLOR_INLINE_TAG);
+    do {
+        c = stack->elements[--i];
+        cv = (struct nk_name_color *)c->buffer.memory.ptr;
+        /* more recently pushed are on the back, so we start from the back */
+        for (j = c->count; j > 0;) {
+            --j;
+            if (cv[j].name == hash) {
+                if (nk_stricmpn(cv[j].name_string, name, len) == 0) {
+                    return &cv[j];
+                }
+            }
+        }
+    } while (i > 0);
+    return 0;
+}
+NK_API int
+nk_draw_raw_text(struct nk_command_buffer *b, struct nk_rect *r,
+    const char *text, int len, const struct nk_user_font *font,
+    struct nk_color bg, struct nk_color fg, nk_bool wrap,
+    nk_bool wrap_at_sep_only, float *w)
+{
+    struct nk_command_text *cmd = 0;
+    enum nk_color_inline_type color_inline;
+    int i, j, len_esc = len;
+    const char *text_esc = text;
+    float font_width;
+
+    NK_ASSERT(b);
+    NK_ASSERT(font);
+
+    if (!b || !font || !text || !len || (bg.a == 0 && fg.a == 0)) return 0;
+
+    if (b->draw_config) {
+        color_inline = b->draw_config->color_inline;
+    } else {
+        color_inline = NK_COLOR_INLINE_NONE;
+    }
+
+    if (color_inline != NK_COLOR_INLINE_NONE) {
+        cmd = (struct nk_command_text*)
+            nk_command_buffer_push(b, NK_COMMAND_TEXT, sizeof(*cmd) + (nk_size)(len + 1));
+        if (!cmd) return 0;
+
+        for (i = 0, j = 0; i < len; ++i)
+            if (text[i] != NK_ESC_CHAR)
+                cmd->string[j++] = text[i];
+        text = cmd->string;
+        len = j;
+    }
+
+    /* make sure text fits inside bounds */
+    font_width = font->width(font->userdata, font->height, text, len);
+    if (font_width > r->w) {
+        NK_INTERN nk_rune separator[] = {' '};
+        int glyphs = 0, draw_len;
+        nk_bool clamped_at_sep;
+
+        if (wrap) {
+            draw_len = nk_text_clamp(font, text, len, r->w, &glyphs, &font_width, separator, NK_LEN(separator), &clamped_at_sep);
+            if (wrap_at_sep_only && !clamped_at_sep)
+                draw_len = 0;
+        } else {
+            draw_len = nk_text_clamp(font, text, len, r->w, &glyphs, &font_width, 0, 0, 0);
+        }
+
+        if (draw_len != len) {
+            len = draw_len;
+            for (i = 0, j = 0; j < len; ++i)
+                if (text_esc[i] != NK_ESC_CHAR)
+                    ++j;
+            len_esc = j;
+        }
+    }
+    if (w)
+        *w = font_width;
+
+    if (color_inline == NK_COLOR_INLINE_NONE) {
+        if (!len)
+            return 0;
+
+        cmd = (struct nk_command_text*)
+            nk_command_buffer_push(b, NK_COMMAND_TEXT, sizeof(*cmd) + (nk_size)(len + 1));
+        if (!cmd) return 0;
+
+        NK_MEMCPY(cmd->string, text, (nk_size)len);
+    }
+
+    cmd->x = (short)r->x;
+    cmd->y = (short)r->y;
+    cmd->w = (unsigned short)r->w;
+    cmd->h = (unsigned short)r->h;
+    cmd->background = bg;
+    cmd->foreground = fg;
+    cmd->font = font;
+    cmd->length = len;
+    cmd->string[len] = '\0';
+    cmd->height = font->height;
+
+    r->x += font_width;
+    r->w -= font_width;
+
+    return len_esc;
+}
+#define NK_COLOR_INLINE_HEX_CODE_READ_LOOP(N) do { \
+    if ((color_name_end = k++) >= length) \
+        goto end_branch; \
+} while ( \
+    NK_CHAR_IS_HEX_DIGIT(c = string[color_name_end]) && ++found < N \
+)
+#define NK_COLOR_INLINE_GET_COLOR_FROM_STACK(DST, TAG_INDEX, DEF) do { \
+    DST = stack->head[TAG_INDEX] > 0 && \
+        stack->head[TAG_INDEX] <= NK_INLINE_TAG_STACK_SIZE ? \
+        stack->colors[TAG_INDEX][stack->head[TAG_INDEX] - 1] : DEF; \
+} while (0)
+#define NK_COLOR_INLINE_DRAW_TEXT() do { if (j + esc_count < i) { \
+    NK_COLOR_INLINE_GET_COLOR_FROM_STACK(current_bg, NK_INLINE_TAG_BGCOLOR, bg); \
+    NK_COLOR_INLINE_GET_COLOR_FROM_STACK(current_fg, NK_INLINE_TAG_COLOR, fg); \
+    len = i - j; \
+    draw_len = nk_draw_raw_text(b, r, string + j, len, font, current_bg, current_fg, wrap, wrap_at_sep_only, &w); \
+    wrap_at_sep_only = nk_true; \
+    if (draw_len < len) \
+        return j + draw_len; \
+} esc_count = 0; } while (0)
+NK_API int
+nk_draw_coded_text(struct nk_command_buffer *b, struct nk_rect *r,
+    const char *string, int length, const struct nk_user_font *font,
+    struct nk_color bg, struct nk_color fg, nk_bool wrap, struct nk_inline_tag_stack *stack)
+{
+    struct nk_name_color *name_color;
+    struct nk_color color, current_fg, current_bg;
+    enum nk_color_inline_type color_inline;
+    struct nk_map_name_color_stack *name_color_stack;
+    const char *tag_begin[NK_INLINE_TAG_MAX] = {"[color=", "[bgcolor="};
+    const char *tag_end[NK_INLINE_TAG_MAX] = {"[/color]", "[/bgcolor]"};
+
+    int i, j = 0, k, l, esc_count = 0, len, draw_len, found, color_name_begin, color_name_end;
+    char c;
+    float w;
+    nk_bool wrap_at_sep_only = nk_false;
+
+    NK_ASSERT(b);
+    NK_ASSERT(font);
+    if (!b || !font || !string || !length || (bg.a == 0 && fg.a == 0)) return 0;
+    if (b->use_clipping) {
+        const struct nk_rect *c = &b->clip;
+        if (c->w == 0 || c->h == 0 || !NK_INTERSECT(r->x, r->y, r->w, r->h, c->x, c->y, c->w, c->h))
+            return 0;
+    }
+
+    if (b->draw_config) {
+        color_inline = b->draw_config->color_inline;
+        name_color_stack = &b->draw_config->map_name_color;
+    } else {
+        color_inline = NK_COLOR_INLINE_NONE;
+        name_color_stack = 0;
+    }
+
+    if (color_inline == NK_COLOR_INLINE_NONE || color_inline >= NK_COLOR_INLINE_MAX) {
+        i = length;
+        goto end;
+    }
+    if (color_inline == NK_COLOR_INLINE_ESCAPE_TAG)
+        found = 0;
+    for (i = 0; i < length; ++i) {
+begin:
+        if (string[i] == NK_ESC_CHAR) {
+            ++esc_count;
+            if (color_inline == NK_COLOR_INLINE_TAG) {
+                if (++i < length) {
+                    if (string[i] == '[')
+                        continue;
+                    goto begin;
+                }
+                break;
+            } else if (color_inline == NK_COLOR_INLINE_ESCAPE_TAG) {
+                found = 1;
+                continue;
+            }
+        }
+        if (color_inline == NK_COLOR_INLINE_ESCAPE_TAG && found == 0)
+            continue;
+        for (l = 0; l < NK_INLINE_TAG_MAX; ++l) {
+            if (length - i > nk_strlen(tag_begin[l]) &&
+                nk_stricmpn(&string[i], tag_begin[l], nk_strlen(tag_begin[l])) == 0
+            ) {
+                k = i + nk_strlen(tag_begin[l]);
+                if (string[k] == '"') {
+                    color_name_begin = ++k;
+                    /* found = (NK_NAME_COLOR_MAX_NAME - 1) + 1 + 1 */
+                    /* first (+ 1) is to read one past end for '"' */
+                    /* second (+ 1) is to terminate loop immediately after one past end */
+                    found = NK_NAME_COLOR_MAX_NAME + 1;
+                    while (--found) {
+                        if ((color_name_end = k++) >= length)
+                            goto end_branch;
+                        if (string[color_name_end] == '"') {
+                            if (k >= length)
+                                goto end_branch;
+                            if (string[k] == ']') {
+                                found = 1;
+                                break;
+                            }
+                        }
+                    }
+                    if (found) {
+                        name_color = nk_draw_get_name_color(name_color_stack,
+                            string + color_name_begin,
+                            color_name_end - color_name_begin);
+                        if (name_color) {
+                            color = name_color->color;
+                        } else {
+                            found = 0;
+                        }
+                    }
+                } else if (string[k] == '#') {
+                    found = 0;
+                    color_name_begin = ++k;
+                    NK_COLOR_INLINE_HEX_CODE_READ_LOOP(6);
+                    if (k >= length)
+                        goto end_branch;
+                    found = 0;
+                    if (NK_CHAR_IS_HEX_DIGIT(c)) {
+                        if (string[k] == ']') {
+                            color = nk_rgb_hex(string + color_name_begin);
+                            found = 1;
+                        } else {
+                            NK_COLOR_INLINE_HEX_CODE_READ_LOOP(2);
+                            if (k >= length)
+                                goto end_branch;
+                            found = 0;
+                            if (NK_CHAR_IS_HEX_DIGIT(c)) {
+                                if (string[k] == ']') {
+                                    color = nk_rgba_hex(string + color_name_begin);
+                                    found = 1;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (found) {
+                    NK_COLOR_INLINE_DRAW_TEXT();
+                    i = j = k + 1;
+                    if (i >= length)
+                        goto end;
+                    if (stack->head[l] < NK_INLINE_TAG_STACK_SIZE) {
+                        stack->colors[l][stack->head[l]] = color;
+                    }
+                    ++stack->head[l];
+                    found = 0;
+                    goto begin;
+                }
+            }
+end_branch:
+            found = 0;
+            if (length - i >= nk_strlen(tag_end[l]) &&
+                nk_stricmpn(&string[i], tag_end[l], nk_strlen(tag_end[l])) == 0
+            ) {
+                if (stack->head[l] > 0) {
+                    NK_COLOR_INLINE_DRAW_TEXT();
+                    --stack->head[l];
+                    j = i += nk_strlen(tag_end[l]);
+                    if (i < length)
+                        goto begin;
+                    else
+                        goto end;
+                }
+            }
+        } /* for l */
+    } /* for i */
+end:
+    NK_COLOR_INLINE_DRAW_TEXT();
+    return i;
+}
+#undef NK_COLOR_INLINE_DRAW_TEXT
+#undef NK_COLOR_INLINE_GET_COLOR_FROM_STACK
+#undef NK_COLOR_INLINE_HEX_CODE_READ_LOOP
+NK_API void
 nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
     const char *string, int length, const struct nk_user_font *font,
     struct nk_color bg, struct nk_color fg)
 {
-    float text_width = 0;
-    struct nk_command_text *cmd;
-
-    NK_ASSERT(b);
-    NK_ASSERT(font);
-    if (!b || !string || !length || (bg.a == 0 && fg.a == 0)) return;
-    if (b->use_clipping) {
-        const struct nk_rect *c = &b->clip;
-        if (c->w == 0 || c->h == 0 || !NK_INTERSECT(r.x, r.y, r.w, r.h, c->x, c->y, c->w, c->h))
-            return;
-    }
-
-    /* make sure text fits inside bounds */
-    text_width = font->width(font->userdata, font->height, string, length);
-    if (text_width > r.w){
-        int glyphs = 0;
-        float txt_width = (float)text_width;
-        length = nk_text_clamp(font, string, length, r.w, &glyphs, &txt_width, 0,0);
-    }
-
-    if (!length) return;
-    cmd = (struct nk_command_text*)
-        nk_command_buffer_push(b, NK_COMMAND_TEXT, sizeof(*cmd) + (nk_size)(length + 1));
-    if (!cmd) return;
-    cmd->x = (short)r.x;
-    cmd->y = (short)r.y;
-    cmd->w = (unsigned short)r.w;
-    cmd->h = (unsigned short)r.h;
-    cmd->background = bg;
-    cmd->foreground = fg;
-    cmd->font = font;
-    cmd->length = length;
-    cmd->height = font->height;
-    NK_MEMCPY(cmd->string, string, (nk_size)length);
-    cmd->string[length] = '\0';
+    struct nk_inline_tag_stack stack = {0};
+    nk_draw_coded_text(b, &r, string, length, font, bg, fg, nk_false, &stack);
 }
 
 
@@ -19432,7 +20280,10 @@ nk_free(struct nk_context *ctx)
     ctx->begin = 0;
     ctx->end = 0;
     ctx->active = 0;
-    ctx->current = 0;
+    if (ctx->current) {
+        ctx->current->buffer.draw_config = 0;
+        ctx->current = 0;
+    }
     ctx->freelist = 0;
     ctx->count = 0;
 }
@@ -20011,6 +20862,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
 #ifdef NK_INCLUDE_COMMAND_USERDATA
     win->buffer.userdata = ctx->userdata;
 #endif
+    win->buffer.draw_config = &ctx->draw_config;
     /* pull style configuration into local stack */
     scrollbar_size = style->window.scrollbar_size;
     panel_padding = nk_panel_get_padding(style, panel_type);
@@ -23797,12 +24649,20 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
     const char *string, int len, const struct nk_text *t,
     nk_flags a, const struct nk_user_font *f)
 {
+    struct nk_inline_tag_stack stack = {0};
+    nk_widget_coded_text(o, b, string, len, t, a, f, nk_false, &stack);
+}
+NK_LIB int
+nk_widget_coded_text(struct nk_command_buffer *o, struct nk_rect b,
+    const char *string, int len, const struct nk_text *t,
+    nk_flags a, const struct nk_user_font *f, nk_bool wrap, struct nk_inline_tag_stack *stack)
+{
     struct nk_rect label;
     float text_width;
 
     NK_ASSERT(o);
     NK_ASSERT(t);
-    if (!o || !t) return;
+    if (!o || !t) return 0;
 
     b.h = NK_MAX(b.h, 2 * t->padding.y);
     label.x = 0; label.w = 0;
@@ -23825,7 +24685,7 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
     } else if (a & NK_TEXT_ALIGN_RIGHT) {
         label.x = NK_MAX(b.x + t->padding.x, (b.x + b.w) - (2 * t->padding.x + (float)text_width));
         label.w = (float)text_width + 2 * t->padding.x;
-    } else return;
+    } else return 0;
 
     /* align in y-axis */
     if (a & NK_TEXT_ALIGN_MIDDLE) {
@@ -23835,20 +24695,18 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
         label.y = b.y + b.h - f->height;
         label.h = f->height;
     }
-    nk_draw_text(o, label, (const char*)string, len, f, t->background, t->text);
+    return nk_draw_coded_text(o, &label, (const char*)string, len, f, t->background, t->text, wrap, stack);
 }
 NK_LIB void
 nk_widget_text_wrap(struct nk_command_buffer *o, struct nk_rect b,
     const char *string, int len, const struct nk_text *t,
     const struct nk_user_font *f)
 {
-    float width;
-    int glyphs = 0;
     int fitting = 0;
     int done = 0;
     struct nk_rect line;
     struct nk_text text;
-    NK_INTERN nk_rune seperator[] = {' '};
+    struct nk_inline_tag_stack stack = {0};
 
     NK_ASSERT(o);
     NK_ASSERT(t);
@@ -23867,13 +24725,12 @@ nk_widget_text_wrap(struct nk_command_buffer *o, struct nk_rect b,
     line.w = b.w - 2 * t->padding.x;
     line.h = 2 * t->padding.y + f->height;
 
-    fitting = nk_text_clamp(f, string, len, line.w, &glyphs, &width, seperator,NK_LEN(seperator));
+    fitting = len;
     while (done < len) {
         if (!fitting || line.y + line.h >= (b.y + b.h)) break;
-        nk_widget_text(o, line, &string[done], fitting, &text, NK_TEXT_LEFT, f);
+        fitting = nk_widget_coded_text(o, line, &string[done], len - done, &text, NK_TEXT_LEFT, f, nk_true, &stack);
         done += fitting;
         line.y += f->height + 2 * t->padding.y;
-        fitting = nk_text_clamp(f, &string[done], len - done, line.w, &glyphs, &width, seperator,NK_LEN(seperator));
     }
 }
 NK_API void
@@ -27906,6 +28763,7 @@ nk_edit_draw_text(struct nk_command_buffer *out,
     const char *line = text;
     float line_offset = 0;
     int line_count = 0;
+    enum nk_color_inline_type color_inline = NK_COLOR_INLINE_NONE;
 
     struct nk_text txt;
     txt.padding = nk_vec2(0,0);
@@ -27917,6 +28775,12 @@ nk_edit_draw_text(struct nk_command_buffer *out,
 
     glyph_len = nk_utf_decode(text+text_len, &unicode, byte_len-text_len);
     if (!glyph_len) return;
+
+    if (out->draw_config) {
+        color_inline = out->draw_config->color_inline;
+        out->draw_config->color_inline = NK_COLOR_INLINE_NONE;
+    }
+
     while ((text_len < byte_len) && glyph_len)
     {
         if (unicode == '\n') {
@@ -27967,6 +28831,10 @@ nk_edit_draw_text(struct nk_command_buffer *out,
             nk_fill_rect(out, label, 0, background);
         nk_widget_text(out, label, line, (int)((text + text_len) - line),
             &txt, NK_TEXT_LEFT, font);
+    }
+
+    if (out->draw_config) {
+        out->draw_config->color_inline = color_inline;
     }}
 }
 NK_LIB nk_flags
