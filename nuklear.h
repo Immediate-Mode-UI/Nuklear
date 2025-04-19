@@ -25923,6 +25923,7 @@ nk_do_slider(nk_flags *state,
 
     struct nk_rect visual_cursor;
     struct nk_rect logical_cursor;
+    struct nk_rect cursor;
 
     NK_ASSERT(style);
     NK_ASSERT(out);
@@ -25986,8 +25987,13 @@ nk_do_slider(nk_flags *state,
     visual_cursor.y = (bounds.y + bounds.h*0.5f) - visual_cursor.h*0.5f;
     visual_cursor.x = logical_cursor.x - visual_cursor.w*0.5f;
 
-    slider_value = nk_slider_behavior(state, &logical_cursor, &visual_cursor,
-        in, bounds, slider_min, slider_max, slider_value, step, slider_steps);
+    cursor.w = NK_MAX(bounds.w, 2 * style->padding.x + 2 * style->border);
+    cursor.h = NK_MAX(bounds.h, 2 * style->padding.y + 2 * style->border);
+    cursor = nk_pad_rect(bounds, nk_vec2(style->padding.x + style->border, style->padding.y + style->border));
+
+    NK_UNUSED(nk_slider_behavior);
+    slider_value = (nk_float)nk_progress_behavior(state, in, bounds, cursor,
+        (nk_size)(slider_max - slider_min), (nk_size)(slider_value - slider_min), nk_true) + slider_min;
     visual_cursor.x = logical_cursor.x - visual_cursor.w*0.5f;
 
     /* draw slider */
@@ -30716,6 +30722,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2025/04/19 (4.12.8) - Make slider behave like progress bar
 /// - 2025/04/06 (4.12.7) - Fix text input navigation and mouse scrolling
 /// - 2025/03/29 (4.12.6) - Fix unitialized data in nk_input_char
 /// - 2025/03/05 (4.12.5) - Fix scrolling knob also scrolling parent window, remove dead code
