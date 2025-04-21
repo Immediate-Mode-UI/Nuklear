@@ -131,6 +131,7 @@ nk_do_slider(nk_flags *state,
 
     struct nk_rect visual_cursor;
     struct nk_rect logical_cursor;
+    struct nk_rect cursor;
 
     NK_ASSERT(style);
     NK_ASSERT(out);
@@ -194,8 +195,13 @@ nk_do_slider(nk_flags *state,
     visual_cursor.y = (bounds.y + bounds.h*0.5f) - visual_cursor.h*0.5f;
     visual_cursor.x = logical_cursor.x - visual_cursor.w*0.5f;
 
-    slider_value = nk_slider_behavior(state, &logical_cursor, &visual_cursor,
-        in, bounds, slider_min, slider_max, slider_value, step, slider_steps);
+    cursor.w = NK_MAX(bounds.w, 2 * style->padding.x + 2 * style->border);
+    cursor.h = NK_MAX(bounds.h, 2 * style->padding.y + 2 * style->border);
+    cursor = nk_pad_rect(bounds, nk_vec2(style->padding.x + style->border, style->padding.y + style->border));
+
+    NK_UNUSED(nk_slider_behavior);
+    slider_value = (nk_float)nk_progress_behavior(state, in, bounds, cursor,
+        (nk_size)(slider_max - slider_min), (nk_size)(slider_value - slider_min), nk_true) + slider_min;
     visual_cursor.x = logical_cursor.x - visual_cursor.w*0.5f;
 
     /* draw slider */
