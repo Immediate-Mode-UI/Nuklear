@@ -83,6 +83,9 @@
 
 
 /* Platform */
+struct nk_sdl_device dev;
+struct nk_font_atlas atlas;
+Uint64 time_of_last_frame;
 SDL_Window *win;
 int running = nk_true;
 
@@ -99,9 +102,9 @@ MainLoop(void* loopArg){
     nk_input_begin(ctx);
     while (SDL_PollEvent(&evt)) {
         if (evt.type == SDL_QUIT) running = nk_false;
-        nk_sdl_handle_event(&evt);
+        nk_sdl_handle_event(ctx, &evt);
     }
-    nk_sdl_handle_grab(); /* optional grabbing behavior */
+    nk_sdl_handle_grab(ctx, win); /* optional grabbing behavior */
     nk_input_end(ctx);
 
 
@@ -177,14 +180,14 @@ MainLoop(void* loopArg){
      * defaults everything back into a default state.
      * Make sure to either a.) save and restore or b.) reset your own state after
      * rendering the UI. */
-    nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
+    nk_sdl_render(ctx, &dev, win, NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY, &time_of_last_frame);
     SDL_GL_SwapWindow(win);}
 }
 
 int main(int argc, char* argv[])
 {
     /* GUI */
-    struct nk_context *ctx;
+    struct nk_context ctx;
     SDL_GLContext glContext;
 
     NK_UNUSED(argc);
@@ -206,32 +209,30 @@ int main(int argc, char* argv[])
     /* OpenGL setup */
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    ctx = nk_sdl_init(win);
+    nk_sdl_init(&ctx, &dev, &time_of_last_frame);
     /* Load Fonts: if none of these are loaded a default font will be used  */
     /* Load Cursor: if you uncomment cursor loading please hide the cursor */
-    {struct nk_font_atlas *atlas;
-    nk_sdl_font_stash_begin(&atlas);
-    /*struct nk_font *droid = nk_font_atlas_add_from_file(atlas, "../../../extra_font/DroidSans.ttf", 14, 0);*/
-    /*struct nk_font *roboto = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Roboto-Regular.ttf", 16, 0);*/
-    /*struct nk_font *future = nk_font_atlas_add_from_file(atlas, "../../../extra_font/kenvector_future_thin.ttf", 13, 0);*/
-    /*struct nk_font *clean = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyClean.ttf", 12, 0);*/
-    /*struct nk_font *tiny = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyTiny.ttf", 10, 0);*/
-    /*struct nk_font *cousine = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Cousine-Regular.ttf", 13, 0);*/
-    nk_sdl_font_stash_end();
-    /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
-    /*nk_style_set_font(ctx, &roboto->handle)*/;}
+    {nk_sdl_font_stash_begin(&atlas);
+    /*struct nk_font *droid = nk_font_atlas_add_from_file(&atlas, "../../../extra_font/DroidSans.ttf", 14, 0);*/
+    /*struct nk_font *roboto = nk_font_atlas_add_from_file(&atlas, "../../../extra_font/Roboto-Regular.ttf", 16, 0);*/
+    /*struct nk_font *future = nk_font_atlas_add_from_file(&atlas, "../../../extra_font/kenvector_future_thin.ttf", 13, 0);*/
+    /*struct nk_font *clean = nk_font_atlas_add_from_file(&atlas, "../../../extra_font/ProggyClean.ttf", 12, 0);*/
+    /*struct nk_font *tiny = nk_font_atlas_add_from_file(&atlas, "../../../extra_font/ProggyTiny.ttf", 10, 0);*/
+    /*struct nk_font *cousine = nk_font_atlas_add_from_file(&atlas, "../../../extra_font/Cousine-Regular.ttf", 13, 0);*/
+    nk_sdl_font_stash_end(&ctx, &atlas, &dev.tex_null, &dev.font_tex);
+    /*nk_style_load_all_cursors(&ctx, atlas.cursors);*/
+    /*nk_style_set_font(&ctx, &roboto->handle);*/}
 
 #if defined(__EMSCRIPTEN__)
     #include <emscripten.h>
-    emscripten_set_main_loop_arg(MainLoop, (void*)ctx, 0, nk_true);
+    emscripten_set_main_loop_arg(MainLoop, (void*)&ctx, 0, nk_true);
 #else
-    while (running) MainLoop((void*)ctx);
+    while (running) MainLoop((void*)&ctx);
 #endif
 
-    nk_sdl_shutdown();
+    nk_sdl_shutdown(&ctx, &atlas, &dev);
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(win);
     SDL_Quit();
     return 0;
 }
-

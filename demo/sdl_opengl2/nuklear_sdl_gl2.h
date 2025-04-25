@@ -63,8 +63,15 @@ nk_sdl_render(struct nk_context *ctx, struct nk_buffer *cmds, struct nk_draw_nul
     int width, height;
     int display_width, display_height;
     struct nk_vec2 scale;
+    Uint64 now;
 
-    Uint64 now = SDL_GetTicks();
+    NK_ASSERT(ctx);
+    NK_ASSERT(cmds);
+    NK_ASSERT(tex_null);
+    NK_ASSERT(win);
+    NK_ASSERT(time_of_last_frame);
+
+    now = SDL_GetTicks64();
     ctx->delta_time_seconds = (float)(now - *time_of_last_frame) / 1000;
     *time_of_last_frame = now;
 
@@ -203,17 +210,23 @@ nk_sdl_clipboard_copy(nk_handle usr, const char *text, int len)
 NK_API void
 nk_sdl_init(struct nk_context *ctx, struct nk_buffer *cmds, Uint64 *time_of_last_frame)
 {
+    NK_ASSERT(ctx);
+    NK_ASSERT(cmds);
+    NK_ASSERT(time_of_last_frame);
+
     nk_init_default(ctx, 0);
     ctx->clip.copy = nk_sdl_clipboard_copy;
     ctx->clip.paste = nk_sdl_clipboard_paste;
     ctx->clip.userdata = nk_handle_ptr(0);
     nk_buffer_init_default(cmds);
-    *time_of_last_frame = SDL_GetTicks();
+    *time_of_last_frame = SDL_GetTicks64();
 }
 
 NK_API void
 nk_sdl_font_stash_begin(struct nk_font_atlas *atlas)
 {
+    NK_ASSERT(atlas);
+
     nk_font_atlas_init_default(atlas);
     nk_font_atlas_begin(atlas);
 }
@@ -222,6 +235,12 @@ NK_API void
 nk_sdl_font_stash_end(struct nk_context *ctx, struct nk_font_atlas *atlas, struct nk_draw_null_texture *tex_null, GLuint *font_tex)
 {
     const void *image; int w, h;
+
+    NK_ASSERT(ctx);
+    NK_ASSERT(atlas);
+    NK_ASSERT(tex_null);
+    NK_ASSERT(font_tex);
+
     image = nk_font_atlas_bake(atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
     nk_sdl_device_upload_atlas(font_tex, image, w, h);
     nk_font_atlas_end(atlas, nk_handle_id((int)*font_tex), tex_null);
@@ -232,6 +251,9 @@ nk_sdl_font_stash_end(struct nk_context *ctx, struct nk_font_atlas *atlas, struc
 NK_API void
 nk_sdl_handle_grab(struct nk_context *ctx, SDL_Window *win)
 {
+    NK_ASSERT(ctx);
+    NK_ASSERT(win);
+
     if (ctx->input.mouse.grab) {
         SDL_SetRelativeMouseMode(SDL_TRUE);
     } else if (ctx->input.mouse.ungrab) {
@@ -247,7 +269,8 @@ nk_sdl_handle_grab(struct nk_context *ctx, SDL_Window *win)
 NK_API int
 nk_sdl_handle_event(struct nk_context *ctx, SDL_Event *evt)
 {
-    int ctrl_down = SDL_GetModState() & (KMOD_LCTRL | KMOD_RCTRL);
+    NK_ASSERT(ctx);
+    NK_ASSERT(evt);
 
     switch(evt->type)
     {
@@ -255,6 +278,7 @@ nk_sdl_handle_event(struct nk_context *ctx, SDL_Event *evt)
         case SDL_KEYDOWN:
             {
                 int down = evt->type == SDL_KEYDOWN;
+                int ctrl_down = SDL_GetModState() & (KMOD_LCTRL | KMOD_RCTRL);
                 switch(evt->key.keysym.sym)
                 {
                     case SDLK_RSHIFT: /* RSHIFT & LSHIFT share same routine */
@@ -342,6 +366,10 @@ nk_sdl_handle_event(struct nk_context *ctx, SDL_Event *evt)
 NK_API
 void nk_sdl_shutdown(struct nk_context *ctx, struct nk_font_atlas *atlas, struct nk_buffer *cmds, GLuint font_tex)
 {
+    NK_ASSERT(ctx);
+    NK_ASSERT(atlas);
+    NK_ASSERT(cmds);
+
     nk_font_atlas_clear(atlas);
     nk_free(ctx);
     glDeleteTextures(1, &font_tex);

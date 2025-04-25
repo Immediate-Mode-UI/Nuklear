@@ -12,6 +12,11 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 
+long SDL_GetTicks64()
+{
+    return SDL_GetTicks();
+}
+
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_STANDARD_VARARGS
@@ -119,8 +124,7 @@ main(int argc, char *argv[])
     nk_sdl_init(&ctx, &cmds, &time_of_last_frame);
     /* Load Fonts: if none of these are loaded a default font will be used  */
     /* Load Cursor: if you uncomment cursor loading please hide the cursor */
-    {
-    nk_sdl_font_stash_begin(&atlas);
+    {nk_sdl_font_stash_begin(&atlas);
     /*struct nk_font *droid = nk_font_atlas_add_from_file(&atlas, "../../../extra_font/DroidSans.ttf", 14, 0);*/
     /*struct nk_font *roboto = nk_font_atlas_add_from_file(&atlas, "../../../extra_font/Roboto-Regular.ttf", 16, 0);*/
     /*struct nk_font *future = nk_font_atlas_add_from_file(&atlas, "../../../extra_font/kenvector_future_thin.ttf", 13, 0);*/
@@ -128,8 +132,8 @@ main(int argc, char *argv[])
     /*struct nk_font *tiny = nk_font_atlas_add_from_file(&atlas, "../../../extra_font/ProggyTiny.ttf", 10, 0);*/
     /*struct nk_font *cousine = nk_font_atlas_add_from_file(&atlas, "../../../extra_font/Cousine-Regular.ttf", 13, 0);*/
     nk_sdl_font_stash_end(&ctx, &atlas, &tex_null, &font_tex);
-    /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
-    /*nk_style_set_font(ctx, &roboto->handle)*/;}
+    /*nk_style_load_all_cursors(&ctx, atlas.cursors);*/
+    /*nk_style_set_font(&ctx, &roboto->handle)*/;}
 
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
     while (running)
