@@ -18,7 +18,7 @@ overview(struct nk_context *ctx)
 
 #ifdef INCLUDE_STYLE
     /* styles */
-    static const char* themes[] = {"Black", "White", "Red", "Blue", "Dark", "Dracula", 
+    static const char* themes[] = {"Black", "White", "Red", "Blue", "Dark", "Dracula",
       "Catppucin Latte", "Catppucin Frappe", "Catppucin Macchiato", "Catppucin Mocha"};
     static int current_theme = 0;
 #endif
@@ -820,7 +820,7 @@ overview(struct nk_context *ctx)
                 if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Error", 0, s))
                 {
                     nk_layout_row_dynamic(ctx, 25, 1);
-                    nk_label(ctx, "A terrible error as occurred", NK_TEXT_LEFT);
+                    nk_label(ctx, "A terrible error has occurred", NK_TEXT_LEFT);
                     nk_layout_row_dynamic(ctx, 25, 2);
                     if (nk_button_label(ctx, "OK")) {
                         popup_active = 0;
