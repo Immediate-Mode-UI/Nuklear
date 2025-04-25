@@ -88,6 +88,7 @@ nk_edit_draw_text(struct nk_command_buffer *out,
     const char *line = text;
     float line_offset = 0;
     int line_count = 0;
+    enum nk_color_inline_type color_inline = NK_COLOR_INLINE_NONE;
 
     struct nk_text txt;
     txt.padding = nk_vec2(0,0);
@@ -99,6 +100,12 @@ nk_edit_draw_text(struct nk_command_buffer *out,
 
     glyph_len = nk_utf_decode(text+text_len, &unicode, byte_len-text_len);
     if (!glyph_len) return;
+
+    if (out->draw_config) {
+        color_inline = out->draw_config->color_inline;
+        out->draw_config->color_inline = NK_COLOR_INLINE_NONE;
+    }
+
     while ((text_len < byte_len) && glyph_len)
     {
         if (unicode == '\n') {
@@ -149,6 +156,10 @@ nk_edit_draw_text(struct nk_command_buffer *out,
             nk_fill_rect(out, label, 0, background);
         nk_widget_text(out, label, line, (int)((text + text_len) - line),
             &txt, NK_TEXT_LEFT, font);
+    }
+
+    if (out->draw_config) {
+        out->draw_config->color_inline = color_inline;
     }}
 }
 NK_LIB nk_flags

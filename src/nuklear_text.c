@@ -11,12 +11,20 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
     const char *string, int len, const struct nk_text *t,
     nk_flags a, const struct nk_user_font *f)
 {
+    struct nk_inline_tag_stack stack = {0};
+    nk_widget_coded_text(o, b, string, len, t, a, f, nk_false, &stack);
+}
+NK_LIB int
+nk_widget_coded_text(struct nk_command_buffer *o, struct nk_rect b,
+    const char *string, int len, const struct nk_text *t,
+    nk_flags a, const struct nk_user_font *f, nk_bool wrap, struct nk_inline_tag_stack *stack)
+{
     struct nk_rect label;
     float text_width;
 
     NK_ASSERT(o);
     NK_ASSERT(t);
-    if (!o || !t) return;
+    if (!o || !t) return 0;
 
     b.h = NK_MAX(b.h, 2 * t->padding.y);
     label.x = 0; label.w = 0;
@@ -39,7 +47,7 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
     } else if (a & NK_TEXT_ALIGN_RIGHT) {
         label.x = NK_MAX(b.x + t->padding.x, (b.x + b.w) - (2 * t->padding.x + (float)text_width));
         label.w = (float)text_width + 2 * t->padding.x;
-    } else return;
+    } else return 0;
 
     /* align in y-axis */
     if (a & NK_TEXT_ALIGN_MIDDLE) {
@@ -49,20 +57,18 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
         label.y = b.y + b.h - f->height;
         label.h = f->height;
     }
-    nk_draw_text(o, label, (const char*)string, len, f, t->background, t->text);
+    return nk_draw_coded_text(o, &label, (const char*)string, len, f, t->background, t->text, wrap, stack);
 }
 NK_LIB void
 nk_widget_text_wrap(struct nk_command_buffer *o, struct nk_rect b,
     const char *string, int len, const struct nk_text *t,
     const struct nk_user_font *f)
 {
-    float width;
-    int glyphs = 0;
     int fitting = 0;
     int done = 0;
     struct nk_rect line;
     struct nk_text text;
-    NK_INTERN nk_rune seperator[] = {' '};
+    struct nk_inline_tag_stack stack = {0};
 
     NK_ASSERT(o);
     NK_ASSERT(t);
@@ -81,13 +87,12 @@ nk_widget_text_wrap(struct nk_command_buffer *o, struct nk_rect b,
     line.w = b.w - 2 * t->padding.x;
     line.h = 2 * t->padding.y + f->height;
 
-    fitting = nk_text_clamp(f, string, len, line.w, &glyphs, &width, seperator,NK_LEN(seperator));
+    fitting = len;
     while (done < len) {
         if (!fitting || line.y + line.h >= (b.y + b.h)) break;
-        nk_widget_text(o, line, &string[done], fitting, &text, NK_TEXT_LEFT, f);
+        fitting = nk_widget_coded_text(o, line, &string[done], len - done, &text, NK_TEXT_LEFT, f, nk_true, &stack);
         done += fitting;
         line.y += f->height + 2 * t->padding.y;
-        fitting = nk_text_clamp(f, &string[done], len - done, line.w, &glyphs, &width, seperator,NK_LEN(seperator));
     }
 }
 NK_API void
