@@ -124,12 +124,24 @@ nk_edit_draw_text(struct nk_command_buffer *out,
             glyph_len = nk_utf_decode(text + text_len, &unicode, (int)(byte_len-text_len));
             continue;
         }
+
         if (unicode == '\r') {
             text_len++;
             glyph_len = nk_utf_decode(text + text_len, &unicode, byte_len-text_len);
             continue;
         }
-        glyph_width = font->width(font->userdata, font->height, text+text_len, glyph_len);
+
+        if (NK_UTF_IS_INSTRUCTION(unicode)) {
+            int payload_size = nk_utf_instruction_payload_size(unicode);
+            glyph_width = 0;
+
+            /* invalid payload */
+            if(payload_size == -1) break;
+
+            glyph_len += payload_size;
+        } else
+            glyph_width = font->width(font->userdata, font->height, text+text_len, glyph_len);
+
         line_width += (float)glyph_width;
         text_len += glyph_len;
         glyph_len = nk_utf_decode(text + text_len, &unicode, byte_len-text_len);
@@ -274,21 +286,26 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         }
 
         /* cut & copy handler */
-        {int copy= nk_input_is_key_pressed(in, NK_KEY_COPY);
-        int cut = nk_input_is_key_pressed(in, NK_KEY_CUT);
+        {int copy = nk_input_is_key_pressed(in, NK_KEY_COPY),
+              cut = nk_input_is_key_pressed(in, NK_KEY_CUT);
         if ((copy || cut) && (flags & NK_EDIT_CLIPBOARD))
         {
             int glyph_len;
             nk_rune unicode;
-            const char *text;
+            const char *text, *text_end;
             int b = edit->select_start;
             int e = edit->select_end;
-
             int begin = NK_MIN(b, e);
             int end = NK_MAX(b, e);
             text = nk_str_at_const(&edit->string, begin, &unicode, &glyph_len);
+            text_end = nk_str_at_const(&edit->string, end, &unicode, &glyph_len);
+
+            /* if read only convert cuts to copys */
+            if(flags & NK_EDIT_READ_ONLY)
+                cut = nk_false;
+
             if (edit->clip.copy)
-                edit->clip.copy(edit->clip.userdata, text, end - begin);
+                edit->clip.copy(edit->clip.userdata, text, text_end - text);
             if (cut && !(flags & NK_EDIT_READ_ONLY)){
                 nk_textedit_cut(edit);
                 cursor_follow = nk_true;
@@ -376,13 +393,12 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
             int glyphs = 0;
             int row_begin = 0;
 
-            glyph_len = nk_utf_decode(text, &unicode, len);
-            glyph_width = font->width(font->userdata, font->height, text, glyph_len);
-            line_width = 0;
-
             /* iterate all lines */
-            while ((text_len < len) && glyph_len)
-            {
+            do {
+                glyph_len = nk_utf_decode(text + text_len, &unicode, len-text_len);
+                glyph_width = font->width(font->userdata, font->height,
+                    text+text_len, glyph_len);
+
                 /* set cursor 2D position and line */
                 if (!cursor_ptr && glyphs == edit->cursor)
                 {
@@ -446,16 +462,20 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                     glyph_width = font->width(font->userdata, font->height, text+text_len, glyph_len);
                     continue;
                 }
+                if (NK_UTF_IS_INSTRUCTION(unicode)) {
+                    int payload_size = nk_utf_instruction_payload_size(unicode);
+
+                    /* invalid payload */
+                    if(payload_size == -1) break;
+
+                    glyph_len += payload_size;
+                }
 
                 glyphs++;
                 text_len += glyph_len;
                 line_width += (float)glyph_width;
+            } while (text_len < len && glyph_len);
 
-                glyph_len = nk_utf_decode(text + text_len, &unicode, len-text_len);
-                glyph_width = font->width(font->userdata, font->height,
-                    text+text_len, glyph_len);
-                continue;
-            }
             text_size.y = (float)total_lines * row_height;
 
             /* handle case when cursor is at end of text buffer */
@@ -602,7 +622,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                     area.y + selection_offset_end.y - edit->scrollbar.y,
                     selection_offset_end.x,
                     begin, (int)(end - begin), row_height, font,
-                    background_color, text_color, nk_true);
+                    background_color, text_color, nk_false);
             }
         }
 
