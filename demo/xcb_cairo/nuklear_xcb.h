@@ -240,6 +240,7 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
 {
     int events = 0;
     xcb_generic_event_t *event;
+    static int insert_toggle = 0;
 
 #ifdef NK_XCB_MIN_FRAME_TIME
     struct timespec tp;
@@ -298,8 +299,14 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
                 case XK_Right:
                     nk_input_key(nk_ctx, NK_KEY_RIGHT, press);
                     break;
-                /* NK_KEY_TEXT_INSERT_MODE, */
-                /* NK_KEY_TEXT_REPLACE_MODE, */
+                case XK_Insert:
+                    if (press) insert_toggle = !insert_toggle;
+                    if (insert_toggle) {
+                        nk_input_key(nk_ctx, NK_KEY_TEXT_INSERT_MODE, press);
+                    } else {
+                        nk_input_key(nk_ctx, NK_KEY_TEXT_REPLACE_MODE, press);
+                    }
+                    break;
                 case XK_Escape:
                     nk_input_key(nk_ctx, NK_KEY_TEXT_RESET_MODE, press);
                     break;

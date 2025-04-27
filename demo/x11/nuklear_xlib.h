@@ -717,6 +717,7 @@ NK_API int
 nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt)
 {
     struct nk_context *ctx = &xlib.ctx;
+    static int insert_toggle = 0;
 
     NK_UNUSED(screen);
 
@@ -776,11 +777,14 @@ nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt)
                 nk_input_key(ctx, NK_KEY_TEXT_LINE_END, down);
             else if (*code == 'a' && (evt->xkey.state & ControlMask))
                 nk_input_key(ctx,NK_KEY_TEXT_SELECT_ALL, down);
-            else {
-                if (*code == 'i')
+            else if (*code == XK_Insert) {
+                if (down) insert_toggle = !insert_toggle;
+                if (insert_toggle) {
                     nk_input_key(ctx, NK_KEY_TEXT_INSERT_MODE, down);
-                else if (*code == 'r')
+                } else {
                     nk_input_key(ctx, NK_KEY_TEXT_REPLACE_MODE, down);
+                }
+            } else {
                 if (down) {
                     char buf[32];
                     KeySym keysym = 0;
