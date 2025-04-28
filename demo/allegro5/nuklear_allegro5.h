@@ -347,6 +347,7 @@ NK_API int
 nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
 {
     struct nk_context *ctx = &allegro5.ctx;
+    static int insert_toggle = 0;
     switch (ev->type) {
         case ALLEGRO_EVENT_DISPLAY_RESIZE: {
             allegro5.width = (unsigned int)ev->display.width;
@@ -427,7 +428,16 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
             else if (kc == ALLEGRO_KEY_ESCAPE)    nk_input_key(ctx, NK_KEY_TEXT_RESET_MODE, down);
             else if (kc == ALLEGRO_KEY_PGUP)      nk_input_key(ctx, NK_KEY_SCROLL_UP, down);
             else if (kc == ALLEGRO_KEY_PGDN)      nk_input_key(ctx, NK_KEY_SCROLL_DOWN, down);
-            else if (kc == ALLEGRO_KEY_HOME) {
+            else if (kc == ALLEGRO_KEY_INSERT) {
+                if (down) insert_toggle = !insert_toggle;
+                if (insert_toggle) {
+                    nk_input_key(ctx, NK_KEY_TEXT_INSERT_MODE, down);
+                    /* nk_input_key(ctx, NK_KEY_TEXT_REPLACE_MODE, !down); */
+                } else {
+                    nk_input_key(ctx, NK_KEY_TEXT_REPLACE_MODE, down);
+                    /* nk_input_key(ctx, NK_KEY_TEXT_INSERT_MODE, !down); */
+                }
+            } else if (kc == ALLEGRO_KEY_HOME) {
                 nk_input_key(ctx, NK_KEY_TEXT_START, down);
                 nk_input_key(ctx, NK_KEY_SCROLL_START, down);
             } else if (kc == ALLEGRO_KEY_END) {
@@ -464,6 +474,7 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
                     kc != ALLEGRO_KEY_ENTER &&
                     kc != ALLEGRO_KEY_END &&
                     kc != ALLEGRO_KEY_ESCAPE &&
+                    kc != ALLEGRO_KEY_INSERT &&
                     kc != ALLEGRO_KEY_PGDN &&
                     kc != ALLEGRO_KEY_PGUP) {
                     nk_input_unicode(ctx, ev->keyboard.unichar);
