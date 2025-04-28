@@ -416,15 +416,8 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
             int kc = ev->keyboard.keycode;
             int down = ev->type == ALLEGRO_EVENT_KEY_DOWN;
 
+            /* do we need this? */
             if (kc == ALLEGRO_KEY_LSHIFT || kc == ALLEGRO_KEY_RSHIFT) nk_input_key(ctx, NK_KEY_SHIFT, down);
-            else if (kc == ALLEGRO_KEY_DELETE)    nk_input_key(ctx, NK_KEY_DEL, down);
-            else if (kc == ALLEGRO_KEY_ENTER || kc == ALLEGRO_KEY_PAD_ENTER)     nk_input_key(ctx, NK_KEY_ENTER, down);
-            else if (kc == ALLEGRO_KEY_TAB)       nk_input_key(ctx, NK_KEY_TAB, down);
-            else if (kc == ALLEGRO_KEY_LEFT)      nk_input_key(ctx, NK_KEY_LEFT, down);
-            else if (kc == ALLEGRO_KEY_RIGHT)     nk_input_key(ctx, NK_KEY_RIGHT, down);
-            else if (kc == ALLEGRO_KEY_UP)        nk_input_key(ctx, NK_KEY_UP, down);
-            else if (kc == ALLEGRO_KEY_DOWN)      nk_input_key(ctx, NK_KEY_DOWN, down);
-            else if (kc == ALLEGRO_KEY_BACKSPACE) nk_input_key(ctx, NK_KEY_BACKSPACE, down);
             else if (kc == ALLEGRO_KEY_ESCAPE)    nk_input_key(ctx, NK_KEY_TEXT_RESET_MODE, down);
             else if (kc == ALLEGRO_KEY_PGUP)      nk_input_key(ctx, NK_KEY_SCROLL_UP, down);
             else if (kc == ALLEGRO_KEY_PGDN)      nk_input_key(ctx, NK_KEY_SCROLL_DOWN, down);
@@ -448,30 +441,49 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
         } break;
         case ALLEGRO_EVENT_KEY_CHAR: {
             int kc = ev->keyboard.keycode;
+            int repeat = ev->keyboard.repeat;
             int control_mask = (ev->keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) ||
                                (ev->keyboard.modifiers & ALLEGRO_KEYMOD_COMMAND);
 
-            if (kc == ALLEGRO_KEY_C && control_mask) {
+            if (kc == ALLEGRO_KEY_C && control_mask && !repeat) {
                 nk_input_key(ctx, NK_KEY_COPY, 1);
             } else if (kc == ALLEGRO_KEY_V && control_mask) {
                 nk_input_key(ctx, NK_KEY_PASTE, 1);
-            } else if (kc == ALLEGRO_KEY_X && control_mask) {
+            } else if (kc == ALLEGRO_KEY_X && control_mask && !repeat) {
                 nk_input_key(ctx, NK_KEY_CUT, 1);
             } else if (kc == ALLEGRO_KEY_Z && control_mask) {
                 nk_input_key(ctx, NK_KEY_TEXT_UNDO, 1);
             } else if (kc == ALLEGRO_KEY_R && control_mask) {
                 nk_input_key(ctx, NK_KEY_TEXT_REDO, 1);
-            } else if (kc == ALLEGRO_KEY_A && control_mask) {
+            } else if (kc == ALLEGRO_KEY_A && control_mask && !repeat) {
                 nk_input_key(ctx, NK_KEY_TEXT_SELECT_ALL, 1);
+            } else if (kc == ALLEGRO_KEY_BACKSPACE) {
+                nk_input_key(ctx, NK_KEY_BACKSPACE, 1);
+            } else if (kc == ALLEGRO_KEY_LEFT) {
+                if (control_mask) {
+                    nk_input_key(ctx, NK_KEY_TEXT_WORD_LEFT, 1);
+                } else {
+                    nk_input_key(ctx, NK_KEY_LEFT, 1);
+                }
+            } else if (kc == ALLEGRO_KEY_RIGHT) {
+                if (control_mask) {
+                    nk_input_key(ctx, NK_KEY_TEXT_WORD_RIGHT, 1);
+                } else {
+                    nk_input_key(ctx, NK_KEY_RIGHT, 1);
+                }
+            } else if (kc == ALLEGRO_KEY_UP) {
+                nk_input_key(ctx, NK_KEY_UP, 1);
+            } else if (kc == ALLEGRO_KEY_DOWN) {
+                nk_input_key(ctx, NK_KEY_DOWN, 1);
+            } else if (kc == ALLEGRO_KEY_DELETE) {
+                nk_input_key(ctx, NK_KEY_DEL, 1);
+            } else if (kc == ALLEGRO_KEY_ENTER || kc == ALLEGRO_KEY_PAD_ENTER) {
+                nk_input_key(ctx, NK_KEY_ENTER, 1);
+            } else if (kc == ALLEGRO_KEY_TAB) {
+                nk_input_key(ctx, NK_KEY_TAB, 1);
             } else {
                 if (kc != ALLEGRO_KEY_BACKSPACE &&
-                    kc != ALLEGRO_KEY_LEFT &&
-                    kc != ALLEGRO_KEY_RIGHT &&
-                    kc != ALLEGRO_KEY_UP &&
-                    kc != ALLEGRO_KEY_DOWN &&
                     kc != ALLEGRO_KEY_HOME &&
-                    kc != ALLEGRO_KEY_DELETE &&
-                    kc != ALLEGRO_KEY_ENTER &&
                     kc != ALLEGRO_KEY_END &&
                     kc != ALLEGRO_KEY_ESCAPE &&
                     kc != ALLEGRO_KEY_INSERT &&
