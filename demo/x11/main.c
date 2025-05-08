@@ -20,8 +20,8 @@
 #include "nuklear_xlib.h"
 
 #define DTIME           20
-#define WINDOW_WIDTH    800
-#define WINDOW_HEIGHT   600
+#define WINDOW_WIDTH    1200
+#define WINDOW_HEIGHT   800
 
 typedef struct XWindow XWindow;
 struct XWindow {
@@ -81,6 +81,7 @@ sleep_for(long t)
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
 #define INCLUDE_OVERVIEW
+#define INCLUDE_IMAGE
 /*#define INCLUDE_CONFIGURATOR */
 /*#define INCLUDE_NODE_EDITOR */
 
@@ -90,8 +91,11 @@ sleep_for(long t)
   #define INCLUDE_CANVAS
   #define INCLUDE_OVERVIEW
   #define INCLUDE_CONFIGURATOR
+  #define INCLUDE_IMAGE
   #define INCLUDE_NODE_EDITOR
 #endif
+
+struct nk_image create_x11_image(struct nk_image img);
 
 #ifdef INCLUDE_STYLE
   #include "../../demo/common/style.c"
@@ -107,6 +111,11 @@ sleep_for(long t)
 #endif
 #ifdef INCLUDE_CONFIGURATOR
   #include "../../demo/common/style_configurator.c"
+#endif
+#ifdef INCLUDE_IMAGE
+  #define NO_TILING
+  #define create_nk_image create_x11_image
+  #include "../../demo/common/image.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
   #include "../../demo/common/node_editor.c"
@@ -213,6 +222,9 @@ main(void)
         #ifdef INCLUDE_NODE_EDITOR
           node_editor(ctx);
         #endif
+        #ifdef INCLUDE_IMAGE
+          image_demo(ctx);
+        #endif
         /* ----------------------------------------- */
 
         /* Draw */
@@ -236,3 +248,7 @@ cleanup:
     return 0;
 }
 
+struct nk_image create_x11_image(struct nk_image img)
+{
+    return nk_stbi_image_to_xsurf(img.handle.ptr, img.w, img.h, 4);
+}

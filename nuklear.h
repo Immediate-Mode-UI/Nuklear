@@ -480,6 +480,28 @@ struct nk_style_tab;
 struct nk_style_window_header;
 struct nk_style_window;
 
+enum nk_image_type {
+    /* Image fills out the target nk_rect, ignoring aspect ratio */
+    NK_IMAGE_STRETCH,
+    /* Image fills out the target nk_rect, honoring aspect ratio */
+    NK_IMAGE_FILL,
+    /* a sub-rect is generated to fit the image inside the target nk_rect */
+    NK_IMAGE_FIT,
+    /* If the target nk_rect is smaller than the image dimension,
+       draw the image center aligned, with UVs for 1:1 pixel mapping. If the
+       target nk_rect is bigger, generate a sub-rect, so the image is not drawn
+       outside it's bounds. */
+    NK_IMAGE_CENTER,
+    /* Just draw the image with UVs for 1:1 pixel mapping. Image is draw outside
+       it's bounds. What is drawn outside the bounds is determined by the
+       backend. Eg. To get tiling behaviour with OpenGL, the texture should have
+       been uploaded to the GPU with GL_REPEAT:
+       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+       (Which is the default OpenGL Texture behaviour anyways.) */
+    NK_IMAGE_TILE
+};
+
 enum {nk_false, nk_true};
 struct nk_color {nk_byte r,g,b,a;};
 struct nk_colorf {float r,g,b,a;};
@@ -489,7 +511,7 @@ struct nk_rect {float x,y,w,h;};
 struct nk_recti {short x,y,w,h;};
 typedef char nk_glyph[NK_UTF_SIZE];
 typedef union {void *ptr; int id;} nk_handle;
-struct nk_image {nk_handle handle; nk_ushort w, h; nk_ushort region[4];};
+struct nk_image {nk_handle handle; nk_ushort w, h; enum nk_image_type type; nk_ushort region[4];};
 struct nk_nine_slice {struct nk_image img; nk_ushort l, t, r, b;};
 struct nk_cursor {struct nk_image img; struct nk_vec2 size, offset;};
 struct nk_scroll {nk_uint x, y;};
@@ -3988,13 +4010,20 @@ NK_API void nk_color_hsva_fv(float *hsva_out, struct nk_color);
  * ============================================================================= */
 NK_API nk_handle nk_handle_ptr(void*);
 NK_API nk_handle nk_handle_id(int);
+NK_API nk_bool nk_image_is_subimage(const struct nk_image* img);
 NK_API struct nk_image nk_image_handle(nk_handle);
 NK_API struct nk_image nk_image_ptr(void*);
 NK_API struct nk_image nk_image_id(int);
-NK_API nk_bool nk_image_is_subimage(const struct nk_image* img);
 NK_API struct nk_image nk_subimage_ptr(void*, nk_ushort w, nk_ushort h, struct nk_rect sub_region);
 NK_API struct nk_image nk_subimage_id(int, nk_ushort w, nk_ushort h, struct nk_rect sub_region);
 NK_API struct nk_image nk_subimage_handle(nk_handle, nk_ushort w, nk_ushort h, struct nk_rect sub_region);
+/* Create nk_image with modes that honor the image's aspect-ratio */
+NK_API struct nk_image nk_image_type_handle(nk_handle, nk_ushort w, nk_ushort h, enum nk_image_type);
+NK_API struct nk_image nk_image_type_ptr(void*, nk_ushort w, nk_ushort h, enum nk_image_type);
+NK_API struct nk_image nk_image_type_id(int, nk_ushort w, nk_ushort h, enum nk_image_type);
+NK_API struct nk_image nk_subimage_type_ptr(void*, nk_ushort w, nk_ushort h, enum nk_image_type, struct nk_rect sub_region);
+NK_API struct nk_image nk_subimage_type_id(int, nk_ushort w, nk_ushort h, enum nk_image_type, struct nk_rect sub_region);
+NK_API struct nk_image nk_subimage_type_handle(nk_handle, nk_ushort w, nk_ushort h, enum nk_image_type, struct nk_rect sub_region);
 /* =============================================================================
  *
  *                                  9-SLICE
@@ -10875,22 +10904,187 @@ NK_API void
 nk_draw_list_add_image(struct nk_draw_list *list, struct nk_image texture,
     struct nk_rect rect, struct nk_color color)
 {
+    float img_ratio;
+    float rect_ratio;
+    struct nk_vec2 top_left, bot_right;
     NK_ASSERT(list);
     if (!list) return;
     /* push new command with given texture */
     nk_draw_list_push_image(list, texture.handle);
     if (nk_image_is_subimage(&texture)) {
-        /* add region inside of the texture  */
+        struct nk_vec2 px[2];
         struct nk_vec2 uv[2];
-        uv[0].x = (float)texture.region[0]/(float)texture.w;
-        uv[0].y = (float)texture.region[1]/(float)texture.h;
-        uv[1].x = (float)(texture.region[0] + texture.region[2])/(float)texture.w;
-        uv[1].y = (float)(texture.region[1] + texture.region[3])/(float)texture.h;
-        nk_draw_list_push_rect_uv(list, nk_vec2(rect.x, rect.y),
-            nk_vec2(rect.x + rect.w, rect.y + rect.h),  uv[0], uv[1], color);
-    } else nk_draw_list_push_rect_uv(list, nk_vec2(rect.x, rect.y),
-            nk_vec2(rect.x + rect.w, rect.y + rect.h),
-            nk_vec2(0.0f, 0.0f), nk_vec2(1.0f, 1.0f),color);
+        struct nk_rect sub_rect = nk_rect(texture.region[0], texture.region[1], texture.region[2], texture.region[3]);
+        int x_offset = 0;
+        int y_offset = 0;
+        px[0].x = rect.x;
+        px[0].y = rect.y;
+        px[1].x = rect.x + rect.w;
+        px[1].y = rect.y + rect.h;
+        /* Stretch is the default behaviour
+        switch only modifies coords for FILL, FIT, CENTER
+        Note: TILE is not implemented
+        */
+        switch(texture.type) {
+            case NK_IMAGE_FILL:
+                img_ratio = (float)texture.region[2] / (float)texture.region[3];
+                rect_ratio = rect.w / rect.h;
+                if (img_ratio > rect_ratio) {
+                    x_offset = ((1.f - rect_ratio / img_ratio) * 0.5) * (float)texture.region[2];
+                } else {
+                    y_offset = ((1.f - img_ratio / rect_ratio) * 0.5) * (float)texture.region[3];
+                }
+                break;
+            case NK_IMAGE_FIT:
+                img_ratio = (float)texture.region[2] / (float)texture.region[3];
+                rect_ratio = rect.w / rect.h;
+                if (img_ratio > rect_ratio) {
+                    rect.y += nk_ifloorf((rect.h - texture.region[3] * rect.w / texture.region[2]) * 0.5);
+                    px[0].x = rect.x;
+                    px[0].y = rect.y;
+                    px[1].x = rect.x + rect.w;
+                    px[1].y = rect.y + nk_ifloorf(texture.region[3] * rect.w / texture.region[2]);
+                } else {
+                    rect.x += nk_ifloorf((rect.w - texture.region[2] * rect.h / texture.region[3]) * 0.5);
+                    px[0].x = rect.x;
+                    px[0].y = rect.y;
+                    px[1].x = rect.x + nk_ifloorf(texture.region[2] * rect.h / texture.region[3]);
+                    px[1].y = rect.y + rect.h;
+                }
+                break;
+            case NK_IMAGE_CENTER:
+                if (sub_rect.w < rect.w && sub_rect.h < rect.h) {
+                    int center_offset_x = (rect.w * 0.5f - sub_rect.w * 0.5f);
+                    int center_offset_y = (rect.h * 0.5f - sub_rect.h * 0.5f);
+                    px[0].x += center_offset_x;
+                    px[0].y += center_offset_y;
+                    px[1].x -= center_offset_x;
+                    px[1].y -= center_offset_y;
+                } else {
+                    int center_offset_x = (rect.w > texture.region[2]) ? rect.w * 0.5f - texture.region[2] * 0.5f : 0;
+                    int center_offset_y = (rect.h > texture.region[3]) ? rect.h * 0.5f - texture.region[3] * 0.5f : 0;
+                    px[0].x += center_offset_x;
+                    px[0].y += center_offset_y;
+                    px[1].x -= center_offset_x;
+                    px[1].y -= center_offset_y;
+                    x_offset = NK_CLAMP(0,(texture.region[2] * 0.5) - (rect.w * 0.5), texture.region[2]);
+                    y_offset = NK_CLAMP(0,(texture.region[3] * 0.5) - (rect.h * 0.5), texture.region[3]);
+                    rect.w = NK_CLAMP(0, rect.w, texture.region[2]);
+                    rect.h = NK_CLAMP(0, rect.h, texture.region[3]);
+                }
+                break;
+        }
+        /* Calculate uv for subimage and apply additional masking if x and
+        y offset is set. By default it will stretch the subimage to the entire rect. */
+        uv[0].x = (float)(texture.region[0] + x_offset) / (float)texture.w;
+        uv[0].y = (float)(texture.region[1] + y_offset) / (float)texture.h;
+        uv[1].x = (float)(texture.region[0] + texture.region[2] - x_offset) / (float)texture.w;
+        uv[1].y = (float)(texture.region[1] + texture.region[3] - y_offset) / (float)texture.h;
+        nk_draw_list_push_rect_uv(list,
+                        px[0], px[1],
+                        uv[0], uv[1],color);
+    } else {
+	switch(texture.type){
+	case NK_IMAGE_FILL:
+	    img_ratio = (float)texture.w / (float)texture.h;
+	    rect_ratio = rect.w / rect.h;
+	    /* Here we modify the UVs, so top_left and bot_right are UV coords */
+	    if(img_ratio > rect_ratio){
+		top_left  = nk_vec2((1.f - rect_ratio / img_ratio) * 0.5, 0);
+		bot_right = nk_vec2((1.f + rect_ratio / img_ratio) * 0.5, 1);
+	    }else{
+		top_left  = nk_vec2(0, (1.f - img_ratio / rect_ratio) * 0.5);
+		bot_right = nk_vec2(1, (1.f + img_ratio / rect_ratio) * 0.5);
+	    }
+	    nk_draw_list_push_rect_uv(list,
+				      nk_vec2(rect.x, rect.y),
+				      nk_vec2(rect.x + rect.w, rect.y + rect.h),
+				      top_left,
+				      bot_right, color);
+	    break;
+	case NK_IMAGE_FIT:
+	    /* NK_IMAGE_FIT applies pixel snap.
+	       floorf to all pixel positions, because otherwise we sample outside
+	       the texture sometimes, which results in artifacts depending on the
+	       backend's sample setting. The drawback is that aspect ratio will
+	       differ be off by one pixel, depending on scaling. */
+	    img_ratio = (float)texture.w / (float)texture.h;
+	    rect_ratio = rect.w / rect.h;
+	    /* Here we modify rect position, so top_left
+	       and bot_right are pixel position coordinates, not UV coords */
+	    if (img_ratio > rect_ratio) {
+		rect.y += (float)nk_ifloorf((rect.h - texture.h * rect.w / texture.w) * 0.5f);
+		top_left  = nk_vec2(rect.x, rect.y);
+		bot_right = nk_vec2(rect.x + rect.w,
+				    rect.y + (float)nk_ifloorf(texture.h * rect.w / texture.w));
+	    } else {
+		rect.x += (float)nk_ifloorf((rect.w - texture.w * rect.h / texture.h) * 0.5f);
+		top_left  = nk_vec2(rect.x, rect.y);
+		bot_right = nk_vec2(rect.x + (float)nk_ifloorf(texture.w * rect.h/texture.h),
+				    rect.y + rect.h);
+	    }
+	    nk_draw_list_push_rect_uv(list,
+				      top_left,
+				      bot_right,
+				      nk_vec2(0.0f, 0.0f),
+				      nk_vec2(1.0f, 1.0f),color);
+	    break;
+	case NK_IMAGE_CENTER:
+	    /* Use a combination of pixel coords and uv offsets to display
+        the center portion of the image if target texture is larger than container.
+        Otherise just center image */
+	    if(texture.w < rect.w && texture.h < rect.h){
+		int center_offset_x = rect.w * 0.5f - texture.w * 0.5f;
+		int center_offset_y = rect.h * 0.5f - texture.h * 0.5f;
+
+		nk_draw_list_push_rect_uv(list,
+					  nk_vec2(rect.x + center_offset_x, rect.y + center_offset_y),
+					  nk_vec2(rect.x + texture.w + center_offset_x, rect.y + texture.h + center_offset_y),
+					  nk_vec2(0.0f, 0.0f),
+					  nk_vec2(1.0f, 1.0f),color);
+	    } else {
+		 /* Container width OR height could be larger. Apply offset is that is the case. */
+        int center_offset_x = (rect.w > texture.w) ? rect.w * 0.5f - texture.w * 0.5f : 0;
+        int center_offset_y = (rect.h > texture.h) ? rect.h * 0.5f - texture.h * 0.5f : 0;
+
+        /* Fetch pixel coords for the centered inner image
+        and calculate uv coords */
+        int x_top = (texture.w * 0.5) - (rect.w * 0.5);
+        int y_top = (texture.h * 0.5) - (rect.h * 0.5);
+        int x_bot = (texture.w * 0.5) + (rect.w * 0.5);
+        int y_bot = (texture.h * 0.5) + (rect.h * 0.5);
+
+        float uv_a1 = NK_CLAMP(0, (float)x_top / (float)texture.w, 1);
+        float uv_b1 = NK_CLAMP(0, (float)y_top / (float)texture.h, 1);
+        float uv_a2 = NK_CLAMP(0, (float)x_bot / (float)texture.w, 1);
+        float uv_b2 = NK_CLAMP(0, (float)y_bot / (float)texture.h, 1);
+        rect.w = NK_CLAMP(0, rect.w, texture.w);
+        rect.h = NK_CLAMP(0, rect.h, texture.h);
+
+        nk_draw_list_push_rect_uv(list,
+					  nk_vec2(rect.x + center_offset_x, rect.y + center_offset_y),
+					  nk_vec2(rect.x + rect.w + center_offset_x , rect.y + rect.h + center_offset_y),
+					  nk_vec2(uv_a1, uv_b1),
+					  nk_vec2(uv_a2, uv_b2),color);
+	    }
+	    break;
+	case NK_IMAGE_TILE:
+	    nk_draw_list_push_rect_uv(list,
+				      nk_vec2(rect.x, rect.y),
+				      nk_vec2(rect.x + rect.w, rect.y + rect.h),
+				      nk_vec2(0.0f, 0.0f),
+				      nk_vec2(rect.w/(float)texture.w, rect.h/(float)texture.h),
+				      color);
+	    break;
+	default:
+	    /* fall-through behaviour is stretch-to-fill */
+	    nk_draw_list_push_rect_uv(list,
+				      nk_vec2(rect.x, rect.y),
+				      nk_vec2(rect.x + rect.w, rect.y + rect.h),
+				      nk_vec2(0.0f, 0.0f),
+				      nk_vec2(1.0f, 1.0f),color);
+	}
+    }
 }
 NK_API void
 nk_draw_list_add_text(struct nk_draw_list *list, const struct nk_user_font *font,
@@ -24101,14 +24295,81 @@ nk_handle_id(int id)
     return handle;
 }
 NK_API struct nk_image
+nk_subimage_type_ptr(void *ptr, nk_ushort w, nk_ushort h, enum nk_image_type type, struct nk_rect r)
+{
+    struct nk_image s;
+    nk_zero(&s, sizeof(s));
+    s.handle.ptr = ptr;
+    s.w = w; s.h = h;
+    /* Because a subimage just uses modified UVs to show a small portion of an
+       nk_image, TILED will result in the rest of the image
+       bleeding through. */
+    NK_ASSERT(type != NK_IMAGE_TILE);
+    s.type = type;
+    s.region[0] = (nk_ushort)r.x;
+    s.region[1] = (nk_ushort)r.y;
+    /* A subregion with dimensions 0 is not valid and won't display. */
+    NK_ASSERT( r.w );
+    NK_ASSERT( r.h );
+    s.region[2] = (nk_ushort)r.w;
+    s.region[3] = (nk_ushort)r.h;
+    return s;
+}
+NK_API struct nk_image
+nk_subimage_type_id(int id, nk_ushort w, nk_ushort h, enum nk_image_type type, struct nk_rect r)
+{
+    struct nk_image s;
+    nk_zero(&s, sizeof(s));
+    s.handle.id = id;
+    s.w = w; s.h = h;
+    /* Because a subimage just uses modified UVs to show a small portion of an
+       nk_image, using TILED will result in the rest of the image
+       bleeding through. */
+    NK_ASSERT(type != NK_IMAGE_TILE);
+    s.type = type;
+    s.region[0] = (nk_ushort)r.x;
+    s.region[1] = (nk_ushort)r.y;
+    /* A subregion with dimensions 0 is not valid and won't display. */
+    NK_ASSERT( r.w );
+    NK_ASSERT( r.h );
+    s.region[2] = (nk_ushort)r.w;
+    s.region[3] = (nk_ushort)r.h;
+    return s;
+}
+NK_API struct nk_image
+nk_subimage_type_handle(nk_handle handle, nk_ushort w, nk_ushort h, enum nk_image_type type, struct nk_rect r)
+{
+    struct nk_image s;
+    nk_zero(&s, sizeof(s));
+    s.handle = handle;
+    s.w = w; s.h = h;
+    /* Because a subimage just uses modified UVs to show a small portion of an
+       nk_image, using TILED will result in the rest of the image
+       bleeding through. */
+    NK_ASSERT(type != NK_IMAGE_TILE);
+    s.type = type;
+    s.region[0] = (nk_ushort)r.x;
+    s.region[1] = (nk_ushort)r.y;
+    /* A subregion with dimensions 0 is not valid and won't display. */
+    NK_ASSERT( r.w );
+    NK_ASSERT( r.h );
+    s.region[2] = (nk_ushort)r.w;
+    s.region[3] = (nk_ushort)r.h;
+    return s;
+}
+NK_API struct nk_image
 nk_subimage_ptr(void *ptr, nk_ushort w, nk_ushort h, struct nk_rect r)
 {
     struct nk_image s;
     nk_zero(&s, sizeof(s));
     s.handle.ptr = ptr;
     s.w = w; s.h = h;
+    s.type = NK_IMAGE_STRETCH;
     s.region[0] = (nk_ushort)r.x;
     s.region[1] = (nk_ushort)r.y;
+    /* A subregion with dimensions 0 is not valid and won't display. */
+    NK_ASSERT( r.w );
+    NK_ASSERT( r.h );
     s.region[2] = (nk_ushort)r.w;
     s.region[3] = (nk_ushort)r.h;
     return s;
@@ -24120,8 +24381,12 @@ nk_subimage_id(int id, nk_ushort w, nk_ushort h, struct nk_rect r)
     nk_zero(&s, sizeof(s));
     s.handle.id = id;
     s.w = w; s.h = h;
+    s.type = NK_IMAGE_STRETCH;
     s.region[0] = (nk_ushort)r.x;
     s.region[1] = (nk_ushort)r.y;
+    /* A subregion with dimensions 0 is not valid and won't display. */
+    NK_ASSERT( r.w );
+    NK_ASSERT( r.h );
     s.region[2] = (nk_ushort)r.w;
     s.region[3] = (nk_ushort)r.h;
     return s;
@@ -24133,10 +24398,57 @@ nk_subimage_handle(nk_handle handle, nk_ushort w, nk_ushort h, struct nk_rect r)
     nk_zero(&s, sizeof(s));
     s.handle = handle;
     s.w = w; s.h = h;
+    s.type = NK_IMAGE_STRETCH;
     s.region[0] = (nk_ushort)r.x;
     s.region[1] = (nk_ushort)r.y;
+    /* A subregion with dimensions 0 is not valid and won't display. */
+    NK_ASSERT( r.w );
+    NK_ASSERT( r.h );
     s.region[2] = (nk_ushort)r.w;
     s.region[3] = (nk_ushort)r.h;
+    return s;
+}
+NK_API struct nk_image
+nk_image_type_handle(nk_handle handle, nk_ushort w, nk_ushort h, enum nk_image_type type)
+{
+    struct nk_image s;
+    nk_zero(&s, sizeof(s));
+    s.handle = handle;
+    s.w = w; s.h = h;
+    s.type = type;
+    s.region[0] = 0;
+    s.region[1] = 0;
+    s.region[2] = 0;
+    s.region[3] = 0;
+    return s;
+}
+NK_API struct nk_image
+nk_image_type_ptr(void *ptr, nk_ushort w, nk_ushort h, enum nk_image_type type)
+{
+    struct nk_image s;
+    nk_zero(&s, sizeof(s));
+    NK_ASSERT(ptr);
+    s.handle.ptr = ptr;
+    s.w = w; s.h = h;
+    s.type = type;
+    s.region[0] = 0;
+    s.region[1] = 0;
+    s.region[2] = 0;
+    s.region[3] = 0;
+    return s;
+}
+NK_API struct nk_image
+nk_image_type_id(int id, nk_ushort w, nk_ushort h, enum nk_image_type type)
+{
+    struct nk_image s;
+    nk_zero(&s, sizeof(s));
+    s.handle.id = id;
+    s.w = w; s.h = h;
+    s.type = type;
+    s.region[0] = 0;
+    s.region[1] = 0;
+    s.region[2] = 0;
+    s.region[3] = 0;
     return s;
 }
 NK_API struct nk_image
@@ -24146,6 +24458,7 @@ nk_image_handle(nk_handle handle)
     nk_zero(&s, sizeof(s));
     s.handle = handle;
     s.w = 0; s.h = 0;
+    s.type = NK_IMAGE_STRETCH;
     s.region[0] = 0;
     s.region[1] = 0;
     s.region[2] = 0;
@@ -24160,6 +24473,7 @@ nk_image_ptr(void *ptr)
     NK_ASSERT(ptr);
     s.handle.ptr = ptr;
     s.w = 0; s.h = 0;
+    s.type = NK_IMAGE_STRETCH;
     s.region[0] = 0;
     s.region[1] = 0;
     s.region[2] = 0;
@@ -24173,6 +24487,7 @@ nk_image_id(int id)
     nk_zero(&s, sizeof(s));
     s.handle.id = id;
     s.w = 0; s.h = 0;
+    s.type = NK_IMAGE_STRETCH;
     s.region[0] = 0;
     s.region[1] = 0;
     s.region[2] = 0;
@@ -24183,7 +24498,8 @@ NK_API nk_bool
 nk_image_is_subimage(const struct nk_image* img)
 {
     NK_ASSERT(img);
-    return !(img->w == 0 && img->h == 0);
+    return !(img->region[0] == 0 && img->region[1] == 0 &&
+	     img->region[2] == 0 && img->region[3] == 0);
 }
 NK_API void
 nk_image(struct nk_context *ctx, struct nk_image img)

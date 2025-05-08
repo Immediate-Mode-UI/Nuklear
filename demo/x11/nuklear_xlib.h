@@ -428,8 +428,7 @@ nk_xsurf_draw_text(XSurface *surf, short x, short y, const char *text, int len,
     else XDrawString(surf->dpy, surf->drawable, surf->gc, tx, ty, (const char*)text, (int)len);
 }
 
-
-#ifdef NK_XLIB_INCLUDE_STB_IMAGE
+/* rename nk_image_date_to_xsurf()? */
 NK_INTERN struct nk_image
 nk_stbi_image_to_xsurf(unsigned char *data, int width, int height, int channels) {
     XSurface *surf = xlib.surf;
@@ -455,6 +454,8 @@ nk_stbi_image_to_xsurf(unsigned char *data, int width, int height, int channels)
     }
 
     /* rgba to bgra */
+    /*
+     * why is this here?
     if (channels >= 3){
         for (i=0; i < isize; i += channels) {
             unsigned char red  = data[i+2];
@@ -463,6 +464,7 @@ nk_stbi_image_to_xsurf(unsigned char *data, int width, int height, int channels)
             data[i+2] = blue;
         }
     }
+    */
 
     if (channels == 4){
         const unsigned alpha_treshold = 127;
@@ -491,12 +493,11 @@ nk_stbi_image_to_xsurf(unsigned char *data, int width, int height, int channels)
            (char*)data,
            width, height,
            bpl*8, bpl * width);
-    img = nk_image_ptr( (void*)aimage);
-    img.h = height;
-    img.w = width;
+    img = nk_image_type_ptr((void*)aimage, width, height, NK_IMAGE_STRETCH);
     return img;
 }
 
+#ifdef NK_XLIB_INCLUDE_STB_IMAGE
 NK_API struct nk_image
 nk_xsurf_load_image_from_memory(const void *membuf, nk_uint membufSize)
 {

@@ -38,6 +38,7 @@
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
 #define INCLUDE_OVERVIEW
+#define INCLUDE_IMAGE
 /*#define INCLUDE_CONFIGURATOR */
 /*#define INCLUDE_NODE_EDITOR */
 
@@ -47,8 +48,11 @@
   #define INCLUDE_CANVAS
   #define INCLUDE_OVERVIEW
   #define INCLUDE_CONFIGURATOR
+  #define INCLUDE_IMAGE
   #define INCLUDE_NODE_EDITOR
 #endif
+
+struct nk_image create_SDL_Texture(struct nk_image img);
 
 #ifdef INCLUDE_STYLE
   #include "../../demo/common/style.c"
@@ -65,9 +69,16 @@
 #ifdef INCLUDE_CONFIGURATOR
   #include "../../demo/common/style_configurator.c"
 #endif
+#ifdef INCLUDE_IMAGE
+  #define create_nk_image create_SDL_Texture
+  #define NO_TILING
+  #include "../../demo/common/image.c"
+#endif
 #ifdef INCLUDE_NODE_EDITOR
   #include "../../demo/common/node_editor.c"
 #endif
+
+SDL_Renderer *renderer;
 
 /* ===============================================================
  *
@@ -79,7 +90,6 @@ main(void)
 {
     /* Platform */
     SDL_Window *win;
-    SDL_Renderer *renderer;
     int running = 1;
     int flags = 0;
     float font_scale = 1;
@@ -228,6 +238,9 @@ main(void)
         #ifdef INCLUDE_NODE_EDITOR
           node_editor(ctx);
         #endif
+        #ifdef INCLUDE_IMAGE
+          image_demo(ctx);
+        #endif
         /* ----------------------------------------- */
 
         SDL_SetRenderDrawColor(renderer, bg.r * 255, bg.g * 255, bg.b * 255, bg.a * 255);
@@ -244,4 +257,20 @@ cleanup:
     SDL_DestroyWindow(win);
     SDL_Quit();
     return 0;
+}
+
+
+struct nk_image create_SDL_Texture(struct nk_image img)
+{
+    SDL_Texture* tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, img.w, img.h);
+    if (!tex) {
+        fprintf(stderr, "Error creating texture: %s\n", SDL_GetError());
+        return nk_image_type_ptr(0, 0, 0, 0);
+    }
+    if (SDL_UpdateTexture(tex, NULL, img.handle.ptr, img.w*4)) {
+        fprintf(stderr, "Error updating texture: %s\n", SDL_GetError());
+        return nk_image_type_ptr(0, 0, 0, 0);
+    }
+
+    return nk_image_type_ptr(tex, img.w, img.h, NK_IMAGE_STRETCH);
 }

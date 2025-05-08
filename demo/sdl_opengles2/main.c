@@ -21,8 +21,8 @@
 #include "../../nuklear.h"
 #include "nuklear_sdl_gles2.h"
 
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
+#define WINDOW_WIDTH 1200
+#define WINDOW_HEIGHT 800
 
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
@@ -44,6 +44,7 @@
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
 #define INCLUDE_OVERVIEW
+#define INCLUDE_IMAGE
 /*#define INCLUDE_CONFIGURATOR */
 /*#define INCLUDE_NODE_EDITOR */
 
@@ -53,6 +54,7 @@
   #define INCLUDE_CANVAS
   #define INCLUDE_OVERVIEW
   #define INCLUDE_CONFIGURATOR
+  #define INCLUDE_IMAGE
   #define INCLUDE_NODE_EDITOR
 #endif
 
@@ -70,6 +72,10 @@
 #endif
 #ifdef INCLUDE_CONFIGURATOR
   #include "../../demo/common/style_configurator.c"
+#endif
+#ifdef INCLUDE_IMAGE
+  #define USING_OPENGL
+  #include "../../demo/common/image.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
   #include "../../demo/common/node_editor.c"
@@ -161,6 +167,9 @@ MainLoop(void* loopArg){
     #endif
     #ifdef INCLUDE_NODE_EDITOR
       node_editor(ctx);
+    #endif
+    #ifdef INCLUDE_IMAGE
+      image_demo(ctx);
     #endif
     /* ----------------------------------------- */
 
