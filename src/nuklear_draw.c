@@ -132,6 +132,7 @@ nk_stroke_rect(struct nk_command_buffer *b, struct nk_rect rect,
     struct nk_command_rect *cmd;
     NK_ASSERT(b);
     if (!b || c.a == 0 || rect.w == 0 || rect.h == 0 || line_thickness <= 0) return;
+
     if (b->use_clipping) {
         const struct nk_rect *clip = &b->clip;
         if (!NK_INTERSECT(rect.x, rect.y, rect.w, rect.h,
@@ -147,6 +148,32 @@ nk_stroke_rect(struct nk_command_buffer *b, struct nk_rect rect,
     cmd->w = (unsigned short)NK_MAX(0, rect.w);
     cmd->h = (unsigned short)NK_MAX(0, rect.h);
     cmd->color = c;
+    cmd->stroke_type = NK_STROKE_CENTER;
+}
+NK_API void
+nk_stroke_rect_ex(struct nk_command_buffer *b, struct nk_rect rect,
+    float rounding, float line_thickness, struct nk_color c, enum nk_stroke_type stroke_type)
+{
+    struct nk_command_rect *cmd;
+    NK_ASSERT(b);
+    if (!b || c.a == 0 || rect.w == 0 || rect.h == 0 || line_thickness <= 0) return;
+
+    if (b->use_clipping) {
+        const struct nk_rect *clip = &b->clip;
+        if (!NK_INTERSECT(rect.x, rect.y, rect.w, rect.h,
+            clip->x, clip->y, clip->w, clip->h)) return;
+    }
+    cmd = (struct nk_command_rect*)
+        nk_command_buffer_push(b, NK_COMMAND_RECT, sizeof(*cmd));
+    if (!cmd) return;
+    cmd->rounding = (unsigned short)rounding;
+    cmd->line_thickness = (unsigned short)line_thickness;
+    cmd->x = (short)rect.x;
+    cmd->y = (short)rect.y;
+    cmd->w = (unsigned short)NK_MAX(0, rect.w);
+    cmd->h = (unsigned short)NK_MAX(0, rect.h);
+    cmd->color = c;
+    cmd->stroke_type = stroke_type;
 }
 NK_API void
 nk_fill_rect(struct nk_command_buffer *b, struct nk_rect rect,
