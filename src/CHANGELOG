@@ -19,6 +19,7 @@
 /// - 2022/12/23 (4.10.6) - Fix incorrect glyph index in nk_font_bake()
 /// - 2022/12/17 (4.10.5) - Fix nk_font_bake_pack() using TTC font offset incorrectly
 /// - 2022/10/24 (4.10.4) - Fix nk_str_{append,insert}_str_utf8 always returning 0
+/// - 2022/10/03 (4.10.4) - Updated the look and feel of checkboxes and radio buttons to be more distinguishable
 /// - 2022/09/03 (4.10.3) - Renamed the `null` texture variable to `tex_null`
 /// - 2022/08/01 (4.10.2) - Fix Apple Silicon with incorrect NK_SITE_TYPE and NK_POINTER_TYPE
 /// - 2022/08/01 (4.10.1) - Fix cursor jumping back to beginning of text when typing more than
