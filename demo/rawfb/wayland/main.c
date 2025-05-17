@@ -516,7 +516,7 @@ int main ()
     pl.gloss = 0;
     pl.bloss = 0;
 
-    nk_rawfb_init(nk_wayland_ctx.data, nk_wayland_ctx.tex_scratch, WIDTH, HEIGHT, WIDTH*4, pl);
+    nk_wayland_ctx.rawfb = nk_rawfb_init(nk_wayland_ctx.data, nk_wayland_ctx.tex_scratch, WIDTH, HEIGHT, WIDTH*4, pl);
 
 
     //4. rendering UI
