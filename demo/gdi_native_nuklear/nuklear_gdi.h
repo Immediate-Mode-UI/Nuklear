@@ -2,11 +2,11 @@
  * Nuklear - 1.32.0 - public domain
  * no warrenty implied; use at your own risk.
  * authored from 2015-2016 by Micha Mettke
- * 
+ *
  * Modified GDI backend 2022
  * Now based on a context that is required for each API function call.
  * Removes the global state --> you can have multiple windows :-)
- * 
+ *
  */
  /*
   * ==============================================================
@@ -698,6 +698,7 @@ nk_gdi_handle_event(nk_gdi_ctx gdi, HWND wnd, UINT msg, WPARAM wparam, LPARAM lp
             return 1;
 
         case VK_RETURN:
+        case VK_SEPARATOR:
             nk_input_key(&gdi->ctx, NK_KEY_ENTER, down);
             return 1;
 

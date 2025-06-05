@@ -18,7 +18,6 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
 #define NK_GLFW_VULKAN_IMPLEMENTATION
-#define NK_KEYSTATE_BASED_INPUT
 #include "../../nuklear.h"
 #include "nuklear_glfw_vulkan.h"
 
@@ -39,7 +38,8 @@
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
-/*#define INCLUDE_OVERVIEW*/
+#define INCLUDE_OVERVIEW
+/*#define INCLUDE_CONFIGURATOR */
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
@@ -47,6 +47,7 @@
 #define INCLUDE_CALCULATOR
 #define INCLUDE_CANVAS
 #define INCLUDE_OVERVIEW
+  #define INCLUDE_CONFIGURATOR
 #define INCLUDE_NODE_EDITOR
 #endif
 
@@ -61,6 +62,9 @@
 #endif
 #ifdef INCLUDE_OVERVIEW
 #include "../../demo/common/overview.c"
+#endif
+#ifdef INCLUDE_CONFIGURATOR
+#include "../../demo/common/style_configurator.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
 #include "../../demo/common/node_editor.c"
@@ -2089,6 +2093,11 @@ int main(void) {
     VkResult result;
     VkSemaphore nk_semaphore;
 
+    #ifdef INCLUDE_CONFIGURATOR
+    static struct nk_color color_table[NK_COLOR_COUNT];
+    memcpy(color_table, nk_default_color_style, sizeof(color_table));
+    #endif
+
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit()) {
         fprintf(stderr, "[GFLW] failed to init!\n");
@@ -2194,6 +2203,9 @@ int main(void) {
 #endif
 #ifdef INCLUDE_OVERVIEW
         overview(ctx);
+#endif
+#ifdef INCLUDE_CONFIGURATOR
+        style_configurator(ctx, color_table);
 #endif
 #ifdef INCLUDE_NODE_EDITOR
         node_editor(ctx);

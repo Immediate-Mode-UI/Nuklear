@@ -33,7 +33,8 @@
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
-/*#define INCLUDE_OVERVIEW */
+#define INCLUDE_OVERVIEW
+/*#define INCLUDE_CONFIGURATOR */
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
@@ -41,6 +42,7 @@
   #define INCLUDE_CALCULATOR
   #define INCLUDE_CANVAS
   #define INCLUDE_OVERVIEW
+  #define INCLUDE_CONFIGURATOR
   #define INCLUDE_NODE_EDITOR
 #endif
 
@@ -55,6 +57,9 @@
 #endif
 #ifdef INCLUDE_OVERVIEW
   #include "../../common/overview.c"
+#endif
+#ifdef INCLUDE_CONFIGURATOR
+  #include "../../common/style_configurator.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
   #include "../../common/node_editor.c"
@@ -141,6 +146,11 @@ int main(int argc, char **argv)
     SDL_Texture *tex;
     SDL_Surface *surface;
 
+    #ifdef INCLUDE_CONFIGURATOR
+    static struct nk_color color_table[NK_COLOR_COUNT];
+    memcpy(color_table, nk_default_color_style, sizeof(color_table));
+    #endif
+
     NK_UNUSED(argc);
     NK_UNUSED(argv);
 
@@ -206,8 +216,8 @@ int main(int argc, char **argv)
                     nk_input_button(&(context->ctx), sdl_button_to_nk(event.button.button), event.button.x, event.button.y,0);
                 break;
                 case SDL_MOUSEWHEEL:
-                    vec.x = event.wheel.x;
-                    vec.y = event.wheel.y;
+                    vec.x = event.wheel.preciseX;
+                    vec.y = event.wheel.preciseY;
                     nk_input_scroll(&(context->ctx), vec );
 
                 break;
@@ -245,6 +255,9 @@ int main(int argc, char **argv)
         #endif
         #ifdef INCLUDE_OVERVIEW
           overview(&(context->ctx));
+        #endif
+        #ifdef INCLUDE_CONFIGURATOR
+          style_configurator(&(context->ctx), color_table);
         #endif
         #ifdef INCLUDE_NODE_EDITOR
           node_editor(&(context->ctx));

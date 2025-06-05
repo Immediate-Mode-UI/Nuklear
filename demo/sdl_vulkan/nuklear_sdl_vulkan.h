@@ -1254,12 +1254,12 @@ NK_API void nk_sdl_handle_grab(void) {
 
 NK_API int nk_sdl_handle_event(SDL_Event *evt) {
     struct nk_context *ctx = &sdl.ctx;
+    int ctrl_down = SDL_GetModState() & (KMOD_LCTRL | KMOD_RCTRL);
 
     switch (evt->type) {
     case SDL_KEYUP: /* KEYUP & KEYDOWN share same routine */
     case SDL_KEYDOWN: {
         int down = evt->type == SDL_KEYDOWN;
-        const Uint8 *state = SDL_GetKeyboardState(0);
         switch (evt->key.keysym.sym) {
         case SDLK_RSHIFT: /* RSHIFT & LSHIFT share same routine */
         case SDLK_LSHIFT:
@@ -1269,6 +1269,7 @@ NK_API int nk_sdl_handle_event(SDL_Event *evt) {
             nk_input_key(ctx, NK_KEY_DEL, down);
             break;
         case SDLK_RETURN:
+        case SDLK_KP_ENTER:
             nk_input_key(ctx, NK_KEY_ENTER, down);
             break;
         case SDLK_TAB:
@@ -1293,28 +1294,28 @@ NK_API int nk_sdl_handle_event(SDL_Event *evt) {
             break;
         case SDLK_z:
             nk_input_key(ctx, NK_KEY_TEXT_UNDO,
-                         down && state[SDL_SCANCODE_LCTRL]);
+                         down && ctrl_down);
             break;
         case SDLK_r:
             nk_input_key(ctx, NK_KEY_TEXT_REDO,
-                         down && state[SDL_SCANCODE_LCTRL]);
+                         down && ctrl_down);
             break;
         case SDLK_c:
-            nk_input_key(ctx, NK_KEY_COPY, down && state[SDL_SCANCODE_LCTRL]);
+            nk_input_key(ctx, NK_KEY_COPY, down && ctrl_down);
             break;
         case SDLK_v:
-            nk_input_key(ctx, NK_KEY_PASTE, down && state[SDL_SCANCODE_LCTRL]);
+            nk_input_key(ctx, NK_KEY_PASTE, down && ctrl_down);
             break;
         case SDLK_x:
-            nk_input_key(ctx, NK_KEY_CUT, down && state[SDL_SCANCODE_LCTRL]);
+            nk_input_key(ctx, NK_KEY_CUT, down && ctrl_down);
             break;
         case SDLK_b:
             nk_input_key(ctx, NK_KEY_TEXT_LINE_START,
-                         down && state[SDL_SCANCODE_LCTRL]);
+                         down && ctrl_down);
             break;
         case SDLK_e:
             nk_input_key(ctx, NK_KEY_TEXT_LINE_END,
-                         down && state[SDL_SCANCODE_LCTRL]);
+                         down && ctrl_down);
             break;
         case SDLK_UP:
             nk_input_key(ctx, NK_KEY_UP, down);
@@ -1322,14 +1323,18 @@ NK_API int nk_sdl_handle_event(SDL_Event *evt) {
         case SDLK_DOWN:
             nk_input_key(ctx, NK_KEY_DOWN, down);
             break;
+        case SDLK_a:
+            if(ctrl_down)
+                nk_input_key(ctx,NK_KEY_TEXT_SELECT_ALL, down);
+            break;
         case SDLK_LEFT:
-            if (state[SDL_SCANCODE_LCTRL])
+            if (ctrl_down)
                 nk_input_key(ctx, NK_KEY_TEXT_WORD_LEFT, down);
             else
                 nk_input_key(ctx, NK_KEY_LEFT, down);
             break;
         case SDLK_RIGHT:
-            if (state[SDL_SCANCODE_LCTRL])
+            if (ctrl_down)
                 nk_input_key(ctx, NK_KEY_TEXT_WORD_RIGHT, down);
             else
                 nk_input_key(ctx, NK_KEY_RIGHT, down);
@@ -1377,7 +1382,7 @@ NK_API int nk_sdl_handle_event(SDL_Event *evt) {
     }
 
     case SDL_MOUSEWHEEL:
-        nk_input_scroll(ctx, nk_vec2((float)evt->wheel.x, (float)evt->wheel.y));
+        nk_input_scroll(ctx,nk_vec2(evt->wheel.preciseX, evt->wheel.preciseY));
         return 1;
     }
     return 0;
@@ -1597,9 +1602,10 @@ VkSemaphore nk_sdl_render(VkQueue graphics_queue, uint32_t buffer_index,
 NK_INTERN void nk_sdl_clipboard_paste(nk_handle usr,
                                       struct nk_text_edit *edit) {
     const char *text = SDL_GetClipboardText();
-    if (text)
+    if (text) {
         nk_textedit_paste(edit, text, nk_strlen(text));
-    SDL_free((void *)text);
+        SDL_free((void *)text);
+    }
     (void)usr;
 }
 

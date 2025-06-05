@@ -3,7 +3,7 @@ CC = g++
 BIN = demo
 
 # Flags
-CFLAGS += -s -Wall -Wextra -pedantic -O2
+CFLAGS += -s -Wall -Wextra -pedantic
 
 SRC = main.cpp
 OBJ = $(SRC:.cpp=.o)
@@ -22,7 +22,7 @@ else
 	ifeq ($(UNAME_S),Darwin)
 		LIBS = -lsfml-window -lsfml-system -pthread -framework OpenGL
 	else
-		LIBS = -DSFML_STATIC -lsfml-window-s -lsfml-system-s -pthread -ludev -lGL -lX11 -lXrandr
+		LIBS = -DSFML_STATIC -lsfml-window -lsfml-system -pthread -ludev -lGL -lX11 -lXrandr
 	endif
 endif
 

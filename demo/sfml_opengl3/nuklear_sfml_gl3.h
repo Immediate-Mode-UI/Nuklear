@@ -386,7 +386,7 @@ nk_sfml_handle_event(sf::Event* evt)
             nk_input_key(ctx, NK_KEY_SHIFT, down);
         else if(key == sf::Keyboard::Delete)
             nk_input_key(ctx, NK_KEY_DEL, down);
-        else if(key == sf::Keyboard::Return)
+        else if(key == sf::Keyboard::Enter)
             nk_input_key(ctx, NK_KEY_ENTER, down);
         else if(key == sf::Keyboard::Tab)
             nk_input_key(ctx, NK_KEY_TAB, down);
