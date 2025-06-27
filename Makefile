@@ -21,7 +21,7 @@ INTRO =  HEADER.md
 PUB = nuklear.h
 OUTPUT = nuklear.h
 
-PRIV1 = nuklear_internal.h nuklear_math.c nuklear_util.c nuklear_color.c nuklear_utf8.c nuklear_buffer.c nuklear_string.c nuklear_draw.c nuklear_vertex.c 
+PRIV1 = nuklear_internal.h nuklear_math.c nuklear_util.c nuklear_crc.c nuklear_color.c nuklear_utf8.c nuklear_buffer.c nuklear_string.c nuklear_draw.c nuklear_vertex.c 
 
 EXTERN =  stb_rect_pack.h stb_truetype.h 
 

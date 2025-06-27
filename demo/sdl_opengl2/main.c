@@ -20,6 +20,7 @@
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
+#define NK_DRAW_CRC
 #define NK_SDL_GL2_IMPLEMENTATION
 #include "../../nuklear.h"
 #include "nuklear_sdl_gl2.h"

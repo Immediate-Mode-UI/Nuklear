@@ -84,6 +84,9 @@ nk_push_scissor(struct nk_command_buffer *b, struct nk_rect r)
     cmd->y = (short)r.y;
     cmd->w = (unsigned short)NK_MAX(0, r.w);
     cmd->h = (unsigned short)NK_MAX(0, r.h);
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof nk_command_scissor*, b->crc);
+#endif
 }
 NK_API void
 nk_stroke_line(struct nk_command_buffer *b, float x0, float y0,
@@ -101,6 +104,9 @@ nk_stroke_line(struct nk_command_buffer *b, float x0, float y0,
     cmd->end.x = (short)x1;
     cmd->end.y = (short)y1;
     cmd->color = c;
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof(nk_command_line*), b->crc);
+#endif
 }
 NK_API void
 nk_stroke_curve(struct nk_command_buffer *b, float ax, float ay,
@@ -124,6 +130,9 @@ nk_stroke_curve(struct nk_command_buffer *b, float ax, float ay,
     cmd->end.x = (short)bx;
     cmd->end.y = (short)by;
     cmd->color = col;
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof(nk_command_curve*), b->crc);
+#endif
 }
 NK_API void
 nk_stroke_rect(struct nk_command_buffer *b, struct nk_rect rect,
@@ -147,6 +156,9 @@ nk_stroke_rect(struct nk_command_buffer *b, struct nk_rect rect,
     cmd->w = (unsigned short)NK_MAX(0, rect.w);
     cmd->h = (unsigned short)NK_MAX(0, rect.h);
     cmd->color = c;
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof(nk_command_rect*), b->crc);
+#endif
 }
 NK_API void
 nk_fill_rect(struct nk_command_buffer *b, struct nk_rect rect,
@@ -170,6 +182,9 @@ nk_fill_rect(struct nk_command_buffer *b, struct nk_rect rect,
     cmd->w = (unsigned short)NK_MAX(0, rect.w);
     cmd->h = (unsigned short)NK_MAX(0, rect.h);
     cmd->color = c;
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof(nk_command_rect_filled*), b->crc);
+#endif
 }
 NK_API void
 nk_fill_rect_multi_color(struct nk_command_buffer *b, struct nk_rect rect,
@@ -196,6 +211,9 @@ nk_fill_rect_multi_color(struct nk_command_buffer *b, struct nk_rect rect,
     cmd->top = top;
     cmd->right = right;
     cmd->bottom = bottom;
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof(nk_command_rect_multi_color*), b->crc);
+#endif
 }
 NK_API void
 nk_stroke_circle(struct nk_command_buffer *b, struct nk_rect r,
@@ -218,6 +236,9 @@ nk_stroke_circle(struct nk_command_buffer *b, struct nk_rect r,
     cmd->w = (unsigned short)NK_MAX(r.w, 0);
     cmd->h = (unsigned short)NK_MAX(r.h, 0);
     cmd->color = c;
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof(nk_command_circle*), b->crc);
+#endif
 }
 NK_API void
 nk_fill_circle(struct nk_command_buffer *b, struct nk_rect r, struct nk_color c)
@@ -239,6 +260,9 @@ nk_fill_circle(struct nk_command_buffer *b, struct nk_rect r, struct nk_color c)
     cmd->w = (unsigned short)NK_MAX(r.w, 0);
     cmd->h = (unsigned short)NK_MAX(r.h, 0);
     cmd->color = c;
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof(nk_command_circle_filled*), b->crc);
+#endif
 }
 NK_API void
 nk_stroke_arc(struct nk_command_buffer *b, float cx, float cy, float radius,
@@ -256,6 +280,9 @@ nk_stroke_arc(struct nk_command_buffer *b, float cx, float cy, float radius,
     cmd->a[0] = a_min;
     cmd->a[1] = a_max;
     cmd->color = c;
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof(nk_command_arc*), b->crc);
+#endif
 }
 NK_API void
 nk_fill_arc(struct nk_command_buffer *b, float cx, float cy, float radius,
@@ -273,6 +300,9 @@ nk_fill_arc(struct nk_command_buffer *b, float cx, float cy, float radius,
     cmd->a[0] = a_min;
     cmd->a[1] = a_max;
     cmd->color = c;
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof(nk_command_arc_filled*), b->crc);
+#endif
 }
 NK_API void
 nk_stroke_triangle(struct nk_command_buffer *b, float x0, float y0, float x1,
@@ -300,6 +330,9 @@ nk_stroke_triangle(struct nk_command_buffer *b, float x0, float y0, float x1,
     cmd->c.x = (short)x2;
     cmd->c.y = (short)y2;
     cmd->color = c;
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof(nk_command_triangle*), b->crc);
+#endif
 }
 NK_API void
 nk_fill_triangle(struct nk_command_buffer *b, float x0, float y0, float x1,
@@ -327,6 +360,9 @@ nk_fill_triangle(struct nk_command_buffer *b, float x0, float y0, float x1,
     cmd->c.x = (short)x2;
     cmd->c.y = (short)y2;
     cmd->color = c;
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof(nk_command_triangle_filled*), b->crc);
+#endif
 }
 NK_API void
 nk_stroke_polygon(struct nk_command_buffer *b, const float *points, int point_count,
@@ -348,6 +384,9 @@ nk_stroke_polygon(struct nk_command_buffer *b, const float *points, int point_co
         cmd->points[i].x = (short)points[i*2];
         cmd->points[i].y = (short)points[i*2+1];
     }
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof(nk_command_polygon*), b->crc);
+#endif
 }
 NK_API void
 nk_fill_polygon(struct nk_command_buffer *b, const float *points, int point_count,
@@ -369,6 +408,9 @@ nk_fill_polygon(struct nk_command_buffer *b, const float *points, int point_coun
         cmd->points[i].x = (short)points[i*2+0];
         cmd->points[i].y = (short)points[i*2+1];
     }
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof(nk_command_polygon_filled*), b->crc);
+#endif
 }
 NK_API void
 nk_stroke_polyline(struct nk_command_buffer *b, const float *points, int point_count,
@@ -390,6 +432,9 @@ nk_stroke_polyline(struct nk_command_buffer *b, const float *points, int point_c
         cmd->points[i].x = (short)points[i*2];
         cmd->points[i].y = (short)points[i*2+1];
     }
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof(nk_command_polyline*), b->crc);
+#endif
 }
 NK_API void
 nk_draw_image(struct nk_command_buffer *b, struct nk_rect r,
@@ -413,6 +458,9 @@ nk_draw_image(struct nk_command_buffer *b, struct nk_rect r,
     cmd->h = (unsigned short)NK_MAX(0, r.h);
     cmd->img = *img;
     cmd->col = col;
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof(nk_command_image*), b->crc);
+#endif
 }
 NK_API void
 nk_draw_nine_slice(struct nk_command_buffer *b, struct nk_rect r,
@@ -513,6 +561,9 @@ nk_push_custom(struct nk_command_buffer *b, struct nk_rect r,
     cmd->h = (unsigned short)NK_MAX(0, r.h);
     cmd->callback_data = usr;
     cmd->callback = cb;
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof(nk_command_custom*), b->crc); //here be dragons
+#endif
 }
 NK_API void
 nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
@@ -554,4 +605,8 @@ nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
     cmd->height = font->height;
     NK_MEMCPY(cmd->string, string, (nk_size)length);
     cmd->string[length] = '\0';
+#ifdef NK_DRAW_CRC
+    b->crc = NK_CRC_FUNC((const void*)cmd,sizeof(nk_command_text *), b->crc); // command
+    b->crc = NK_CRC_FUNC((const void*)cmd->string,length, b->crc); //text
+#endif
 }

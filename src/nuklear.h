@@ -4635,6 +4635,9 @@ struct nk_command_buffer {
     int use_clipping;
     nk_handle userdata;
     nk_size begin, end, last;
+#ifdef NK_DRAW_CRC
+    nk_hash crc;
+#endif
 };
 
 /** shape outlines */
@@ -5740,6 +5743,9 @@ struct nk_context {
     struct nk_page_element *freelist;
     unsigned int count;
     unsigned int seq;
+#ifdef NK_DRAW_CRC
+    nk_hash crc;
+#endif
 };
 
 /* ==============================================================

@@ -182,6 +182,9 @@ nk_start_buffer(struct nk_context *ctx, struct nk_command_buffer *buffer)
     buffer->end = buffer->begin;
     buffer->last = buffer->begin;
     buffer->clip = nk_null_rect;
+#ifdef NK_DRAW_CRC
+    buffer->crc = NK_CRC_SEED;
+#endif
 }
 NK_LIB void
 nk_start(struct nk_context *ctx, struct nk_window *win)
@@ -225,6 +228,9 @@ nk_finish_buffer(struct nk_context *ctx, struct nk_command_buffer *buffer)
     NK_ASSERT(buffer);
     if (!ctx || !buffer) return;
     buffer->end = ctx->memory.allocated;
+#ifdef NK_DRAW_CRC
+    ctx->crc = buffer.crc;
+#endif
 }
 NK_LIB void
 nk_finish(struct nk_context *ctx, struct nk_window *win)
@@ -236,8 +242,16 @@ nk_finish(struct nk_context *ctx, struct nk_window *win)
     NK_ASSERT(ctx);
     NK_ASSERT(win);
     if (!ctx || !win) return;
+    
+
     nk_finish_buffer(ctx, &win->buffer);
+
     if (!win->popup.buf.active) return;
+#ifdef NK_DRAW_CRC
+    /*combine the normal buffer with the popup buffer*/
+    /*i don't know why, but for all other buffers, we use "finish"*/
+    ctx->crc = NK_CRC_FUNC(ctx->crc, &win->popup.buf.crc, sizeof(win->popup.buf.crc));
+#endif
 
     buf = &win->popup.buf;
     memory = ctx->memory.memory.ptr;
