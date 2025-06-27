@@ -4636,7 +4636,7 @@ struct nk_command_buffer {
     nk_handle userdata;
     nk_size begin, end, last;
 #ifdef NK_DRAW_CRC
-    NK_UINT32 crc;
+    nk_hash crc;
 #endif
 };
 
@@ -5744,7 +5744,7 @@ struct nk_context {
     unsigned int count;
     unsigned int seq;
 #ifdef NK_DRAW_CRC
-    NK_UINT32 crc;
+    nk_hash crc;
 #endif
 };
 
