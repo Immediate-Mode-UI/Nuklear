@@ -19,8 +19,10 @@ jobs:
       run: make -C demo/glfw_opengl2
     - name: build glfw_opengl3
       run: make -C demo/glfw_opengl3
-    - name: build glfw_opengl4
-      run: make -C demo/glfw_opengl4
+    - name: build glfw_opengl4_core
+      run: make -C demo/glfw_opengl4_core
+    - name: build glfw_opengl4_ext
+      run: make -C demo/glfw_opengl4_ext
     - name: build glfw_vulkan
       run: make -C demo/glfw_vulkan
     - name: build sdl_opengl2
