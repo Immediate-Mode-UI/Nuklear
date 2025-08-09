@@ -257,7 +257,9 @@ main(void)
 cleanup:
     nk_sdl_shutdown();
     SDL_DestroyRenderer(renderer);
+    SDL_DestroyProperties(renderer_props);
     SDL_DestroyWindow(win);
+    SDL_DestroyProperties(win_props);
     SDL_Quit();
     return 0;
 }
