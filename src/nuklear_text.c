@@ -56,8 +56,6 @@ nk_widget_text_wrap(struct nk_command_buffer *o, struct nk_rect b,
     const char *string, int len, const struct nk_text *t,
     const struct nk_user_font *f)
 {
-    float width;
-    int glyphs = 0;
     int fitting = 0;
     int done = 0;
     struct nk_rect line;
@@ -81,13 +79,13 @@ nk_widget_text_wrap(struct nk_command_buffer *o, struct nk_rect b,
     line.w = b.w - 2 * t->padding.x;
     line.h = 2 * t->padding.y + f->height;
 
-    fitting = nk_text_clamp(f, string, len, line.w, &glyphs, &width, seperator,NK_LEN(seperator));
+    fitting = nk_text_clamp(f, string, len, line.w, NULL, NULL, seperator,NK_LEN(seperator));
     while (done < len) {
         if (!fitting || line.y + line.h >= (b.y + b.h)) break;
         nk_widget_text(o, line, &string[done], fitting, &text, NK_TEXT_LEFT, f);
         done += fitting;
         line.y += f->height + 2 * t->padding.y;
-        fitting = nk_text_clamp(f, &string[done], len - done, line.w, &glyphs, &width, seperator,NK_LEN(seperator));
+        fitting = nk_text_clamp(f, &string[done], len - done, line.w, NULL, NULL, seperator,NK_LEN(seperator));
     }
 }
 NK_API void
