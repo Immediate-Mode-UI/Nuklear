@@ -1018,52 +1018,56 @@ nk_file_load(const char* path, nk_size* siz, const struct nk_allocator *alloc)
 }
 #endif
 NK_LIB int
-nk_text_clamp(const struct nk_user_font *font, const char *text,
-    int text_len, float space, int *glyphs, float *text_width,
-    nk_rune *sep_list, int sep_count)
+nk_text_clamp(const struct nk_user_font* font, const char* text,
+    int text_len, float space, int* glyphs, float* text_width,
+    nk_rune* sep_list, int sep_count)
+
 {
     int i = 0;
     int glyph_len = 0;
-    float last_width = 0;
+
     nk_rune unicode = 0;
     float width = 0;
     int len = 0;
     int g = 0;
-    float s;
 
-    int sep_len = 0;
-    int sep_g = 0;
-    float sep_width = 0;
-    sep_count = NK_MAX(sep_count,0);
+    float ret_width = 0;
+    int ret_g = 0;
+    int ret_len = 0;
 
-    glyph_len = nk_utf_decode(text, &unicode, text_len);
-    while (glyph_len && (width < space) && (len < text_len)) {
-        len += glyph_len;
-        s = font->width(font->userdata, font->height, text, len);
-        for (i = 0; i < sep_count; ++i) {
-            if (unicode != sep_list[i]) continue;
-            sep_width = last_width = width;
-            sep_g = g+1;
-            sep_len = len;
-            break;
+    sep_count = NK_MAX(sep_count, 0);
+
+    while ((width < space) && (len < text_len)) {
+        if (!ret_g) {
+            ret_width = width;
+            ret_len = len;
         }
-        if (i == sep_count){
-            last_width = sep_width = width;
-            sep_g = g+1;
-        }
-        width = s;
+
         glyph_len = nk_utf_decode(&text[len], &unicode, text_len - len);
+        if (!glyph_len) break;
+
+        len += glyph_len;
+        width = font->width(font->userdata, font->height, text, len);
+
+        for (i = 0; i < sep_count; ++i) {
+            if (unicode == sep_list[i]) {
+                ret_len = len;
+                ret_g = g + 1;
+                break;
+            }
+        }
         g++;
     }
-    if (len >= text_len) {
-        *glyphs = g;
-        *text_width = last_width;
-        return len;
-    } else {
-        *glyphs = sep_g;
-        *text_width = sep_width;
-        return (!sep_len) ? len: sep_len;
-    }
+
+    if (width < space) {
+        ret_g = g;
+        ret_width = width;
+        ret_len = len;
+    } else if (!ret_g) ret_g = NK_MAX(g - 1, 0);
+
+    if (glyphs) *glyphs = ret_g;
+    if (text_width) *text_width = ret_width;
+    return ret_len;
 }
 NK_LIB struct nk_vec2
 nk_text_calculate_text_bounds(const struct nk_user_font *font,
