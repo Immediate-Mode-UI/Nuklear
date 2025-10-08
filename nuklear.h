@@ -23812,6 +23812,10 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
     text_width = f->width(f->userdata, f->height, (const char*)string, len);
     text_width += (2.0f * t->padding.x);
 
+    /* align to left in x-axis by default */
+    if (!(a & (NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_RIGHT)))
+        a |= NK_TEXT_ALIGN_LEFT;
+
     /* align in x-axis */
     if (a & NK_TEXT_ALIGN_LEFT) {
         label.x = b.x + t->padding.x;
@@ -23825,7 +23829,7 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
     } else if (a & NK_TEXT_ALIGN_RIGHT) {
         label.x = NK_MAX(b.x + t->padding.x, (b.x + b.w) - (2 * t->padding.x + (float)text_width));
         label.w = (float)text_width + 2 * t->padding.x;
-    } else return;
+    }
 
     /* align in y-axis */
     if (a & NK_TEXT_ALIGN_MIDDLE) {
@@ -30716,6 +30720,8 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2025/10/08 (4.12.8) - Fix nk_widget_text to use NK_TEXT_ALIGN_LEFT by default,
+///                         instead of silently failing when no x-axis alignment is provided
 /// - 2025/04/06 (4.12.7) - Fix text input navigation and mouse scrolling
 /// - 2025/03/29 (4.12.6) - Fix unitialized data in nk_input_char
 /// - 2025/03/05 (4.12.5) - Fix scrolling knob also scrolling parent window, remove dead code

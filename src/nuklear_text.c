@@ -26,6 +26,10 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
     text_width = f->width(f->userdata, f->height, (const char*)string, len);
     text_width += (2.0f * t->padding.x);
 
+    /* align to left in x-axis by default */
+    if (!(a & (NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_RIGHT)))
+        a |= NK_TEXT_ALIGN_LEFT;
+
     /* align in x-axis */
     if (a & NK_TEXT_ALIGN_LEFT) {
         label.x = b.x + t->padding.x;
@@ -39,7 +43,7 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
     } else if (a & NK_TEXT_ALIGN_RIGHT) {
         label.x = NK_MAX(b.x + t->padding.x, (b.x + b.w) - (2 * t->padding.x + (float)text_width));
         label.w = (float)text_width + 2 * t->padding.x;
-    } else return;
+    }
 
     /* align in y-axis */
     if (a & NK_TEXT_ALIGN_MIDDLE) {
