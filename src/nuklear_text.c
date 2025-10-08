@@ -19,16 +19,15 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
     if (!o || !t) return;
 
     b.h = NK_MAX(b.h, 2 * t->padding.y);
-    label.x = 0; label.w = 0;
-    label.y = b.y + t->padding.y;
-    label.h = NK_MIN(f->height, b.h - 2 * t->padding.y);
 
     text_width = f->width(f->userdata, f->height, (const char*)string, len);
     text_width += (2.0f * t->padding.x);
 
-    /* align to left in x-axis by default */
+    /* use top-left alignment by default */
     if (!(a & (NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_RIGHT)))
         a |= NK_TEXT_ALIGN_LEFT;
+    if (!(a & (NK_TEXT_ALIGN_TOP | NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_BOTTOM)))
+        a |= NK_TEXT_ALIGN_TOP;
 
     /* align in x-axis */
     if (a & NK_TEXT_ALIGN_LEFT) {
@@ -46,13 +45,17 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
     }
 
     /* align in y-axis */
-    if (a & NK_TEXT_ALIGN_MIDDLE) {
+    if (a & NK_TEXT_ALIGN_TOP) {
+        label.y = b.y + t->padding.y;
+        label.h = NK_MIN(f->height, b.h - 2 * t->padding.y);
+    } else if (a & NK_TEXT_ALIGN_MIDDLE) {
         label.y = b.y + b.h/2.0f - (float)f->height/2.0f;
         label.h = NK_MAX(b.h/2.0f, b.h - (b.h/2.0f + f->height/2.0f));
     } else if (a & NK_TEXT_ALIGN_BOTTOM) {
         label.y = b.y + b.h - f->height;
         label.h = f->height;
     }
+
     nk_draw_text(o, label, (const char*)string, len, f, t->background, t->text);
 }
 NK_LIB void
