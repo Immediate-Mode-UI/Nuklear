@@ -355,7 +355,7 @@ nk_textedit_paste(struct nk_text_edit *state, char const *ctext, int len)
     glyphs = nk_utf_len(ctext, len);
     if (nk_str_insert_text_char(&state->string, state->cursor, text, len)) {
         nk_textedit_makeundo_insert(state, state->cursor, glyphs);
-        state->cursor += len;
+        state->cursor += glyphs;
         state->has_preferred_x = 0;
         return 1;
     }
