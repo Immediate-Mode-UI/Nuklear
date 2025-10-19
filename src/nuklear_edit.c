@@ -278,17 +278,19 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         int cut = nk_input_is_key_pressed(in, NK_KEY_CUT);
         if ((copy || cut) && (flags & NK_EDIT_CLIPBOARD))
         {
-            int glyph_len;
-            nk_rune unicode;
-            const char *text;
-            int b = edit->select_start;
-            int e = edit->select_end;
+            int begin = NK_MIN(edit->select_start, edit->select_end);
+            int end = NK_MAX(edit->select_start, edit->select_end);
 
-            int begin = NK_MIN(b, e);
-            int end = NK_MAX(b, e);
-            text = nk_str_at_const(&edit->string, begin, &unicode, &glyph_len);
-            if (edit->clip.copy)
-                edit->clip.copy(edit->clip.userdata, text, end - begin);
+            if (edit->clip.copy) {
+                int glyph_len;
+                nk_rune unicode;
+                const char *text_begin, *text_end;
+                text_begin = nk_str_at_const(&edit->string, begin, &unicode, &glyph_len);
+				/*Reuse temporary variables (unicode, glyph_len)*/
+                text_end = nk_str_at_const(&edit->string, end, &unicode, &glyph_len);
+
+                edit->clip.copy(edit->clip.userdata, text_begin, text_end - text_begin);
+            }
             if (cut && !(flags & NK_EDIT_READ_ONLY)){
                 nk_textedit_cut(edit);
                 cursor_follow = nk_true;
