@@ -167,12 +167,15 @@ nk_str_insert_at_rune(struct nk_str *str, int pos, const char *cstr, int len)
 NK_API int
 nk_str_insert_text_char(struct nk_str *str, int pos, const char *text, int len)
 {
-    return nk_str_insert_text_utf8(str, pos, text, len);
+    nk_str_insert_at_rune(str, pos, text, len);
+    /* TODO. Most likely, each of these functions(nk_str_insert_*, nk_str_append_*)
+     * should check the return value and return 0 in case of failure. */
+    return len;
 }
 NK_API int
 nk_str_insert_str_char(struct nk_str *str, int pos, const char *text)
 {
-    return nk_str_insert_text_utf8(str, pos, text, nk_strlen(text));
+    return nk_str_insert_text_char(str, pos, text, nk_strlen(text));
 }
 NK_API int
 nk_str_insert_text_utf8(struct nk_str *str, int pos, const char *text, int len)
