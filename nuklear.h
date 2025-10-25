@@ -25491,6 +25491,7 @@ nk_draw_selectable(struct nk_command_buffer *out,
 {
     const struct nk_style_item *background;
     struct nk_text text;
+    nk_zero_struct(text);
     text.padding = style->padding;
 
     /* select correct colors/images */
@@ -29973,6 +29974,7 @@ nk_combo_begin_symbol(struct nk_context *ctx, enum nk_symbol_type symbol, struct
     const struct nk_style_item *background;
     struct nk_color sym_background;
     struct nk_color symbol_color;
+    nk_zero_struct(sym_background);
 
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -30070,6 +30072,7 @@ nk_combo_begin_symbol_text(struct nk_context *ctx, const char *selected, int len
     const struct nk_style_item *background;
     struct nk_color symbol_color;
     struct nk_text text;
+    nk_zero_struct(text);
 
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
