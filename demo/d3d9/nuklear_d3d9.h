@@ -292,6 +292,7 @@ nk_d3d9_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             return 1;
 
         case VK_RETURN:
+        case VK_SEPARATOR:
             nk_input_key(&d3d9.ctx, NK_KEY_ENTER, down);
             return 1;
 

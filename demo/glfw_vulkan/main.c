@@ -18,7 +18,6 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
 #define NK_GLFW_VULKAN_IMPLEMENTATION
-#define NK_KEYSTATE_BASED_INPUT
 #include "../../nuklear.h"
 #include "nuklear_glfw_vulkan.h"
 
@@ -39,7 +38,7 @@
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
-/*#define INCLUDE_OVERVIEW*/
+#define INCLUDE_OVERVIEW
 /*#define INCLUDE_CONFIGURATOR */
 /*#define INCLUDE_NODE_EDITOR */
 
