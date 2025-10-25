@@ -21,7 +21,6 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
 #define NK_GLFW_GL4_IMPLEMENTATION
-#define NK_KEYSTATE_BASED_INPUT
 #include "../../nuklear.h"
 #include "nuklear_glfw_gl4.h"
 

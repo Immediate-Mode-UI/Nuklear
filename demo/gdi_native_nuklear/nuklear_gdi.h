@@ -2,11 +2,11 @@
  * Nuklear - 1.32.0 - public domain
  * no warrenty implied; use at your own risk.
  * authored from 2015-2016 by Micha Mettke
- * 
+ *
  * Modified GDI backend 2022
  * Now based on a context that is required for each API function call.
  * Removes the global state --> you can have multiple windows :-)
- * 
+ *
  */
  /*
   * ==============================================================
@@ -651,6 +651,7 @@ nk_gdi_set_font(nk_gdi_ctx gdi, GdiFont* gdifont)
 NK_API int
 nk_gdi_handle_event(nk_gdi_ctx gdi, HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+    static int insert_toggle = 0;
     switch (msg)
     {
     case WM_SIZE:
@@ -698,6 +699,7 @@ nk_gdi_handle_event(nk_gdi_ctx gdi, HWND wnd, UINT msg, WPARAM wparam, LPARAM lp
             return 1;
 
         case VK_RETURN:
+        case VK_SEPARATOR:
             nk_input_key(&gdi->ctx, NK_KEY_ENTER, down);
             return 1;
 
@@ -740,6 +742,48 @@ nk_gdi_handle_event(nk_gdi_ctx gdi, HWND wnd, UINT msg, WPARAM wparam, LPARAM lp
         case VK_PRIOR:
             nk_input_key(&gdi->ctx, NK_KEY_SCROLL_UP, down);
             return 1;
+
+        case VK_ESCAPE:
+            nk_input_key(&gdi->ctx, NK_KEY_TEXT_RESET_MODE, down);
+            return 1;
+
+        case VK_INSERT:
+        /* Only switch on release to avoid repeat issues
+         * kind of confusing since we have to negate it but we're already
+         * hacking it since Nuklear treats them as two separate keys rather
+         * than a single toggle state */
+            if (!down) {
+                insert_toggle = !insert_toggle;
+                if (insert_toggle) {
+                    nk_input_key(&gdi->ctx, NK_KEY_TEXT_INSERT_MODE, !down);
+                    /* nk_input_key(&gdi->ctx, NK_KEY_TEXT_REPLACE_MODE, down); */
+                } else {
+                    nk_input_key(&gdi->ctx, NK_KEY_TEXT_REPLACE_MODE, !down);
+                    /* nk_input_key(&gdi->ctx, NK_KEY_TEXT_INSERT_MODE, down); */
+                }
+            }
+            return 1;
+
+        case 'A':
+            if (ctrl) {
+                nk_input_key(&gdi->ctx, NK_KEY_TEXT_SELECT_ALL, down);
+                return 1;
+            }
+            break;
+
+        case 'B':
+            if (ctrl) {
+                nk_input_key(&gdi->ctx, NK_KEY_TEXT_LINE_START, down);
+                return 1;
+            }
+            break;
+
+        case 'E':
+            if (ctrl) {
+                nk_input_key(&gdi->ctx, NK_KEY_TEXT_LINE_END, down);
+                return 1;
+            }
+            break;
 
         case 'C':
             if (ctrl) {
