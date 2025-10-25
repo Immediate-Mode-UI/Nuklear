@@ -45,8 +45,6 @@ jobs:
       run: make -C demo/x11_opengl3
     - name: build x11_rawfb
       run: make -C demo/rawfb/x11
-    - name: build x11_xft
-      run: make -C demo/x11_xft
     - name: build xcb_cairo
       run: make -C demo/xcb_cairo
     - name: build example
