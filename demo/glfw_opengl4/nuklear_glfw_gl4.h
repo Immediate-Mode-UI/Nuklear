@@ -415,6 +415,7 @@ nk_glfw3_char_callback(GLFWwindow *win, unsigned int codepoint)
 NK_API void
 nk_glfw3_key_callback(GLFWwindow *win, int key, int scancode, int action, int mods)
 {
+    static int insert_toggle = 0;
     /*
      * convert GLFW_REPEAT to down (technically GLFW_RELEASE, GLFW_PRESS, GLFW_REPEAT are
      * already 0, 1, 2 but just to be clearer)
@@ -433,6 +434,7 @@ nk_glfw3_key_callback(GLFWwindow *win, int key, int scancode, int action, int mo
     case GLFW_KEY_DOWN:      glfw.key_events[NK_KEY_DOWN] = a; break;
     case GLFW_KEY_LEFT:      glfw.key_events[NK_KEY_LEFT] = a; break;
     case GLFW_KEY_RIGHT:     glfw.key_events[NK_KEY_RIGHT] = a; break;
+    case GLFW_KEY_ESCAPE:    glfw.key_events[NK_KEY_TEXT_RESET_MODE] = a; break;
 
     case GLFW_KEY_PAGE_UP:   glfw.key_events[NK_KEY_SCROLL_UP] = a; break;
     case GLFW_KEY_PAGE_DOWN: glfw.key_events[NK_KEY_SCROLL_DOWN] = a; break;
@@ -456,6 +458,22 @@ nk_glfw3_key_callback(GLFWwindow *win, int key, int scancode, int action, int mo
     case GLFW_KEY_ENTER:
     case GLFW_KEY_KP_ENTER:
         glfw.key_events[NK_KEY_ENTER] = a;
+        break;
+    case GLFW_KEY_INSERT:
+        /* Only switch on release to avoid repeat issues
+         * kind of confusing since we have to negate it but we're already
+         * hacking it since Nuklear treats them as two separate keys rather
+         * than a single toggle state */
+        if (!a) {
+            insert_toggle = !insert_toggle;
+            if (insert_toggle) {
+                glfw.key_events[NK_KEY_TEXT_INSERT_MODE] = !a;
+                /* glfw.key_events[NK_KEY_TEXT_REPLACE_MODE] = a; */
+            } else {
+                /* glfw.key_events[NK_KEY_TEXT_INSERT_MODE] = a; */
+                glfw.key_events[NK_KEY_TEXT_REPLACE_MODE] = !a;
+            }
+        }
         break;
     default:
         ;
@@ -592,12 +610,17 @@ nk_glfw3_new_frame(void)
     if (k_state[NK_KEY_DEL] >= 0) nk_input_key(ctx, NK_KEY_DEL, k_state[NK_KEY_DEL]);
     if (k_state[NK_KEY_ENTER] >= 0) nk_input_key(ctx, NK_KEY_ENTER, k_state[NK_KEY_ENTER]);
 
+    if (k_state[NK_KEY_TEXT_RESET_MODE] >= 0) nk_input_key(ctx, NK_KEY_TEXT_RESET_MODE, k_state[NK_KEY_TEXT_RESET_MODE]);
+
     if (k_state[NK_KEY_TAB] >= 0) nk_input_key(ctx, NK_KEY_TAB, k_state[NK_KEY_TAB]);
     if (k_state[NK_KEY_BACKSPACE] >= 0) nk_input_key(ctx, NK_KEY_BACKSPACE, k_state[NK_KEY_BACKSPACE]);
     if (k_state[NK_KEY_UP] >= 0) nk_input_key(ctx, NK_KEY_UP, k_state[NK_KEY_UP]);
     if (k_state[NK_KEY_DOWN] >= 0) nk_input_key(ctx, NK_KEY_DOWN, k_state[NK_KEY_DOWN]);
     if (k_state[NK_KEY_SCROLL_UP] >= 0) nk_input_key(ctx, NK_KEY_SCROLL_UP, k_state[NK_KEY_SCROLL_UP]);
     if (k_state[NK_KEY_SCROLL_DOWN] >= 0) nk_input_key(ctx, NK_KEY_SCROLL_DOWN, k_state[NK_KEY_SCROLL_DOWN]);
+
+    if (k_state[NK_KEY_TEXT_INSERT_MODE] >= 0) nk_input_key(ctx, NK_KEY_TEXT_INSERT_MODE, k_state[NK_KEY_TEXT_INSERT_MODE]);
+    if (k_state[NK_KEY_TEXT_REPLACE_MODE] >= 0) nk_input_key(ctx, NK_KEY_TEXT_REPLACE_MODE, k_state[NK_KEY_TEXT_REPLACE_MODE]);
 
     nk_input_key(ctx, NK_KEY_TEXT_START, glfwGetKey(win, GLFW_KEY_HOME) == GLFW_PRESS);
     nk_input_key(ctx, NK_KEY_TEXT_END, glfwGetKey(win, GLFW_KEY_END) == GLFW_PRESS);

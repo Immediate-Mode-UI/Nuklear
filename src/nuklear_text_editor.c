@@ -446,17 +446,13 @@ retry:
         break;
 
     case NK_KEY_TEXT_INSERT_MODE:
-        if (state->mode == NK_TEXT_EDIT_MODE_VIEW)
-            state->mode = NK_TEXT_EDIT_MODE_INSERT;
+        state->mode = NK_TEXT_EDIT_MODE_INSERT;
         break;
     case NK_KEY_TEXT_REPLACE_MODE:
-        if (state->mode == NK_TEXT_EDIT_MODE_VIEW)
-            state->mode = NK_TEXT_EDIT_MODE_REPLACE;
+        state->mode = NK_TEXT_EDIT_MODE_REPLACE;
         break;
     case NK_KEY_TEXT_RESET_MODE:
-        if (state->mode == NK_TEXT_EDIT_MODE_INSERT ||
-            state->mode == NK_TEXT_EDIT_MODE_REPLACE)
-            state->mode = NK_TEXT_EDIT_MODE_VIEW;
+        state->mode = NK_TEXT_EDIT_MODE_VIEW;
         break;
 
     case NK_KEY_LEFT:

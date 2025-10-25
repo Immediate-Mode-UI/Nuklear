@@ -18,7 +18,7 @@ overview(struct nk_context *ctx)
 
 #ifdef INCLUDE_STYLE
     /* styles */
-    static const char* themes[] = {"Black", "White", "Red", "Blue", "Dark", "Dracula", 
+    static const char* themes[] = {"Black", "White", "Red", "Blue", "Dark", "Dracula",
       "Catppucin Latte", "Catppucin Frappe", "Catppucin Macchiato", "Catppucin Mocha"};
     static int current_theme = 0;
 #endif
@@ -592,10 +592,12 @@ overview(struct nk_context *ctx)
             {
                 static const float ratio[] = {120, 150};
                 static char field_buffer[64];
+                static char field_w_overwrite_buf[64];
                 static char text[9][64];
                 static int text_len[9];
                 static char box_buffer[512];
                 static int field_len;
+                static int field_ow_len;
                 static int box_len;
                 nk_flags active;
 
@@ -627,6 +629,9 @@ overview(struct nk_context *ctx)
 
                 nk_label(ctx, "Field:", NK_TEXT_LEFT);
                 nk_edit_string(ctx, NK_EDIT_FIELD, field_buffer, &field_len, 64, nk_filter_default);
+
+                nk_label(ctx, "Field 2:", NK_TEXT_LEFT);
+                nk_edit_string(ctx, NK_EDIT_SELECTABLE|NK_EDIT_CLIPBOARD, field_w_overwrite_buf, &field_ow_len, 64, nk_filter_default);
 
                 nk_label(ctx, "Box:", NK_TEXT_LEFT);
                 nk_layout_row_static(ctx, 180, 278, 1);

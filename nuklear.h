@@ -27234,17 +27234,13 @@ retry:
         break;
 
     case NK_KEY_TEXT_INSERT_MODE:
-        if (state->mode == NK_TEXT_EDIT_MODE_VIEW)
-            state->mode = NK_TEXT_EDIT_MODE_INSERT;
+        state->mode = NK_TEXT_EDIT_MODE_INSERT;
         break;
     case NK_KEY_TEXT_REPLACE_MODE:
-        if (state->mode == NK_TEXT_EDIT_MODE_VIEW)
-            state->mode = NK_TEXT_EDIT_MODE_REPLACE;
+        state->mode = NK_TEXT_EDIT_MODE_REPLACE;
         break;
     case NK_KEY_TEXT_RESET_MODE:
-        if (state->mode == NK_TEXT_EDIT_MODE_INSERT ||
-            state->mode == NK_TEXT_EDIT_MODE_REPLACE)
-            state->mode = NK_TEXT_EDIT_MODE_VIEW;
+        state->mode = NK_TEXT_EDIT_MODE_VIEW;
         break;
 
     case NK_KEY_LEFT:
@@ -30731,6 +30727,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///                         and refactor this function to keep the code style consistent
 /// - 2025/09/12 (4.12.8) - Fix nk_window_is_hovered to use current window flags
                           - Fix nk_utf_decode length check (allow len == NK_UTF_SIZE)
+/// - 2025/04/28 (4.12.8) - Allow switching between TEXT_INSERT and TEXT_REPLACE modes directly
 /// - 2025/04/06 (4.12.7) - Fix text input navigation and mouse scrolling
 /// - 2025/03/29 (4.12.6) - Fix unitialized data in nk_input_char
 /// - 2025/03/05 (4.12.5) - Fix scrolling knob also scrolling parent window, remove dead code

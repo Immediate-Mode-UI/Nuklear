@@ -373,7 +373,8 @@ NK_API int
 nk_sdl_handle_event(SDL_Event *evt)
 {
     struct nk_context *ctx = &sdl.ctx;
-    int ctrl_down = SDL_GetModState() & (KMOD_LCTRL | KMOD_RCTRL);
+    int ctrl_down = SDL_GetModState() & KMOD_CTRL;
+    static int insert_toggle = 0;
 
     switch(evt->type)
     {
@@ -407,6 +408,17 @@ nk_sdl_handle_event(SDL_Event *evt)
                     case SDLK_e:         nk_input_key(ctx, NK_KEY_TEXT_LINE_END, down && ctrl_down); break;
                     case SDLK_UP:        nk_input_key(ctx, NK_KEY_UP, down); break;
                     case SDLK_DOWN:      nk_input_key(ctx, NK_KEY_DOWN, down); break;
+
+                    case SDLK_ESCAPE:    nk_input_key(ctx, NK_KEY_TEXT_RESET_MODE, down); break;
+                    case SDLK_INSERT:
+                        if (down) insert_toggle = !insert_toggle;
+                        if (insert_toggle) {
+                            nk_input_key(ctx, NK_KEY_TEXT_INSERT_MODE, down);
+                        } else {
+                            nk_input_key(ctx, NK_KEY_TEXT_REPLACE_MODE, down);
+                        }
+                        break;
+
                     case SDLK_a:
                         if (ctrl_down)
                             nk_input_key(ctx,NK_KEY_TEXT_SELECT_ALL, down);
