@@ -1219,12 +1219,14 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
  * ```
  *
  * # Reference
- * Function                            | Description
- * ------------------------------------|----------------------------------------
+ * Function                                 | Description
+ * -----------------------------------------|----------------------------------------
  * \ref nk_begin                            | Starts a new window; needs to be called every frame for every window (unless hidden) or otherwise the window gets removed
  * \ref nk_begin_titled                     | Extended window start with separated title and identifier to allow multiple windows with same name but not title
  * \ref nk_end                              | Needs to be called at the end of the window building process to process scaling, scrollbars and general cleanup
  *
+ * Function                                 | Description
+ * -----------------------------------------|----------------------------------------
  * \ref nk_window_find                      | Finds and returns the window with give name
  * \ref nk_window_get_bounds                | Returns a rectangle with screen position and size of the currently processed window.
  * \ref nk_window_get_position              | Returns the position of the currently processed window
@@ -1246,13 +1248,17 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
  * \ref nk_window_is_hovered                | Returns if the currently processed window is currently being hovered by mouse
  * \ref nk_window_is_any_hovered            | Return if any window currently hovered
  * \ref nk_item_is_any_active               | Returns if any window or widgets is currently hovered or active
-//
+ *
+ * Function                                 | Description
+ * -----------------------------------------|----------------------------------------
  * \ref nk_window_set_bounds                | Updates position and size of the currently processed window
  * \ref nk_window_set_position              | Updates position of the currently process window
  * \ref nk_window_set_size                  | Updates the size of the currently processed window
  * \ref nk_window_set_focus                 | Set the currently processed window as active window
  * \ref nk_window_set_scroll                | Sets the scroll offset of the current window
-//
+ *
+ * Function                                 | Description
+ * -----------------------------------------|----------------------------------------
  * \ref nk_window_close                     | Closes the window with given window name which deletes the window at the end of the frame
  * \ref nk_window_collapse                  | Collapses the window with given window name
  * \ref nk_window_collapse_if               | Collapses the window with given window name if the given condition was met
