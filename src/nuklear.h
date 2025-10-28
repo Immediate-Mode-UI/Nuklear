@@ -1142,7 +1142,7 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
 /**
  * \page Window
  * Windows are the main persistent state used inside nuklear and are life time
- * controlled by simply "retouching" (i.e. calling) each window each frame.
+ * controlled by simply "retouching" (i.e.\ calling) each window each frame.
  * All widgets inside nuklear can only be added inside the function pair `nk_begin_xxx`
  * and `nk_end`. Calling any widgets outside these two functions will result in an
  * assert in debug or no state change in release mode.<br /><br />
