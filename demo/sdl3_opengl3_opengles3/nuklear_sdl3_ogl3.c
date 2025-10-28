@@ -91,11 +91,10 @@ void main_loop(void) {
             nk_layout_row_dynamic(ctx, 30, 1);
             nk_label(ctx, "Settings", NK_TEXT_CENTERED);
 
-            static char name[64];
+            static char name[64] = "";
             static int name_len = 0;
             nk_label(ctx, "Player Name:", NK_TEXT_LEFT);
-            nk_edit_string(ctx, NK_EDIT_DEFAULT, name, &name_len,
-                           sizeof(name), nk_filter_default);
+            nk_edit_string(ctx, NK_EDIT_ALWAYS_INSERT_MODE, name, &name_len, sizeof(name), nk_filter_default);
 
             nk_label(ctx, "Difficulty:", NK_TEXT_LEFT);
             if (nk_option_label(ctx, "Easy", difficulty == EASY))
