@@ -833,4 +833,12 @@ nk_edit_string_zero_terminated(struct nk_context *ctx, nk_flags flags,
     buffer[NK_MIN(NK_MAX(max-1,0), len)] = '\0';
     return result;
 }
+NK_API nk_bool
+nk_edit_is_any_active(const struct nk_context *ctx)
+{
+    NK_ASSERT(ctx);
+    if (!ctx) return nk_false;
 
+    return (ctx->active && ctx->active->edit.active) ||
+           (ctx->active && ctx->active->popup.win && ctx->active->popup.win->edit.active);
+}
