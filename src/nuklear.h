@@ -5534,6 +5534,10 @@ struct nk_property_state {
     unsigned int seq;
     unsigned int old;
     int state;
+    int prev_state;
+    nk_hash prev_name;
+    char prev_buffer[NK_MAX_NUMBER_BUFFER];
+    int prev_length;
 };
 
 struct nk_window {
