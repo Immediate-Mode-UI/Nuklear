@@ -3510,6 +3510,7 @@ NK_API nk_flags nk_edit_string_zero_terminated(struct nk_context*, nk_flags, cha
 NK_API nk_flags nk_edit_buffer(struct nk_context*, nk_flags, struct nk_text_edit*, nk_plugin_filter);
 NK_API void nk_edit_focus(struct nk_context*, nk_flags flags);
 NK_API void nk_edit_unfocus(struct nk_context*);
+NK_API nk_bool nk_edit_is_any_active(const struct nk_context*);
 /* =============================================================================
  *
  *                                  CHART

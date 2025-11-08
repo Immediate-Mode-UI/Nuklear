@@ -601,6 +601,8 @@ overview(struct nk_context *ctx)
                 static int box_len;
                 nk_flags active;
 
+                nk_labelf(ctx, NK_TEXT_LEFT, "Any Input active: %s", nk_edit_is_any_active(ctx) ? "Yes" : "No");
+
                 nk_layout_row(ctx, NK_STATIC, 25, 2, ratio);
                 nk_label(ctx, "Default:", NK_TEXT_LEFT);
 

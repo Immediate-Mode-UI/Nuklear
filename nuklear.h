@@ -3733,6 +3733,7 @@ NK_API nk_flags nk_edit_string_zero_terminated(struct nk_context*, nk_flags, cha
 NK_API nk_flags nk_edit_buffer(struct nk_context*, nk_flags, struct nk_text_edit*, nk_plugin_filter);
 NK_API void nk_edit_focus(struct nk_context*, nk_flags flags);
 NK_API void nk_edit_unfocus(struct nk_context*);
+NK_API nk_bool nk_edit_is_any_active(const struct nk_context*);
 /* =============================================================================
  *
  *                                  CHART
@@ -28664,7 +28665,15 @@ nk_edit_string_zero_terminated(struct nk_context *ctx, nk_flags flags,
     buffer[NK_MIN(NK_MAX(max-1,0), len)] = '\0';
     return result;
 }
+NK_API nk_bool
+nk_edit_is_any_active(const struct nk_context *ctx)
+{
+    NK_ASSERT(ctx);
+    if (!ctx) return nk_false;
 
+    return (ctx->active && ctx->active->edit.active) ||
+           (ctx->active && ctx->active->popup.win && ctx->active->popup.win->edit.active);
+}
 
 
 
@@ -30729,6 +30738,8 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2025/11/08 (4.13.0) - Added new utility function: nk_edit_is_any_active
+///                         Added new demo: sdl3_renderer
 /// - 2025/10/08 (4.12.8) - Fix nk_widget_text to use NK_TEXT_ALIGN_LEFT by default,
 ///                         instead of silently failing when no x-axis alignment is provided,
 ///                         and refactor this function to keep the code style consistent
