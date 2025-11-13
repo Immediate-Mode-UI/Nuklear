@@ -166,6 +166,9 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
     char cursor_follow = 0;
     struct nk_rect old_clip;
     struct nk_rect clip;
+    /*Variables for text keyboard(kb) support*/
+    nk_bool kb_text_want = nk_false;
+    struct nk_rect kb_text_cursor = nk_rect(0.0f, 0.0f, 0.0f, 0.0f);
 
     NK_ASSERT(state);
     NK_ASSERT(out);
@@ -251,13 +254,17 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                 cursor_follow = nk_true;
             }
         }
-        if (old_mode != edit->mode) {
+        /* If mode changes and text keys are pressed in the same frame,
+         * mode change takes priority (may transition to VIEW mode) */
+        if (old_mode != edit->mode)
             in->keyboard.text_len = 0;
-        }}
+        else if (edit->mode == NK_TEXT_EDIT_MODE_INSERT || edit->mode == NK_TEXT_EDIT_MODE_REPLACE)
+            kb_text_want = nk_input_want_text_keyboard(in);
+        }
 
         /* text input */
         edit->filter = filter;
-        if (in->keyboard.text_len) {
+        if (kb_text_want && in->keyboard.text_len) {
             nk_textedit_text(edit, in->keyboard.text, in->keyboard.text_len);
             cursor_follow = nk_true;
             in->keyboard.text_len = 0;
@@ -618,6 +625,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                 cursor.x = area.x + cursor_pos.x - edit->scrollbar.x;
                 cursor.y = area.y + cursor_pos.y + row_height/2.0f - cursor.h/2.0f;
                 cursor.y -= edit->scrollbar.y;
+                kb_text_cursor = cursor;
                 nk_fill_rect(out, cursor, 0, cursor_color);
             } else {
                 /* draw cursor inside text */
@@ -637,6 +645,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                 txt.padding = nk_vec2(0,0);
                 txt.background = cursor_color;;
                 txt.text = cursor_text_color;
+                kb_text_cursor = label;
                 nk_fill_rect(out, label, 0, cursor_color);
                 nk_widget_text(out, label, cursor_ptr, glyph_len, &txt, NK_TEXT_LEFT, font);
             }
@@ -673,6 +682,11 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
             background_color, text_color, nk_false);
     }
     nk_push_scissor(out, old_clip);}
+    if (kb_text_want) {
+        NK_ASSERT(in);
+        in->keyboard.text_cursor = kb_text_cursor;
+        in->keyboard.text_area = clip;
+    }
     return ret;
 }
 NK_API void
