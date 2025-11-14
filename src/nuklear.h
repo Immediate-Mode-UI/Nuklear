@@ -4694,6 +4694,11 @@ struct nk_keyboard {
     struct nk_key keys[NK_KEY_MAX];
     char text[NK_INPUT_MAX];
     int text_len;
+
+    /*Text keyboard request system*/
+    nk_bool text_want; /*When true, text input is actively requested*/
+    struct nk_rect text_area; /*Input area (valid only when text_want == true)*/
+    struct nk_rect text_cursor; /*Cursor position (valid only when text_want == true)*/
 };
 
 struct nk_input {
@@ -4718,6 +4723,10 @@ NK_API nk_bool nk_input_is_mouse_released(const struct nk_input*, enum nk_button
 NK_API nk_bool nk_input_is_key_pressed(const struct nk_input*, enum nk_keys);
 NK_API nk_bool nk_input_is_key_released(const struct nk_input*, enum nk_keys);
 NK_API nk_bool nk_input_is_key_down(const struct nk_input*, enum nk_keys);
+/* This is a utility function that should be called inside a widget
+ * to mark text keyboard for opening.
+ * Returns true only on the first request each frame */
+NK_API nk_bool nk_input_want_text_keyboard(struct nk_input*);
 
 /* ===============================================================
  *

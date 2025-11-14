@@ -17,6 +17,10 @@ nk_input_begin(struct nk_context *ctx)
     for (i = 0; i < NK_BUTTON_MAX; ++i)
         in->mouse.buttons[i].clicked = 0;
 
+    in->keyboard.text_want = nk_false;
+    in->keyboard.text_area = nk_rect(0.0f, 0.0f, 0.0f, 0.0f);
+    in->keyboard.text_cursor = nk_rect(0.0f, 0.0f, 0.0f, 0.0f);
+
     in->keyboard.text_len = 0;
     in->mouse.scroll_delta = nk_vec2(0,0);
     in->mouse.prev.x = in->mouse.pos.x;
@@ -287,4 +291,12 @@ nk_input_is_key_down(const struct nk_input *i, enum nk_keys key)
     if (k->down) return nk_true;
     return nk_false;
 }
-
+NK_API nk_bool
+nk_input_want_text_keyboard(struct nk_input* i)
+{
+    nk_bool ret;
+    NK_ASSERT(i);
+    ret = !i->keyboard.text_want;
+    i->keyboard.text_want = nk_true;
+    return ret;
+}
