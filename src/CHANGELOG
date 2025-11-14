@@ -7,6 +7,9 @@
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2025/11/13 (4.13.0) - Introduced minimal text keyboard request API (nk_input_want_text_keyboard)
+///                         with support for text input area and cursor position.
+///                         This functionality is required for SDL_SetTextInputRect
 /// - 2025/10/08 (4.12.8) - Fix nk_widget_text to use NK_TEXT_ALIGN_LEFT by default,
 ///                         instead of silently failing when no x-axis alignment is provided,
 ///                         and refactor this function to keep the code style consistent
