@@ -7,6 +7,8 @@
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2025/10/18 (4.12.9) - Fix nk_str_insert_text_char and nk_str_insert_str_char, see #840
+///                         Fix UTF-8 cursor(nk_textedit_paste) and clipboard handling in nk_do_edit, see #841
 /// - 2025/10/08 (4.12.8) - Fix nk_widget_text to use NK_TEXT_ALIGN_LEFT by default,
 ///                         instead of silently failing when no x-axis alignment is provided,
 ///                         and refactor this function to keep the code style consistent
