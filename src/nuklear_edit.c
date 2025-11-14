@@ -583,12 +583,23 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                     row_height, font, background_color, text_color, nk_false);
             }
             if (edit->select_start != edit->select_end) {
+                int glyph_len;
+                nk_rune unicode;
+
                 /* draw selected text */
                 NK_ASSERT(select_begin_ptr);
                 if (!select_end_ptr) {
                     const char *begin = nk_str_get_const(&edit->string);
                     select_end_ptr = begin + nk_str_len_char(&edit->string);
                 }
+
+                glyph_len = nk_utf_decode(select_begin_ptr, &unicode, (int)(select_end_ptr - select_begin_ptr));
+                /* In this case, we set the cursor to the first selected character */
+                kb_text_cursor = nk_rect(
+                    area.x + selection_offset_start.x - edit->scrollbar.x,
+                    area.y + selection_offset_start.y - edit->scrollbar.y,
+                    font->width(font->userdata, font->height, select_begin_ptr, glyph_len), row_height);
+
                 nk_edit_draw_text(out, style,
                     area.x - edit->scrollbar.x,
                     area.y + selection_offset_start.y - edit->scrollbar.y,
