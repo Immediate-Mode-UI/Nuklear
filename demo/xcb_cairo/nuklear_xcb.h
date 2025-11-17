@@ -44,7 +44,8 @@ struct nk_cairo_context;
 enum nk_xcb_event_type {
     NK_XCB_EVENT_PAINT      = 0x02,
     NK_XCB_EVENT_RESIZED    = 0x04,
-    NK_XCB_EVENT_STOP       = 0x08
+    NK_XCB_EVENT_STOP       = 0x08,
+    NK_XCB_CLIENT_MESSAGE   = 0x10
 };
 
 /* Xcb part: work on windows */
@@ -155,6 +156,7 @@ struct nk_xcb_context {
     int events;
     xcb_intern_atom_reply_t* del_atom;
     int width, height;
+    xcb_client_message_event_t last_client_message;
 };
 
 NK_API struct nk_xcb_context *nk_xcb_init(const char *title, int pos_x, int pos_y, int width, int height)
@@ -236,6 +238,8 @@ NK_API void nk_xcb_free(struct nk_xcb_context *xcb_ctx)
     free(xcb_ctx);
 }
 
+static const xcb_client_message_event_t EMPTY_CLIENT_MESSAGE;
+
 NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context *nk_ctx)
 {
     int events = 0;
@@ -251,6 +255,7 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
 
     event = xcb_wait_for_event(xcb_ctx->conn);
 
+    xcb_ctx->last_client_message = EMPTY_CLIENT_MESSAGE;
     nk_input_begin(nk_ctx);
     do {
         switch (XCB_EVENT_RESPONSE_TYPE(event)) {
@@ -423,6 +428,11 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
                 if (cm->data.data32[0] == xcb_ctx->del_atom->atom)
                 {
                     events = NK_XCB_EVENT_STOP;
+                }
+                else
+                {
+                    xcb_ctx->last_client_message = *cm;
+                    events = NK_XCB_CLIENT_MESSAGE;
                 }
             }
             break;
