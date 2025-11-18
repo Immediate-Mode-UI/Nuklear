@@ -75,8 +75,10 @@
 #define NK_VSNPRINTF(s, n, f, a)  SDL_vsnprintf(s, n, f, a)
 #define NK_STRTOD(str, endptr)    SDL_strtod(str, endptr)
 
-/* sadly, SDL3 does not provide "dtoa" (only integer version) */
-/*#define NK_DTOA (str, d)*/
+/* SDL3 does not provide "dtoa" (only integer versions)
+ * but we can emulate it with SDL_snprintf */
+static char* nk_sdl_dtoa(char *str, double d);
+#define NK_DTOA(str, d) nk_sdl_dtoa(str, d)
 
 /* SDL can also provide us with math functions, but beware that Nuklear's own
  * implementation can be slightly faster at the cost of some precision */
@@ -412,5 +414,14 @@ SDL_AppQuit(void* appstate, SDL_AppResult result)
         SDL_DestroyWindow(app->window);
         SDL_free(app);
     }
+}
+
+static char*
+nk_sdl_dtoa(char *str, double d)
+{
+    NK_ASSERT(str);
+    if (!str) return NULL;
+    (void)SDL_snprintf(str, 99999, "%.17g", d);
+    return str;
 }
 
