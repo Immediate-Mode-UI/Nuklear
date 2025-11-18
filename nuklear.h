@@ -28950,7 +28950,7 @@ nk_do_property(nk_flags *ws,
             break;
         case NK_PROPERTY_DOUBLE:
             nk_string_float_limit(buffer, NK_MAX_FLOAT_PRECISION);
-            variant->value.d = nk_strtod(buffer, 0);
+            variant->value.d = NK_STRTOD(buffer, 0);
             variant->value.d = NK_CLAMP(variant->min_value.d, variant->value.d, variant->max_value.d);
             break;
         }
@@ -30731,6 +30731,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2025/11/18 (4.13.1) - Fix: nk_do_property now uses NK_STRTOD via macro
 /// - 2025/11/15 (4.13.0) - Fix: nk_property not updating 'win->edit.active'
 ///                         Add new updated demo: sdl3_renderer
 /// - 2025/10/08 (4.12.8) - Fix nk_widget_text to use NK_TEXT_ALIGN_LEFT by default,
