@@ -30746,6 +30746,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///                       - Fix: failure to build from source, due to
 ///                         nuklear_math/util.c not declaring some functions
 ///                       - Fix: guard nk_strtod implementation with preprocessor
+///                       - Fix: nuklear_sdl3_renderer now provides NK_DTOA
 /// - 2025/11/15 (4.13.0) - Fix: nk_property not updating 'win->edit.active'
 ///                         Add new updated demo: sdl3_renderer
 /// - 2025/10/08 (4.12.8) - Fix nk_widget_text to use NK_TEXT_ALIGN_LEFT by default,

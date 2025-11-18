@@ -75,8 +75,9 @@
 #define NK_VSNPRINTF(s, n, f, a)  SDL_vsnprintf(s, n, f, a)
 #define NK_STRTOD(str, endptr)    SDL_strtod(str, endptr)
 
-/* sadly, SDL3 does not provide "dtoa" (only integer version) */
-/*#define NK_DTOA (str, d)*/
+/* HACK: SDL3 does not provide "dtoa" (only integer version)
+ * so we use sprintf with %g formatting to get almost the same result */
+#define NK_DTOA(str, d) (SDL_snprintf(str, 999, "%g", d), str)
 
 /* SDL can also provide us with math functions, but beware that Nuklear's own
  * implementation can be slightly faster at the cost of some precision */
