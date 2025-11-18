@@ -162,6 +162,7 @@ nk_strtoi(const char *str, char **endptr)
         *endptr = (char *)p;
     return neg*value;
 }
+#ifdef NK_STRTOD_NEEDED
 NK_API double
 nk_strtod(const char *str, char **endptr)
 {
@@ -219,6 +220,7 @@ nk_strtod(const char *str, char **endptr)
         *endptr = p;
     return number;
 }
+#endif
 NK_API float
 nk_strtof(const char *str, char **endptr)
 {

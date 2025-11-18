@@ -4040,6 +4040,7 @@ NK_API int nk_strtoi(const char *str, char **endptr);
 NK_API float nk_strtof(const char *str, char **endptr);
 #ifndef NK_STRTOD
 #define NK_STRTOD nk_strtod
+#define NK_STRTOD_NEEDED
 NK_API double nk_strtod(const char *str, char **endptr);
 #endif
 NK_API int nk_strfilter(const char *text, const char *regexp);
@@ -6957,6 +6958,7 @@ nk_strtoi(const char *str, char **endptr)
         *endptr = (char *)p;
     return neg*value;
 }
+#ifdef NK_STRTOD_NEEDED
 NK_API double
 nk_strtod(const char *str, char **endptr)
 {
@@ -7014,6 +7016,7 @@ nk_strtod(const char *str, char **endptr)
         *endptr = p;
     return number;
 }
+#endif
 NK_API float
 nk_strtof(const char *str, char **endptr)
 {
@@ -30742,6 +30745,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 /// - 2025/11/18 (4.13.1) - Fix: nk_do_property now uses NK_STRTOD via macro
 ///                       - Fix: failure to build from source, due to
 ///                         nuklear_math/util.c not declaring some functions
+///                       - Fix: guard nk_strtod implementation with preprocessor
 /// - 2025/11/15 (4.13.0) - Fix: nk_property not updating 'win->edit.active'
 ///                         Add new updated demo: sdl3_renderer
 /// - 2025/10/08 (4.12.8) - Fix nk_widget_text to use NK_TEXT_ALIGN_LEFT by default,
