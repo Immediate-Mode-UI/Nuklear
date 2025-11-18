@@ -6146,18 +6146,28 @@ NK_GLOBAL const struct nk_color nk_yellow = {255,255,0,255};
 
 /* math */
 #ifndef NK_INV_SQRT
+#define NK_INV_SQRT nk_inv_sqrt
+#define NK_INV_SQRT_NEEDED
 NK_LIB float nk_inv_sqrt(float n);
 #endif
 #ifndef NK_SIN
+#define NK_SIN nk_sin
+#define NK_SIN_NEEDED
 NK_LIB float nk_sin(float x);
 #endif
 #ifndef NK_COS
+#define NK_COS nk_cos
+#define NK_COS_NEEDED
 NK_LIB float nk_cos(float x);
 #endif
 #ifndef NK_ATAN
+#define NK_ATAN nk_atan
+#define NK_ATAN_NEEDED
 NK_LIB float nk_atan(float x);
 #endif
 #ifndef NK_ATAN2
+#define NK_ATAN2 nk_atan2
+#define NK_ATAN2_NEEDED
 NK_LIB float nk_atan2(float y, float x);
 #endif
 NK_LIB nk_uint nk_round_up_pow2(nk_uint v);
@@ -6179,15 +6189,21 @@ NK_LIB int nk_to_upper(int c);
 NK_LIB int nk_to_lower(int c);
 
 #ifndef NK_MEMCPY
+#define NK_MEMCPY nk_memcopy
+#define NK_MEMCPY_NEEDED
 NK_LIB void* nk_memcopy(void *dst, const void *src, nk_size n);
 #endif
 #ifndef NK_MEMSET
+#define NK_MEMSET nk_memset
+#define NK_MEMSET_NEEDED
 NK_LIB void nk_memset(void *ptr, int c0, nk_size size);
 #endif
 NK_LIB void nk_zero(void *ptr, nk_size size);
 NK_LIB char *nk_itoa(char *s, long n);
 NK_LIB int nk_string_float_limit(char *string, int prec);
 #ifndef NK_DTOA
+#define NK_DTOA nk_dtoa
+#define NK_DTOA_NEEDED
 NK_LIB char *nk_dtoa(char *s, double n);
 #endif
 NK_LIB int nk_text_clamp(const struct nk_user_font *font, const char *text, int text_len, float space, int *glyphs, float *text_width, nk_rune *sep_list, int sep_count);
@@ -6463,8 +6479,7 @@ nk_stbtt_free(void *ptr, void *user_data) {
 ///  (it can actually approximate a lot more functions) can be
 ///  found here: www.lolengine.net/wiki/oss/lolremez
 */
-#ifndef NK_INV_SQRT
-#define NK_INV_SQRT nk_inv_sqrt
+#ifdef NK_INV_SQRT_NEEDED
 NK_LIB float
 nk_inv_sqrt(float n)
 {
@@ -6478,8 +6493,7 @@ nk_inv_sqrt(float n)
     return conv.f;
 }
 #endif
-#ifndef NK_SIN
-#define NK_SIN nk_sin
+#ifdef NK_SIN_NEEDED
 NK_LIB float
 nk_sin(float x)
 {
@@ -6494,8 +6508,7 @@ nk_sin(float x)
     return a0 + x*(a1 + x*(a2 + x*(a3 + x*(a4 + x*(a5 + x*(a6 + x*a7))))));
 }
 #endif
-#ifndef NK_COS
-#define NK_COS nk_cos
+#ifdef NK_COS_NEEDED
 NK_LIB float
 nk_cos(float x)
 {
@@ -6513,8 +6526,7 @@ nk_cos(float x)
     return a0 + x*(a1 + x*(a2 + x*(a3 + x*(a4 + x*(a5 + x*(a6 + x*(a7 + x*a8)))))));
 }
 #endif
-#ifndef NK_ATAN
-#define NK_ATAN nk_atan
+#ifdef NK_ATAN_NEEDED
 NK_LIB float
 nk_atan(float x)
 {
@@ -6533,8 +6545,7 @@ nk_atan(float x)
     return u;
 }
 #endif
-#ifndef NK_ATAN2
-#define NK_ATAN2 nk_atan2
+#ifdef NK_ATAN2_NEEDED
 NK_LIB float
 nk_atan2(float y, float x)
 {
@@ -6797,8 +6808,7 @@ NK_LIB nk_bool nk_is_upper(int c){return (c >= 'A' && c <= 'Z') || (c >= 0xC0 &&
 NK_LIB int nk_to_upper(int c) {return (c >= 'a' && c <= 'z') ? (c - ('a' - 'A')) : c;}
 NK_LIB int nk_to_lower(int c) {return (c >= 'A' && c <= 'Z') ? (c - ('a' + 'A')) : c;}
 
-#ifndef NK_MEMCPY
-#define NK_MEMCPY nk_memcopy
+#ifdef NK_MEMCPY_NEEDED
 NK_LIB void*
 nk_memcopy(void *dst0, const void *src0, nk_size length)
 {
@@ -6856,8 +6866,7 @@ done:
     return (dst0);
 }
 #endif
-#ifndef NK_MEMSET
-#define NK_MEMSET nk_memset
+#ifdef NK_MEMSET_NEEDED
 NK_LIB void
 nk_memset(void *ptr, int c0, nk_size size)
 {
@@ -7283,8 +7292,7 @@ nk_itoa(char *s, long n)
     nk_strrev_ascii(s);
     return s;
 }
-#ifndef NK_DTOA
-#define NK_DTOA nk_dtoa
+#ifdef NK_DTOA_NEEDED
 NK_LIB char*
 nk_dtoa(char *s, double n)
 {
@@ -30732,6 +30740,8 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [z]: Patch version with no direct changes to the API
 ///
 /// - 2025/11/18 (4.13.1) - Fix: nk_do_property now uses NK_STRTOD via macro
+///                       - Fix: failure to build from source, due to
+///                         nuklear_math/util.c not declaring some functions
 /// - 2025/11/15 (4.13.0) - Fix: nk_property not updating 'win->edit.active'
 ///                         Add new updated demo: sdl3_renderer
 /// - 2025/10/08 (4.12.8) - Fix nk_widget_text to use NK_TEXT_ALIGN_LEFT by default,
