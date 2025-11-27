@@ -1,0 +1,85 @@
+---
+# Nuklear clang-format config. For more info see
+# https://clang.llvm.org/docs/ClangFormat.html
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+
+# llvm docs recommend using Cpp for C and C++ 
+Language: Cpp
+
+#AlignAfterOpenBracket: DontAlign
+AlignArrayOfStructures: Right
+AlignConsecutiveAssignments:
+    Enabled: true
+    AcrossComments: false
+    AcrossEmptyLines: false
+    AlignCompound: true
+    AlignFunctionPointers: false
+    PadOperators: false
+AlignConsecutiveDeclarations:
+    Enabled: false
+    AcrossComments: false
+    AcrossEmptyLines: false
+    AlignCompound: true
+    PadOperators: false
+AlignConsecutiveMacros:
+    Enabled: false
+    AcrossComments: false
+    AcrossEmptyLines: false
+AlignConsecutiveShortCaseStatements:
+    Enabled: true
+    AcrossComments: true
+    AcrossEmptyLines: true
+    AlignCaseColons: false
+AlignEscapedNewlines: Left
+AlignOperands: AlignAfterOperator
+AlignTrailingComments: Always
+AllowShortBlocksOnASingleLine: Always
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortLoopsOnASingleLine: true
+AlwaysBreakAfterDefinitionReturnType: All
+BraceWrapping:
+    AfterControlStatement: false
+    AfterEnum: false
+    AfterFunction: true
+    AfterStruct: false
+    AfterUnion: false
+    BeforeElse: false
+    BeforeWhile: false
+    IndentBraces: false
+    SplitEmptyFunction: false
+    SplitEmptyRecord: false
+BreakAdjacentStringLiterals: false
+BreakBeforeBinaryOperators: true
+BreakBeforeBraces: Custom
+BreakBeforeTernaryOperators: true
+BreakStringLiterals: true
+# 160 is arbitrary, if set to 0 will cause some short enums to be split on multiple lines
+ColumnLimit: 160
+ContinuationIndentWidth: 4
+DerivePointerAlignment: true
+ForEachMacros: [nk_foreach]
+IndentCaseLabels: true
+IndentGotoLabels: false
+# Not perfect but does improve readability
+IndentPPDirectives: AfterHash
+IndentWidth: 4
+LineEnding: LF
+# docs show ReflowComments is type "ReflowCommentsStyle" but when run with clang-format (v19.1.7) gives "invalid boolean" error
+ReflowComments: false
+SortIncludes: Never
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCaseColon: false
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 1
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+...
+# This file is avaliable under either the MIT License or public domain. See LICENSE for more info.
