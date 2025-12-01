@@ -584,6 +584,50 @@ overview(struct nk_context *ctx)
                         nk_combo_end(ctx);
                     }
                 }
+                {
+                    /* Combobox from array of struct */
+                    static int sel=0;
+                    struct student {
+                        int id;
+                        char* name;
+                        int age;
+                        char* major;
+                    };
+
+                    static struct student students[3] = {
+                        {
+                            .id = 1,
+                            .name = "Mike",
+                            .age = 20,
+                            .major = "CS"
+                        },
+                        {
+                            .id = 2,
+                            .name = "Jim",
+                            .age = 19,
+                            .major = "Maths"
+                        },
+                        {
+                            .id = 3,
+                            .name = "Julia",
+                            .age = 20,
+                            .major = "Biology"
+                        }
+                    };
+                    sel = nk_combo_from_struct_array(ctx, &students, 3,
+                                sizeof(struct student),
+                                offsetof(struct student, name),
+                                sel, 15, nk_vec2(200,200));
+                    if(sel>0){
+                        nk_layout_row_static(ctx, 30,300, 2);
+                        nk_labelf(ctx, NK_TEXT_LEFT, "id:%d | name:%s | age:%d | major:%s",
+                                   students[sel].id,
+                                   students[sel].name,
+                                   students[sel].age,
+                                   students[sel].major
+                                  );
+                    }
+                }
 
                 nk_tree_pop(ctx);
             }

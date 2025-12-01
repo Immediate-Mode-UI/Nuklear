@@ -3543,7 +3543,28 @@ NK_API int nk_combo(struct nk_context*, const char *const *items, int count, int
 NK_API int nk_combo_separator(struct nk_context*, const char *items_separated_by_separator, int separator, int selected, int count, int item_height, struct nk_vec2 size);
 NK_API int nk_combo_string(struct nk_context*, const char *items_separated_by_zeros, int selected, int count, int item_height, struct nk_vec2 size);
 NK_API int nk_combo_callback(struct nk_context*, void(*item_getter)(void*, int, const char**), void *userdata, int selected, int count, int item_height, struct nk_vec2 size);
-NK_API void nk_combobox(struct nk_context*, const char *const *items, int count, int *selected, int item_height, struct nk_vec2 size);
+/*
+ * \brief create a combobox from an array of strct containing a `char*` member that we use as a name
+ *  this avoids the need to have two arrays (one being for the array of structs, and one for the names)
+ *
+ * \details
+ * ```c
+ *  int nk_combo_from_struct_array(struct nk_context *ctx, const void *items, int count, int item_sz, int stride, int selected, int item_height, struct nk_vec2 size);
+ *  ```
+ *
+ *  \param[in] ctx             | Must point to an previously initialized `nk_context` struct after calling a layouting function
+ *  \param[in] items           | `void` pointer to a list of structures
+ *  \param[in] count           | Number of elements in the array of structs
+ *  \param[in] items_sz        | Size of an individual structure.
+ *  \param[in] stride          | Stride to a char* member inside the structure
+ *  \param[in] selected        | the index of the current selected item
+ *  \param[in] item_height     | Height of the element
+ *  \param[in] size            | Size of the element listing, must point to a `nk_vec2` structure
+ *
+ *  \returns the index of the newly selected item.
+ */
+NK_API int nk_combo_from_struct_array(struct nk_context *ctx, const void *items, int count, int item_sz, int stride, int selected, int item_height, struct nk_vec2 size);
+NK_API void nk_combobox(struct nk_context*, const char **items, int count, int *selected, int item_height, struct nk_vec2 size);
 NK_API void nk_combobox_string(struct nk_context*, const char *items_separated_by_zeros, int *selected, int count, int item_height, struct nk_vec2 size);
 NK_API void nk_combobox_separator(struct nk_context*, const char *items_separated_by_separator, int separator, int *selected, int count, int item_height, struct nk_vec2 size);
 NK_API void nk_combobox_callback(struct nk_context*, void(*item_getter)(void*, int, const char**), void*, int *selected, int count, int item_height, struct nk_vec2 size);
