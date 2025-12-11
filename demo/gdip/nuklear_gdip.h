@@ -419,7 +419,7 @@ static struct {
 
 static ARGB convert_color(struct nk_color c)
 {
-    return (c.a << 24) | (c.r << 16) | (c.g << 8) | c.b;
+    return ((ARGB)c.a << 24) | (c.r << 16) | (c.g << 8) | c.b;
 }
 
 static void
