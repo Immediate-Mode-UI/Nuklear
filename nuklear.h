@@ -382,7 +382,7 @@ extern "C" {
       #define NK_SIZE_TYPE unsigned __int32
     #elif defined(__GNUC__) || defined(__clang__)
       #if defined(__x86_64__) || defined(__ppc64__) || defined(__PPC64__) || defined(__aarch64__)
-        #define NK_SIZE_TYPE unsigned long
+        #define NK_SIZE_TYPE unsigned long long
       #else
         #define NK_SIZE_TYPE unsigned int
       #endif
@@ -397,7 +397,7 @@ extern "C" {
       #define NK_POINTER_TYPE unsigned __int32
     #elif defined(__GNUC__) || defined(__clang__)
       #if defined(__x86_64__) || defined(__ppc64__) || defined(__PPC64__) || defined(__aarch64__)
-        #define NK_POINTER_TYPE unsigned long
+        #define NK_POINTER_TYPE unsigned long long
       #else
         #define NK_POINTER_TYPE unsigned int
       #endif
@@ -29621,7 +29621,7 @@ nk_draw_color_picker(struct nk_command_buffer *o, const struct nk_rect *matrix,
 
     /* draw color matrix */
     temp = nk_hsv_f(hsva[0], 1.0f, 1.0f);
-    nk_fill_rect_multi_color(o, *matrix, white, temp, temp, white);
+    nk_fill_rect_multi_color(o, *matrix, white, temp, white, temp);
     nk_fill_rect_multi_color(o, *matrix, black_trans, black_trans, black, black);
 
     /* draw cross-hair */
