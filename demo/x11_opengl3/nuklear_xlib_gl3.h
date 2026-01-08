@@ -77,8 +77,6 @@ typedef void (*nkglDeleteVertexArrays)(GLsizei, const GLuint*);
 typedef void(*nkglVertexAttribPointer)(GLuint, GLint, GLenum, GLboolean, GLsizei, const GLvoid*);
 typedef void(*nkglEnableVertexAttribArray)(GLuint);
 typedef void(*nkglDisableVertexAttribArray)(GLuint);
-/* GL_ARB_framebuffer_object */
-typedef void(*nkglGenerateMipmap)(GLenum target);
 /* GLSL/OpenGL 2.0 core */
 typedef GLuint(*nkglCreateShader)(GLenum);
 typedef void(*nkglShaderSource)(GLuint, GLsizei, const GLchar**, const GLint*);
@@ -114,7 +112,6 @@ static nkglDeleteVertexArrays glDeleteVertexArrays;
 static nkglVertexAttribPointer glVertexAttribPointer;
 static nkglEnableVertexAttribArray glEnableVertexAttribArray;
 static nkglDisableVertexAttribArray glDisableVertexAttribArray;
-static nkglGenerateMipmap glGenerateMipmap;
 static nkglCreateShader glCreateShader;
 static nkglShaderSource glShaderSource;
 static nkglCompileShader glCompileShader;
@@ -159,9 +156,7 @@ struct opengl_info {
     int glsl_available;
     int vertex_buffer_obj_available;
     int vertex_array_obj_available;
-    int map_buffer_range_available;
     int fragment_program_available;
-    int frame_buffer_object_available;
 };
 #endif
 
@@ -341,25 +336,12 @@ nk_load_opengl(struct opengl_info *gl)
         glBindVertexArray = GL_EXT(glBindVertexArray);
         glDeleteVertexArrays = GL_EXT(glDeleteVertexArrays);
     }
-    gl->frame_buffer_object_available = nk_x11_check_extension(gl, "GL_ARB_framebuffer_object");
-    if (gl->frame_buffer_object_available) {
-        /* GL_ARB_framebuffer_object */
-        glGenerateMipmap = GL_EXT(glGenerateMipmap);
-    }
     if (!gl->vertex_buffer_obj_available) {
         fprintf(stdout, "[GL] Error: GL_ARB_vertex_buffer_object is not available!\n");
         failed = nk_true;
     }
     if (!gl->fragment_program_available) {
         fprintf(stdout, "[GL] Error: GL_ARB_fragment_program is not available!\n");
-        failed = nk_true;
-    }
-    if (!gl->vertex_array_obj_available) {
-        fprintf(stdout, "[GL] Error: GL_ARB_vertex_array_object is not available!\n");
-        failed = nk_true;
-    }
-    if (!gl->frame_buffer_object_available) {
-        fprintf(stdout, "[GL] Error: GL_ARB_framebuffer_object is not available!\n");
         failed = nk_true;
     }
     return !failed;
@@ -417,8 +399,12 @@ nk_x11_device_create(void)
     glGetProgramiv(dev->prog, GL_LINK_STATUS, &status);
     assert(status == GL_TRUE);
 
+#ifdef NK_XLIB_LOAD_OPENGL_EXTENSIONS
+    dev->have_vao = dev->info.vertex_array_obj_available;
+#else
     /* TODO: Detect at runtime */
     dev->have_vao = GL_TRUE; /* OpenGL 3.0 or later, or GL_ARB_vertex_array_object, or GL_OES_vertex_array_object */
+#endif
     dev->have_mapbuffer = GL_TRUE; /* OpenGL 2.0 or later, or GL_OES_mapbuffer */
 
     dev->uniform_tex = glGetUniformLocation(dev->prog, "Texture");
