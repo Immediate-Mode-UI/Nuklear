@@ -1485,47 +1485,50 @@ bool create_command_buffers(struct vulkan_demo *demo) {
 
 bool create_semaphores(struct vulkan_demo *demo) {
     VkSemaphoreCreateInfo semaphore_info;
-    VkResult result = VK_SUCCESS;
+    VkResult result;
+    uint32_t i;
     
     demo->image_available = (VkSemaphore*)malloc(MAX_IN_FLIGHT_FRAMES * sizeof(VkSemaphore));
     demo->render_finished = (VkSemaphore*)malloc(demo->swap_chain_images_len * sizeof(VkSemaphore));
     memset(&semaphore_info, 0, sizeof(VkSemaphoreCreateInfo));
     semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    uint32_t i;
-    for(i = 0; i < MAX_IN_FLIGHT_FRAMES; i++)
-    result |= vkCreateSemaphore(demo->device, &semaphore_info, NULL,
+    for(i = 0; i < MAX_IN_FLIGHT_FRAMES; i++) {
+        result = vkCreateSemaphore(demo->device, &semaphore_info, NULL,
                                &demo->image_available[i]);
-    if (result != VK_SUCCESS) {
-        fprintf(stderr, "vkCreateSemaphore failed: %d\n", result);
-        return false;
+        if (result != VK_SUCCESS) {
+            fprintf(stderr, "vkCreateSemaphore failed: %d\n", result);
+            return false;
+        }
     }
-    for(i = 0; i < demo->swap_chain_images_len; i++) 
-    result |= vkCreateSemaphore(demo->device, &semaphore_info, NULL,
+    for(i = 0; i < demo->swap_chain_images_len; i++) {
+        result = vkCreateSemaphore(demo->device, &semaphore_info, NULL,
                                &demo->render_finished[i]);
-    if (result != VK_SUCCESS) {
-        fprintf(stderr, "vkCreateSemaphore failed: %d\n", result);
-        return false;
+        if (result != VK_SUCCESS) {
+            fprintf(stderr, "vkCreateSemaphore failed: %d\n", result);
+            return false;
+        }
     }
     return true;
 }
 
 bool create_fence(struct vulkan_demo *demo) {
-    VkResult result = VK_SUCCESS;
+    VkResult result;
     VkFenceCreateInfo fence_create_info;
+    uint32_t i;
     
     demo->render_fence = (VkFence*)malloc(MAX_IN_FLIGHT_FRAMES * sizeof(VkFence));
 
     memset(&fence_create_info, 0, sizeof(VkFenceCreateInfo));
     fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-    uint32_t i;
-    for(i = 0; i < MAX_IN_FLIGHT_FRAMES; i++)
-    result |= vkCreateFence(demo->device, &fence_create_info, NULL,
+    
+    for(i = 0; i < MAX_IN_FLIGHT_FRAMES; i++) {
+        result = vkCreateFence(demo->device, &fence_create_info, NULL,
                            &demo->render_fence[i]);
-
-    if (result != VK_SUCCESS) {
-        fprintf(stderr, "vkCreateFence failed: %d\n", result);
-        return false;
+        if (result != VK_SUCCESS) {
+            fprintf(stderr, "vkCreateFence failed: %d\n", result);
+            return false;
+        }
     }
     return true;
 }
@@ -2018,7 +2021,8 @@ destroy_debug_utils_messenger_ext(VkInstance instance,
 
 bool cleanup(struct vulkan_demo *demo) {
     VkResult result;
-
+    uint32_t i;
+    
     printf("cleaning up\n");
     result = vkDeviceWaitIdle(demo->device);
     if (result != VK_SUCCESS) {
@@ -2032,7 +2036,7 @@ bool cleanup(struct vulkan_demo *demo) {
                          MAX_IN_FLIGHT_FRAMES, demo->command_buffers);
     vkDestroyCommandPool(demo->device, demo->command_pool, NULL);
     vkDestroySampler(demo->device, demo->sampler, NULL);
-    uint32_t i;
+    
     for(i = 0; i < demo->swap_chain_images_len; i++)
      vkDestroySemaphore(demo->device, demo->render_finished[i], NULL);
     if(demo->render_finished)
