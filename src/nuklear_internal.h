@@ -123,11 +123,8 @@ NK_LIB nk_uint nk_round_up_pow2(nk_uint v);
 NK_LIB struct nk_rect nk_shrink_rect(struct nk_rect r, float amount);
 NK_LIB struct nk_rect nk_pad_rect(struct nk_rect r, struct nk_vec2 pad);
 NK_LIB void nk_unify(struct nk_rect *clip, const struct nk_rect *a, float x0, float y0, float x1, float y1);
-NK_LIB double nk_pow(double x, int n);
-NK_LIB int nk_ifloord(double x);
 NK_LIB int nk_ifloorf(float x);
 NK_LIB int nk_iceilf(float x);
-NK_LIB int nk_log10(double n);
 NK_LIB float nk_roundf(float x);
 
 /* util */
@@ -162,6 +159,13 @@ NK_LIB int nk_strfmt(char *buf, int buf_size, const char *fmt, va_list args);
 #endif
 #ifdef NK_INCLUDE_STANDARD_IO
 NK_LIB char *nk_file_load(const char* path, nk_size* siz, const struct nk_allocator *alloc);
+#endif
+
+/* math helpers that are only used by nk_dtoa */
+#ifdef NK_DTOA_NEEDED
+NK_LIB double nk_pow(double x, int n);
+NK_LIB int nk_ifloord(double x);
+NK_LIB int nk_log10(double n);
 #endif
 
 /* buffer */

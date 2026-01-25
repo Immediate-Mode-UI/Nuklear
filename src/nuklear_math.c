@@ -137,6 +137,7 @@ nk_round_up_pow2(nk_uint v)
     v++;
     return v;
 }
+#ifdef NK_DTOA_NEEDED
 NK_LIB double
 nk_pow(double x, int n)
 {
@@ -152,12 +153,15 @@ nk_pow(double x, int n)
     }
     return plus ? r : 1.0 / r;
 }
+#endif
+#ifdef NK_DTOA_NEEDED
 NK_LIB int
 nk_ifloord(double x)
 {
     x = (double)((int)x - ((x < 0.0) ? 1 : 0));
     return (int)x;
 }
+#endif
 NK_LIB int
 nk_ifloorf(float x)
 {
@@ -176,6 +180,7 @@ nk_iceilf(float x)
         return (r > 0.0f) ? t+1: t;
     }
 }
+#ifdef NK_DTOA_NEEDED
 NK_LIB int
 nk_log10(double n)
 {
@@ -192,6 +197,7 @@ nk_log10(double n)
     if (neg) exp = -exp;
     return exp;
 }
+#endif
 NK_LIB float
 nk_roundf(float x)
 {

@@ -6175,11 +6175,8 @@ NK_LIB nk_uint nk_round_up_pow2(nk_uint v);
 NK_LIB struct nk_rect nk_shrink_rect(struct nk_rect r, float amount);
 NK_LIB struct nk_rect nk_pad_rect(struct nk_rect r, struct nk_vec2 pad);
 NK_LIB void nk_unify(struct nk_rect *clip, const struct nk_rect *a, float x0, float y0, float x1, float y1);
-NK_LIB double nk_pow(double x, int n);
-NK_LIB int nk_ifloord(double x);
 NK_LIB int nk_ifloorf(float x);
 NK_LIB int nk_iceilf(float x);
-NK_LIB int nk_log10(double n);
 NK_LIB float nk_roundf(float x);
 
 /* util */
@@ -6214,6 +6211,13 @@ NK_LIB int nk_strfmt(char *buf, int buf_size, const char *fmt, va_list args);
 #endif
 #ifdef NK_INCLUDE_STANDARD_IO
 NK_LIB char *nk_file_load(const char* path, nk_size* siz, const struct nk_allocator *alloc);
+#endif
+
+/* math helpers that are only used by nk_dtoa */
+#ifdef NK_DTOA_NEEDED
+NK_LIB double nk_pow(double x, int n);
+NK_LIB int nk_ifloord(double x);
+NK_LIB int nk_log10(double n);
 #endif
 
 /* buffer */
@@ -6583,6 +6587,7 @@ nk_round_up_pow2(nk_uint v)
     v++;
     return v;
 }
+#ifdef NK_DTOA_NEEDED
 NK_LIB double
 nk_pow(double x, int n)
 {
@@ -6598,12 +6603,15 @@ nk_pow(double x, int n)
     }
     return plus ? r : 1.0 / r;
 }
+#endif
+#ifdef NK_DTOA_NEEDED
 NK_LIB int
 nk_ifloord(double x)
 {
     x = (double)((int)x - ((x < 0.0) ? 1 : 0));
     return (int)x;
 }
+#endif
 NK_LIB int
 nk_ifloorf(float x)
 {
@@ -6622,6 +6630,7 @@ nk_iceilf(float x)
         return (r > 0.0f) ? t+1: t;
     }
 }
+#ifdef NK_DTOA_NEEDED
 NK_LIB int
 nk_log10(double n)
 {
@@ -6638,6 +6647,7 @@ nk_log10(double n)
     if (neg) exp = -exp;
     return exp;
 }
+#endif
 NK_LIB float
 nk_roundf(float x)
 {
@@ -30742,11 +30752,12 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
-/// - 2025/11/18 (4.13.1) - Fix: nk_do_property now uses NK_STRTOD via macro
+/// - 2026/01/26 (4.13.1) - Fix: nk_do_property now uses NK_STRTOD via macro
 ///                       - Fix: failure to build from source, due to
 ///                         nuklear_math/util.c not declaring some functions
 ///                       - Fix: guard nk_strtod implementation with preprocessor
 ///                       - Fix: nuklear_sdl3_renderer now provides NK_DTOA
+///                       - Fix: guard nk_pow, nk_ifloord, nk_log10 with preprocessor
 /// - 2025/11/15 (4.13.0) - Fix: nk_property not updating 'win->edit.active'
 ///                         Add new updated demo: sdl3_renderer
 /// - 2025/10/08 (4.12.8) - Fix nk_widget_text to use NK_TEXT_ALIGN_LEFT by default,
