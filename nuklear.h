@@ -8524,7 +8524,16 @@ NK_LIB void*
 nk_malloc(nk_handle unused, void *old,nk_size size)
 {
     NK_UNUSED(unused);
-    NK_UNUSED(old);
+    /*
+     * Due to historical reasons, Nuklear always calls alloc(user,old,size)
+     * with the "old" pointer always being NULL. For full explanation, see:
+     * https://github.com/Immediate-Mode-UI/Nuklear/issues/768
+     *
+     * FIXME: The best would be to replace this function with "nk_realloc",
+     * but some custom allocators could still depend on "malloc" assumption
+     * so changing this now (without major bump) would break existing code.
+     */
+    NK_ASSERT(!old && "Nuklear's internal code must never call realloc !");
     return malloc(size);
 }
 NK_LIB void
@@ -8617,15 +8626,15 @@ nk_buffer_realloc(struct nk_buffer *b, nk_size capacity, nk_size *size)
         return 0;
 
     buffer_size = b->memory.size;
-    temp = b->pool.alloc(b->pool.userdata, b->memory.ptr, capacity);
-    NK_ASSERT(temp);
-    if (!temp) return 0;
+    NK_ASSERT(capacity >= buffer_size && "shrinking was never supported here");
 
+    /* HACK: this simulates realloc with malloc+memcpy+free
+     * for backwards compatibility reasons, see the note in nk_malloc */
+    temp = b->pool.alloc(b->pool.userdata, 0, capacity);
+    if (!temp) return 0;
     *size = capacity;
-    if (temp != b->memory.ptr) {
-        NK_MEMCPY(temp, b->memory.ptr, buffer_size);
-        b->pool.free(b->pool.userdata, b->memory.ptr);
-    }
+    NK_MEMCPY(temp, b->memory.ptr, buffer_size);
+    b->pool.free(b->pool.userdata, b->memory.ptr);
 
     if (b->size == buffer_size) {
         /* no back buffer so just set correct size */
