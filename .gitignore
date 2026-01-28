@@ -14,3 +14,4 @@ doc/*
 *.exe
 *.dSYM
 /private/
+*/app/build
