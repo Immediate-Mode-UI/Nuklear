@@ -337,6 +337,7 @@ nk_sdl_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
     }
     SDL_free(text);
 }
+
 NK_INTERN void
 nk_sdl_clipboard_copy(nk_handle usr, const char *text, int len)
 {
