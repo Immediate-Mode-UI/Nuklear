@@ -337,7 +337,6 @@ nk_sdl_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
     }
     SDL_free(text);
 }
-
 NK_INTERN void
 nk_sdl_clipboard_copy(nk_handle usr, const char *text, int len)
 {
@@ -470,14 +469,46 @@ nk_sdl_handle_event(struct nk_context* ctx, SDL_Event *evt)
                                                  nk_input_key(ctx, NK_KEY_SCROLL_END, down); break;
                     case SDL_SCANCODE_PAGEDOWN:  nk_input_key(ctx, NK_KEY_SCROLL_DOWN, down); break;
                     case SDL_SCANCODE_PAGEUP:    nk_input_key(ctx, NK_KEY_SCROLL_UP, down); break;
-                    case SDL_SCANCODE_A:         nk_input_key(ctx, NK_KEY_TEXT_SELECT_ALL, down && ctrl_down); break;
-                    case SDL_SCANCODE_Z:         nk_input_key(ctx, NK_KEY_TEXT_UNDO, down && ctrl_down); break;
-                    case SDL_SCANCODE_R:         nk_input_key(ctx, NK_KEY_TEXT_REDO, down && ctrl_down); break;
-                    case SDL_SCANCODE_C:         nk_input_key(ctx, NK_KEY_COPY, down && ctrl_down); break;
-                    case SDL_SCANCODE_V:         nk_input_key(ctx, NK_KEY_PASTE, down && ctrl_down); break;
-                    case SDL_SCANCODE_X:         nk_input_key(ctx, NK_KEY_CUT, down && ctrl_down); break;
-                    case SDL_SCANCODE_B:         nk_input_key(ctx, NK_KEY_TEXT_LINE_START, down && ctrl_down); break;
-                    case SDL_SCANCODE_E:         nk_input_key(ctx, NK_KEY_TEXT_LINE_END, down && ctrl_down); break;
+                    case SDL_SCANCODE_A:
+                        if (ctrl_down){
+                            nk_input_key(ctx, NK_KEY_TEXT_SELECT_ALL, down);
+                        }
+                        break;
+                    case SDL_SCANCODE_Z:
+                        if (ctrl_down){
+                            nk_input_key(ctx, NK_KEY_TEXT_UNDO, down);
+                        }
+                        break;
+                    case SDL_SCANCODE_R:
+                        if (ctrl_down){
+                            nk_input_key(ctx, NK_KEY_TEXT_REDO, down);
+                        }
+                        break;
+                    case SDL_SCANCODE_C:
+                        if (ctrl_down){
+                            nk_input_key(ctx, NK_KEY_COPY, down);
+                        }
+                        break;
+                    case SDL_SCANCODE_V:
+                        if (ctrl_down){
+                            nk_input_key(ctx, NK_KEY_PASTE, down);
+                        }
+                        break;
+                    case SDL_SCANCODE_X:
+                        if (ctrl_down){
+                            nk_input_key(ctx, NK_KEY_CUT, down);
+                        }
+                        break;
+                    case SDL_SCANCODE_B:
+                        if (ctrl_down){
+                            nk_input_key(ctx, NK_KEY_TEXT_LINE_START, down);
+                        }
+                        break;
+                    case SDL_SCANCODE_E:
+                        if (ctrl_down){
+                            nk_input_key(ctx, NK_KEY_TEXT_LINE_END, down);
+                        }
+                        break;
                     case SDL_SCANCODE_UP:        nk_input_key(ctx, NK_KEY_UP, down); break;
                     case SDL_SCANCODE_DOWN:      nk_input_key(ctx, NK_KEY_DOWN, down); break;
                     case SDL_SCANCODE_ESCAPE:    nk_input_key(ctx, NK_KEY_TEXT_RESET_MODE, down); break;
