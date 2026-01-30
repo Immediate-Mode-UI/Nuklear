@@ -844,7 +844,7 @@ overview(struct nk_context *ctx)
             bounds = nk_widget_bounds(ctx);
             nk_label(ctx, "Hover me for tooltip", NK_TEXT_LEFT);
             if (nk_input_is_mouse_hovering_rect(in, bounds))
-                nk_tooltip(ctx, "This is a tooltip");
+                nk_tooltip_positioned(ctx, "This is a tooltip", NK_BOTTOM_LEFT);
 
             nk_tree_pop(ctx);
         }
