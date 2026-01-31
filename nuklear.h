@@ -515,7 +515,7 @@ enum nk_color_format    {NK_RGB, NK_RGBA};
 enum nk_popup_type      {NK_POPUP_STATIC, NK_POPUP_DYNAMIC};
 enum nk_layout_format   {NK_DYNAMIC, NK_STATIC};
 enum nk_tree_type       {NK_TREE_NODE, NK_TREE_TAB};
-enum nk_tooltip_pos     {NK_TOP_LEFT, NK_BOTTOM_LEFT, NK_TOP_RIGHT, NK_BOTTOM_RIGHT};
+enum nk_tooltip_pos     {NK_TOP_LEFT, NK_BOTTOM_LEFT, NK_TOP_RIGHT, NK_BOTTOM_RIGHT, NK_TOP_MIDDLE, NK_BOTTOM_MIDDLE};
 
 typedef void*(*nk_plugin_alloc)(nk_handle, void *old, nk_size);
 typedef void (*nk_plugin_free)(nk_handle, void *old);
@@ -3829,11 +3829,13 @@ NK_API void nk_contextual_end(struct nk_context*);
  * ============================================================================= */
 NK_API void nk_tooltip(struct nk_context*, const char*);
 NK_API void nk_tooltip_positioned(struct nk_context*, const char*, enum nk_tooltip_pos);
+NK_API void nk_tooltip_offset(struct nk_context*, const char*, struct nk_vec2);
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 NK_API void nk_tooltipf(struct nk_context*, NK_PRINTF_FORMAT_STRING const char*, ...) NK_PRINTF_VARARG_FUNC(2);
 NK_API void nk_tooltipfv(struct nk_context*, NK_PRINTF_FORMAT_STRING const char*, va_list) NK_PRINTF_VALIST_FUNC(2);
 #endif
-NK_API nk_bool nk_tooltip_begin(struct nk_context*, float width, enum nk_tooltip_pos);
+NK_API nk_bool nk_tooltip_begin(struct nk_context*, float width);
+NK_API nk_bool nk_tooltip_begin_offset(struct nk_context*, float, struct nk_vec2);
 NK_API void nk_tooltip_end(struct nk_context*);
 /* =============================================================================
  *
@@ -30606,7 +30608,14 @@ nk_combobox_callback(struct nk_context *ctx,
  *
  * ===============================================================*/
 NK_API nk_bool
-nk_tooltip_begin(struct nk_context *ctx, float width, enum nk_tooltip_pos position)
+nk_tooltip_begin(struct nk_context *ctx, float width)
+{
+    struct nk_vec2 offset = {0};
+    return nk_tooltip_begin_offset(ctx, width, offset);
+}
+
+NK_API nk_bool
+nk_tooltip_begin_offset(struct nk_context *ctx, float width, struct nk_vec2 offset)
 {
     int x,y,w,h;
     struct nk_window *win;
@@ -30628,28 +30637,8 @@ nk_tooltip_begin(struct nk_context *ctx, float width, enum nk_tooltip_pos positi
 
     w = nk_iceilf(width);
     h = nk_iceilf(nk_null_rect.h);
-    switch (position) {
-    case NK_TOP_LEFT:
-        x = nk_ifloorf(in->mouse.pos.x + 1) - (int)win->layout->clip.x;
-        y = nk_ifloorf(in->mouse.pos.y + 1) - (int)win->layout->clip.y;
-        break;
-    case NK_BOTTOM_LEFT:
-        x = nk_ifloorf(in->mouse.pos.x + 1) - (int)win->layout->clip.x;
-        y = nk_ifloorf(in->mouse.pos.y + 1) - (int)win->layout->clip.y - win->layout->row.min_height;
-        break;
-    case NK_TOP_RIGHT:
-        x = nk_ifloorf(in->mouse.pos.x + 1) - (int)win->layout->clip.x - w;
-        y = nk_ifloorf(in->mouse.pos.y + 1) - (int)win->layout->clip.y;
-        break;
-    case NK_BOTTOM_RIGHT:
-        x = nk_ifloorf(in->mouse.pos.x + 1) - (int)win->layout->clip.x - w;
-        y = nk_ifloorf(in->mouse.pos.y + 1) - (int)win->layout->clip.y - win->layout->row.min_height;
-        break;
-    default:
-        /* NK_ASSERT(0 && "unknown tooltip position enum"); */
-        x = nk_ifloorf(in->mouse.pos.x + 1) - (int)win->layout->clip.x;
-        y = nk_ifloorf(in->mouse.pos.y + 1) - (int)win->layout->clip.y;
-    }
+    x = nk_ifloorf(in->mouse.pos.x + 1) - (int)win->layout->clip.x + offset.x;
+    y = nk_ifloorf(in->mouse.pos.y + 1) - (int)win->layout->clip.y + offset.y;
 
     bounds.x = (float)x;
     bounds.y = (float)y;
@@ -30676,7 +30665,7 @@ nk_tooltip_end(struct nk_context *ctx)
 }
 
 NK_API void
-nk_tooltip_positioned(struct nk_context *ctx, const char *text, enum nk_tooltip_pos position)
+nk_tooltip_offset(struct nk_context *ctx, const char *text, struct nk_vec2 offset)
 {
     const struct nk_style *style;
     struct nk_vec2 padding;
@@ -30704,7 +30693,80 @@ nk_tooltip_positioned(struct nk_context *ctx, const char *text, enum nk_tooltip_
     text_height = (style->font->height + 2 * padding.y);
 
     /* execute tooltip and fill with text */
-    if (nk_tooltip_begin(ctx, (float)text_width, position)) {
+    if (nk_tooltip_begin_offset(ctx, (float)text_width, offset)) {
+        nk_layout_row_dynamic(ctx, (float)text_height, 1);
+        nk_text(ctx, text, text_len, NK_TEXT_LEFT);
+        nk_tooltip_end(ctx);
+    }
+}
+
+NK_API void
+nk_tooltip_positioned(struct nk_context *ctx, const char *text, enum nk_tooltip_pos position)
+{
+    const struct nk_style *style;
+    struct nk_vec2 padding;
+
+    int text_len;
+    float text_width;
+    float text_height;
+
+    struct nk_vec2 offset = { 0 };
+    int w,h;
+
+    NK_ASSERT(ctx);
+    NK_ASSERT(ctx->current);
+    NK_ASSERT(ctx->current->layout);
+    NK_ASSERT(text);
+    if (!ctx || !ctx->current || !ctx->current->layout || !text)
+        return;
+
+    /* fetch configuration data */
+    style = &ctx->style;
+    padding = style->window.padding;
+
+    /* calculate size of the text and tooltip */
+    text_len = nk_strlen(text);
+    text_width = style->font->width(style->font->userdata,
+                    style->font->height, text, text_len);
+    text_width += (4 * padding.x);
+    text_height = (style->font->height + 2 * padding.y);
+
+    /* Should I use text_height? Any difference? */
+    h = ctx->current->layout->row.min_height;
+    w = nk_iceilf(text_width);
+
+    switch (position) {
+    case NK_TOP_LEFT:
+        offset.x = 0;
+        offset.y = 0;
+        break;
+    case NK_BOTTOM_LEFT:
+        offset.x = 0;
+        offset.y = -h;
+        break;
+    case NK_TOP_RIGHT:
+        offset.x = -w;
+        offset.y = 0;
+        break;
+    case NK_BOTTOM_RIGHT:
+        offset.x = -w;
+        offset.y = -h;
+        break;
+    case NK_TOP_MIDDLE:
+        offset.x = -w/2;
+        offset.y = 0;
+        break;
+    case NK_BOTTOM_MIDDLE:
+        offset.x = -w/2;
+        offset.y = -h;
+        break;
+    default:
+        offset.x = 0;
+        offset.y = 0;
+    }
+
+    /* execute tooltip and fill with text */
+    if (nk_tooltip_begin_offset(ctx, (float)text_width, offset)) {
         nk_layout_row_dynamic(ctx, (float)text_height, 1);
         nk_text(ctx, text, text_len, NK_TEXT_LEFT);
         nk_tooltip_end(ctx);
@@ -30740,7 +30802,7 @@ nk_tooltip(struct nk_context *ctx, const char *text)
     text_height = (style->font->height + 2 * padding.y);
 
     /* execute tooltip and fill with text */
-    if (nk_tooltip_begin(ctx, (float)text_width, NK_TOP_LEFT)) {
+    if (nk_tooltip_begin(ctx, (float)text_width)) {
         nk_layout_row_dynamic(ctx, (float)text_height, 1);
         nk_text(ctx, text, text_len, NK_TEXT_LEFT);
         nk_tooltip_end(ctx);
