@@ -471,42 +471,42 @@ nk_sdl_handle_event(struct nk_context* ctx, SDL_Event *evt)
                     case SDL_SCANCODE_PAGEDOWN:  nk_input_key(ctx, NK_KEY_SCROLL_DOWN, down); break;
                     case SDL_SCANCODE_PAGEUP:    nk_input_key(ctx, NK_KEY_SCROLL_UP, down); break;
                     case SDL_SCANCODE_A:
-                        if (ctrl_down){
+                        if ((down && ctrl_down) ^ nk_input_is_key_down(&ctx->input, NK_KEY_TEXT_SELECT_ALL)){
                             nk_input_key(ctx, NK_KEY_TEXT_SELECT_ALL, down);
                         }
                         break;
                     case SDL_SCANCODE_Z:
-                        if (ctrl_down){
+                        if ((down && ctrl_down) ^ nk_input_is_key_down(&ctx->input, NK_KEY_TEXT_UNDO)){
                             nk_input_key(ctx, NK_KEY_TEXT_UNDO, down);
                         }
                         break;
                     case SDL_SCANCODE_R:
-                        if (ctrl_down){
+                        if ((down && ctrl_down) ^ nk_input_is_key_down(&ctx->input, NK_KEY_TEXT_REDO)){
                             nk_input_key(ctx, NK_KEY_TEXT_REDO, down);
                         }
                         break;
                     case SDL_SCANCODE_C:
-                        if (ctrl_down){
+                        if ((down && ctrl_down) ^ nk_input_is_key_down(&ctx->input, NK_KEY_COPY)){
                             nk_input_key(ctx, NK_KEY_COPY, down);
                         }
                         break;
                     case SDL_SCANCODE_V:
-                        if (ctrl_down){
+                        if ((down && ctrl_down) ^ nk_input_is_key_down(&ctx->input, NK_KEY_PASTE)){
                             nk_input_key(ctx, NK_KEY_PASTE, down);
                         }
                         break;
                     case SDL_SCANCODE_X:
-                        if (ctrl_down){
+                        if ((down && ctrl_down) ^ nk_input_is_key_down(&ctx->input, NK_KEY_CUT)){
                             nk_input_key(ctx, NK_KEY_CUT, down);
                         }
                         break;
                     case SDL_SCANCODE_B:
-                        if (ctrl_down){
+                        if ((down && ctrl_down) ^ nk_input_is_key_down(&ctx->input, NK_KEY_TEXT_LINE_START)){
                             nk_input_key(ctx, NK_KEY_TEXT_LINE_START, down);
                         }
                         break;
                     case SDL_SCANCODE_E:
-                        if (ctrl_down){
+                        if ((down && ctrl_down) ^ nk_input_is_key_down(&ctx->input, NK_KEY_TEXT_LINE_END)){
                             nk_input_key(ctx, NK_KEY_TEXT_LINE_END, down);
                         }
                         break;
