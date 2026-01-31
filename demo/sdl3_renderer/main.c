@@ -58,11 +58,8 @@
     #define NK_POINTER_TYPE      uintptr_t
 #endif
 
-/* FIXME: We could also use the `bool` symbol provided by SDL,
- * but this is currently broken due to internal Nuklear issue, see:
- * https://github.com/Immediate-Mode-UI/Nuklear/issues/849
- * */
-#define NK_INCLUDE_STANDARD_BOOL
+/* We can reuse the `bool` symbol because SDL3 guarantees its existence */
+/*#define NK_INCLUDE_STANDARD_BOOL*/
 #ifndef NK_INCLUDE_STANDARD_BOOL
     #define NK_BOOL               bool
 #endif
