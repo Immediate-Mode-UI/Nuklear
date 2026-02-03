@@ -290,6 +290,8 @@ SDL_AppInit(void** appstate, int argc, char* argv[])
     }
 #endif
 
+    nk_input_begin(ctx);
+
     return SDL_APP_CONTINUE;
 }
 
