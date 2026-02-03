@@ -282,7 +282,7 @@ nk_do_property(nk_flags *ws,
             break;
         case NK_PROPERTY_DOUBLE:
             nk_string_float_limit(buffer, NK_MAX_FLOAT_PRECISION);
-            variant->value.d = nk_strtod(buffer, 0);
+            variant->value.d = NK_STRTOD(buffer, 0);
             variant->value.d = NK_CLAMP(variant->min_value.d, variant->value.d, variant->max_value.d);
             break;
         }

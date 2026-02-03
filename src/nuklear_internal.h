@@ -95,29 +95,36 @@ NK_GLOBAL const struct nk_color nk_yellow = {255,255,0,255};
 
 /* math */
 #ifndef NK_INV_SQRT
+#define NK_INV_SQRT nk_inv_sqrt
+#define NK_INV_SQRT_NEEDED
 NK_LIB float nk_inv_sqrt(float n);
 #endif
 #ifndef NK_SIN
+#define NK_SIN nk_sin
+#define NK_SIN_NEEDED
 NK_LIB float nk_sin(float x);
 #endif
 #ifndef NK_COS
+#define NK_COS nk_cos
+#define NK_COS_NEEDED
 NK_LIB float nk_cos(float x);
 #endif
 #ifndef NK_ATAN
+#define NK_ATAN nk_atan
+#define NK_ATAN_NEEDED
 NK_LIB float nk_atan(float x);
 #endif
 #ifndef NK_ATAN2
+#define NK_ATAN2 nk_atan2
+#define NK_ATAN2_NEEDED
 NK_LIB float nk_atan2(float y, float x);
 #endif
 NK_LIB nk_uint nk_round_up_pow2(nk_uint v);
 NK_LIB struct nk_rect nk_shrink_rect(struct nk_rect r, float amount);
 NK_LIB struct nk_rect nk_pad_rect(struct nk_rect r, struct nk_vec2 pad);
 NK_LIB void nk_unify(struct nk_rect *clip, const struct nk_rect *a, float x0, float y0, float x1, float y1);
-NK_LIB double nk_pow(double x, int n);
-NK_LIB int nk_ifloord(double x);
 NK_LIB int nk_ifloorf(float x);
 NK_LIB int nk_iceilf(float x);
-NK_LIB int nk_log10(double n);
 NK_LIB float nk_roundf(float x);
 
 /* util */
@@ -128,15 +135,21 @@ NK_LIB int nk_to_upper(int c);
 NK_LIB int nk_to_lower(int c);
 
 #ifndef NK_MEMCPY
+#define NK_MEMCPY nk_memcopy
+#define NK_MEMCPY_NEEDED
 NK_LIB void* nk_memcopy(void *dst, const void *src, nk_size n);
 #endif
 #ifndef NK_MEMSET
+#define NK_MEMSET nk_memset
+#define NK_MEMSET_NEEDED
 NK_LIB void nk_memset(void *ptr, int c0, nk_size size);
 #endif
 NK_LIB void nk_zero(void *ptr, nk_size size);
 NK_LIB char *nk_itoa(char *s, long n);
 NK_LIB int nk_string_float_limit(char *string, int prec);
 #ifndef NK_DTOA
+#define NK_DTOA nk_dtoa
+#define NK_DTOA_NEEDED
 NK_LIB char *nk_dtoa(char *s, double n);
 #endif
 NK_LIB int nk_text_clamp(const struct nk_user_font *font, const char *text, int text_len, float space, int *glyphs, float *text_width, nk_rune *sep_list, int sep_count);
@@ -146,6 +159,13 @@ NK_LIB int nk_strfmt(char *buf, int buf_size, const char *fmt, va_list args);
 #endif
 #ifdef NK_INCLUDE_STANDARD_IO
 NK_LIB char *nk_file_load(const char* path, nk_size* siz, const struct nk_allocator *alloc);
+#endif
+
+/* math helpers that are only used by nk_dtoa */
+#ifdef NK_DTOA_NEEDED
+NK_LIB double nk_pow(double x, int n);
+NK_LIB int nk_ifloord(double x);
+NK_LIB int nk_log10(double n);
 #endif
 
 /* buffer */

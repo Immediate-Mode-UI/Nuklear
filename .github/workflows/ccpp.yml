@@ -49,3 +49,5 @@ jobs:
       run: make -C demo/xcb_cairo
     - name: build example
       run: make -C example
+    - name: compile sources
+      run: sh -e ./.github/ci_compile_sources.sh

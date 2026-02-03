@@ -3823,6 +3823,7 @@ NK_API int nk_strtoi(const char *str, char **endptr);
 NK_API float nk_strtof(const char *str, char **endptr);
 #ifndef NK_STRTOD
 #define NK_STRTOD nk_strtod
+#define NK_STRTOD_NEEDED
 NK_API double nk_strtod(const char *str, char **endptr);
 #endif
 NK_API int nk_strfilter(const char *text, const char *regexp);
