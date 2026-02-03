@@ -10,11 +10,11 @@ NK_API nk_bool
 nk_tooltip_begin(struct nk_context *ctx, float width)
 {
     struct nk_vec2 offset = {0};
-    return nk_tooltip_begin_offset(ctx, width, offset);
+    return nk_tooltip_begin_pos_offset(ctx, width, NK_TOP_LEFT, offset);
 }
 
 NK_API nk_bool
-nk_tooltip_begin_offset(struct nk_context *ctx, float width, struct nk_vec2 offset)
+nk_tooltip_begin_pos_offset(struct nk_context *ctx, float width, enum nk_tooltip_pos position, struct nk_vec2 offset)
 {
     int x,y,w,h;
     struct nk_window *win;
@@ -35,14 +35,43 @@ nk_tooltip_begin_offset(struct nk_context *ctx, float width, struct nk_vec2 offs
         return 0;
 
     w = nk_iceilf(width);
-    h = nk_iceilf(nk_null_rect.h);
+    /* Should I use text_height? Any difference? */
+    h = ctx->current->layout->row.min_height;
+
+    /* Default origin is top left, plus user offset */
     x = nk_ifloorf(in->mouse.pos.x + 1) - (int)win->layout->clip.x + offset.x;
     y = nk_ifloorf(in->mouse.pos.y + 1) - (int)win->layout->clip.y + offset.y;
+
+    /* Adjust origin based on enum */
+    switch (position) {
+    case NK_TOP_LEFT:
+        /* no change */
+        break;
+    case NK_BOTTOM_LEFT:
+        y -= h;
+        break;
+    case NK_TOP_RIGHT:
+        x -= w;
+        break;
+    case NK_BOTTOM_RIGHT:
+        x -= w;
+        y -= h;
+        break;
+    case NK_TOP_MIDDLE:
+        x -= w/2;
+        break;
+    case NK_BOTTOM_MIDDLE:
+        x -= w/2;
+        y -= h;
+        break;
+    default:
+        NK_ASSERT(0 && "Invalid tooltip position");
+    }
 
     bounds.x = (float)x;
     bounds.y = (float)y;
     bounds.w = (float)w;
-    bounds.h = (float)h;
+    bounds.h = (float)nk_iceilf(nk_null_rect.h);
 
     ret = nk_popup_begin(ctx, NK_POPUP_DYNAMIC,
         "__##Tooltip##__", NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BORDER, bounds);
@@ -64,7 +93,7 @@ nk_tooltip_end(struct nk_context *ctx)
 }
 
 NK_API void
-nk_tooltip_offset(struct nk_context *ctx, const char *text, struct nk_vec2 offset)
+nk_tooltip_pos_offset(struct nk_context *ctx, const char *text, enum nk_tooltip_pos position, struct nk_vec2 offset)
 {
     const struct nk_style *style;
     struct nk_vec2 padding;
@@ -92,80 +121,7 @@ nk_tooltip_offset(struct nk_context *ctx, const char *text, struct nk_vec2 offse
     text_height = (style->font->height + 2 * padding.y);
 
     /* execute tooltip and fill with text */
-    if (nk_tooltip_begin_offset(ctx, (float)text_width, offset)) {
-        nk_layout_row_dynamic(ctx, (float)text_height, 1);
-        nk_text(ctx, text, text_len, NK_TEXT_LEFT);
-        nk_tooltip_end(ctx);
-    }
-}
-
-NK_API void
-nk_tooltip_positioned(struct nk_context *ctx, const char *text, enum nk_tooltip_pos position)
-{
-    const struct nk_style *style;
-    struct nk_vec2 padding;
-
-    int text_len;
-    float text_width;
-    float text_height;
-
-    struct nk_vec2 offset = { 0 };
-    int w,h;
-
-    NK_ASSERT(ctx);
-    NK_ASSERT(ctx->current);
-    NK_ASSERT(ctx->current->layout);
-    NK_ASSERT(text);
-    if (!ctx || !ctx->current || !ctx->current->layout || !text)
-        return;
-
-    /* fetch configuration data */
-    style = &ctx->style;
-    padding = style->window.padding;
-
-    /* calculate size of the text and tooltip */
-    text_len = nk_strlen(text);
-    text_width = style->font->width(style->font->userdata,
-                    style->font->height, text, text_len);
-    text_width += (4 * padding.x);
-    text_height = (style->font->height + 2 * padding.y);
-
-    /* Should I use text_height? Any difference? */
-    h = ctx->current->layout->row.min_height;
-    w = nk_iceilf(text_width);
-
-    switch (position) {
-    case NK_TOP_LEFT:
-        offset.x = 0;
-        offset.y = 0;
-        break;
-    case NK_BOTTOM_LEFT:
-        offset.x = 0;
-        offset.y = -h;
-        break;
-    case NK_TOP_RIGHT:
-        offset.x = -w;
-        offset.y = 0;
-        break;
-    case NK_BOTTOM_RIGHT:
-        offset.x = -w;
-        offset.y = -h;
-        break;
-    case NK_TOP_MIDDLE:
-        offset.x = -w/2;
-        offset.y = 0;
-        break;
-    case NK_BOTTOM_MIDDLE:
-        offset.x = -w/2;
-        offset.y = -h;
-        break;
-    default:
-        offset.x = 0;
-        offset.y = 0;
-    }
-
-    /* execute tooltip and fill with text */
-    if (nk_tooltip_begin_offset(ctx, (float)text_width, offset)) {
+    if (nk_tooltip_begin_pos_offset(ctx, (float)text_width, position, offset)) {
         nk_layout_row_dynamic(ctx, (float)text_height, 1);
         nk_text(ctx, text, text_len, NK_TEXT_LEFT);
         nk_tooltip_end(ctx);
