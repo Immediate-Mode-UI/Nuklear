@@ -27,7 +27,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git commit -m "Automated build: run ./src/paq.sh" || echo "No changes to commit"
+          git commit -m "Automated build" || echo "No changes to commit"
 
       - name: Push Changes
         uses: ad-m/github-push-action@v1.0.0
