@@ -11,7 +11,16 @@ NK_LIB void*
 nk_malloc(nk_handle unused, void *old,nk_size size)
 {
     NK_UNUSED(unused);
-    NK_UNUSED(old);
+    /*
+     * Due to historical reasons, Nuklear always calls alloc(user,old,size)
+     * with the "old" pointer always being NULL. For full explanation, see:
+     * https://github.com/Immediate-Mode-UI/Nuklear/issues/768
+     *
+     * Note that this limitation is only meant for Nuklear's internal code.
+     * If you're wondering what to pass into nk_allocator's "alloc" field,
+     * you can still pass realloc there and it will work just fine.
+     */
+    NK_ASSERT(!old && "Nuklear's internal code must never reallocate existing memory !");
     return malloc(size);
 }
 NK_LIB void
@@ -104,15 +113,13 @@ nk_buffer_realloc(struct nk_buffer *b, nk_size capacity, nk_size *size)
         return 0;
 
     buffer_size = b->memory.size;
-    temp = b->pool.alloc(b->pool.userdata, b->memory.ptr, capacity);
+    temp = b->pool.alloc(b->pool.userdata, 0, capacity);
     NK_ASSERT(temp);
     if (!temp) return 0;
 
     *size = capacity;
-    if (temp != b->memory.ptr) {
-        NK_MEMCPY(temp, b->memory.ptr, buffer_size);
-        b->pool.free(b->pool.userdata, b->memory.ptr);
-    }
+    NK_MEMCPY(temp, b->memory.ptr, buffer_size);
+    b->pool.free(b->pool.userdata, b->memory.ptr);
 
     if (b->size == buffer_size) {
         /* no back buffer so just set correct size */
