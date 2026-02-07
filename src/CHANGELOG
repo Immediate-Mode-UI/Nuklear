@@ -7,6 +7,7 @@
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2026/01/31 (4.13.2) - Fix: replace incorrect static asserts for size(nk_bool)
 /// - 2026/01/26 (4.13.1) - Fix: nk_do_property now uses NK_STRTOD via macro
 ///                       - Fix: failure to build from source, due to
 ///                         nuklear_math/util.c not declaring some functions
