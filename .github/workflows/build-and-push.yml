@@ -30,6 +30,6 @@ jobs:
           git commit -m "Automated build: run ./src/paq.sh" || echo "No changes to commit"
 
       - name: Push Changes
-        uses: ad-m/github-push-action@v0.6.0
+        uses: ad-m/github-push-action@v1.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
