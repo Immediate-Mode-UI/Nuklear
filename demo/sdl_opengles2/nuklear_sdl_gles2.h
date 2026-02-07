@@ -46,7 +46,7 @@ NK_API void                 nk_sdl_handle_grab(void);
 struct nk_sdl_device {
     struct nk_buffer cmds;
     struct nk_draw_null_texture tex_null;
-    GLuint vbo, ebo;
+    GLuint vbo, vao, ebo;
     GLuint prog;
     GLuint vert_shdr;
     GLuint frag_shdr;
@@ -58,6 +58,12 @@ struct nk_sdl_device {
     GLuint font_tex;
     GLsizei vs;
     size_t vp, vt, vc;
+#ifdef NK_SDL_GLES2_HAVE_VAO
+    GLuint have_vao;
+#endif
+#ifdef NK_SDL_GLES2_HAVE_MAPBUFFER
+    GLuint have_mapbuffer;
+#endif
 };
 
 struct nk_sdl_vertex {
@@ -74,9 +80,7 @@ static struct nk_sdl {
     Uint64 time_of_last_frame;
 } sdl;
 
-
 #define NK_SHADER_VERSION "#version 100\n"
-
 
 NK_API void
 nk_sdl_device_create(void)
@@ -125,6 +129,13 @@ nk_sdl_device_create(void)
     glGetProgramiv(dev->prog, GL_LINK_STATUS, &status);
     assert(status == GL_TRUE);
 
+    /* TODO: Detect at runtime */
+#ifdef NK_SDL_GLES2_HAVE_VAO
+    dev->have_vao = GL_FALSE;
+#endif
+#ifdef NK_SDL_GLES2_HAVE_MAPBUFFER
+    dev->have_mapbuffer = GL_FALSE;
+#endif
 
     dev->uniform_tex = glGetUniformLocation(dev->prog, "Texture");
     dev->uniform_proj = glGetUniformLocation(dev->prog, "ProjMtx");
@@ -132,6 +143,7 @@ nk_sdl_device_create(void)
     dev->attrib_uv = glGetAttribLocation(dev->prog, "TexCoord");
     dev->attrib_col = glGetAttribLocation(dev->prog, "Color");
     {
+        /* buffer setup */
         dev->vs = sizeof(struct nk_sdl_vertex);
         dev->vp = offsetof(struct nk_sdl_vertex, position);
         dev->vt = offsetof(struct nk_sdl_vertex, uv);
@@ -140,10 +152,32 @@ nk_sdl_device_create(void)
         /* Allocate buffers */
         glGenBuffers(1, &dev->vbo);
         glGenBuffers(1, &dev->ebo);
+
+#ifdef NK_SDL_GLES2_HAVE_VAO
+        if (dev->have_vao) {
+            glGenVertexArrays(1, &dev->vao);
+
+            glBindVertexArray(dev->vao);
+            glBindBuffer(GL_ARRAY_BUFFER, dev->vbo);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dev->ebo);
+
+            glEnableVertexAttribArray((GLuint)dev->attrib_pos);
+            glEnableVertexAttribArray((GLuint)dev->attrib_uv);
+            glEnableVertexAttribArray((GLuint)dev->attrib_col);
+
+            glVertexAttribPointer((GLuint)dev->attrib_pos, 2, GL_FLOAT, GL_FALSE, dev->vs, (void*)dev->vp);
+            glVertexAttribPointer((GLuint)dev->attrib_uv, 2, GL_FLOAT, GL_FALSE, dev->vs, (void*)dev->vt);
+            glVertexAttribPointer((GLuint)dev->attrib_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, dev->vs, (void*)dev->vc);
+        }
+#endif
     }
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+#ifdef NK_SDL_GLES2_HAVE_VAO
+    if (dev->have_vao)
+        glBindVertexArray(0);
+#endif
 }
 
 NK_INTERN void
@@ -218,11 +252,19 @@ nk_sdl_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
         const struct nk_draw_command *cmd;
         void *vertices, *elements;
         const nk_draw_index *offset = NULL;
+        struct nk_buffer vbuf, ebuf;
 
         /* Bind buffers */
+#ifdef NK_SDL_GLES2_HAVE_VAO
+        if (dev->have_vao)
+            glBindVertexArray(dev->vao);
+#endif
         glBindBuffer(GL_ARRAY_BUFFER, dev->vbo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dev->ebo);
 
+#ifdef NK_SDL_GLES2_HAVE_VAO
+        if (!dev->have_vao)
+#endif
         {
             /* buffer setup */
             glEnableVertexAttribArray((GLuint)dev->attrib_pos);
@@ -238,8 +280,17 @@ nk_sdl_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, max_element_buffer, NULL, GL_STREAM_DRAW);
 
         /* load vertices/elements directly into vertex/element buffer */
-        vertices = malloc((size_t)max_vertex_buffer);
-        elements = malloc((size_t)max_element_buffer);
+#ifdef NK_SDL_GLES2_HAVE_MAPBUFFER
+        if (dev->have_mapbuffer) {
+            vertices = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+            elements = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+        } else
+#endif
+        {
+            vertices = malloc((size_t)max_vertex_buffer);
+            elements = malloc((size_t)max_element_buffer);
+        }
+
         {
             /* fill convert configuration */
             struct nk_convert_config config;
@@ -262,21 +313,31 @@ nk_sdl_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
             config.line_AA = AA;
 
             /* setup buffers to load vertices and elements */
-            {struct nk_buffer vbuf, ebuf;
             nk_buffer_init_fixed(&vbuf, vertices, (nk_size)max_vertex_buffer);
             nk_buffer_init_fixed(&ebuf, elements, (nk_size)max_element_buffer);
-            nk_convert(&sdl.ctx, &dev->cmds, &vbuf, &ebuf, &config);}
+            nk_convert(&sdl.ctx, &dev->cmds, &vbuf, &ebuf, &config);
         }
-        glBufferSubData(GL_ARRAY_BUFFER, 0, (size_t)max_vertex_buffer, vertices);
-        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, (size_t)max_element_buffer, elements);
-        free(vertices);
-        free(elements);
+
+#ifdef NK_SDL_GLES2_HAVE_MAPBUFFER
+        if (dev->have_mapbuffer) {
+            glUnmapBuffer(GL_ARRAY_BUFFER);
+            glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+        } else
+#endif
+        {
+            glBufferSubData(GL_ARRAY_BUFFER, 0, (size_t)max_vertex_buffer, vertices);
+            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, (size_t)max_element_buffer, elements);
+            free(vertices);
+            free(elements);
+        }
 
         /* iterate over and execute each draw command */
-        nk_draw_foreach(cmd, &sdl.ctx, &dev->cmds) {
+        nk_draw_foreach(cmd, &sdl.ctx, &dev->cmds)
+        {
             if (!cmd->elem_count) continue;
             glBindTexture(GL_TEXTURE_2D, (GLuint)cmd->texture.id);
-            glScissor((GLint)(cmd->clip_rect.x * scale.x),
+            glScissor(
+                (GLint)(cmd->clip_rect.x * scale.x),
                 (GLint)((height - (GLint)(cmd->clip_rect.y + cmd->clip_rect.h)) * scale.y),
                 (GLint)(cmd->clip_rect.w * scale.x),
                 (GLint)(cmd->clip_rect.h * scale.y));
@@ -287,10 +348,14 @@ nk_sdl_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
         nk_buffer_clear(&dev->cmds);
     }
 
+    /* default OpenGL state */
     glUseProgram(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
+#ifdef NK_SDL_GLES2_HAVE_VAO
+    if (dev->have_vao)
+        glBindVertexArray(0);
+#endif
     glDisable(GL_BLEND);
     glDisable(GL_SCISSOR_TEST);
 }
