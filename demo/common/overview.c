@@ -842,9 +842,28 @@ overview(struct nk_context *ctx)
             /* tooltip */
             nk_layout_row_static(ctx, 30, 150, 1);
             bounds = nk_widget_bounds(ctx);
-            nk_label(ctx, "Hover me for tooltip", NK_TEXT_LEFT);
-            if (nk_input_is_mouse_hovering_rect(in, bounds))
-                nk_tooltip(ctx, "This is a tooltip");
+            nk_label(ctx, "Hover for tooltip", NK_TEXT_LEFT);
+            if (nk_input_is_mouse_hovering_rect(in, bounds)) {
+                nk_tooltip(ctx, "This is a default tooltip");
+            }
+            bounds = nk_widget_bounds(ctx);
+            nk_label(ctx, "Chrome-like tooltip", NK_TEXT_LEFT);
+            if (nk_input_is_mouse_hovering_rect(in, bounds)) {
+                struct nk_vec2 offset = { 8, 8 };
+                nk_tooltip_pos_offset(ctx, "Chrome offsets just a bit", NK_TOP_LEFT, offset);
+            }
+            bounds = nk_widget_bounds(ctx);
+            nk_label(ctx, "Gnome-like tooltip", NK_TEXT_LEFT);
+            if (nk_input_is_mouse_hovering_rect(in, bounds)) {
+                struct nk_vec2 offset = { 0, -15 };
+                nk_tooltip_pos_offset(ctx, "Gnome centers with greater y offset", NK_BOTTOM_MIDDLE, offset);
+            }
+            bounds = nk_widget_bounds(ctx);
+            nk_label(ctx, "Bottom left tooltip", NK_TEXT_LEFT);
+            if (nk_input_is_mouse_hovering_rect(in, bounds)) {
+                struct nk_vec2 offset = { 0, 0 };
+                nk_tooltip_pos_offset(ctx, "Bottom left positioning", NK_BOTTOM_LEFT, offset);
+            }
 
             nk_tree_pop(ctx);
         }
