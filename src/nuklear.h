@@ -152,7 +152,7 @@ extern "C" {
       #define NK_UINT32 unsigned int
     #endif
   #endif
-#ifndef NK_SIZE_TYPE
+  #ifndef NK_SIZE_TYPE
     #if defined(_WIN64) && defined(_MSC_VER)
       #define NK_SIZE_TYPE unsigned __int64
     #elif defined(_WIN64) && (defined(__MINGW64__) || defined(__clang__))
