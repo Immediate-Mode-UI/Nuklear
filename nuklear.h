@@ -109,6 +109,7 @@ NK_BUTTON_TRIGGER_ON_RELEASE    | Different platforms require button clicks occu
 NK_ZERO_COMMAND_MEMORY          | Defining this will zero out memory for each drawing command added to a drawing queue (inside nk_command_buffer_push). Zeroing command memory is very useful for fast checking (using memcmp) if command buffers are equal and avoid drawing frames when nothing on screen has changed since previous frame.
 NK_UINT_DRAW_INDEX              | Defining this will set the size of vertex index elements when using NK_VERTEX_BUFFER_OUTPUT to 32bit instead of the default of 16bit
 NK_KEYSTATE_BASED_INPUT         | Define this if your backend uses key state for each frame rather than key press/release events
+NK_IS_WORD_BOUNDARY(c)          | Define this to a function macro that takes a single nk_rune (nk_uint) and returns true if it's a word separator. If not defined, uses the default definition (see nk_is_word_boundary())
 
 !!! WARNING
     The following flags will pull in the standard C library:
@@ -377,8 +378,12 @@ extern "C" {
   #ifndef NK_SIZE_TYPE
     #if defined(_WIN64) && defined(_MSC_VER)
       #define NK_SIZE_TYPE unsigned __int64
+    #elif defined(_WIN64) && (defined(__MINGW64__) || defined(__clang__))
+      #define NK_SIZE_TYPE unsigned long long
     #elif (defined(_WIN32) || defined(WIN32)) && defined(_MSC_VER)
       #define NK_SIZE_TYPE unsigned __int32
+    #elif (defined(_WIN32) || defined(WIN32)) && (defined(__MINGW32__) || defined(__clang__))
+      #define NK_SIZE_TYPE unsigned long
     #elif defined(__GNUC__) || defined(__clang__)
       #if defined(__x86_64__) || defined(__ppc64__) || defined(__PPC64__) || defined(__aarch64__)
         #define NK_SIZE_TYPE unsigned long
@@ -392,8 +397,12 @@ extern "C" {
   #ifndef NK_POINTER_TYPE
     #if defined(_WIN64) && defined(_MSC_VER)
       #define NK_POINTER_TYPE unsigned __int64
+    #elif defined(_WIN64) && (defined(__MINGW64__) || defined(__clang__))
+      #define NK_POINTER_TYPE unsigned long long
     #elif (defined(_WIN32) || defined(WIN32)) && defined(_MSC_VER)
       #define NK_POINTER_TYPE unsigned __int32
+    #elif (defined(_WIN32) || defined(WIN32)) && (defined(__MINGW32__) || defined(__clang__))
+      #define NK_POINTER_TYPE unsigned long
     #elif defined(__GNUC__) || defined(__clang__)
       #if defined(__x86_64__) || defined(__ppc64__) || defined(__PPC64__) || defined(__aarch64__)
         #define NK_POINTER_TYPE unsigned long
@@ -406,12 +415,13 @@ extern "C" {
   #endif
 #endif
 
+/**< could be any type with semantic of standard bool, either equal or smaller than int */
 #ifndef NK_BOOL
   #ifdef NK_INCLUDE_STANDARD_BOOL
     #include <stdbool.h>
     #define NK_BOOL bool
   #else
-    #define NK_BOOL int /**< could be char, use int for drop-in replacement backwards compatibility */
+    #define NK_BOOL int
   #endif
 #endif
 
@@ -442,11 +452,7 @@ NK_STATIC_ASSERT(sizeof(nk_flags) >= 4);
 NK_STATIC_ASSERT(sizeof(nk_rune) >= 4);
 NK_STATIC_ASSERT(sizeof(nk_size) >= sizeof(void*));
 NK_STATIC_ASSERT(sizeof(nk_ptr) >= sizeof(void*));
-#ifdef NK_INCLUDE_STANDARD_BOOL
-NK_STATIC_ASSERT(sizeof(nk_bool) == sizeof(bool));
-#else
-NK_STATIC_ASSERT(sizeof(nk_bool) >= 2);
-#endif
+NK_STATIC_ASSERT(sizeof(nk_bool) <= sizeof(int));
 
 /* ============================================================================
  *
@@ -492,6 +498,10 @@ struct nk_image {nk_handle handle; nk_ushort w, h; nk_ushort region[4];};
 struct nk_nine_slice {struct nk_image img; nk_ushort l, t, r, b;};
 struct nk_cursor {struct nk_image img; struct nk_vec2 size, offset;};
 struct nk_scroll {nk_uint x, y;};
+
+/* Make sure the semantic of nk_true/nk_false is compatible with nk_bool */
+NK_STATIC_ASSERT(!((nk_bool)0) == !(nk_false));
+NK_STATIC_ASSERT(!((nk_bool)1) == !(nk_true));
 
 enum nk_heading         {NK_UP, NK_RIGHT, NK_DOWN, NK_LEFT};
 enum nk_button_behavior {NK_BUTTON_DEFAULT, NK_BUTTON_REPEATER};
@@ -954,7 +964,7 @@ NK_API void nk_input_unicode(struct nk_context*, nk_rune);
  */
 NK_API void nk_input_end(struct nk_context*);
 
-/** =============================================================================
+/* =============================================================================
  *
  *                                  DRAWING
  *
@@ -1356,7 +1366,7 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
 #define nk_draw_foreach(cmd,ctx, b) for((cmd)=nk__draw_begin(ctx, b); (cmd)!=0; (cmd)=nk__draw_next(cmd, b, ctx))
 #endif
 
-/** =============================================================================
+/* =============================================================================
  *
  *                                  WINDOW
  *
@@ -1364,7 +1374,7 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
 /**
  * \page Window
  * Windows are the main persistent state used inside nuklear and are life time
- * controlled by simply "retouching" (i.e. calling) each window each frame.
+ * controlled by simply "retouching" (i.e.\ calling) each window each frame.
  * All widgets inside nuklear can only be added inside the function pair `nk_begin_xxx`
  * and `nk_end`. Calling any widgets outside these two functions will result in an
  * assert in debug or no state change in release mode.<br /><br />
@@ -1441,12 +1451,14 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
  * ```
  *
  * # Reference
- * Function                            | Description
- * ------------------------------------|----------------------------------------
+ * Function                                 | Description
+ * -----------------------------------------|----------------------------------------
  * \ref nk_begin                            | Starts a new window; needs to be called every frame for every window (unless hidden) or otherwise the window gets removed
  * \ref nk_begin_titled                     | Extended window start with separated title and identifier to allow multiple windows with same name but not title
  * \ref nk_end                              | Needs to be called at the end of the window building process to process scaling, scrollbars and general cleanup
  *
+ * Function                                 | Description
+ * -----------------------------------------|----------------------------------------
  * \ref nk_window_find                      | Finds and returns the window with give name
  * \ref nk_window_get_bounds                | Returns a rectangle with screen position and size of the currently processed window.
  * \ref nk_window_get_position              | Returns the position of the currently processed window
@@ -1468,13 +1480,17 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
  * \ref nk_window_is_hovered                | Returns if the currently processed window is currently being hovered by mouse
  * \ref nk_window_is_any_hovered            | Return if any window currently hovered
  * \ref nk_item_is_any_active               | Returns if any window or widgets is currently hovered or active
-//
+ *
+ * Function                                 | Description
+ * -----------------------------------------|----------------------------------------
  * \ref nk_window_set_bounds                | Updates position and size of the currently processed window
  * \ref nk_window_set_position              | Updates position of the currently process window
  * \ref nk_window_set_size                  | Updates the size of the currently processed window
  * \ref nk_window_set_focus                 | Set the currently processed window as active window
  * \ref nk_window_set_scroll                | Sets the scroll offset of the current window
-//
+ *
+ * Function                                 | Description
+ * -----------------------------------------|----------------------------------------
  * \ref nk_window_close                     | Closes the window with given window name which deletes the window at the end of the frame
  * \ref nk_window_collapse                  | Collapses the window with given window name
  * \ref nk_window_collapse_if               | Collapses the window with given window name if the given condition was met
@@ -2141,7 +2157,7 @@ NK_API void nk_window_show_if(struct nk_context *ctx, const char *name, enum nk_
  * # # nk_window_show_if
  * Line for visual separation. Draws a line with thickness determined by the current row height.
  * ```c
- * void nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, NK_BOOL rounding)
+ * void nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, nk_bool rounding)
  * ```
  *
  * Parameter       | Description
@@ -2787,7 +2803,7 @@ NK_API struct nk_rect nk_layout_space_rect_to_local(const struct nk_context *ctx
 NK_API void nk_spacer(struct nk_context *ctx);
 
 
-/** =============================================================================
+/* =============================================================================
  *
  *                                  GROUP
  *
@@ -3005,7 +3021,7 @@ NK_API void nk_group_get_scroll(struct nk_context*, const char *id, nk_uint *x_o
  */
 NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_offset, nk_uint y_offset);
 
-/** =============================================================================
+/* =============================================================================
  *
  *                                  TREE
  *
@@ -4039,6 +4055,7 @@ NK_API int nk_strtoi(const char *str, char **endptr);
 NK_API float nk_strtof(const char *str, char **endptr);
 #ifndef NK_STRTOD
 #define NK_STRTOD nk_strtod
+#define NK_STRTOD_NEEDED
 NK_API double nk_strtod(const char *str, char **endptr);
 #endif
 NK_API int nk_strfilter(const char *text, const char *regexp);
@@ -4346,7 +4363,7 @@ NK_API void nk_font_atlas_clear(struct nk_font_atlas*);
 
 #endif
 
-/** ==============================================================
+/* ==============================================================
  *
  *                          MEMORY BUFFER
  *
@@ -4435,7 +4452,7 @@ NK_API void *nk_buffer_memory(struct nk_buffer*);
 NK_API const void *nk_buffer_memory_const(const struct nk_buffer*);
 NK_API nk_size nk_buffer_total(const struct nk_buffer*);
 
-/** ==============================================================
+/* ==============================================================
  *
  *                          STRING
  *
@@ -4491,7 +4508,7 @@ NK_API const char *nk_str_get_const(const struct nk_str*);
 NK_API int nk_str_len(const struct nk_str*);
 NK_API int nk_str_len_char(const struct nk_str*);
 
-/**===============================================================
+/* ===============================================================
  *
  *                      TEXT EDITOR
  *
@@ -4932,6 +4949,7 @@ NK_API nk_bool nk_input_is_mouse_click_down_in_rect(const struct nk_input *i, en
 NK_API nk_bool nk_input_any_mouse_click_in_rect(const struct nk_input*, struct nk_rect);
 NK_API nk_bool nk_input_is_mouse_prev_hovering_rect(const struct nk_input*, struct nk_rect);
 NK_API nk_bool nk_input_is_mouse_hovering_rect(const struct nk_input*, struct nk_rect);
+NK_API nk_bool nk_input_is_mouse_moved(const struct nk_input*);
 NK_API nk_bool nk_input_mouse_clicked(const struct nk_input*, enum nk_buttons, struct nk_rect);
 NK_API nk_bool nk_input_is_mouse_down(const struct nk_input*, enum nk_buttons);
 NK_API nk_bool nk_input_is_mouse_pressed(const struct nk_input*, enum nk_buttons);
@@ -5790,7 +5808,6 @@ struct nk_window {
  * =============================================================*/
 /**
  * \page Stack
- * # Stack
  * The style modifier stack can be used to temporarily change a
  * property inside `nk_style`. For example if you want a special
  * red button you can temporarily push the old button color onto a stack
@@ -6120,11 +6137,7 @@ NK_STATIC_ASSERT(sizeof(nk_short) == 2);
 NK_STATIC_ASSERT(sizeof(nk_uint) == 4);
 NK_STATIC_ASSERT(sizeof(nk_int) == 4);
 NK_STATIC_ASSERT(sizeof(nk_byte) == 1);
-#ifdef NK_INCLUDE_STANDARD_BOOL
-NK_STATIC_ASSERT(sizeof(nk_bool) == sizeof(bool));
-#else
-NK_STATIC_ASSERT(sizeof(nk_bool) == 4);
-#endif
+NK_STATIC_ASSERT(sizeof(nk_bool) <= sizeof(int));
 
 NK_GLOBAL const struct nk_rect nk_null_rect = {-8192.0f, -8192.0f, 16384, 16384};
 #define NK_FLOAT_PRECISION 0.00000000000001
@@ -6144,29 +6157,36 @@ NK_GLOBAL const struct nk_color nk_yellow = {255,255,0,255};
 
 /* math */
 #ifndef NK_INV_SQRT
+#define NK_INV_SQRT nk_inv_sqrt
+#define NK_INV_SQRT_NEEDED
 NK_LIB float nk_inv_sqrt(float n);
 #endif
 #ifndef NK_SIN
+#define NK_SIN nk_sin
+#define NK_SIN_NEEDED
 NK_LIB float nk_sin(float x);
 #endif
 #ifndef NK_COS
+#define NK_COS nk_cos
+#define NK_COS_NEEDED
 NK_LIB float nk_cos(float x);
 #endif
 #ifndef NK_ATAN
+#define NK_ATAN nk_atan
+#define NK_ATAN_NEEDED
 NK_LIB float nk_atan(float x);
 #endif
 #ifndef NK_ATAN2
+#define NK_ATAN2 nk_atan2
+#define NK_ATAN2_NEEDED
 NK_LIB float nk_atan2(float y, float x);
 #endif
 NK_LIB nk_uint nk_round_up_pow2(nk_uint v);
 NK_LIB struct nk_rect nk_shrink_rect(struct nk_rect r, float amount);
 NK_LIB struct nk_rect nk_pad_rect(struct nk_rect r, struct nk_vec2 pad);
 NK_LIB void nk_unify(struct nk_rect *clip, const struct nk_rect *a, float x0, float y0, float x1, float y1);
-NK_LIB double nk_pow(double x, int n);
-NK_LIB int nk_ifloord(double x);
 NK_LIB int nk_ifloorf(float x);
 NK_LIB int nk_iceilf(float x);
-NK_LIB int nk_log10(double n);
 NK_LIB float nk_roundf(float x);
 
 /* util */
@@ -6177,15 +6197,21 @@ NK_LIB int nk_to_upper(int c);
 NK_LIB int nk_to_lower(int c);
 
 #ifndef NK_MEMCPY
+#define NK_MEMCPY nk_memcopy
+#define NK_MEMCPY_NEEDED
 NK_LIB void* nk_memcopy(void *dst, const void *src, nk_size n);
 #endif
 #ifndef NK_MEMSET
+#define NK_MEMSET nk_memset
+#define NK_MEMSET_NEEDED
 NK_LIB void nk_memset(void *ptr, int c0, nk_size size);
 #endif
 NK_LIB void nk_zero(void *ptr, nk_size size);
 NK_LIB char *nk_itoa(char *s, long n);
 NK_LIB int nk_string_float_limit(char *string, int prec);
 #ifndef NK_DTOA
+#define NK_DTOA nk_dtoa
+#define NK_DTOA_NEEDED
 NK_LIB char *nk_dtoa(char *s, double n);
 #endif
 NK_LIB int nk_text_clamp(const struct nk_user_font *font, const char *text, int text_len, float space, int *glyphs, float *text_width, nk_rune *sep_list, int sep_count);
@@ -6195,6 +6221,13 @@ NK_LIB int nk_strfmt(char *buf, int buf_size, const char *fmt, va_list args);
 #endif
 #ifdef NK_INCLUDE_STANDARD_IO
 NK_LIB char *nk_file_load(const char* path, nk_size* siz, const struct nk_allocator *alloc);
+#endif
+
+/* math helpers that are only used by nk_dtoa */
+#ifdef NK_DTOA_NEEDED
+NK_LIB double nk_pow(double x, int n);
+NK_LIB int nk_ifloord(double x);
+NK_LIB int nk_log10(double n);
 #endif
 
 /* buffer */
@@ -6461,8 +6494,7 @@ nk_stbtt_free(void *ptr, void *user_data) {
 ///  (it can actually approximate a lot more functions) can be
 ///  found here: www.lolengine.net/wiki/oss/lolremez
 */
-#ifndef NK_INV_SQRT
-#define NK_INV_SQRT nk_inv_sqrt
+#ifdef NK_INV_SQRT_NEEDED
 NK_LIB float
 nk_inv_sqrt(float n)
 {
@@ -6476,8 +6508,7 @@ nk_inv_sqrt(float n)
     return conv.f;
 }
 #endif
-#ifndef NK_SIN
-#define NK_SIN nk_sin
+#ifdef NK_SIN_NEEDED
 NK_LIB float
 nk_sin(float x)
 {
@@ -6492,8 +6523,7 @@ nk_sin(float x)
     return a0 + x*(a1 + x*(a2 + x*(a3 + x*(a4 + x*(a5 + x*(a6 + x*a7))))));
 }
 #endif
-#ifndef NK_COS
-#define NK_COS nk_cos
+#ifdef NK_COS_NEEDED
 NK_LIB float
 nk_cos(float x)
 {
@@ -6511,8 +6541,7 @@ nk_cos(float x)
     return a0 + x*(a1 + x*(a2 + x*(a3 + x*(a4 + x*(a5 + x*(a6 + x*(a7 + x*a8)))))));
 }
 #endif
-#ifndef NK_ATAN
-#define NK_ATAN nk_atan
+#ifdef NK_ATAN_NEEDED
 NK_LIB float
 nk_atan(float x)
 {
@@ -6531,8 +6560,7 @@ nk_atan(float x)
     return u;
 }
 #endif
-#ifndef NK_ATAN2
-#define NK_ATAN2 nk_atan2
+#ifdef NK_ATAN2_NEEDED
 NK_LIB float
 nk_atan2(float y, float x)
 {
@@ -6569,6 +6597,7 @@ nk_round_up_pow2(nk_uint v)
     v++;
     return v;
 }
+#ifdef NK_DTOA_NEEDED
 NK_LIB double
 nk_pow(double x, int n)
 {
@@ -6584,12 +6613,15 @@ nk_pow(double x, int n)
     }
     return plus ? r : 1.0 / r;
 }
+#endif
+#ifdef NK_DTOA_NEEDED
 NK_LIB int
 nk_ifloord(double x)
 {
     x = (double)((int)x - ((x < 0.0) ? 1 : 0));
     return (int)x;
 }
+#endif
 NK_LIB int
 nk_ifloorf(float x)
 {
@@ -6608,6 +6640,7 @@ nk_iceilf(float x)
         return (r > 0.0f) ? t+1: t;
     }
 }
+#ifdef NK_DTOA_NEEDED
 NK_LIB int
 nk_log10(double n)
 {
@@ -6624,6 +6657,7 @@ nk_log10(double n)
     if (neg) exp = -exp;
     return exp;
 }
+#endif
 NK_LIB float
 nk_roundf(float x)
 {
@@ -6795,8 +6829,7 @@ NK_LIB nk_bool nk_is_upper(int c){return (c >= 'A' && c <= 'Z') || (c >= 0xC0 &&
 NK_LIB int nk_to_upper(int c) {return (c >= 'a' && c <= 'z') ? (c - ('a' - 'A')) : c;}
 NK_LIB int nk_to_lower(int c) {return (c >= 'A' && c <= 'Z') ? (c - ('a' + 'A')) : c;}
 
-#ifndef NK_MEMCPY
-#define NK_MEMCPY nk_memcopy
+#ifdef NK_MEMCPY_NEEDED
 NK_LIB void*
 nk_memcopy(void *dst0, const void *src0, nk_size length)
 {
@@ -6854,8 +6887,7 @@ done:
     return (dst0);
 }
 #endif
-#ifndef NK_MEMSET
-#define NK_MEMSET nk_memset
+#ifdef NK_MEMSET_NEEDED
 NK_LIB void
 nk_memset(void *ptr, int c0, nk_size size)
 {
@@ -6946,6 +6978,7 @@ nk_strtoi(const char *str, char **endptr)
         *endptr = (char *)p;
     return neg*value;
 }
+#ifdef NK_STRTOD_NEEDED
 NK_API double
 nk_strtod(const char *str, char **endptr)
 {
@@ -7003,6 +7036,7 @@ nk_strtod(const char *str, char **endptr)
         *endptr = p;
     return number;
 }
+#endif
 NK_API float
 nk_strtof(const char *str, char **endptr)
 {
@@ -7281,8 +7315,7 @@ nk_itoa(char *s, long n)
     nk_strrev_ascii(s);
     return s;
 }
-#ifndef NK_DTOA
-#define NK_DTOA nk_dtoa
+#ifdef NK_DTOA_NEEDED
 NK_LIB char*
 nk_dtoa(char *s, double n)
 {
@@ -8382,7 +8415,7 @@ nk_utf_decode(const char *c, nk_rune *u, int clen)
     *u = NK_UTF_INVALID;
 
     udecoded = nk_utf_decode_byte(c[0], &len);
-    if (!NK_BETWEEN(len, 1, NK_UTF_SIZE))
+    if (!NK_BETWEEN(len, 1, NK_UTF_SIZE+1)) /* +1 because NK_BETWEEN uses strict upper bound ((a) <= (x) && (x) < (b)) */
         return 1;
 
     for (i = 1, j = 1; i < clen && j < len; ++i, ++j) {
@@ -18304,7 +18337,7 @@ nk_input_glyph(struct nk_context *ctx, const nk_glyph glyph)
 NK_API void
 nk_input_char(struct nk_context *ctx, char c)
 {
-    nk_glyph glyph;
+    nk_glyph glyph = {0};
     NK_ASSERT(ctx);
     if (!ctx) return;
     glyph[0] = c;
@@ -18431,6 +18464,12 @@ nk_input_is_mouse_released(const struct nk_input *i, enum nk_buttons id)
 {
     if (!i) return nk_false;
     return (!i->mouse.buttons[id].down && i->mouse.buttons[id].clicked);
+}
+NK_API nk_bool
+nk_input_is_mouse_moved(const struct nk_input *i)
+{
+    if (!i) return nk_false;
+    return i->mouse.delta.x != 0 || i->mouse.delta.y != 0;
 }
 NK_API nk_bool
 nk_input_is_key_pressed(const struct nk_input *i, enum nk_keys key)
@@ -20315,7 +20354,7 @@ nk_panel_end(struct nk_context *ctx)
                 root_window = root_window->parent;
 
             /* only allow scrolling if parent window is active */
-            scroll_has_scrolling = 0;
+            scroll_has_scrolling = nk_false;
             if ((root_window == ctx->active) && layout->has_scrolling) {
                 /* and panel is being hovered and inside clip rect*/
                 if (nk_input_is_mouse_hovering_rect(in, layout->bounds) &&
@@ -20332,13 +20371,13 @@ nk_panel_end(struct nk_context *ctx)
                     scroll_has_scrolling = nk_true;
                 }
             }
-        } else if (!nk_panel_is_sub(layout->type)) {
+        } else {
             /* window mouse wheel scrolling */
             scroll_has_scrolling = (window == ctx->active) && layout->has_scrolling;
             if (in && (in->mouse.scroll_delta.y > 0 || in->mouse.scroll_delta.x > 0) && scroll_has_scrolling)
                 window->scrolled = nk_true;
             else window->scrolled = nk_false;
-        } else scroll_has_scrolling = nk_false;
+        }
 
         {
             /* vertical scrollbar */
@@ -20380,7 +20419,7 @@ nk_panel_end(struct nk_context *ctx)
 
     /* hide scroll if no user input */
     if (window->flags & NK_WINDOW_SCROLL_AUTO_HIDE) {
-        int has_input = ctx->input.mouse.delta.x != 0 || ctx->input.mouse.delta.y != 0 || ctx->input.mouse.scroll_delta.y != 0;
+        int has_input = nk_input_is_mouse_moved(&ctx->input) || ctx->input.mouse.scroll_delta.y != 0;
         int is_window_hovered = nk_window_is_hovered(ctx);
         int any_item_active = (ctx->last_widget_state & NK_WIDGET_STATE_MODIFIED);
         if ((!has_input && is_window_hovered) || (!is_window_hovered && !any_item_active))
@@ -20952,7 +20991,7 @@ nk_window_is_hovered(const struct nk_context *ctx)
         return 0;
     else {
         struct nk_rect actual_bounds = ctx->current->bounds;
-        if (ctx->begin->flags & NK_WINDOW_MINIMIZED) {
+        if (ctx->current->flags & NK_WINDOW_MINIMIZED) {
             actual_bounds.h = ctx->current->layout->header_height;
         }
         return nk_input_is_mouse_hovering_rect(&ctx->input, actual_bounds);
@@ -23499,7 +23538,8 @@ nk_widget_is_hovered(const struct nk_context *ctx)
     struct nk_rect bounds;
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
-    if (!ctx || !ctx->current || ctx->active != ctx->current)
+    NK_ASSERT(ctx->current->layout);
+    if (!ctx || !ctx->current || !ctx->current->layout || (ctx->active != ctx->current && !((int)ctx->current->layout->type & (int)NK_PANEL_SET_POPUP)))
         return 0;
 
     c = ctx->current->layout->clip;
@@ -23521,7 +23561,8 @@ nk_widget_is_mouse_clicked(const struct nk_context *ctx, enum nk_buttons btn)
     struct nk_rect bounds;
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
-    if (!ctx || !ctx->current || ctx->active != ctx->current)
+    NK_ASSERT(ctx->current->layout);
+    if (!ctx || !ctx->current || !ctx->current->layout || (ctx->active != ctx->current && !((int)ctx->current->layout->type & (int)NK_PANEL_SET_POPUP)))
         return 0;
 
     c = ctx->current->layout->clip;
@@ -23543,7 +23584,8 @@ nk_widget_has_mouse_click_down(const struct nk_context *ctx, enum nk_buttons btn
     struct nk_rect bounds;
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
-    if (!ctx || !ctx->current || ctx->active != ctx->current)
+    NK_ASSERT(ctx->current->layout);
+    if (!ctx || !ctx->current || !ctx->current->layout || (ctx->active != ctx->current && !((int)ctx->current->layout->type & (int)NK_PANEL_SET_POPUP)))
         return 0;
 
     c = ctx->current->layout->clip;
@@ -23804,12 +23846,15 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
     if (!o || !t) return;
 
     b.h = NK_MAX(b.h, 2 * t->padding.y);
-    label.x = 0; label.w = 0;
-    label.y = b.y + t->padding.y;
-    label.h = NK_MIN(f->height, b.h - 2 * t->padding.y);
 
     text_width = f->width(f->userdata, f->height, (const char*)string, len);
     text_width += (2.0f * t->padding.x);
+
+    /* use top-left alignment by default */
+    if (!(a & (NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_RIGHT)))
+        a |= NK_TEXT_ALIGN_LEFT;
+    if (!(a & (NK_TEXT_ALIGN_TOP | NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_BOTTOM)))
+        a |= NK_TEXT_ALIGN_TOP;
 
     /* align in x-axis */
     if (a & NK_TEXT_ALIGN_LEFT) {
@@ -23824,16 +23869,20 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
     } else if (a & NK_TEXT_ALIGN_RIGHT) {
         label.x = NK_MAX(b.x + t->padding.x, (b.x + b.w) - (2 * t->padding.x + (float)text_width));
         label.w = (float)text_width + 2 * t->padding.x;
-    } else return;
+    }
 
     /* align in y-axis */
-    if (a & NK_TEXT_ALIGN_MIDDLE) {
+    if (a & NK_TEXT_ALIGN_TOP) {
+        label.y = b.y + t->padding.y;
+        label.h = NK_MIN(f->height, b.h - 2 * t->padding.y);
+    } else if (a & NK_TEXT_ALIGN_MIDDLE) {
         label.y = b.y + b.h/2.0f - (float)f->height/2.0f;
         label.h = NK_MAX(b.h/2.0f, b.h - (b.h/2.0f + f->height/2.0f));
     } else if (a & NK_TEXT_ALIGN_BOTTOM) {
         label.y = b.y + b.h - f->height;
         label.h = f->height;
     }
+
     nk_draw_text(o, label, (const char*)string, len, f, t->background, t->text);
 }
 NK_LIB void
@@ -26105,16 +26154,18 @@ nk_knob_behavior(nk_flags *state, struct nk_input *in,
     /* knob widget state */
     if (nk_input_is_mouse_hovering_rect(in, bounds)){
         *state = NK_WIDGET_STATE_HOVERED;
-        if (in) {
-            /* handle scroll and arrow inputs */
-            if (in->mouse.scroll_delta.y > 0 ||
-               (in->keyboard.keys[NK_KEY_UP].down && in->keyboard.keys[NK_KEY_UP].clicked))
-                knob_value += knob_step;
-
-            if (in->mouse.scroll_delta.y < 0 ||
-               (in->keyboard.keys[NK_KEY_DOWN].down && in->keyboard.keys[NK_KEY_DOWN].clicked))
-                knob_value -= knob_step;
+        /* handle scroll and arrow inputs */
+        if (in->mouse.scroll_delta.y > 0 ||
+           (in->keyboard.keys[NK_KEY_UP].down && in->keyboard.keys[NK_KEY_UP].clicked)) {
+            knob_value += knob_step;
         }
+
+        if (in->mouse.scroll_delta.y < 0 ||
+           (in->keyboard.keys[NK_KEY_DOWN].down && in->keyboard.keys[NK_KEY_DOWN].clicked)) {
+            knob_value -= knob_step;
+        }
+        /* easiest way to disable scrolling of parent panels..knob eats scrolling */
+        in->mouse.scroll_delta.y = 0;
         knob_value = NK_CLAMP(knob_min, knob_value, knob_max);
     }
     if (*state & NK_WIDGET_STATE_HOVER &&
@@ -27052,21 +27103,28 @@ nk_is_word_boundary( struct nk_text_edit *state, int idx)
 {
     int len;
     nk_rune c;
-    if (idx <= 0) return 1;
+    if (idx < 0) return 1;
     if (!nk_str_at_rune(&state->string, idx, &c, &len)) return 1;
-    return (c == ' ' || c == '\t' ||c == 0x3000 || c == ',' || c == ';' ||
-            c == '(' || c == ')' || c == '{' || c == '}' || c == '[' || c == ']' ||
-            c == '|');
+#ifndef NK_IS_WORD_BOUNDARY
+    return (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' ||
+            c == '\v' || c == 0x3000);
+#else
+    return NK_IS_WORD_BOUNDARY(c);
+#endif
 }
 NK_INTERN int
 nk_textedit_move_to_word_previous(struct nk_text_edit *state)
 {
    int c = state->cursor - 1;
-   while( c >= 0 && !nk_is_word_boundary(state, c))
-      --c;
-
-   if( c < 0 )
-      c = 0;
+   if (c > 0) {
+      if (nk_is_word_boundary(state, c)) {
+         while (c > 0 && nk_is_word_boundary(state, --c));
+      }
+      while (!nk_is_word_boundary(state, --c));
+      c++;
+   } else {
+      return 0;
+   }
 
    return c;
 }
@@ -27074,12 +27132,15 @@ NK_INTERN int
 nk_textedit_move_to_word_next(struct nk_text_edit *state)
 {
    const int len = state->string.len;
-   int c = state->cursor+1;
-   while( c < len && !nk_is_word_boundary(state, c))
-      ++c;
-
-   if( c > len )
-      c = len;
+   int c = state->cursor;
+   if (c < len) {
+      if (!nk_is_word_boundary(state, c)) {
+         while (c < len && !nk_is_word_boundary(state, ++c));
+      }
+      while (c < len && nk_is_word_boundary(state, ++c));
+   } else {
+      return len;
+   }
 
    return c;
 }
@@ -27211,17 +27272,13 @@ retry:
         break;
 
     case NK_KEY_TEXT_INSERT_MODE:
-        if (state->mode == NK_TEXT_EDIT_MODE_VIEW)
-            state->mode = NK_TEXT_EDIT_MODE_INSERT;
+        state->mode = NK_TEXT_EDIT_MODE_INSERT;
         break;
     case NK_KEY_TEXT_REPLACE_MODE:
-        if (state->mode == NK_TEXT_EDIT_MODE_VIEW)
-            state->mode = NK_TEXT_EDIT_MODE_REPLACE;
+        state->mode = NK_TEXT_EDIT_MODE_REPLACE;
         break;
     case NK_KEY_TEXT_RESET_MODE:
-        if (state->mode == NK_TEXT_EDIT_MODE_INSERT ||
-            state->mode == NK_TEXT_EDIT_MODE_REPLACE)
-            state->mode = NK_TEXT_EDIT_MODE_VIEW;
+        state->mode = NK_TEXT_EDIT_MODE_VIEW;
         break;
 
     case NK_KEY_LEFT:
@@ -27264,7 +27321,7 @@ retry:
     case NK_KEY_TEXT_WORD_LEFT:
         if (shift_mod) {
             if( !NK_TEXT_HAS_SELECTION( state ) )
-            nk_textedit_prep_selection_at_cursor(state);
+                nk_textedit_prep_selection_at_cursor(state);
             state->cursor = nk_textedit_move_to_word_previous(state);
             state->select_end = state->cursor;
             nk_textedit_clamp(state );
@@ -27993,7 +28050,6 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
 
     /* update edit state */
     prev_state = (char)edit->active;
-    is_hovered = (char)nk_input_is_mouse_hovering_rect(in, bounds);
     if (in && in->mouse.buttons[NK_BUTTON_LEFT].clicked && in->mouse.buttons[NK_BUTTON_LEFT].down) {
         edit->active = NK_INBOX(in->mouse.pos.x, in->mouse.pos.y,
                                 bounds.x, bounds.y, bounds.w, bounds.h);
@@ -28038,7 +28094,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
             in->mouse.buttons[NK_BUTTON_LEFT].clicked) {
             nk_textedit_click(edit, mouse_x, mouse_y, font, row_height);
         } else if (is_hovered && in->mouse.buttons[NK_BUTTON_LEFT].down &&
-            (in->mouse.delta.x != 0.0f || in->mouse.delta.y != 0.0f)) {
+            nk_input_is_mouse_moved(in)) {
             nk_textedit_drag(edit, mouse_x, mouse_y, font, row_height);
             cursor_follow = nk_true;
         } else if (is_hovered && in->mouse.buttons[NK_BUTTON_RIGHT].clicked &&
@@ -28285,10 +28341,12 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                 } else edit->scrollbar.x = 0;
 
                 if (flags & NK_EDIT_MULTILINE) {
-                    /* vertical scroll */
+                    /* vertical scroll: like horizontal, it only adjusts if the
+                     * cursor leaves the visible area, and then only just enough
+                     * to keep it visible */
                     if (cursor_pos.y < edit->scrollbar.y)
-                        edit->scrollbar.y = NK_MAX(0.0f, cursor_pos.y - row_height);
-                    if (cursor_pos.y >= edit->scrollbar.y + row_height)
+                        edit->scrollbar.y = NK_MAX(0.0f, cursor_pos.y);
+                    if (cursor_pos.y > edit->scrollbar.y + area.h - row_height)
                         edit->scrollbar.y = edit->scrollbar.y + row_height;
                 } else edit->scrollbar.y = 0;
             }
@@ -28311,9 +28369,13 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                 scroll_step = scroll.h * 0.10f;
                 scroll_inc = scroll.h * 0.01f;
                 scroll_target = text_size.y;
-                edit->scrollbar.y = nk_do_scrollbarv(&ws, out, scroll, 0,
+                edit->scrollbar.y = nk_do_scrollbarv(&ws, out, scroll, is_hovered,
                         scroll_offset, scroll_target, scroll_step, scroll_inc,
                         &style->scrollbar, in, font);
+                /* Eat mouse scroll if we're active */
+                if (is_hovered && in->mouse.scroll_delta.y) {
+                    in->mouse.scroll_delta.y = 0;
+                }
             }
         }
 
@@ -28919,7 +28981,7 @@ nk_do_property(nk_flags *ws,
             break;
         case NK_PROPERTY_DOUBLE:
             nk_string_float_limit(buffer, NK_MAX_FLOAT_PRECISION);
-            variant->value.d = nk_strtod(buffer, 0);
+            variant->value.d = NK_STRTOD(buffer, 0);
             variant->value.d = NK_CLAMP(variant->min_value.d, variant->value.d, variant->max_value.d);
             break;
         }
@@ -29042,6 +29104,7 @@ nk_property(struct nk_context *ctx, const char *name, struct nk_property_variant
         win->property.name = hash;
         win->property.select_start = *select_begin;
         win->property.select_end = *select_end;
+        win->edit.active = nk_true;
         if (*state == NK_PROPERTY_DRAG) {
             ctx->input.mouse.grab = nk_true;
             ctx->input.mouse.grabbed = nk_true;
@@ -29057,6 +29120,7 @@ nk_property(struct nk_context *ctx, const char *name, struct nk_property_variant
         win->property.select_start = 0;
         win->property.select_end = 0;
         win->property.active = 0;
+        win->edit.active = nk_false;
     }
 }
 NK_API void
@@ -30698,6 +30762,24 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///   - [y]: Minor version with non-breaking API and library changes
 ///   - [z]: Patch version with no direct changes to the API
 ///
+/// - 2026/01/31 (4.13.2) - Fix: replace incorrect static asserts for size(nk_bool)
+/// - 2026/01/26 (4.13.1) - Fix: nk_do_property now uses NK_STRTOD via macro
+///                       - Fix: failure to build from source, due to
+///                         nuklear_math/util.c not declaring some functions
+///                       - Fix: guard nk_strtod implementation with preprocessor
+///                       - Fix: nuklear_sdl3_renderer now provides NK_DTOA
+///                       - Fix: guard nk_pow, nk_ifloord, nk_log10 with preprocessor
+/// - 2025/11/15 (4.13.0) - Fix: nk_property not updating 'win->edit.active'
+///                         Add new updated demo: sdl3_renderer
+/// - 2025/10/08 (4.12.8) - Fix nk_widget_text to use NK_TEXT_ALIGN_LEFT by default,
+///                         instead of silently failing when no x-axis alignment is provided,
+///                         and refactor this function to keep the code style consistent
+/// - 2025/09/12 (4.12.8) - Fix nk_window_is_hovered to use current window flags
+                          - Fix nk_utf_decode length check (allow len == NK_UTF_SIZE)
+/// - 2025/04/28 (4.12.8) - Allow switching between TEXT_INSERT and TEXT_REPLACE modes directly
+/// - 2025/04/06 (4.12.7) - Fix text input navigation and mouse scrolling
+/// - 2025/03/29 (4.12.6) - Fix unitialized data in nk_input_char
+/// - 2025/03/05 (4.12.5) - Fix scrolling knob also scrolling parent window, remove dead code
 /// - 2024/12/11 (4.12.4) - Fix array subscript [0, 0] is outside array bounds of ‘char[1]’
 /// - 2024/12/11 (4.12.3) - Fix border color for property widgets
 /// - 2024/11/20 (4.12.2) - Fix int/float type conversion warnings in `nk_roundf`

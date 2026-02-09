@@ -16,7 +16,11 @@
 #include <X11/Xlib.h>
 
 typedef struct XFont XFont;
+#ifdef NK_XLIB_USE_XFT
+NK_API struct nk_context*   nk_xlib_init(XFont*, Display*, int scrn, Window root, Visual *vis, Colormap cmap, unsigned w, unsigned h);
+#else
 NK_API struct nk_context*   nk_xlib_init(XFont*, Display*, int scrn, Window root, unsigned w, unsigned h);
+#endif
 NK_API int                  nk_xlib_handle_event(Display*, int scrn, Window, XEvent*);
 NK_API void                 nk_xlib_render(Drawable screen, struct nk_color clear);
 NK_API void                 nk_xlib_shutdown(void);
@@ -53,6 +57,10 @@ NK_API void                 nk_xfont_del(Display *dpy, XFont *font);
 #include <X11/Xlocale.h>
 #include <X11/Xatom.h>
 
+#ifdef NK_XLIB_USE_XFT
+#include <X11/Xft/Xft.h>
+#endif
+
 #include <sys/time.h>
 #include <unistd.h>
 #include <time.h>
@@ -80,8 +88,12 @@ struct XFont {
     int ascent;
     int descent;
     int height;
+#ifdef NK_XLIB_USE_XFT
+    XftFont * ft;
+#else
     XFontSet set;
     XFontStruct *xfont;
+#endif
     struct nk_user_font handle;
 };
 struct XSurface {
@@ -91,6 +103,9 @@ struct XSurface {
     Window root;
     Drawable drawable;
     unsigned int w, h;
+#ifdef NK_XLIB_USE_XFT
+    XftDraw * ftdraw;
+#endif
 };
 struct XImageWithAlpha {
     XImage* ximage;
@@ -112,6 +127,10 @@ static struct  {
     Cursor cursor;
     Display *dpy;
     Window root;
+#ifdef NK_XLIB_USE_XFT
+    Visual *vis;
+    Colormap cmap;
+#endif
     double last_button_click;
     double time_of_last_frame;
 } xlib;
@@ -147,6 +166,10 @@ nk_xsurf_create(int screen, unsigned int w, unsigned int h)
     XSetLineAttributes(xlib.dpy, surface->gc, 1, LineSolid, CapButt, JoinMiter);
     surface->drawable = XCreatePixmap(xlib.dpy, xlib.root, w, h,
         (unsigned int)DefaultDepth(xlib.dpy, screen));
+#ifdef NK_XLIB_USE_XFT
+    surface->ftdraw = XftDrawCreate(xlib.dpy, surface->drawable,
+                                xlib.vis, xlib.cmap);
+#endif
     return surface;
 }
 
@@ -159,6 +182,9 @@ nk_xsurf_resize(XSurface *surf, unsigned int w, unsigned int h)
     if(surf->drawable) XFreePixmap(surf->dpy, surf->drawable);
     surf->drawable = XCreatePixmap(surf->dpy, surf->root, w, h,
         (unsigned int)DefaultDepth(surf->dpy, surf->screen));
+#ifdef NK_XLIB_USE_XFT
+    XftDrawChange(surf->ftdraw, surf->drawable);
+#endif
 }
 
 NK_INTERN void
@@ -170,6 +196,10 @@ nk_xsurf_scissor(XSurface *surf, float x, float y, float w, float h)
     clip_rect.width = (unsigned short)(w+2);
     clip_rect.height = (unsigned short)(h+2);
     XSetClipRectangles(surf->dpy, surf->gc, 0, 0, &clip_rect, 1, Unsorted);
+
+#ifdef NK_XLIB_USE_XFT
+    XftDrawSetClipRectangles(surf->ftdraw, 0, 0, &clip_rect, 1);
+#endif
 }
 
 NK_INTERN void
@@ -416,16 +446,31 @@ nk_xsurf_draw_text(XSurface *surf, short x, short y, const char *text, int len,
     XFont *font, struct nk_color cfg)
 {
     int tx, ty;
+#ifdef NK_XLIB_USE_XFT
+    XRenderColor xrc;
+    XftColor color;
+#else
     unsigned long fg = nk_color_from_byte(&cfg.r);
+#endif
 
     if(!text || !font || !len) return;
 
     tx = (int)x;
     ty = (int)y + font->ascent;
+#ifdef NK_XLIB_USE_XFT
+    xrc.red = cfg.r * 257;
+    xrc.green = cfg.g * 257;
+    xrc.blue = cfg.b * 257;
+    xrc.alpha = cfg.a * 257;
+    XftColorAllocValue(surf->dpy, xlib.vis, xlib.cmap, &xrc, &color);
+    XftDrawStringUtf8(surf->ftdraw, &color, font->ft, tx, ty, (FcChar8*)text, len);
+    XftColorFree(surf->dpy, xlib.vis, xlib.cmap, &color);
+#else
     XSetForeground(surf->dpy, surf->gc, fg);
     if(font->set)
         XmbDrawString(surf->dpy,surf->drawable,font->set,surf->gc,tx,ty,(const char*)text,(int)len);
     else XDrawString(surf->dpy, surf->drawable, surf->gc, tx, ty, (const char*)text, (int)len);
+#endif
 }
 
 
@@ -563,6 +608,9 @@ nk_xsurf_blit(Drawable target, XSurface *surf, unsigned int w, unsigned int h)
 NK_INTERN void
 nk_xsurf_del(XSurface *surf)
 {
+#ifdef NK_XLIB_USE_XFT
+    XftDrawDestroy(surf->ftdraw);
+#endif
     XFreePixmap(surf->dpy, surf->drawable);
     XFreeGC(surf->dpy, surf->gc);
     free(surf);
@@ -571,6 +619,17 @@ nk_xsurf_del(XSurface *surf)
 NK_API XFont*
 nk_xfont_create(Display *dpy, const char *name)
 {
+#ifdef NK_XLIB_USE_XFT
+    XFont *font = (XFont*)calloc(1, sizeof(XFont));
+    font->ft = XftFontOpenName(dpy, XDefaultScreen(dpy), name);
+    if (!font->ft) {
+        fprintf(stderr, "missing font: %s\n", name);
+        return font;
+    }
+    font->ascent = font->ft->ascent;
+    font->descent = font->ft->descent;
+    font->height = font->ft->height;
+#else
     int n;
     char *def, **missing;
     XFont *font = (XFont*)calloc(1, sizeof(XFont));
@@ -600,6 +659,7 @@ nk_xfont_create(Display *dpy, const char *name)
         font->descent = font->xfont->descent;
     }
     font->height = font->ascent + font->descent;
+#endif
     return font;
 }
 
@@ -607,6 +667,18 @@ NK_INTERN float
 nk_xfont_get_text_width(nk_handle handle, float height, const char *text, int len)
 {
     XFont *font = (XFont*)handle.ptr;
+
+#ifdef NK_XLIB_USE_XFT
+    XGlyphInfo g;
+
+    NK_UNUSED(height);
+
+    if(!font || !text)
+        return 0;
+
+    XftTextExtentsUtf8(xlib.dpy, font->ft, (FcChar8*)text, len, &g);
+    return g.xOff;
+#else
     XRectangle r;
 
     NK_UNUSED(height);
@@ -621,21 +693,29 @@ nk_xfont_get_text_width(nk_handle handle, float height, const char *text, int le
         int w = XTextWidth(font->xfont, (const char*)text, len);
         return (float)w;
     }
+#endif
 }
 
 NK_API void
 nk_xfont_del(Display *dpy, XFont *font)
 {
     if(!font) return;
+#ifdef NK_XLIB_USE_XFT
+    XftFontClose(dpy, font->ft);
+#else
     if(font->set)
         XFreeFontSet(dpy, font->set);
     else
         XFreeFont(dpy, font->xfont);
+#endif
     free(font);
 }
 
 NK_API struct nk_context*
 nk_xlib_init(XFont *xfont, Display *dpy, int screen, Window root,
+#ifdef NK_XLIB_USE_XFT
+    Visual *vis, Colormap cmap,
+#endif
     unsigned int w, unsigned int h)
 {
     struct nk_user_font *font = &xfont->handle;
@@ -644,6 +724,10 @@ nk_xlib_init(XFont *xfont, Display *dpy, int screen, Window root,
     font->width = nk_xfont_get_text_width;
     xlib.dpy = dpy;
     xlib.root = root;
+#ifdef NK_XLIB_USE_XFT
+    xlib.vis = vis;
+    xlib.cmap = cmap;
+#endif
 
     if (!setlocale(LC_ALL,"")) return 0;
     if (!XSupportsLocale()) return 0;
@@ -717,6 +801,7 @@ NK_API int
 nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt)
 {
     struct nk_context *ctx = &xlib.ctx;
+    static int insert_toggle = 0;
 
     NK_UNUSED(screen);
 
@@ -739,7 +824,7 @@ nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt)
         if (*code == XK_Shift_L || *code == XK_Shift_R) nk_input_key(ctx, NK_KEY_SHIFT, down);
         else if (*code == XK_Control_L || *code == XK_Control_R) nk_input_key(ctx, NK_KEY_CTRL, down);
         else if (*code == XK_Delete)    nk_input_key(ctx, NK_KEY_DEL, down);
-        else if (*code == XK_Return)    nk_input_key(ctx, NK_KEY_ENTER, down);
+        else if (*code == XK_Return || *code == XK_KP_Enter)    nk_input_key(ctx, NK_KEY_ENTER, down);
         else if (*code == XK_Tab)       nk_input_key(ctx, NK_KEY_TAB, down);
         else if (*code == XK_Left)      nk_input_key(ctx, NK_KEY_LEFT, down);
         else if (*code == XK_Right)     nk_input_key(ctx, NK_KEY_RIGHT, down);
@@ -776,11 +861,14 @@ nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt)
                 nk_input_key(ctx, NK_KEY_TEXT_LINE_END, down);
             else if (*code == 'a' && (evt->xkey.state & ControlMask))
                 nk_input_key(ctx,NK_KEY_TEXT_SELECT_ALL, down);
-            else {
-                if (*code == 'i')
+            else if (*code == XK_Insert) {
+                if (down) insert_toggle = !insert_toggle;
+                if (insert_toggle) {
                     nk_input_key(ctx, NK_KEY_TEXT_INSERT_MODE, down);
-                else if (*code == 'r')
+                } else {
                     nk_input_key(ctx, NK_KEY_TEXT_REPLACE_MODE, down);
+                }
+            } else {
                 if (down) {
                     char buf[32];
                     KeySym keysym = 0;

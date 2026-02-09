@@ -92,7 +92,7 @@ typedef enum {
     StringFormatFlagsMeasureTrailingSpaces   = 0x00000800,
     StringFormatFlagsNoWrap                  = 0x00001000,
     StringFormatFlagsLineLimit               = 0x00002000,
-    StringFormatFlagsNoClip                  = 0x00004000 
+    StringFormatFlagsNoClip                  = 0x00004000
 } StringFormatFlags;
 
 typedef enum
@@ -272,25 +272,25 @@ GdipSetStringFormatFlags(GpStringFormat *format, INT flags);
 GpStatus WINGDIPAPI
 GdipDeleteStringFormat(GpStringFormat *format);
 
-GpStatus WINGDIPAPI 
-GdipPrivateAddMemoryFont(GpFontCollection* fontCollection, 
+GpStatus WINGDIPAPI
+GdipPrivateAddMemoryFont(GpFontCollection* fontCollection,
                          GDIPCONST void* memory, INT length);
 
-GpStatus WINGDIPAPI 
-GdipPrivateAddFontFile(GpFontCollection* fontCollection, 
+GpStatus WINGDIPAPI
+GdipPrivateAddFontFile(GpFontCollection* fontCollection,
                        GDIPCONST WCHAR* filename);
 
-GpStatus WINGDIPAPI 
+GpStatus WINGDIPAPI
 GdipNewPrivateFontCollection(GpFontCollection** fontCollection);
 
-GpStatus WINGDIPAPI 
+GpStatus WINGDIPAPI
 GdipDeletePrivateFontCollection(GpFontCollection** fontCollection);
 
-GpStatus WINGDIPAPI 
-GdipGetFontCollectionFamilyList(GpFontCollection* fontCollection, 
+GpStatus WINGDIPAPI
+GdipGetFontCollectionFamilyList(GpFontCollection* fontCollection,
                         INT numSought, GpFontFamily* gpfamilies[], INT* numFound);
 
-GpStatus WINGDIPAPI 
+GpStatus WINGDIPAPI
 GdipGetFontCollectionFamilyCount(GpFontCollection* fontCollection, INT* numFound);
 
 
@@ -374,8 +374,8 @@ GdipGraphicsClear(GpGraphics *graphics, ARGB color);
 GpStatus WINGDIPAPI
 GdipDrawImageI(GpGraphics *graphics, GpImage *image, INT x, INT y);
 
-GpStatus WINGDIPAPI 
-GdipDrawImageRectI(GpGraphics *graphics, GpImage *image, INT x, INT y, 
+GpStatus WINGDIPAPI
+GdipDrawImageRectI(GpGraphics *graphics, GpImage *image, INT x, INT y,
                    INT width, INT height);
 
 GpStatus WINGDIPAPI
@@ -673,7 +673,7 @@ nk_gdip_load_image_from_memory(const void *membuf, nk_uint membufSize)
     IStream *stream = SHCreateMemStream((const BYTE*)membuf, membufSize);
     if (!stream)
         return nk_image_id(0);
-    
+
     status = GdipLoadImageFromStream(stream, &image);
     stream->lpVtbl->Release(stream);
 
@@ -709,7 +709,7 @@ nk_gdipfont_create(const char *name, int size)
     return font;
 }
 
-GpFontCollection* 
+GpFontCollection*
 nk_gdip_getCurFontCollection(){
     return gdip.fontCollection[gdip.curFontCollection];
 }
@@ -744,7 +744,7 @@ nk_gdipfont_create_from_file(const WCHAR* filename, int size)
 {
     if( !nk_gdip_getCurFontCollection() )
         if( GdipNewPrivateFontCollection(&gdip.fontCollection[gdip.curFontCollection]) ) return NULL;
-    if( GdipPrivateAddFontFile(nk_gdip_getCurFontCollection(), filename) ) return NULL;    
+    if( GdipPrivateAddFontFile(nk_gdip_getCurFontCollection(), filename) ) return NULL;
     return nk_gdipfont_create_from_collection(size);
 }
 
@@ -849,7 +849,7 @@ nk_gdip_init(HWND hwnd, unsigned int width, unsigned int height)
     GdipCreatePen1(0, 1.0f, UnitPixel, &gdip.pen);
     GdipCreateSolidFill(0, &gdip.brush);
     GdipStringFormatGetGenericTypographic(&gdip.format);
-    GdipSetStringFormatFlags(gdip.format, StringFormatFlagsNoFitBlackBox | 
+    GdipSetStringFormatFlags(gdip.format, StringFormatFlagsNoFitBlackBox |
         StringFormatFlagsMeasureTrailingSpaces | StringFormatFlagsNoWrap |
         StringFormatFlagsNoClip);
 
@@ -875,6 +875,7 @@ nk_gdip_set_font(GdipFont *gdipfont)
 NK_API int
 nk_gdip_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+    static int insert_toggle = 0;
     switch (msg)
     {
     case WM_SIZE:
@@ -924,6 +925,7 @@ nk_gdip_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             return 1;
 
         case VK_RETURN:
+        case VK_SEPARATOR:
             nk_input_key(&gdip.ctx, NK_KEY_ENTER, down);
             return 1;
 
@@ -967,12 +969,48 @@ nk_gdip_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             nk_input_key(&gdip.ctx, NK_KEY_SCROLL_UP, down);
             return 1;
 
+        case VK_ESCAPE:
+            nk_input_key(&gdip.ctx, NK_KEY_TEXT_RESET_MODE, down);
+            return 1;
+
+        case VK_INSERT:
+        /* Only switch on release to avoid repeat issues
+         * kind of confusing since we have to negate it but we're already
+         * hacking it since Nuklear treats them as two separate keys rather
+         * than a single toggle state */
+            if (!down) {
+                insert_toggle = !insert_toggle;
+                if (insert_toggle) {
+                    nk_input_key(&gdip.ctx, NK_KEY_TEXT_INSERT_MODE, !down);
+                    /* nk_input_key(&gdip.ctx, NK_KEY_TEXT_REPLACE_MODE, down); */
+                } else {
+                    nk_input_key(&gdip.ctx, NK_KEY_TEXT_REPLACE_MODE, !down);
+                    /* nk_input_key(&gdip.ctx, NK_KEY_TEXT_INSERT_MODE, down); */
+                }
+            }
+            return 1;
+
         case 'A':
             if (ctrl) {
                 nk_input_key(&gdip.ctx, NK_KEY_TEXT_SELECT_ALL, down);
                 return 1;
             }
             break;
+
+        case 'B':
+            if (ctrl) {
+                nk_input_key(&gdip.ctx, NK_KEY_TEXT_LINE_START, down);
+                return 1;
+            }
+            break;
+
+        case 'E':
+            if (ctrl) {
+                nk_input_key(&gdip.ctx, NK_KEY_TEXT_LINE_END, down);
+                return 1;
+            }
+            break;
+
 
         case 'C':
             if (ctrl) {

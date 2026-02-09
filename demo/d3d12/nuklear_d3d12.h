@@ -341,6 +341,7 @@ nk_d3d12_resize(int width, int height)
 NK_API int
 nk_d3d12_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+    static int insert_toggle = 0;
     switch (msg)
     {
     case WM_KEYDOWN:
@@ -364,6 +365,7 @@ nk_d3d12_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             return 1;
 
         case VK_RETURN:
+        case VK_SEPARATOR:
             nk_input_key(&d3d12.ctx, NK_KEY_ENTER, down);
             return 1;
 
@@ -406,6 +408,48 @@ nk_d3d12_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case VK_PRIOR:
             nk_input_key(&d3d12.ctx, NK_KEY_SCROLL_UP, down);
             return 1;
+
+        case VK_ESCAPE:
+            nk_input_key(&d3d12.ctx, NK_KEY_TEXT_RESET_MODE, down);
+            return 1;
+
+        case VK_INSERT:
+        /* Only switch on release to avoid repeat issues
+         * kind of confusing since we have to negate it but we're already
+         * hacking it since Nuklear treats them as two separate keys rather
+         * than a single toggle state */
+            if (!down) {
+                insert_toggle = !insert_toggle;
+                if (insert_toggle) {
+                    nk_input_key(&d3d12.ctx, NK_KEY_TEXT_INSERT_MODE, !down);
+                    /* nk_input_key(&d3d12.ctx, NK_KEY_TEXT_REPLACE_MODE, down); */
+                } else {
+                    nk_input_key(&d3d12.ctx, NK_KEY_TEXT_REPLACE_MODE, !down);
+                    /* nk_input_key(&d3d12.ctx, NK_KEY_TEXT_INSERT_MODE, down); */
+                }
+            }
+            return 1;
+
+        case 'A':
+            if (ctrl) {
+                nk_input_key(&d3d12.ctx, NK_KEY_TEXT_SELECT_ALL, down);
+                return 1;
+            }
+            break;
+
+        case 'B':
+            if (ctrl) {
+                nk_input_key(&d3d12.ctx, NK_KEY_TEXT_LINE_START, down);
+                return 1;
+            }
+            break;
+
+        case 'E':
+            if (ctrl) {
+                nk_input_key(&d3d12.ctx, NK_KEY_TEXT_LINE_END, down);
+                return 1;
+            }
+            break;
 
         case 'C':
             if (ctrl) {
@@ -612,7 +656,7 @@ nk_d3d12_init(ID3D12Device *device, int width, int height, unsigned int max_vert
     desc.SampleDesc.Quality = 0;
     desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
     desc.Flags = D3D12_RESOURCE_FLAG_NONE;
-    hr = ID3D12Device_CreateCommittedResource(device, &d3d12.heap_prop_upload, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_COPY_SOURCE, NULL, &IID_ID3D12Resource, &d3d12.upload_buffer);
+    hr = ID3D12Device_CreateCommittedResource(device, &d3d12.heap_prop_upload, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ, NULL, &IID_ID3D12Resource, &d3d12.upload_buffer);
     NK_ASSERT(SUCCEEDED(hr));
     }
     /* Create constant buffer */
@@ -813,7 +857,7 @@ nk_d3d12_font_stash_end(ID3D12GraphicsCommandList *command_list)
     desc.SampleDesc.Quality = 0;
     desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
     desc.Flags = D3D12_RESOURCE_FLAG_NONE;
-    hr = ID3D12Device_CreateCommittedResource(d3d12.device, &d3d12.heap_prop_upload, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_COPY_SOURCE, NULL, &IID_ID3D12Resource, &d3d12.font_upload_buffer);
+    hr = ID3D12Device_CreateCommittedResource(d3d12.device, &d3d12.heap_prop_upload, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ, NULL, &IID_ID3D12Resource, &d3d12.font_upload_buffer);
     NK_ASSERT(SUCCEEDED(hr));
     }
 

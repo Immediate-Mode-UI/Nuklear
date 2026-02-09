@@ -20,7 +20,6 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
 #define NK_GLFW_GL2_IMPLEMENTATION
-#define NK_KEYSTATE_BASED_INPUT
 #include "../../nuklear.h"
 #include "nuklear_glfw_gl2.h"
 
@@ -42,7 +41,7 @@
 /* #define INCLUDE_CALCULATOR   */
 /* #define INCLUDE_CANVAS       */
 /* #define INCLUDE_FILE_BROWSER */
-/* #define INCLUDE_OVERVIEW     */
+#define INCLUDE_OVERVIEW
 /* #define INCLUDE_CONFIGURATOR */
 /* #define INCLUDE_NODE_EDITOR  */
 

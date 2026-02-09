@@ -72,7 +72,8 @@ nk_widget_is_hovered(const struct nk_context *ctx)
     struct nk_rect bounds;
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
-    if (!ctx || !ctx->current || ctx->active != ctx->current)
+    NK_ASSERT(ctx->current->layout);
+    if (!ctx || !ctx->current || !ctx->current->layout || (ctx->active != ctx->current && !((int)ctx->current->layout->type & (int)NK_PANEL_SET_POPUP)))
         return 0;
 
     c = ctx->current->layout->clip;
@@ -94,7 +95,8 @@ nk_widget_is_mouse_clicked(const struct nk_context *ctx, enum nk_buttons btn)
     struct nk_rect bounds;
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
-    if (!ctx || !ctx->current || ctx->active != ctx->current)
+    NK_ASSERT(ctx->current->layout);
+    if (!ctx || !ctx->current || !ctx->current->layout || (ctx->active != ctx->current && !((int)ctx->current->layout->type & (int)NK_PANEL_SET_POPUP)))
         return 0;
 
     c = ctx->current->layout->clip;
@@ -116,7 +118,8 @@ nk_widget_has_mouse_click_down(const struct nk_context *ctx, enum nk_buttons btn
     struct nk_rect bounds;
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
-    if (!ctx || !ctx->current || ctx->active != ctx->current)
+    NK_ASSERT(ctx->current->layout);
+    if (!ctx || !ctx->current || !ctx->current->layout || (ctx->active != ctx->current && !((int)ctx->current->layout->type & (int)NK_PANEL_SET_POPUP)))
         return 0;
 
     c = ctx->current->layout->clip;

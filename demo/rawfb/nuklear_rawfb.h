@@ -71,6 +71,7 @@ struct rawfb_context {
     struct rawfb_image font_tex;
     struct nk_font_atlas atlas;
 };
+typedef unsigned int rawfb_color;
 
 #ifndef MIN
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
@@ -79,37 +80,36 @@ struct rawfb_context {
 #define MAX(a,b) ((a) < (b) ? (b) : (a))
 #endif
 
-static unsigned int
-nk_rawfb_color2int(const struct nk_color c, const struct rawfb_pl pl)
+static rawfb_color
+nk_rawfb_color2int(const struct nk_color c, const struct rawfb_pl *pl)
 {
     unsigned int res = 0;
 
-    res |= (c.r >> pl.rloss) << pl.rshift;
-    res |= (c.g >> pl.gloss) << pl.gshift;
-    res |= (c.b >> pl.bloss) << pl.bshift;
-    res |= (c.a >> pl.aloss) << pl.ashift;
+    res |= (c.r >> pl->rloss) << pl->rshift;
+    res |= (c.g >> pl->gloss) << pl->gshift;
+    res |= (c.b >> pl->bloss) << pl->bshift;
+    res |= (c.a >> pl->aloss) << pl->ashift;
 
     return (res);
 }
 
 static struct nk_color
-nk_rawfb_int2color(const unsigned int i, const struct rawfb_pl pl)
+nk_rawfb_int2color(const rawfb_color i, const struct rawfb_pl *pl)
 {
     struct nk_color col = {0,0,0,0};
 
-    col.r = (pl.rloss == 8) ? 0xff : ((i >> pl.rshift) << pl.rloss) & 0xff;
-    col.g = (pl.gloss == 8) ? 0xff : ((i >> pl.gshift) << pl.gloss) & 0xff;
-    col.b = (pl.bloss == 8) ? 0xff : ((i >> pl.bshift) << pl.bloss) & 0xff;
-    col.a = (pl.aloss == 8) ? 0xff : ((i >> pl.ashift) << pl.aloss) & 0xff;
+    col.r = (pl->rloss == 8) ? 0xff : ((i >> pl->rshift) << pl->rloss) & 0xff;
+    col.g = (pl->gloss == 8) ? 0xff : ((i >> pl->gshift) << pl->gloss) & 0xff;
+    col.b = (pl->bloss == 8) ? 0xff : ((i >> pl->bshift) << pl->bloss) & 0xff;
+    col.a = (pl->aloss == 8) ? 0xff : ((i >> pl->ashift) << pl->aloss) & 0xff;
 
     return col;
 }
 
 static void
 nk_rawfb_ctx_setpixel(const struct rawfb_context *rawfb,
-    const short x0, const short y0, const struct nk_color col)
+    const short x0, const short y0, const rawfb_color col)
 {
-    unsigned int c = nk_rawfb_color2int(col, rawfb->fb.pl);
     unsigned char *pixels = rawfb->fb.pixels;
 
     pixels += y0 * rawfb->fb.pitch;
@@ -118,18 +118,18 @@ nk_rawfb_ctx_setpixel(const struct rawfb_context *rawfb,
         x0 >= rawfb->scissors.x && x0 < rawfb->scissors.w) {
 
         if (rawfb->fb.pl.bytesPerPixel == sizeof(unsigned int)) {
-            *((unsigned int *)pixels + x0) = c;
+            *((unsigned int *)pixels + x0) = col;
         } else if (rawfb->fb.pl.bytesPerPixel == sizeof(unsigned short)) {
-            *((unsigned short *)pixels + x0) = c;
+            *((unsigned short *)pixels + x0) = col;
         } else {
-            *((unsigned char *)pixels + x0) = c;
+            *((unsigned char *)pixels + x0) = col;
         }
     }
 }
 
 static void
 nk_rawfb_line_horizontal(const struct rawfb_context *rawfb,
-    const short x0, const short y, const short x1, const struct nk_color col)
+    const short x0, const short y, const short x1, const rawfb_color col)
 {
     /* This function is called the most. Try to optimize it a bit...
      * It does not check for scissors or image borders.
@@ -144,13 +144,13 @@ nk_rawfb_line_horizontal(const struct rawfb_context *rawfb,
     n = (x1 - x0) * bpp;
     if (bpp == sizeof(unsigned int)) {
         for (i = 0; i < sizeof(c) / bpp; i++)
-            ((unsigned int *)c)[i] = nk_rawfb_color2int(col, rawfb->fb.pl);
+            ((unsigned int *)c)[i] = col;
     } else if (bpp == sizeof(unsigned short)) {
         for (i = 0; i < sizeof(c) / bpp; i++)
-            ((unsigned short *)c)[i] = nk_rawfb_color2int(col, rawfb->fb.pl);
+            ((unsigned short *)c)[i] = col;
     } else {
         for (i = 0; i < sizeof(c) / bpp; i++)
-            ((unsigned char *)c)[i] = nk_rawfb_color2int(col, rawfb->fb.pl);
+            ((unsigned char *)c)[i] = col;
     }
 
     while (n > sizeof(c)) {
@@ -164,7 +164,7 @@ static void
 nk_rawfb_img_setpixel(const struct rawfb_image *img,
     const int x0, const int y0, const struct nk_color col)
 {
-    unsigned int c = nk_rawfb_color2int(col, img->pl);
+    unsigned int c = nk_rawfb_color2int(col, &img->pl);
     unsigned char *ptr;
     NK_ASSERT(img);
     if (y0 < img->h && y0 >= 0 && x0 >= 0 && x0 < img->w) {
@@ -192,13 +192,13 @@ nk_rawfb_img_getpixel(const struct rawfb_image *img, const int x0, const int y0)
 
         if (img->pl.bytesPerPixel == sizeof(unsigned int)) {
             pixel = ((unsigned int *)ptr)[x0];
-            col = nk_rawfb_int2color(pixel, img->pl);
+            col = nk_rawfb_int2color(pixel, &img->pl);
         } else if (img->pl.bytesPerPixel == sizeof(unsigned short)) {
             pixel = ((unsigned short *)ptr)[x0];
-            col = nk_rawfb_int2color(pixel, img->pl);
+            col = nk_rawfb_int2color(pixel, &img->pl);
         } else {
             pixel = ((unsigned char *)ptr)[x0];
-            col = nk_rawfb_int2color(pixel, img->pl);
+            col = nk_rawfb_int2color(pixel, &img->pl);
         }
     } return col;
 }
@@ -235,7 +235,7 @@ nk_rawfb_scissor(struct rawfb_context *rawfb,
 static void
 nk_rawfb_stroke_line(const struct rawfb_context *rawfb,
     short x0, short y0, short x1, short y1,
-    const unsigned int line_thickness, const struct nk_color col)
+    const unsigned int line_thickness, const rawfb_color col)
 {
     short tmp;
     int dy, dx, stepx, stepy;
@@ -304,7 +304,7 @@ nk_rawfb_stroke_line(const struct rawfb_context *rawfb,
 
 static void
 nk_rawfb_fill_polygon(const struct rawfb_context *rawfb,
-    const struct nk_vec2i *pnts, int count, const struct nk_color col)
+    const struct nk_vec2i *pnts, int count, const rawfb_color col)
 {
     int i = 0;
     #define MAX_POINTS 64
@@ -368,7 +368,7 @@ nk_rawfb_fill_polygon(const struct rawfb_context *rawfb,
 static void
 nk_rawfb_stroke_arc(const struct rawfb_context *rawfb,
     short x0, short y0, short w, short h, const short s,
-    const short line_thickness, const struct nk_color col)
+    const short line_thickness, const rawfb_color col)
 {
     /* Bresenham's ellipses - modified to draw one quarter */
     const int a2 = (w * w) / 4;
@@ -421,7 +421,7 @@ nk_rawfb_stroke_arc(const struct rawfb_context *rawfb,
 
 static void
 nk_rawfb_fill_arc(const struct rawfb_context *rawfb, short x0, short y0,
-    short w, short h, const short s, const struct nk_color col)
+    short w, short h, const short s, const rawfb_color col)
 {
     /* Bresenham's ellipses - modified to fill one quarter */
     const int a2 = (w * w) / 4;
@@ -486,7 +486,7 @@ nk_rawfb_fill_arc(const struct rawfb_context *rawfb, short x0, short y0,
 static void
 nk_rawfb_stroke_rect(const struct rawfb_context *rawfb,
     const short x, const short y, const short w, const short h,
-    const short r, const short line_thickness, const struct nk_color col)
+    const short r, const short line_thickness, const rawfb_color col)
 {
     if (r == 0) {
         nk_rawfb_stroke_line(rawfb, x, y, x + w, y, line_thickness, col);
@@ -518,7 +518,7 @@ nk_rawfb_stroke_rect(const struct rawfb_context *rawfb,
 static void
 nk_rawfb_fill_rect(const struct rawfb_context *rawfb,
     const short x, const short y, const short w, const short h,
-    const short r, const struct nk_color col)
+    const short r, const rawfb_color col)
 {
     int i;
     if (r == 0) {
@@ -650,7 +650,7 @@ nk_rawfb_draw_rect_multi_color(const struct rawfb_context *rawfb,
 static void
 nk_rawfb_fill_triangle(const struct rawfb_context *rawfb,
     const short x0, const short y0, const short x1, const short y1,
-    const short x2, const short y2, const struct nk_color col)
+    const short x2, const short y2, const rawfb_color col)
 {
     struct nk_vec2i pnts[3];
     pnts[0].x = x0;
@@ -666,7 +666,7 @@ static void
 nk_rawfb_stroke_triangle(const struct rawfb_context *rawfb,
     const short x0, const short y0, const short x1, const short y1,
     const short x2, const short y2, const unsigned short line_thickness,
-    const struct nk_color col)
+    const rawfb_color col)
 {
     nk_rawfb_stroke_line(rawfb, x0, y0, x1, y1, line_thickness, col);
     nk_rawfb_stroke_line(rawfb, x1, y1, x2, y2, line_thickness, col);
@@ -676,7 +676,7 @@ nk_rawfb_stroke_triangle(const struct rawfb_context *rawfb,
 static void
 nk_rawfb_stroke_polygon(const struct rawfb_context *rawfb,
     const struct nk_vec2i *pnts, const int count,
-    const unsigned short line_thickness, const struct nk_color col)
+    const unsigned short line_thickness, const rawfb_color col)
 {
     int i;
     for (i = 1; i < count; ++i)
@@ -689,7 +689,7 @@ nk_rawfb_stroke_polygon(const struct rawfb_context *rawfb,
 static void
 nk_rawfb_stroke_polyline(const struct rawfb_context *rawfb,
     const struct nk_vec2i *pnts, const int count,
-    const unsigned short line_thickness, const struct nk_color col)
+    const unsigned short line_thickness, const rawfb_color col)
 {
     int i;
     for (i = 0; i < count-1; ++i)
@@ -699,7 +699,7 @@ nk_rawfb_stroke_polyline(const struct rawfb_context *rawfb,
 
 static void
 nk_rawfb_fill_circle(const struct rawfb_context *rawfb,
-    short x0, short y0, short w, short h, const struct nk_color col)
+    short x0, short y0, short w, short h, const rawfb_color col)
 {
     /* Bresenham's ellipses */
     const int a2 = (w * w) / 4;
@@ -736,7 +736,7 @@ nk_rawfb_fill_circle(const struct rawfb_context *rawfb,
 static void
 nk_rawfb_stroke_circle(const struct rawfb_context *rawfb,
     short x0, short y0, short w, short h, const short line_thickness,
-    const struct nk_color col)
+    const rawfb_color col)
 {
     /* Bresenham's ellipses */
     const int a2 = (w * w) / 4;
@@ -781,7 +781,7 @@ nk_rawfb_stroke_curve(const struct rawfb_context *rawfb,
     const struct nk_vec2i p1, const struct nk_vec2i p2,
     const struct nk_vec2i p3, const struct nk_vec2i p4,
     const unsigned int num_segments, const unsigned short line_thickness,
-    const struct nk_color col)
+    const rawfb_color col)
 {
     unsigned int i_step, segments;
     float t_step;
@@ -805,7 +805,7 @@ nk_rawfb_stroke_curve(const struct rawfb_context *rawfb,
 }
 
 static void
-nk_rawfb_clear(const struct rawfb_context *rawfb, const struct nk_color col)
+nk_rawfb_clear(const struct rawfb_context *rawfb, const rawfb_color col)
 {
     nk_rawfb_fill_rect(rawfb, 0, 0, rawfb->fb.w, rawfb->fb.h, 0, col);
 }
@@ -1032,10 +1032,11 @@ nk_rawfb_render(const struct rawfb_context *rawfb,
                 const struct nk_color clear,
                 const unsigned char enable_clear)
 {
+    const struct rawfb_pl *pl = &rawfb->fb.pl;
     const struct nk_command *cmd;
 
     if (enable_clear)
-        nk_rawfb_clear(rawfb, clear);
+        nk_rawfb_clear(rawfb, nk_rawfb_color2int(clear, pl));
 
     nk_foreach(cmd, (struct nk_context*)&rawfb->ctx) {
         switch (cmd->type) {
@@ -1047,47 +1048,51 @@ nk_rawfb_render(const struct rawfb_context *rawfb,
         case NK_COMMAND_LINE: {
             const struct nk_command_line *l = (const struct nk_command_line *)cmd;
             nk_rawfb_stroke_line(rawfb, l->begin.x, l->begin.y, l->end.x,
-                l->end.y, l->line_thickness, l->color);
+                l->end.y, l->line_thickness, nk_rawfb_color2int(l->color, pl));
         } break;
         case NK_COMMAND_RECT: {
             const struct nk_command_rect *r = (const struct nk_command_rect *)cmd;
             nk_rawfb_stroke_rect(rawfb, r->x, r->y, r->w, r->h,
-                (unsigned short)r->rounding, r->line_thickness, r->color);
+                (unsigned short)r->rounding, r->line_thickness,
+                nk_rawfb_color2int(r->color, pl));
         } break;
         case NK_COMMAND_RECT_FILLED: {
             const struct nk_command_rect_filled *r = (const struct nk_command_rect_filled *)cmd;
             nk_rawfb_fill_rect(rawfb, r->x, r->y, r->w, r->h,
-                (unsigned short)r->rounding, r->color);
+                (unsigned short)r->rounding, nk_rawfb_color2int(r->color, pl));
         } break;
         case NK_COMMAND_CIRCLE: {
             const struct nk_command_circle *c = (const struct nk_command_circle *)cmd;
-            nk_rawfb_stroke_circle(rawfb, c->x, c->y, c->w, c->h, c->line_thickness, c->color);
+            nk_rawfb_stroke_circle(rawfb, c->x, c->y, c->w, c->h, c->line_thickness,
+                                   nk_rawfb_color2int(c->color, pl));
         } break;
         case NK_COMMAND_CIRCLE_FILLED: {
             const struct nk_command_circle_filled *c = (const struct nk_command_circle_filled *)cmd;
-            nk_rawfb_fill_circle(rawfb, c->x, c->y, c->w, c->h, c->color);
+            nk_rawfb_fill_circle(rawfb, c->x, c->y, c->w, c->h,
+                                 nk_rawfb_color2int(c->color, pl));
         } break;
         case NK_COMMAND_TRIANGLE: {
             const struct nk_command_triangle*t = (const struct nk_command_triangle*)cmd;
             nk_rawfb_stroke_triangle(rawfb, t->a.x, t->a.y, t->b.x, t->b.y,
-                t->c.x, t->c.y, t->line_thickness, t->color);
+                t->c.x, t->c.y, t->line_thickness, nk_rawfb_color2int(t->color, pl));
         } break;
         case NK_COMMAND_TRIANGLE_FILLED: {
             const struct nk_command_triangle_filled *t = (const struct nk_command_triangle_filled *)cmd;
             nk_rawfb_fill_triangle(rawfb, t->a.x, t->a.y, t->b.x, t->b.y,
-                t->c.x, t->c.y, t->color);
+                t->c.x, t->c.y, nk_rawfb_color2int(t->color, pl));
         } break;
         case NK_COMMAND_POLYGON: {
             const struct nk_command_polygon *p =(const struct nk_command_polygon*)cmd;
-            nk_rawfb_stroke_polygon(rawfb, p->points, p->point_count, p->line_thickness,p->color);
+            nk_rawfb_stroke_polygon(rawfb, p->points, p->point_count, p->line_thickness,
+                                    nk_rawfb_color2int(p->color, pl));
         } break;
         case NK_COMMAND_POLYGON_FILLED: {
             const struct nk_command_polygon_filled *p = (const struct nk_command_polygon_filled *)cmd;
-            nk_rawfb_fill_polygon(rawfb, p->points, p->point_count, p->color);
+            nk_rawfb_fill_polygon(rawfb, p->points, p->point_count, nk_rawfb_color2int(p->color, pl));
         } break;
         case NK_COMMAND_POLYLINE: {
             const struct nk_command_polyline *p = (const struct nk_command_polyline *)cmd;
-            nk_rawfb_stroke_polyline(rawfb, p->points, p->point_count, p->line_thickness, p->color);
+            nk_rawfb_stroke_polyline(rawfb, p->points, p->point_count, p->line_thickness, nk_rawfb_color2int(p->color, pl));
         } break;
         case NK_COMMAND_TEXT: {
             const struct nk_command_text *t = (const struct nk_command_text*)cmd;
@@ -1097,7 +1102,7 @@ nk_rawfb_render(const struct rawfb_context *rawfb,
         case NK_COMMAND_CURVE: {
             const struct nk_command_curve *q = (const struct nk_command_curve *)cmd;
             nk_rawfb_stroke_curve(rawfb, q->begin, q->ctrl[0], q->ctrl[1],
-                q->end, 22, q->line_thickness, q->color);
+                q->end, 22, q->line_thickness, nk_rawfb_color2int(q->color, pl));
         } break;
         case NK_COMMAND_RECT_MULTI_COLOR: {
             const struct nk_command_rect_multi_color *q = (const struct nk_command_rect_multi_color *)cmd;
