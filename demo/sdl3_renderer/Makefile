@@ -5,14 +5,20 @@ ifeq (,$(PKG_CONFIG))
     $(error missing pkg-config utility!)
 endif
 
-PKG_SDL3 ?= sdl3
-ifeq (,$(shell $(PKG_CONFIG) --path $(PKG_SDL3)))
-    $(error $(PKG_CONFIG) could not find: $(PKG_SDL3))
-endif
+PKG_SDL3 := $(or\
+    $(and $(shell $(PKG_CONFIG) sdl3 --path 2>/dev/null),sdl3),\
+    $(shell $(PKG_CONFIG) sdl3 --exists 2>/dev/null && echo sdl3),\
+    $(error pkg-config was unable to find: sdl3))
 
-OS ?= $(shell uname -s)
+OSNAME := $(or\
+    $(and $(EMSCRIPTEN), Emscripten),\
+    $(OS),\
+    $(shell uname -s),\
+    $(error could not detect OSNAME))
+
 BINEXT-Windows_NT = .exe
-BINEXT ?= $(BINEXIT-$(OS))
+BINEXT-Emscripten = .html
+BINEXT ?= $(BINEXT-$(OSNAME))
 
 TEMPDIR ?= ./bin
 BIN ?= $(TEMPDIR)/demo$(BINEXT)
@@ -22,10 +28,15 @@ CFLAGS += -O2
 #CFLAGS += -O0 -g
 #CFLAGS += -fsanitize=address
 #CFLAGS += -fsanitize=undefined
-CFLAGS += $(shell $(PKG_CONFIG) $(PKG_SDL3) --cflags)
 
-LIBS += -lm
-LIBS += $(shell $(PKG_CONFIG) $(PKG_SDL3) --libs)
+CPPFLAGS += $(shell $(PKG_CONFIG) $(PKG_SDL3) --cflags --keep-system-cflags)
+
+LDFLAGS += $(shell $(PKG_CONFIG) $(PKG_SDL3) --libs-only-L --libs-only-other --keep-system-libs)
+
+LDLIBS += $(shell $(PKG_CONFIG) $(PKG_SDL3) --libs-only-l --keep-system-libs)
+LDLIBS += -lm
+# HACK: this one is for compatibility with other demos
+LDLIBS += $(LIBS)
 
 DEP ?= $(BIN).d
 
@@ -33,9 +44,9 @@ SRC = main.c
 
 $(BIN):
 	mkdir -p $(dir $@)
-	$(CC) $(SRC) -o $@ -MD -MF $(DEP) $(CFLAGS) $(LIBS)
+	$(CC) $(SRC) -o $@ -MD -MF $(DEP) $(CPPFLAGS) $(LDFLAGS) $(LDLIBS) $(CFLAGS)
 
-$(BIN): $(SRC) ./Makefile ./nuklear_sdl3_renderer.h ./../../nuklear.h
+$(BIN): $(SRC)
 
 -include $(DEP)
 
