@@ -1,27 +1,27 @@
 # this Makefile is specific to GNU Make and GCC'compatible compilers
 
-PKG_CONFIG ?= $(shell command -v pkg-config)
-ifeq (,$(PKG_CONFIG))
-    $(error missing pkg-config utility!)
-endif
+PKG_CONFIG := $(or\
+    $(shell pkg-config --version >/dev/null 2>/dev/null && echo pkg-config),\
+    $(shell command -v pkg-config 2>/dev/null),\
+    $(error missing pkg-config utility!))
 
 PKG_SDL3 := $(or\
-    $(and $(shell $(PKG_CONFIG) sdl3 --path 2>/dev/null),sdl3),\
-    $(shell $(PKG_CONFIG) sdl3 --exists 2>/dev/null && echo sdl3),\
+    $(and $(shell ${PKG_CONFIG} sdl3 --path 2>/dev/null),sdl3),\
+    $(shell ${PKG_CONFIG} sdl3 --exists 2>/dev/null && echo sdl3),\
     $(error pkg-config was unable to find: sdl3))
 
 OSNAME := $(or\
-    $(and $(EMSCRIPTEN), Emscripten),\
-    $(OS),\
+    $(and ${EMSCRIPTEN}, Emscripten),\
+    ${OS},\
     $(shell uname -s),\
     $(error could not detect OSNAME))
 
-BINEXT-Windows_NT = .exe
-BINEXT-Emscripten = .html
-BINEXT ?= $(BINEXT-$(OSNAME))
+binext_Windows_NT := .exe
+binext_Emscripten := .html
+BINEXT := ${binext_${OSNAME}}
 
-TEMPDIR ?= ./bin
-BIN ?= $(TEMPDIR)/demo$(BINEXT)
+TEMPDIR := ./bin
+BIN := ${TEMPDIR}/demo${BINEXT}
 
 CFLAGS += -std=c89 -Wall -Wextra -Wpedantic
 CFLAGS += -O2
@@ -29,24 +29,24 @@ CFLAGS += -O2
 #CFLAGS += -fsanitize=address
 #CFLAGS += -fsanitize=undefined
 
-CPPFLAGS += $(shell $(PKG_CONFIG) $(PKG_SDL3) --cflags --keep-system-cflags)
+CPPFLAGS += $(shell ${PKG_CONFIG} ${PKG_SDL3} --cflags --keep-system-cflags)
 
-LDFLAGS += $(shell $(PKG_CONFIG) $(PKG_SDL3) --libs-only-L --libs-only-other --keep-system-libs)
+LDFLAGS += $(shell ${PKG_CONFIG} ${PKG_SDL3} --libs-only-L --libs-only-other --keep-system-libs)
 
-LDLIBS += $(shell $(PKG_CONFIG) $(PKG_SDL3) --libs-only-l --keep-system-libs)
+LDLIBS += $(shell ${PKG_CONFIG} ${PKG_SDL3} --libs-only-l --keep-system-libs)
 LDLIBS += -lm
 # HACK: this one is for compatibility with other demos
-LDLIBS += $(LIBS)
+LDLIBS += ${LIBS}
 
-DEP ?= $(BIN).d
+DEP := ${BIN}.d
 
-SRC = main.c
+SRC := main.c
 
-$(BIN):
+${BIN}:
 	mkdir -p $(dir $@)
-	$(CC) $(SRC) -o $@ -MD -MF $(DEP) $(CPPFLAGS) $(LDFLAGS) $(LDLIBS) $(CFLAGS)
+	${CC} ${SRC} -o $@ -MD -MF ${DEP} ${CPPFLAGS} ${LDFLAGS} ${LDLIBS} ${CFLAGS}
 
-$(BIN): $(SRC)
+${BIN}: ${SRC}
 
--include $(DEP)
+-include ${DEP}
 
