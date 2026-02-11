@@ -4,7 +4,7 @@
 ######################################################################################
 
 ## path stuff
-DOCS_PATH:=./doc
+DOCS_PATH:=./docs
 DEMO_PATH=demo
 SRC_PATH=src
 
@@ -64,14 +64,14 @@ nuke: $(addprefix $(SRC_PATH)/, $(SRC))
 
 docs: $(DOCS_PATH)/html/index.html 
 
-$(DOCS_PATH)/html/index.html: $(DOCS_PATH)/doxygen-awesome-css/doxygen-awesome.css $(DOXYFILE)
+$(DOCS_PATH)/html/index.html: $(DOCS_PATH)/html/doxygen-awesome-css/doxygen-awesome.css $(DOXYFILE)
 	doxygen $(DOXYFILE)
 
 $(DOXYFILE):
 	doxygen -g $@
 
-$(DOCS_PATH)/doxygen-awesome-css/doxygen-awesome.css:
-	git clone https://github.com/jothepro/doxygen-awesome-css.git $(DOCS_PATH)/doxygen-awesome-css --branch v2.3.4
+$(DOCS_PATH)/html/doxygen-awesome-css/doxygen-awesome.css:
+	git clone https://github.com/jothepro/doxygen-awesome-css.git $(DOCS_PATH)/html/doxygen-awesome-css --branch v2.3.4
 
 
 
