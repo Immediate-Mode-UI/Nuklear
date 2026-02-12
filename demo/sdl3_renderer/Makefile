@@ -23,28 +23,32 @@ BINEXT := ${binext_${OSNAME}}
 TEMPDIR := ./bin
 BIN := ${TEMPDIR}/demo${BINEXT}
 
-CFLAGS += -std=c89 -Wall -Wextra -Wpedantic
-CFLAGS += -O2
-#CFLAGS += -O0 -g
-#CFLAGS += -fsanitize=address
-#CFLAGS += -fsanitize=undefined
+cflags += -std=c89 -Wall -Wextra -Wpedantic
+cflags += -O2
+#cflags += -O0 -g
+#cflags += -fsanitize=address
+#cflags += -fsanitize=undefined
+cflags += ${CFLAGS}
 
-CPPFLAGS += $(shell ${PKG_CONFIG} ${PKG_SDL3} --cflags --keep-system-cflags)
+cppflags += $(shell ${PKG_CONFIG} ${PKG_SDL3} --cflags --keep-system-cflags)
+cppflags += ${CPPFLAGS}
 
-LDFLAGS += $(shell ${PKG_CONFIG} ${PKG_SDL3} --libs-only-L --libs-only-other --keep-system-libs)
+ldflags += $(shell ${PKG_CONFIG} ${PKG_SDL3} --libs-only-L --libs-only-other --keep-system-libs)
+ldflags += ${LDFLAGS}
 
-LDLIBS += $(shell ${PKG_CONFIG} ${PKG_SDL3} --libs-only-l --keep-system-libs)
-LDLIBS += -lm
+ldlibs += $(shell ${PKG_CONFIG} ${PKG_SDL3} --libs-only-l --keep-system-libs)
+ldlibs += -lm
+ldlibs += ${LDLIBS}
 # HACK: this one is for compatibility with other demos
-LDLIBS += ${LIBS}
+ldlibs += ${LIBS}
 
-DEP := ${BIN}.d
+DEP := ${TEMPDIR}/$(notdir ${BIN}).d
 
 SRC := main.c
 
 ${BIN}:
 	mkdir -p $(dir $@)
-	${CC} ${SRC} -o $@ -MD -MF ${DEP} ${CPPFLAGS} ${LDFLAGS} ${LDLIBS} ${CFLAGS}
+	${CC} ${SRC} -o $@ -MD -MF ${DEP} ${cppflags} ${ldflags} ${ldlibs} ${cflags}
 
 ${BIN}: ${SRC}
 
