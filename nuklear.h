@@ -515,6 +515,7 @@ enum nk_color_format    {NK_RGB, NK_RGBA};
 enum nk_popup_type      {NK_POPUP_STATIC, NK_POPUP_DYNAMIC};
 enum nk_layout_format   {NK_DYNAMIC, NK_STATIC};
 enum nk_tree_type       {NK_TREE_NODE, NK_TREE_TAB};
+enum nk_tooltip_pos     {NK_TOP_LEFT, NK_BOTTOM_LEFT, NK_TOP_RIGHT, NK_BOTTOM_RIGHT, NK_TOP_MIDDLE, NK_BOTTOM_MIDDLE};
 
 typedef void*(*nk_plugin_alloc)(nk_handle, void *old, nk_size);
 typedef void (*nk_plugin_free)(nk_handle, void *old);
@@ -3827,11 +3828,15 @@ NK_API void nk_contextual_end(struct nk_context*);
  *
  * ============================================================================= */
 NK_API void nk_tooltip(struct nk_context*, const char*);
+NK_API void nk_tooltip_pos_offset(struct nk_context *ctx, const char *text, enum nk_tooltip_pos position, struct nk_vec2 offset);
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 NK_API void nk_tooltipf(struct nk_context*, NK_PRINTF_FORMAT_STRING const char*, ...) NK_PRINTF_VARARG_FUNC(2);
 NK_API void nk_tooltipfv(struct nk_context*, NK_PRINTF_FORMAT_STRING const char*, va_list) NK_PRINTF_VALIST_FUNC(2);
+NK_API void nk_tooltipf_pos_offset(struct nk_context*, enum nk_tooltip_pos, struct nk_vec2, NK_PRINTF_FORMAT_STRING const char*, ...) NK_PRINTF_VARARG_FUNC(4);
+NK_API void nk_tooltipfv_pos_offset(struct nk_context*, enum nk_tooltip_pos, struct nk_vec2, NK_PRINTF_FORMAT_STRING const char*, va_list) NK_PRINTF_VALIST_FUNC(4);
 #endif
 NK_API nk_bool nk_tooltip_begin(struct nk_context*, float width);
+NK_API nk_bool nk_tooltip_begin_pos_offset(struct nk_context*, float, enum nk_tooltip_pos, struct nk_vec2);
 NK_API void nk_tooltip_end(struct nk_context*);
 /* =============================================================================
  *
@@ -30606,6 +30611,13 @@ nk_combobox_callback(struct nk_context *ctx,
 NK_API nk_bool
 nk_tooltip_begin(struct nk_context *ctx, float width)
 {
+    struct nk_vec2 offset = {0};
+    return nk_tooltip_begin_pos_offset(ctx, width, NK_TOP_LEFT, offset);
+}
+
+NK_API nk_bool
+nk_tooltip_begin_pos_offset(struct nk_context *ctx, float width, enum nk_tooltip_pos position, struct nk_vec2 offset)
+{
     int x,y,w,h;
     struct nk_window *win;
     const struct nk_input *in;
@@ -30625,14 +30637,43 @@ nk_tooltip_begin(struct nk_context *ctx, float width)
         return 0;
 
     w = nk_iceilf(width);
-    h = nk_iceilf(nk_null_rect.h);
-    x = nk_ifloorf(in->mouse.pos.x + 1) - (int)win->layout->clip.x;
-    y = nk_ifloorf(in->mouse.pos.y + 1) - (int)win->layout->clip.y;
+    /* Should I use text_height? Any difference? */
+    h = ctx->current->layout->row.min_height;
+
+    /* Default origin is top left, plus user offset */
+    x = nk_ifloorf(in->mouse.pos.x + 1) - (int)win->layout->clip.x + offset.x;
+    y = nk_ifloorf(in->mouse.pos.y + 1) - (int)win->layout->clip.y + offset.y;
+
+    /* Adjust origin based on enum */
+    switch (position) {
+    case NK_TOP_LEFT:
+        /* no change */
+        break;
+    case NK_BOTTOM_LEFT:
+        y -= h;
+        break;
+    case NK_TOP_RIGHT:
+        x -= w;
+        break;
+    case NK_BOTTOM_RIGHT:
+        x -= w;
+        y -= h;
+        break;
+    case NK_TOP_MIDDLE:
+        x -= w/2;
+        break;
+    case NK_BOTTOM_MIDDLE:
+        x -= w/2;
+        y -= h;
+        break;
+    default:
+        NK_ASSERT(0 && "Invalid tooltip position");
+    }
 
     bounds.x = (float)x;
     bounds.y = (float)y;
     bounds.w = (float)w;
-    bounds.h = (float)h;
+    bounds.h = (float)nk_iceilf(nk_null_rect.h);
 
     ret = nk_popup_begin(ctx, NK_POPUP_DYNAMIC,
         "__##Tooltip##__", NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BORDER, bounds);
@@ -30652,6 +30693,43 @@ nk_tooltip_end(struct nk_context *ctx)
     nk_popup_close(ctx);
     nk_popup_end(ctx);
 }
+
+NK_API void
+nk_tooltip_pos_offset(struct nk_context *ctx, const char *text, enum nk_tooltip_pos position, struct nk_vec2 offset)
+{
+    const struct nk_style *style;
+    struct nk_vec2 padding;
+
+    int text_len;
+    float text_width;
+    float text_height;
+
+    NK_ASSERT(ctx);
+    NK_ASSERT(ctx->current);
+    NK_ASSERT(ctx->current->layout);
+    NK_ASSERT(text);
+    if (!ctx || !ctx->current || !ctx->current->layout || !text)
+        return;
+
+    /* fetch configuration data */
+    style = &ctx->style;
+    padding = style->window.padding;
+
+    /* calculate size of the text and tooltip */
+    text_len = nk_strlen(text);
+    text_width = style->font->width(style->font->userdata,
+                    style->font->height, text, text_len);
+    text_width += (4 * padding.x);
+    text_height = (style->font->height + 2 * padding.y);
+
+    /* execute tooltip and fill with text */
+    if (nk_tooltip_begin_pos_offset(ctx, (float)text_width, position, offset)) {
+        nk_layout_row_dynamic(ctx, (float)text_height, 1);
+        nk_text(ctx, text, text_len, NK_TEXT_LEFT);
+        nk_tooltip_end(ctx);
+    }
+}
+
 NK_API void
 nk_tooltip(struct nk_context *ctx, const char *text)
 {
@@ -30689,12 +30767,27 @@ nk_tooltip(struct nk_context *ctx, const char *text)
 }
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 NK_API void
+nk_tooltipf_pos_offset(struct nk_context *ctx, enum nk_tooltip_pos position, struct nk_vec2 offset, const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    nk_tooltipfv_pos_offset(ctx, position, offset, fmt, args);
+    va_end(args);
+}
+NK_API void
 nk_tooltipf(struct nk_context *ctx, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
     nk_tooltipfv(ctx, fmt, args);
     va_end(args);
+}
+NK_API void
+nk_tooltipfv_pos_offset(struct nk_context *ctx, enum nk_tooltip_pos position, struct nk_vec2 offset, const char *fmt, va_list args)
+{
+    char buf[256];
+    nk_strfmt(buf, NK_LEN(buf), fmt, args);
+    nk_tooltip_pos_offset(ctx, buf, position, offset);
 }
 NK_API void
 nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
