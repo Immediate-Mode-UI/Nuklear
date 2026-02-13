@@ -1,0 +1,9 @@
+digraph "nk_table"
+{
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
+  node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
+  Node1 [id="Node000001",label="nk_table",height=0.2,width=0.4,color="gray40", fillcolor="grey60", style="filled", fontcolor="black",tooltip=" "];
+  Node1 -> Node1 [id="edge1_Node000001_Node000001",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" next\nprev",fontcolor="grey" ];
+}

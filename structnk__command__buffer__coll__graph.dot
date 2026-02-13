@@ -1,0 +1,21 @@
+digraph "nk_command_buffer"
+{
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
+  node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
+  Node1 [id="Node000001",label="nk_command_buffer",height=0.2,width=0.4,color="gray40", fillcolor="grey60", style="filled", fontcolor="black",tooltip=" "];
+  Node2 -> Node1 [id="edge1_Node000001_Node000002",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" base",fontcolor="grey" ];
+  Node2 [id="Node000002",label="nk_buffer",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__buffer.html",tooltip=" "];
+  Node3 -> Node2 [id="edge2_Node000002_Node000003",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" marker",fontcolor="grey" ];
+  Node3 [id="Node000003",label="nk_buffer_marker",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__buffer__marker.html",tooltip=" "];
+  Node4 -> Node2 [id="edge3_Node000002_Node000004",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" pool",fontcolor="grey" ];
+  Node4 [id="Node000004",label="nk_allocator",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__allocator.html",tooltip=" "];
+  Node5 -> Node4 [id="edge4_Node000004_Node000005",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" alloc\nfree\nuserdata",fontcolor="grey" ];
+  Node5 [id="Node000005",label="nk_handle",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$unionnk__handle.html",tooltip=" "];
+  Node6 -> Node2 [id="edge5_Node000002_Node000006",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" memory",fontcolor="grey" ];
+  Node6 [id="Node000006",label="nk_memory",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__memory.html",tooltip=" "];
+  Node7 -> Node1 [id="edge6_Node000001_Node000007",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" clip",fontcolor="grey" ];
+  Node7 [id="Node000007",label="nk_rect",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__rect.html",tooltip=" "];
+  Node5 -> Node1 [id="edge7_Node000001_Node000005",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" userdata",fontcolor="grey" ];
+}
