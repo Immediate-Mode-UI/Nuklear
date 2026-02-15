@@ -164,6 +164,6 @@ print("#endif /* " + macro + "_IMPLEMENTATION */");
 
 print("\n/*")
 for f in outro_files:
-    sys.stdout.write(open(f, 'r').read())
+    sys.stdout.write(open(f, 'r',encoding='utf-8').read())
 print("*/\n")
 
