@@ -218,8 +218,12 @@ overview(struct nk_context *ctx)
                 nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_RIGHT_OUTLINE);
 
                 nk_layout_row_static(ctx, 30, 100, 2);
+                nk_style_push_flags(ctx, &ctx->style.button.text_alignment, NK_TEXT_LEFT);
                 nk_button_symbol_label(ctx, NK_SYMBOL_TRIANGLE_LEFT, "prev", NK_TEXT_RIGHT);
+                nk_style_pop_flags(ctx);
+                nk_style_push_flags(ctx, &ctx->style.button.text_alignment, NK_TEXT_RIGHT);
                 nk_button_symbol_label(ctx, NK_SYMBOL_TRIANGLE_RIGHT, "next", NK_TEXT_LEFT);
+                nk_style_pop_flags(ctx);
 
                 nk_tree_pop(ctx);
             }
