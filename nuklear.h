@@ -2692,7 +2692,7 @@ NK_API void nk_layout_space_begin(struct nk_context*, enum nk_layout_format, flo
  * Parameter   | Description
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct after call `nk_layout_space_begin`
- * \param[in] bounds  | Position and size in laoyut space local coordinates
+ * \param[in] bounds  | Position and size in layout space local coordinates
  */
 NK_API void nk_layout_space_push(struct nk_context*, struct nk_rect bounds);
 
