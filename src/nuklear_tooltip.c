@@ -47,21 +47,34 @@ nk_tooltip_begin_pos_offset(struct nk_context *ctx, float width, enum nk_tooltip
     case NK_TOP_LEFT:
         /* no change */
         break;
-    case NK_BOTTOM_LEFT:
-        y -= h;
+    case NK_TOP_CENTER:
+        x -= w/2;
         break;
     case NK_TOP_RIGHT:
         x -= w;
         break;
-    case NK_BOTTOM_RIGHT:
+
+    case NK_MIDDLE_LEFT:
+        y -= h/2;
+        break;
+    case NK_MIDDLE_CENTER:
+        x -= w/2;
+        y -= h/2;
+        break;
+    case NK_MIDDLE_RIGHT:
         x -= w;
+        y -= h/2;
+        break;
+
+    case NK_BOTTOM_LEFT:
         y -= h;
         break;
-    case NK_TOP_MIDDLE:
+    case NK_BOTTOM_CENTER:
         x -= w/2;
+        y -= h;
         break;
-    case NK_BOTTOM_MIDDLE:
-        x -= w/2;
+    case NK_BOTTOM_RIGHT:
+        x -= w;
         y -= h;
         break;
     default:
@@ -131,37 +144,8 @@ nk_tooltip_pos_offset(struct nk_context *ctx, const char *text, enum nk_tooltip_
 NK_API void
 nk_tooltip(struct nk_context *ctx, const char *text)
 {
-    const struct nk_style *style;
-    struct nk_vec2 padding;
-
-    int text_len;
-    float text_width;
-    float text_height;
-
-    NK_ASSERT(ctx);
-    NK_ASSERT(ctx->current);
-    NK_ASSERT(ctx->current->layout);
-    NK_ASSERT(text);
-    if (!ctx || !ctx->current || !ctx->current->layout || !text)
-        return;
-
-    /* fetch configuration data */
-    style = &ctx->style;
-    padding = style->window.padding;
-
-    /* calculate size of the text and tooltip */
-    text_len = nk_strlen(text);
-    text_width = style->font->width(style->font->userdata,
-                    style->font->height, text, text_len);
-    text_width += (4 * padding.x);
-    text_height = (style->font->height + 2 * padding.y);
-
-    /* execute tooltip and fill with text */
-    if (nk_tooltip_begin(ctx, (float)text_width)) {
-        nk_layout_row_dynamic(ctx, (float)text_height, 1);
-        nk_text(ctx, text, text_len, NK_TEXT_LEFT);
-        nk_tooltip_end(ctx);
-    }
+    struct nk_vec2 offset = { 12, 12 };
+    nk_tooltip_pos_offset(ctx, text, NK_TOP_LEFT, offset);
 }
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 NK_API void
