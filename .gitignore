@@ -1,11 +1,7 @@
 demo/*/*/demo
 demo/*/bin/*
 example/bin/*
-docs/xml
-docs/build
-docs/src
-doc/doc*
-doc/*
+/doc
 *.tmp
 *.swo
 *.swp
