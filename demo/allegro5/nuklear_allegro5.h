@@ -356,7 +356,7 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
             return 1;
         } break;
         case ALLEGRO_EVENT_MOUSE_AXES: {
-            nk_input_motion(ctx, ev->mouse.x, ev->mouse.y);
+            nk_input_motion(ctx, (float)ev->mouse.x, (float)ev->mouse.y);
             if (ev->mouse.dz != 0) {
                 nk_input_scroll(ctx, nk_vec2(0,(float)ev->mouse.dz / al_get_mouse_wheel_precision()));
             }
@@ -371,7 +371,7 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
             else if (ev->mouse.button == 3) {
                 button = NK_BUTTON_MIDDLE;
             }
-            nk_input_button(ctx, button, ev->mouse.x, ev->mouse.y, ev->type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN);
+            nk_input_button(ctx, button, (float)ev->mouse.x, (float)ev->mouse.y, ev->type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN);
             return 1;
         } break;
         /* This essentially converts touch events to mouse events */
@@ -391,7 +391,7 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
                    from one place to another without an nk_input_end(), it
                    confuses the nuklear state. nuklear expects smooth mouse
                    movements, which is unlike a touch screen */
-                nk_input_motion(ctx, (int)ev->touch.x, (int)ev->touch.y);
+                nk_input_motion(ctx, (float)ev->touch.x, (int)ev->touch.y);
                 nk_input_end(ctx);
                 nk_input_begin(ctx);
             }
@@ -399,7 +399,7 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
                 allegro5.is_touch_down = 0;
                 allegro5.touch_down_id = -1;
             }
-            nk_input_button(ctx, NK_BUTTON_LEFT, (int)ev->touch.x, (int)ev->touch.y, ev->type == ALLEGRO_EVENT_TOUCH_BEGIN);
+            nk_input_button(ctx, NK_BUTTON_LEFT, (float)ev->touch.x, (float)ev->touch.y, ev->type == ALLEGRO_EVENT_TOUCH_BEGIN);
             return 1;
         } break;
         case ALLEGRO_EVENT_TOUCH_MOVE: {
@@ -408,7 +408,7 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
             if (!allegro5.is_touch_down || allegro5.touch_down_id != ev->touch.id) {
                 return 0;
             }
-            nk_input_motion(ctx, (int)ev->touch.x, (int)ev->touch.y);
+            nk_input_motion(ctx, (float)ev->touch.x, (float)ev->touch.y);
             return 1;
         } break;
         case ALLEGRO_EVENT_KEY_DOWN:

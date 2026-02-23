@@ -18259,14 +18259,14 @@ nk_input_end(struct nk_context *ctx)
     }
 }
 NK_API void
-nk_input_motion(struct nk_context *ctx, int x, int y)
+nk_input_motion(struct nk_context *ctx, float x, float y)
 {
     struct nk_input *in;
     NK_ASSERT(ctx);
     if (!ctx) return;
     in = &ctx->input;
-    in->mouse.pos.x = (float)x;
-    in->mouse.pos.y = (float)y;
+    in->mouse.pos.x = x;
+    in->mouse.pos.y = y;
     in->mouse.delta.x = in->mouse.pos.x - in->mouse.prev.x;
     in->mouse.delta.y = in->mouse.pos.y - in->mouse.prev.y;
 }

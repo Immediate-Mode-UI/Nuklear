@@ -207,18 +207,18 @@ int main(int argc, char **argv)
                     nk_input_key(&(context->ctx), translate_sdl_key(&event.key.keysym), 0);
                 break;
                 case SDL_MOUSEMOTION:
-                    nk_input_motion(&(context->ctx), event.motion.x, event.motion.y);
+                    nk_input_motion(&(context->ctx), (float)event.motion.x, (float)event.motion.y);
                 break;
                 case SDL_MOUSEBUTTONDOWN:
-                    nk_input_button(&(context->ctx), sdl_button_to_nk(event.button.button), event.button.x, event.button.y,1);
+                    nk_input_button(&(context->ctx), sdl_button_to_nk(event.button.button), (float)event.button.x, (float)event.button.y, 1);
                 break;
                 case SDL_MOUSEBUTTONUP:
-                    nk_input_button(&(context->ctx), sdl_button_to_nk(event.button.button), event.button.x, event.button.y,0);
+                    nk_input_button(&(context->ctx), sdl_button_to_nk(event.button.button), (float)event.button.x, (float)event.button.y, 0);
                 break;
                 case SDL_MOUSEWHEEL:
                     vec.x = event.wheel.preciseX;
                     vec.y = event.wheel.preciseY;
-                    nk_input_scroll(&(context->ctx), vec );
+                    nk_input_scroll(&(context->ctx), vec);
 
                 break;
             }

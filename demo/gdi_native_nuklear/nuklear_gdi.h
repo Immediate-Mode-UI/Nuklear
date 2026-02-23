@@ -867,7 +867,7 @@ nk_gdi_handle_event(nk_gdi_ctx gdi, HWND wnd, UINT msg, WPARAM wparam, LPARAM lp
         return 1;
 
     case WM_MOUSEMOVE:
-        nk_input_motion(&gdi->ctx, (short)LOWORD(lparam), (short)HIWORD(lparam));
+        nk_input_motion(&gdi->ctx, (float)LOWORD(lparam), (float)HIWORD(lparam));
         return 1;
 
     case WM_LBUTTONDBLCLK:

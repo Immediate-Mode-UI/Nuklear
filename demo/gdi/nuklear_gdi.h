@@ -868,33 +868,33 @@ nk_gdi_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         break;
 
     case WM_LBUTTONDOWN:
-        nk_input_button(&gdi.ctx, NK_BUTTON_LEFT, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
+        nk_input_button(&gdi.ctx, NK_BUTTON_LEFT, (float)LOWORD(lparam), (float)HIWORD(lparam), 1);
         SetCapture(wnd);
         return 1;
 
     case WM_LBUTTONUP:
-        nk_input_button(&gdi.ctx, NK_BUTTON_DOUBLE, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
-        nk_input_button(&gdi.ctx, NK_BUTTON_LEFT, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
+        nk_input_button(&gdi.ctx, NK_BUTTON_DOUBLE, (float)LOWORD(lparam), (float)HIWORD(lparam), 0);
+        nk_input_button(&gdi.ctx, NK_BUTTON_LEFT, (float)LOWORD(lparam), (float)HIWORD(lparam), 0);
         ReleaseCapture();
         return 1;
 
     case WM_RBUTTONDOWN:
-        nk_input_button(&gdi.ctx, NK_BUTTON_RIGHT, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
+        nk_input_button(&gdi.ctx, NK_BUTTON_RIGHT, (float)LOWORD(lparam), (float)HIWORD(lparam), 1);
         SetCapture(wnd);
         return 1;
 
     case WM_RBUTTONUP:
-        nk_input_button(&gdi.ctx, NK_BUTTON_RIGHT, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
+        nk_input_button(&gdi.ctx, NK_BUTTON_RIGHT, (float)LOWORD(lparam), (float)HIWORD(lparam), 0);
         ReleaseCapture();
         return 1;
 
     case WM_MBUTTONDOWN:
-        nk_input_button(&gdi.ctx, NK_BUTTON_MIDDLE, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
+        nk_input_button(&gdi.ctx, NK_BUTTON_MIDDLE, (float)LOWORD(lparam), (float)HIWORD(lparam), 1);
         SetCapture(wnd);
         return 1;
 
     case WM_MBUTTONUP:
-        nk_input_button(&gdi.ctx, NK_BUTTON_MIDDLE, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
+        nk_input_button(&gdi.ctx, NK_BUTTON_MIDDLE, (float)LOWORD(lparam), (float)HIWORD(lparam), 0);
         ReleaseCapture();
         return 1;
 
@@ -903,11 +903,11 @@ nk_gdi_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         return 1;
 
     case WM_MOUSEMOVE:
-        nk_input_motion(&gdi.ctx, (short)LOWORD(lparam), (short)HIWORD(lparam));
+        nk_input_motion(&gdi.ctx, (float)LOWORD(lparam), (float)HIWORD(lparam));
         return 1;
 
     case WM_LBUTTONDBLCLK:
-        nk_input_button(&gdi.ctx, NK_BUTTON_DOUBLE, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
+        nk_input_button(&gdi.ctx, NK_BUTTON_DOUBLE, (float)LOWORD(lparam), (float)HIWORD(lparam), 1);
         return 1;
     }
 
