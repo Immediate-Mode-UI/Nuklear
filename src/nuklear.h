@@ -3618,15 +3618,15 @@ NK_API void nk_contextual_end(struct nk_context*);
  *
  * ============================================================================= */
 NK_API void nk_tooltip(struct nk_context*, const char*);
-NK_API void nk_tooltip_pos_offset(struct nk_context *ctx, const char *text, enum nk_tooltip_pos position, struct nk_vec2 offset);
+NK_API void nk_tooltip_offset(struct nk_context *ctx, const char *text, enum nk_tooltip_pos position, struct nk_vec2 offset);
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 NK_API void nk_tooltipf(struct nk_context*, NK_PRINTF_FORMAT_STRING const char*, ...) NK_PRINTF_VARARG_FUNC(2);
 NK_API void nk_tooltipfv(struct nk_context*, NK_PRINTF_FORMAT_STRING const char*, va_list) NK_PRINTF_VALIST_FUNC(2);
-NK_API void nk_tooltipf_pos_offset(struct nk_context*, enum nk_tooltip_pos, struct nk_vec2, NK_PRINTF_FORMAT_STRING const char*, ...) NK_PRINTF_VARARG_FUNC(4);
-NK_API void nk_tooltipfv_pos_offset(struct nk_context*, enum nk_tooltip_pos, struct nk_vec2, NK_PRINTF_FORMAT_STRING const char*, va_list) NK_PRINTF_VALIST_FUNC(4);
+NK_API void nk_tooltipf_offset(struct nk_context*, enum nk_tooltip_pos, struct nk_vec2, NK_PRINTF_FORMAT_STRING const char*, ...) NK_PRINTF_VARARG_FUNC(4);
+NK_API void nk_tooltipfv_offset(struct nk_context*, enum nk_tooltip_pos, struct nk_vec2, NK_PRINTF_FORMAT_STRING const char*, va_list) NK_PRINTF_VALIST_FUNC(4);
 #endif
 NK_API nk_bool nk_tooltip_begin(struct nk_context*, float width);
-NK_API nk_bool nk_tooltip_begin_pos_offset(struct nk_context*, float, enum nk_tooltip_pos, struct nk_vec2);
+NK_API nk_bool nk_tooltip_begin_offset(struct nk_context*, float, enum nk_tooltip_pos, struct nk_vec2);
 NK_API void nk_tooltip_end(struct nk_context*);
 /* =============================================================================
  *

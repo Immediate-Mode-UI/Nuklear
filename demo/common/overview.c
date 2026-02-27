@@ -850,13 +850,13 @@ overview(struct nk_context *ctx)
             nk_label(ctx, "Hover for Gnome-like tooltip", NK_TEXT_LEFT);
             if (nk_input_is_mouse_hovering_rect(in, bounds)) {
                 struct nk_vec2 offset = { 0, -15 };
-                nk_tooltip_pos_offset(ctx, "Gnome bottom centers plus a -y offset", NK_BOTTOM_CENTER, offset);
+                nk_tooltip_offset(ctx, "Gnome bottom centers plus a -y offset", NK_BOTTOM_CENTER, offset);
             }
             bounds = nk_widget_bounds(ctx);
             nk_label(ctx, "Hover for a bottom left tooltip", NK_TEXT_LEFT);
             if (nk_input_is_mouse_hovering_rect(in, bounds)) {
                 struct nk_vec2 offset = { 0, 0 };
-                nk_tooltip_pos_offset(ctx, "Bottom left positioning", NK_BOTTOM_LEFT, offset);
+                nk_tooltip_offset(ctx, "Bottom left positioning", NK_BOTTOM_LEFT, offset);
             }
             bounds = nk_widget_bounds(ctx);
             nk_label(ctx, "Hover for MAGIC!", NK_TEXT_LEFT);
@@ -866,7 +866,7 @@ overview(struct nk_context *ctx)
                 struct nk_vec2 offset;
                 offset.x = radius * cos(accum_time_seconds * speed);
                 offset.y = radius * sin(accum_time_seconds * speed);
-                nk_tooltip_pos_offset(ctx, "WOW!", NK_MIDDLE_CENTER, offset);
+                nk_tooltip_offset(ctx, "WOW!", NK_MIDDLE_CENTER, offset);
                 accum_time_seconds += (double)(ctx->delta_time_seconds);
             }
 
@@ -902,7 +902,7 @@ overview(struct nk_context *ctx)
                 bounds = nk_widget_bounds(ctx);
                 nk_label(ctx, "Hover for custom tooltip (you can customize it below)", NK_TEXT_LEFT);
                 if (nk_input_is_mouse_hovering_rect(in, bounds)) {
-                    nk_tooltip_pos_offset(ctx, text_buf, cur_pos, offset);
+                    nk_tooltip_offset(ctx, text_buf, cur_pos, offset);
                 }
                 nk_layout_row_dynamic(ctx, 1, 1);
                 nk_rule_horizontal(ctx, nk_white, nk_true);
