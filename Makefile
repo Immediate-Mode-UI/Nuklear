@@ -62,7 +62,7 @@ nuke: $(addprefix $(SRC_PATH)/, $(SRC))
 ########################################################################################
 ##   Docs
 
-docs: $(DOCS_PATH)/html/index.html
+docs: $(DOCS_PATH)/html/index.html 
 
 $(DOCS_PATH)/html/index.html: $(DOCS_PATH)/doxygen-awesome-css/doxygen-awesome.css $(DOXYFILE)
 	doxygen $(DOXYFILE)
