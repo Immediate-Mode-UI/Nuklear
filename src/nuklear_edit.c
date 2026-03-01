@@ -339,8 +339,8 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
             nk_draw_nine_slice(out, bounds, &background->data.slice, nk_rgb_factor(nk_white, style->color_factor));
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, bounds, style->rounding, nk_rgb_factor(background->data.color, style->color_factor));
-            nk_stroke_rect(out, bounds, style->rounding, style->border, nk_rgb_factor(style->border_color, style->color_factor));
+            nk_fill_rect(out, style->border != 0 ? nk_shrink_rect(bounds, 0.5) : bounds, style->rounding, nk_rgb_factor(background->data.color, style->color_factor));
+            nk_stroke_rect_ex(out, bounds, style->rounding, style->border, nk_rgb_factor(style->border_color, style->color_factor), NK_STROKE_INNER);
             break;
     }}
 
