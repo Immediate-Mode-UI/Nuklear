@@ -45,7 +45,7 @@ usage:
 	echo "make demos	to build all of the demos"
 	echo "make all 		to re-pack the header and create documentation"
 
-all: docs nuke demos
+all: docs nuke demos 
 demos: $(DEMO_LIST)
 
 
