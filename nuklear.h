@@ -18588,6 +18588,16 @@ NK_GLOBAL const char *nk_color_names[NK_COLOR_COUNT] = {
 #undef NK_COLOR
 };
 
+NK_API const struct nk_color*
+nk_get_default_color_table(void)
+{
+	return nk_default_color_style;
+}
+NK_API const char**
+nk_get_color_names(void)
+{
+	return nk_color_names;
+}
 NK_API const char*
 nk_style_get_color_by_name(enum nk_style_colors c)
 {
