@@ -287,6 +287,8 @@ SDL_AppInit(void** appstate, int argc, char* argv[])
     }
 #endif
 
+    nk_input_begin(ctx);
+
     return SDL_APP_CONTINUE;
 }
 
@@ -406,6 +408,7 @@ SDL_AppQuit(void* appstate, SDL_AppResult result)
     NK_UNUSED(result);
 
     if (app) {
+        nk_input_end(app->ctx);
         nk_sdl_shutdown(app->ctx);
         SDL_DestroyRenderer(app->renderer);
         SDL_DestroyWindow(app->window);
