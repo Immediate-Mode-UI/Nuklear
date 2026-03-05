@@ -3603,12 +3603,27 @@ NK_API void nk_contextual_end(struct nk_context*);
  *                                  TOOLTIP
  *
  * ============================================================================= */
+enum nk_tooltip_flags {
+    /**!< tells where tooltip should appear relatively to the cursor, can be combined (e.g. BELOW|ON_RIGHT) */
+    NK_TOOLTIP_ABOVE       = NK_FLAG(0),
+    NK_TOOLTIP_BELOW       = NK_FLAG(1),
+    NK_TOOLTIP_ON_LEFT     = NK_FLAG(2),
+    NK_TOOLTIP_ON_RIGHT    = NK_FLAG(3),
+    /**!< if set, the offset will be absolute, instead of relative */
+    NK_TOOLTIP_ABS_OFFSET  = NK_FLAG(4)
+    /* FIXME: https://github.com/Immediate-Mode-UI/Nuklear/issues/899 */
+    /*NK_TOOLTIP_CLAMP_IN_SCREEN = NK_FLAG(5),*/
+};
 NK_API void nk_tooltip(struct nk_context*, const char*);
+NK_API void nk_tooltip_offset(struct nk_context *ctx, const char *text, nk_flags tooltip, struct nk_vec2);
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 NK_API void nk_tooltipf(struct nk_context*, NK_PRINTF_FORMAT_STRING const char*, ...) NK_PRINTF_VARARG_FUNC(2);
 NK_API void nk_tooltipfv(struct nk_context*, NK_PRINTF_FORMAT_STRING const char*, va_list) NK_PRINTF_VALIST_FUNC(2);
+NK_API void nk_tooltipf_offset(struct nk_context*, nk_flags tooltip, struct nk_vec2, NK_PRINTF_FORMAT_STRING const char*, ...) NK_PRINTF_VARARG_FUNC(4);
+NK_API void nk_tooltipfv_offset(struct nk_context*, nk_flags tooltip, struct nk_vec2, NK_PRINTF_FORMAT_STRING const char*, va_list) NK_PRINTF_VALIST_FUNC(4);
 #endif
 NK_API nk_bool nk_tooltip_begin(struct nk_context*, float width);
+NK_API nk_bool nk_tooltip_begin_offset(struct nk_context*, float width, nk_flags tooltip, struct nk_vec2);
 NK_API void nk_tooltip_end(struct nk_context*);
 /* =============================================================================
  *
