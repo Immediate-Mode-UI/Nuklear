@@ -26,7 +26,7 @@ static const char* symbols[NK_SYMBOL_MAX] =
 
  /*Not re-entrant/thread-safe*/
 static const char*
-export_color(struct nk_color c)
+nk_color2str(struct nk_color c)
 {
 	static char buf[32];
 	sprintf(buf, "{ %u, %u, %u, %u }", c.r, c.g, c.b, c.a);
@@ -34,22 +34,28 @@ export_color(struct nk_color c)
 }
 
 static void
-export_global_color_table(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_COUNT], nk_bool use_labels)
+export_color(struct nk_color c, FILE* out)
+{
+	fprintf(out, "%s,\n", nk_color2str(c));
+}
+
+static void
+export_global_color_table(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_COUNT], nk_bool use_labels, FILE* out)
 {
 	int i;
 	struct nk_color* c = color_table;
 
 	const char** names = nk_get_color_names();
 
-	puts("{");
+	fputs("{\n", out);
 	for ( i=0; i<NK_COLOR_COUNT; i++) {
 		if (!use_labels) {
-			printf("\t%s,\n", export_color(c[i]));
+			fprintf(out, "\t%s,\n", nk_color2str(c[i]));
 		} else {
-			printf("\t%s = %s,\n", &names[i][9], export_color(c[i]));
+			fprintf(out, "\t%s = %s,\n", &names[i][9], nk_color2str(c[i]));
 		}
 	}
-	puts("};");
+	fputs("};\n", out);
 }
 
 #if 0
@@ -687,7 +693,578 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
 #endif
 
 static void
-export_styles(struct nk_context* ctx)
+export_vec2(struct nk_vec2 v, FILE* out)
+{
+	fprintf(out, "{ %f, %f },\n", v.x, v.y);
+}
+
+static void
+export_float(float f, FILE* out)
+{
+	fprintf(out, "%f,\n", f);
+}
+
+static void
+export_int(int i, FILE* out)
+{
+	fprintf(out, "%d,\n", i);
+}
+
+static void
+export_text_style(struct nk_style_text* text, FILE* out)
+{
+	fputs("{\n", out);
+	export_color(text->color, out);
+	export_vec2(text->padding, out);
+	export_float(text->color_factor, out);
+	export_float(text->disabled_factor, out);
+	fputs("},\n", out);
+}
+
+/*TODO image and 9-slice?*/
+static void
+export_style_item_color(struct nk_style_item s, FILE* out)
+{
+	fputs("{\n", out);
+	fprintf(out, "%d,\n", NK_STYLE_ITEM_COLOR);
+	fprintf(out, "{ %s }\n", nk_color2str(s.data.color));
+	fputs("},\n", out);
+}
+
+static void
+export_button_style(struct nk_style_button* button, FILE* out)
+{
+	/*TODO maybe just do normal color convert it to style_item on read?*/
+	fputs("{\n", out);
+	export_style_item_color(button->normal, out);
+	export_style_item_color(button->hover, out);
+	export_style_item_color(button->active, out);
+
+	export_color(button->border_color, out);
+	export_float(button->color_factor_background, out);
+
+	export_color(button->text_background, out);
+	export_color(button->text_normal, out);
+	export_color(button->text_hover, out);
+	export_color(button->text_active, out);
+	/*TODO nk_flags text_alignment*/
+	export_float(button->color_factor_text, out);
+
+	export_float(button->border, out);
+	export_float(button->rounding, out);
+	export_vec2(button->padding, out);
+	export_vec2(button->image_padding, out);
+	export_vec2(button->touch_padding, out);
+	export_float(button->disabled_factor, out);
+
+	/* unused but need to exist for C code */
+	/* userdata, draw_begin, draw_end */
+	fprintf(out, "{ 0 },\nNULL,\nNULL\n");
+
+
+	fputs("},\n", out);
+}
+
+static void
+export_toggle_style(struct nk_style_toggle* toggle, FILE* out)
+{
+	fputs("{\n", out);
+	export_style_item_color(toggle->normal, out);
+	export_style_item_color(toggle->hover, out);
+	export_style_item_color(toggle->active, out);
+
+	export_color(toggle->border_color, out);
+
+	/* cursor_normal, cursor_hover */
+	struct nk_style_item tmp = { 0 };
+	export_style_item_color(tmp, out);
+	export_style_item_color(tmp, out);
+
+	/* kind of annoying the order changes across structures */
+	export_color(toggle->text_normal, out);
+	export_color(toggle->text_hover, out);
+	export_color(toggle->text_active, out);
+	export_color(toggle->text_background, out);
+	/*TODO nk_flags text_alignment*/
+
+	export_vec2(toggle->padding, out);
+	export_vec2(toggle->touch_padding, out);
+	export_float(toggle->spacing, out);
+	export_float(toggle->border, out);
+	export_float(toggle->color_factor, out);
+	export_float(toggle->disabled_factor, out);
+
+	/* unused but need to exist for C code */
+	/* userdata, draw_begin, draw_end */
+	fprintf(out, "{ 0 },\nNULL,\nNULL\n");
+
+	fputs("},\n", out);
+}
+
+static void
+export_selectable_style(struct nk_style_selectable* selectable, FILE* out)
+{
+	fputs("{\n", out);
+
+	/* background inactive */
+	export_style_item_color(selectable->normal, out);
+	export_style_item_color(selectable->hover, out);
+	export_style_item_color(selectable->pressed, out);
+
+	/* background active */
+	export_style_item_color(selectable->normal_active, out);
+	export_style_item_color(selectable->hover_active, out);
+	export_style_item_color(selectable->pressed_active, out);
+
+	/* text inactive */
+	export_color(selectable->text_normal, out);
+	export_color(selectable->text_hover, out);
+	export_color(selectable->text_pressed, out);
+
+	/* text active */
+	export_color(selectable->text_normal_active, out);
+	export_color(selectable->text_hover_active, out);
+	export_color(selectable->text_pressed_active, out);
+
+	export_color(selectable->text_background, out);
+
+	/*TODO nk_flags text_alignment*/
+
+	/* properties */
+	export_float(selectable->rounding, out);
+	export_vec2(selectable->padding, out);
+	export_vec2(selectable->touch_padding, out);
+	export_vec2(selectable->image_padding, out);
+	export_float(selectable->color_factor, out);
+	export_float(selectable->disabled_factor, out);
+
+	/* unused but need to exist for C code */
+	/* userdata, draw_begin, draw_end */
+	fprintf(out, "{ 0 },\nNULL,\nNULL\n");
+
+	fputs("},\n", out);
+}
+
+static void
+export_slider_style(struct nk_style_slider* slider, FILE* out)
+{
+	fputs("{\n", out);
+
+	/* background */
+	export_style_item_color(slider->normal, out);
+	export_style_item_color(slider->hover, out);
+	export_style_item_color(slider->active, out);
+	export_color(slider->border_color, out);
+
+	/* background bar */
+	export_color(slider->bar_normal, out);
+	export_color(slider->bar_hover, out);
+	export_color(slider->bar_active, out);
+	export_color(slider->bar_filled, out);
+
+	/* cursor_normal, cursor_hover, cursor_active */
+	struct nk_style_item tmp = { 0 };
+	export_style_item_color(tmp, out);
+	export_style_item_color(tmp, out);
+	export_style_item_color(tmp, out);
+
+	/* properties */
+	export_float(slider->border, out);
+	export_float(slider->rounding, out);
+	export_float(slider->bar_height, out);
+	export_vec2(slider->padding, out);
+	export_vec2(slider->spacing, out);
+	export_vec2(slider->cursor_size, out);
+	export_float(slider->color_factor, out);
+	export_float(slider->disabled_factor, out);
+
+	/* optional buttons */
+	/* export_bool? */
+	export_int(slider->show_buttons, out);
+
+	export_button_style(&slider->inc_button, out);
+	export_button_style(&slider->dec_button, out);
+	/* int for enums too for now, enums later for better
+	 * human readability */
+	export_int(slider->inc_symbol, out);
+	export_int(slider->dec_symbol, out);
+
+	/* unused but need to exist for C code */
+	/* userdata, draw_begin, draw_end */
+	fprintf(out, "{ 0 },\nNULL,\nNULL\n");
+
+	fputs("},\n", out);
+}
+
+static void
+export_knob_style(struct nk_style_knob* knob, FILE* out)
+{
+	fputs("{\n", out);
+
+	/* background */
+	export_style_item_color(knob->normal, out);
+	export_style_item_color(knob->hover, out);
+	export_style_item_color(knob->active, out);
+	export_color(knob->border_color, out);
+
+	/* knob */
+	export_color(knob->knob_normal, out);
+	export_color(knob->knob_hover, out);
+	export_color(knob->knob_active, out);
+	export_color(knob->knob_border_color, out);
+
+	/* cursor_normal, cursor_hover, cursor_active */
+	struct nk_style_item tmp = { 0 };
+	export_style_item_color(tmp, out);
+	export_style_item_color(tmp, out);
+	export_style_item_color(tmp, out);
+
+	/* properties */
+	export_float(knob->border, out);
+	export_float(knob->knob_border, out);
+	export_vec2(knob->padding, out);
+	export_vec2(knob->spacing, out);
+	export_float(knob->cursor_width, out);
+	export_float(knob->color_factor, out);
+	export_float(knob->disabled_factor, out);
+
+	/* unused but need to exist for C code */
+	/* userdata, draw_begin, draw_end */
+	fprintf(out, "{ 0 },\nNULL,\nNULL\n");
+
+	fputs("},\n", out);
+}
+
+static void
+export_progress_style(struct nk_style_progress* progress, FILE* out)
+{
+	fputs("{\n", out);
+
+	/* background */
+	export_style_item_color(progress->normal, out);
+	export_style_item_color(progress->hover, out);
+	export_style_item_color(progress->active, out);
+	export_color(progress->border_color, out);
+
+	/* cursor_normal, cursor_hover, cursor_active */
+	struct nk_style_item tmp = { 0 };
+	export_style_item_color(tmp, out);
+	export_style_item_color(tmp, out);
+	export_style_item_color(tmp, out);
+
+	/* properties */
+	export_float(progress->rounding, out);
+	export_float(progress->border, out);
+	export_float(progress->cursor_border, out);
+	export_float(progress->cursor_rounding, out);
+	export_vec2(progress->padding, out);
+	export_float(progress->color_factor, out);
+	export_float(progress->disabled_factor, out);
+
+	/* unused but need to exist for C code */
+	/* userdata, draw_begin, draw_end */
+	fprintf(out, "{ 0 },\nNULL,\nNULL\n");
+
+	fputs("},\n", out);
+}
+
+static void
+export_scrollbar_style(struct nk_style_scrollbar* scroll, FILE* out)
+{
+	fputs("{\n", out);
+
+	/* background */
+	export_style_item_color(scroll->normal, out);
+	export_style_item_color(scroll->hover, out);
+	export_style_item_color(scroll->active, out);
+	export_color(scroll->border_color, out);
+
+	/* cursor_normal, cursor_hover, cursor_active */
+	struct nk_style_item tmp = { 0 };
+	export_style_item_color(tmp, out);
+	export_style_item_color(tmp, out);
+	export_style_item_color(tmp, out);
+
+	/* properties */
+	export_float(scroll->border, out);
+	export_float(scroll->rounding, out);
+	export_float(scroll->border_cursor, out);
+	export_float(scroll->rounding_cursor, out);
+	export_vec2(scroll->padding, out);
+	export_float(scroll->color_factor, out);
+	export_float(scroll->disabled_factor, out);
+
+	/* optional buttons */
+	/* export_bool? */
+	export_int(scroll->show_buttons, out);
+
+	export_button_style(&scroll->inc_button, out);
+	export_button_style(&scroll->dec_button, out);
+	/* int for enums too for now, enums later for better
+	 * human readability */
+	export_int(scroll->inc_symbol, out);
+	export_int(scroll->dec_symbol, out);
+
+	/* unused but need to exist for C code */
+	/* userdata, draw_begin, draw_end */
+	fprintf(out, "{ 0 },\nNULL,\nNULL\n");
+
+	fputs("},\n", out);
+}
+
+
+static void
+export_edit_style(struct nk_style_edit* edit, FILE* out)
+{
+	fputs("{\n", out);
+
+	/* background */
+	export_style_item_color(edit->normal, out);
+	export_style_item_color(edit->hover, out);
+	export_style_item_color(edit->active, out);
+	export_color(edit->border_color, out);
+	export_scrollbar_style(&edit->scrollbar, out);
+
+	/* cursor */
+	export_color(edit->cursor_normal, out);
+	export_color(edit->cursor_hover, out);
+	export_color(edit->cursor_text_normal, out);
+	export_color(edit->cursor_text_hover, out);
+
+	/* text unselected */
+	export_color(edit->text_normal, out);
+	export_color(edit->text_hover, out);
+	export_color(edit->text_active, out);
+
+	/* text selected */
+	export_color(edit->selected_normal, out);
+	export_color(edit->selected_hover, out);
+	export_color(edit->selected_text_normal, out);
+	export_color(edit->selected_text_hover, out);
+
+	/* properties */
+	export_float(edit->border, out);
+	export_float(edit->rounding, out);
+	export_float(edit->cursor_size, out);
+	export_vec2(edit->scrollbar_size, out);
+	export_vec2(edit->padding, out);
+	export_float(edit->row_padding, out);
+	export_float(edit->color_factor, out);
+	export_float(edit->disabled_factor, out);
+
+	fputs("},\n", out);
+}
+
+
+static void
+export_property_style(struct nk_style_property* property, FILE* out)
+{
+	fputs("{\n", out);
+
+	/* background */
+	export_style_item_color(property->normal, out);
+	export_style_item_color(property->hover, out);
+	export_style_item_color(property->active, out);
+	export_color(property->border_color, out);
+
+	/* text */
+	export_color(property->label_normal, out);
+	export_color(property->label_hover, out);
+	export_color(property->label_active, out);
+
+	/* symbols */
+	export_int(property->sym_left, out);
+	export_int(property->sym_right, out);
+
+	/* properties */
+	export_float(property->border, out);
+	export_float(property->rounding, out);
+	export_vec2(property->padding, out);
+	export_float(property->color_factor, out);
+	export_float(property->disabled_factor, out);
+
+	/* TODO style_edit */
+	export_edit_style(&property->edit, out);
+	export_button_style(&property->inc_button, out);
+	export_button_style(&property->dec_button, out);
+
+	/* unused but need to exist for C code */
+	/* userdata, draw_begin, draw_end */
+	fprintf(out, "{ 0 },\nNULL,\nNULL\n");
+
+	fputs("},\n", out);
+}
+
+static void
+export_chart_style(struct nk_style_chart* chart, FILE* out)
+{
+	fputs("{\n", out);
+
+	/* colors */
+	export_style_item_color(chart->background, out);
+	export_color(chart->border_color, out);
+	export_color(chart->selected_color, out);
+	export_color(chart->color, out);
+
+	/* properties */
+	export_float(chart->border, out);
+	export_float(chart->rounding, out);
+	export_vec2(chart->padding, out);
+	export_float(chart->color_factor, out);
+	export_float(chart->disabled_factor, out);
+	/* bool */
+	export_int(chart->show_markers, out);
+
+	fputs("},\n", out);
+}
+
+static void
+export_tab_style(struct nk_style_tab* tab, FILE* out)
+{
+	fputs("{\n", out);
+
+	/* background */
+	export_style_item_color(tab->background, out);
+	export_color(tab->border_color, out);
+	export_color(tab->text, out);
+
+	/* button */
+	export_button_style(&tab->tab_maximize_button, out);
+	export_button_style(&tab->tab_minimize_button, out);
+	export_button_style(&tab->node_maximize_button, out);
+	export_button_style(&tab->node_minimize_button, out);
+	export_int(tab->sym_minimize, out);
+	export_int(tab->sym_maximize, out);
+
+	/* properties */
+	export_float(tab->border, out);
+	export_float(tab->rounding, out);
+	export_float(tab->indent, out);
+	export_vec2(tab->padding, out);
+	export_vec2(tab->spacing, out);
+	export_float(tab->color_factor, out);
+	export_float(tab->disabled_factor, out);
+
+	fputs("},\n", out);
+}
+
+static void
+export_combo_style(struct nk_style_combo* combo, FILE* out)
+{
+	fputs("{\n", out);
+
+	/* background */
+	export_style_item_color(combo->normal, out);
+	export_style_item_color(combo->hover, out);
+	export_style_item_color(combo->active, out);
+	export_color(combo->border_color, out);
+
+	/* label */
+	export_color(combo->label_normal, out);
+	export_color(combo->label_hover, out);
+	export_color(combo->label_active, out);
+
+	/* symbol */
+	export_color(combo->symbol_normal, out);
+	export_color(combo->symbol_hover, out);
+	export_color(combo->symbol_active, out);
+
+	/* button */
+	export_button_style(&combo->button, out);
+	export_int(combo->sym_normal, out);
+	export_int(combo->sym_hover, out);
+	export_int(combo->sym_active, out);
+
+	/* properties */
+	export_float(combo->border, out);
+	export_float(combo->rounding, out);
+	export_vec2(combo->content_padding, out);
+	export_vec2(combo->button_padding, out);
+	export_vec2(combo->spacing, out);
+	export_float(combo->color_factor, out);
+	export_float(combo->disabled_factor, out);
+
+	fputs("},\n", out);
+}
+
+static void
+export_window_header_style(struct nk_style_window_header* header, FILE* out)
+{
+	fputs("{\n", out);
+
+	/* background */
+	export_style_item_color(header->normal, out);
+	export_style_item_color(header->hover, out);
+	export_style_item_color(header->active, out);
+
+	/* button */
+	export_button_style(&header->close_button, out);
+	export_button_style(&header->minimize_button, out);
+	export_int(header->close_symbol, out);
+	export_int(header->minimize_symbol, out);
+	export_int(header->maximize_symbol, out);
+
+	/* title */
+	export_color(header->label_normal, out);
+	export_color(header->label_hover, out);
+	export_color(header->label_active, out);
+
+
+	/* properties */
+	export_int(header->align, out);
+	export_vec2(header->padding, out);
+	export_vec2(header->label_padding, out);
+	export_vec2(header->spacing, out);
+
+	fputs("},\n", out);
+}
+
+static void
+export_window_style(struct nk_style_window* win, FILE* out)
+{
+	fputs("{\n", out);
+
+	export_window_header_style(&win->header, out);
+	export_style_item_color(win->fixed_background, out);
+	export_color(win->background, out);
+
+	export_color(win->border_color, out);
+	export_color(win->popup_border_color, out);
+	export_color(win->combo_border_color, out);
+	export_color(win->contextual_border_color, out);
+	export_color(win->menu_border_color, out);
+	export_color(win->group_border_color, out);
+	export_color(win->tooltip_border_color, out);
+	export_style_item_color(win->scaler, out);
+
+	/* properties */
+	export_float(win->border, out);
+	export_float(win->combo_border, out);
+	export_float(win->contextual_border, out);
+	export_float(win->menu_border, out);
+	export_float(win->group_border, out);
+	export_float(win->tooltip_border, out);
+	export_float(win->popup_border, out);
+	export_float(win->min_row_height_padding, out);
+
+	export_float(win->rounding, out);
+	export_vec2(win->spacing, out);
+	export_vec2(win->scrollbar_size, out);
+	export_vec2(win->min_size, out);
+
+	export_vec2(win->padding, out);
+	export_vec2(win->group_padding, out);
+	export_vec2(win->popup_padding, out);
+	export_vec2(win->combo_padding, out);
+	export_vec2(win->contextual_padding, out);
+	export_vec2(win->menu_padding, out);
+	export_vec2(win->tooltip_padding, out);
+
+	fputs("},\n", out);
+}
+
+static void
+export_styles(struct nk_context* ctx, FILE* out)
 {
 	struct nk_style* style;
 
@@ -695,74 +1272,52 @@ export_styles(struct nk_context* ctx)
 	if (!ctx) return;
 	style = &ctx->style;
 
-/*
-	export_text_style(&style->text);
+	if (!out) {
+		out = stdout;
+	}
 
-	export_button_style(&style->button);
+	fputs("{\n", out);
 
-	// TODO reuse export_button_style?
-	export_contextual_button_style(&style->contextual_button);
-	export_menu_button_style(&style->menu_button);
+	/* TODO handle un-saved members if we want to export full
+	 * style struct directly as C code */
 
-	export_checkbox_style(&style->checkbox);
+	/* *font, *cursors[], *cursor_active, *cursor_last, int cursor visible */
+	fprintf(out, "NULL, { NULL }, NULL, NULL, 0,\n");
 
-	export_option_style(&style->option);
+	export_text_style(&style->text, out);
 
-	export_selectable_style(&style->selectable);
+	export_button_style(&style->button, out);
 
-	// Sliders
-	export_slider_style(&style->slider);
-	// slider buttons inside slider?
-	export_button_style(&style->slider.inc_button);
-	export_button_style(&style->slider.dec_button);
+	export_button_style(&style->contextual_button, out);
+	export_button_style(&style->menu_button, out);
 
-	export_knob_style(&style->knob);
+	export_toggle_style(&style->option, out);
+	export_toggle_style(&style->checkbox, out);
 
-	export_progressbar_style(&style->progress);
+	export_selectable_style(&style->selectable, out);
+	export_slider_style(&style->slider, out);
+	export_knob_style(&style->knob, out);
+	export_progress_style(&style->progress, out);
 
-	// TODO scroll bar stuff
-	export_scrollbar_style(&style->scrollh);
-	export_scrollbar_style(&style->scrollv);
+	export_property_style(&style->property, out);
 
-	export_button_style(&style->scrollh.inc_button);
-	export_button_style(&style->scrollh.dec_button);
-	export_button_style(&style->scrollv.inc_button);
-	export_button_style(&style->scrollv.dec_button);
+	export_edit_style(&style->edit, out);
+	export_chart_style(&style->chart, out);
 
+	export_scrollbar_style(&style->scrollh, out);
+	export_scrollbar_style(&style->scrollv, out);
 
-	export_edit_style(&style->edit);
+	export_tab_style(&style->tab, out);
+	export_combo_style(&style->combo, out);
 
-	// TODO property stuff
-	export_property_style(&style->property);
-	export_button_style(&style->property.dec_button);
-	export_button_style(&style->property.inc_button);
-	export_edit_style(&style->property.edit);
+	export_window_style(&style->window, out);
 
-
-	export_chart_style(&style->chart);
-
-	// combo
-	export_combo_style(&style->combo);
-	export_button_style(&style->combo.button);
-
-	// tab
-	export_tab_style(&style->tab);
-	export_button_style(&style->tab.tab_minimize_button);
-	export_button_style(&style->tab.tab_maximize_button);
-
-	export_button_style(&style->tab.node_minimize_button);
-	export_button_style(&style->tab.node_maximize_button);
-
-	// window
-	export_window_header_style(&style->window.header);
-	export_button_style(&style->window.header.close_button);
-	export_button_style(&style->window.header.minimize_button);
-	export_window_style(&style->window);
-	*/
+	fputs("};\n", out);
 }
 
+/*TODO rgba options*/
 static int
-style_rgb(struct nk_context* ctx, const char* name, struct nk_color* color)
+style_rgb_f(struct nk_context* ctx, const char* name, struct nk_color* color)
 {
 	struct nk_colorf colorf;
 	nk_label(ctx, name, NK_TEXT_LEFT);
@@ -775,6 +1330,25 @@ style_rgb(struct nk_context* ctx, const char* name, struct nk_color* color)
 		colorf.b = nk_propertyf(ctx, "#B:", 0, colorf.b, 1.0f, 0.01f,0.005f);
 
 		*color = nk_rgb_cf(colorf);
+
+		nk_combo_end(ctx);
+		return 1;
+	}
+	return 0;
+}
+
+static int
+style_rgb(struct nk_context* ctx, const char* name, struct nk_color* color)
+{
+	struct nk_colorf colorf;
+	nk_label(ctx, name, NK_TEXT_LEFT);
+	if (nk_combo_begin_color(ctx, *color, nk_vec2(nk_widget_width(ctx), 400))) {
+		nk_layout_row_dynamic(ctx, 120, 1);
+		colorf = nk_color_picker(ctx, nk_color_cf(*color), NK_RGB);
+		nk_layout_row_dynamic(ctx, 25, 1);
+		color->r = nk_propertyi(ctx, "#R:", 0, colorf.r*255, 255, 1, 1);
+		color->g = nk_propertyi(ctx, "#G:", 0, colorf.g*255, 255, 1, 1);
+		color->b = nk_propertyi(ctx, "#B:", 0, colorf.b*255, 255, 1, 1);
 
 		nk_combo_end(ctx);
 		return 1;
@@ -1474,10 +2048,10 @@ style_configurator(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_
 
 			nk_layout_row_dynamic(ctx, 30, 1);
 			if (nk_button_label(ctx, "Export global color styles")) {
-				export_global_color_table(ctx, color_table, nk_false);
+				export_global_color_table(ctx, color_table, nk_false, stdout);
 			}
 			if (nk_button_label(ctx, "Export global color styles with labels")) {
-				export_global_color_table(ctx, color_table, nk_true);
+				export_global_color_table(ctx, color_table, nk_true, stdout);
 			}
 
 			nk_tree_pop(ctx);
@@ -1598,7 +2172,7 @@ style_configurator(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_
 			nk_style_default(ctx);
 		}
 		if (nk_button_label(ctx, "Export styles")) {
-			export_styles(ctx);
+			export_styles(ctx, stdout);
 		}
 
 	}
