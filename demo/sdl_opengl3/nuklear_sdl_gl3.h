@@ -1,7 +1,9 @@
 /*
- * Nuklear - 1.32.0 - public domain
+ * Nuklear - 1.40.8 - public domain
  * no warrenty implied; use at your own risk.
- * authored from 2015-2016 by Micha Mettke
+ * authored from 2015-2017 by Micha Mettke
+ * emscripten from 2016 by Chris Willcocks
+ * OpenGL ES 2.0 from 2017 by Dmitry Hrabrov a.k.a. DeXPeriX
  */
 /*
  * ==============================================================
@@ -54,11 +56,15 @@ struct nk_sdl_device {
     GLint uniform_tex;
     GLint uniform_proj;
     GLuint font_tex;
+    GLsizei vs;
+    size_t vp, vt, vc;
+    GLuint have_vao;
+    GLuint have_mapbuffer;
 };
 
 struct nk_sdl_vertex {
-    float position[2];
-    float uv[2];
+    GLfloat position[2];
+    GLfloat uv[2];
     nk_byte col[4];
 };
 
@@ -75,6 +81,7 @@ static struct nk_sdl {
 #else
   #define NK_SHADER_VERSION "#version 300 es\n"
 #endif
+
 NK_API void
 nk_sdl_device_create(void)
 {
@@ -104,6 +111,7 @@ nk_sdl_device_create(void)
         "}\n";
 
     struct nk_sdl_device *dev = &sdl.ogl;
+
     nk_buffer_init_default(&dev->cmds);
     dev->prog = glCreateProgram();
     dev->vert_shdr = glCreateShader(GL_VERTEX_SHADER);
@@ -122,40 +130,47 @@ nk_sdl_device_create(void)
     glGetProgramiv(dev->prog, GL_LINK_STATUS, &status);
     assert(status == GL_TRUE);
 
+    /* TODO: Detect at runtime */
+    dev->have_vao = GL_TRUE; /* OpenGL 3.0 or later, or GL_ARB_vertex_array_object, or GL_OES_vertex_array_object */
+    dev->have_mapbuffer = GL_TRUE; /* OpenGL 2.0 or later, or GL_OES_mapbuffer */
+
     dev->uniform_tex = glGetUniformLocation(dev->prog, "Texture");
     dev->uniform_proj = glGetUniformLocation(dev->prog, "ProjMtx");
     dev->attrib_pos = glGetAttribLocation(dev->prog, "Position");
     dev->attrib_uv = glGetAttribLocation(dev->prog, "TexCoord");
     dev->attrib_col = glGetAttribLocation(dev->prog, "Color");
-
     {
         /* buffer setup */
-        GLsizei vs = sizeof(struct nk_sdl_vertex);
-        size_t vp = offsetof(struct nk_sdl_vertex, position);
-        size_t vt = offsetof(struct nk_sdl_vertex, uv);
-        size_t vc = offsetof(struct nk_sdl_vertex, col);
+        dev->vs = sizeof(struct nk_sdl_vertex);
+        dev->vp = offsetof(struct nk_sdl_vertex, position);
+        dev->vt = offsetof(struct nk_sdl_vertex, uv);
+        dev->vc = offsetof(struct nk_sdl_vertex, col);
 
+        /* Allocate buffers */
         glGenBuffers(1, &dev->vbo);
         glGenBuffers(1, &dev->ebo);
-        glGenVertexArrays(1, &dev->vao);
 
-        glBindVertexArray(dev->vao);
-        glBindBuffer(GL_ARRAY_BUFFER, dev->vbo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dev->ebo);
+        if (dev->have_vao) {
+            glGenVertexArrays(1, &dev->vao);
 
-        glEnableVertexAttribArray((GLuint)dev->attrib_pos);
-        glEnableVertexAttribArray((GLuint)dev->attrib_uv);
-        glEnableVertexAttribArray((GLuint)dev->attrib_col);
+            glBindVertexArray(dev->vao);
+            glBindBuffer(GL_ARRAY_BUFFER, dev->vbo);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dev->ebo);
 
-        glVertexAttribPointer((GLuint)dev->attrib_pos, 2, GL_FLOAT, GL_FALSE, vs, (void*)vp);
-        glVertexAttribPointer((GLuint)dev->attrib_uv, 2, GL_FLOAT, GL_FALSE, vs, (void*)vt);
-        glVertexAttribPointer((GLuint)dev->attrib_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, vs, (void*)vc);
+            glEnableVertexAttribArray((GLuint)dev->attrib_pos);
+            glEnableVertexAttribArray((GLuint)dev->attrib_uv);
+            glEnableVertexAttribArray((GLuint)dev->attrib_col);
+
+            glVertexAttribPointer((GLuint)dev->attrib_pos, 2, GL_FLOAT, GL_FALSE, dev->vs, (void*)dev->vp);
+            glVertexAttribPointer((GLuint)dev->attrib_uv, 2, GL_FLOAT, GL_FALSE, dev->vs, (void*)dev->vt);
+            glVertexAttribPointer((GLuint)dev->attrib_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, dev->vs, (void*)dev->vc);
+        }
     }
-
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    if (dev->have_vao)
+        glBindVertexArray(0);
 }
 
 NK_INTERN void
@@ -232,17 +247,35 @@ nk_sdl_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
         const nk_draw_index *offset = NULL;
         struct nk_buffer vbuf, ebuf;
 
-        /* allocate vertex and element buffer */
-        glBindVertexArray(dev->vao);
+        /* Bind buffers */
+        if (dev->have_vao)
+            glBindVertexArray(dev->vao);
         glBindBuffer(GL_ARRAY_BUFFER, dev->vbo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dev->ebo);
+
+        if (!dev->have_vao) {
+            /* buffer setup */
+            glEnableVertexAttribArray((GLuint)dev->attrib_pos);
+            glEnableVertexAttribArray((GLuint)dev->attrib_uv);
+            glEnableVertexAttribArray((GLuint)dev->attrib_col);
+
+            glVertexAttribPointer((GLuint)dev->attrib_pos, 2, GL_FLOAT, GL_FALSE, dev->vs, (void*)dev->vp);
+            glVertexAttribPointer((GLuint)dev->attrib_uv, 2, GL_FLOAT, GL_FALSE, dev->vs, (void*)dev->vt);
+            glVertexAttribPointer((GLuint)dev->attrib_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, dev->vs, (void*)dev->vc);
+        }
 
         glBufferData(GL_ARRAY_BUFFER, max_vertex_buffer, NULL, GL_STREAM_DRAW);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, max_element_buffer, NULL, GL_STREAM_DRAW);
 
         /* load vertices/elements directly into vertex/element buffer */
-        vertices = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-        elements = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+        if (dev->have_mapbuffer) {
+            vertices = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+            elements = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+        } else {
+            vertices = malloc((size_t)max_vertex_buffer);
+            elements = malloc((size_t)max_element_buffer);
+        }
+
         {
             /* fill convert configuration */
             struct nk_convert_config config;
@@ -269,14 +302,24 @@ nk_sdl_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
             nk_buffer_init_fixed(&ebuf, elements, (nk_size)max_element_buffer);
             nk_convert(&sdl.ctx, &dev->cmds, &vbuf, &ebuf, &config);
         }
-        glUnmapBuffer(GL_ARRAY_BUFFER);
-        glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+
+        if (dev->have_mapbuffer) {
+            glUnmapBuffer(GL_ARRAY_BUFFER);
+            glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+        } else {
+            glBufferSubData(GL_ARRAY_BUFFER, 0, (size_t)max_vertex_buffer, vertices);
+            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, (size_t)max_element_buffer, elements);
+            free(vertices);
+            free(elements);
+        }
 
         /* iterate over and execute each draw command */
-        nk_draw_foreach(cmd, &sdl.ctx, &dev->cmds) {
+        nk_draw_foreach(cmd, &sdl.ctx, &dev->cmds)
+        {
             if (!cmd->elem_count) continue;
             glBindTexture(GL_TEXTURE_2D, (GLuint)cmd->texture.id);
-            glScissor((GLint)(cmd->clip_rect.x * scale.x),
+            glScissor(
+                (GLint)(cmd->clip_rect.x * scale.x),
                 (GLint)((height - (GLint)(cmd->clip_rect.y + cmd->clip_rect.h)) * scale.y),
                 (GLint)(cmd->clip_rect.w * scale.x),
                 (GLint)(cmd->clip_rect.h * scale.y));
@@ -287,10 +330,12 @@ nk_sdl_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
         nk_buffer_clear(&dev->cmds);
     }
 
+    /* default OpenGL state */
     glUseProgram(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    if (dev->have_vao)
+        glBindVertexArray(0);
     glDisable(GL_BLEND);
     glDisable(GL_SCISSOR_TEST);
 }
@@ -408,7 +453,6 @@ nk_sdl_handle_event(SDL_Event *evt)
                     case SDLK_e:         nk_input_key(ctx, NK_KEY_TEXT_LINE_END, down && ctrl_down); break;
                     case SDLK_UP:        nk_input_key(ctx, NK_KEY_UP, down); break;
                     case SDLK_DOWN:      nk_input_key(ctx, NK_KEY_DOWN, down); break;
-
                     case SDLK_ESCAPE:    nk_input_key(ctx, NK_KEY_TEXT_RESET_MODE, down); break;
                     case SDLK_INSERT:
                         if (down) insert_toggle = !insert_toggle;
@@ -418,7 +462,6 @@ nk_sdl_handle_event(SDL_Event *evt)
                             nk_input_key(ctx, NK_KEY_TEXT_REPLACE_MODE, down);
                         }
                         break;
-
                     case SDLK_a:
                         if (ctrl_down)
                             nk_input_key(ctx,NK_KEY_TEXT_SELECT_ALL, down);
