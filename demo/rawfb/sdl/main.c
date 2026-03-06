@@ -89,6 +89,12 @@ static int sdl_button_to_nk(int button)
         case SDL_BUTTON_RIGHT:
             return NK_BUTTON_RIGHT;
             break;
+        case SDL_BUTTON_X1:
+            return NK_BUTTON_BACK;
+            break;
+        case SDL_BUTTON_X2:
+            return NK_BUTTON_FORWARD;
+            break;
 
     }
 }
