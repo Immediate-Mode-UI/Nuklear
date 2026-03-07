@@ -637,8 +637,6 @@ overview(struct nk_context *ctx)
                 nk_layout_row_static(ctx, 180, 278, 1);
                 nk_edit_string(ctx, NK_EDIT_BOX, box_buffer, &box_len, 512, nk_filter_default);
 
-
-
                 nk_layout_row(ctx, NK_STATIC, 25, 2, ratio);
                 active = nk_edit_string(ctx, NK_EDIT_FIELD|NK_EDIT_SIG_ENTER, text[7], &text_len[7], 64,  nk_filter_ascii);
                 if (nk_button_label(ctx, "Submit") ||
