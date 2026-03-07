@@ -637,6 +637,8 @@ overview(struct nk_context *ctx)
                 nk_layout_row_static(ctx, 180, 278, 1);
                 nk_edit_string(ctx, NK_EDIT_BOX, box_buffer, &box_len, 512, nk_filter_default);
 
+
+
                 nk_layout_row(ctx, NK_STATIC, 25, 2, ratio);
                 active = nk_edit_string(ctx, NK_EDIT_FIELD|NK_EDIT_SIG_ENTER, text[7], &text_len[7], 64,  nk_filter_ascii);
                 if (nk_button_label(ctx, "Submit") ||
@@ -1354,6 +1356,56 @@ overview(struct nk_context *ctx)
             }
             nk_tree_pop(ctx);
         }
+
+        /* Input */
+        if (nk_tree_push(ctx, NK_TREE_TAB, "Input", NK_MINIMIZED))
+        {
+            const struct nk_input *in = &ctx->input;
+            static const char *button_names[] = {
+                "Left", "Middle", "Right", "X1", "X2"
+            };
+            static const enum nk_buttons button_ids[] = {
+                NK_BUTTON_LEFT, NK_BUTTON_MIDDLE, NK_BUTTON_RIGHT,
+                NK_BUTTON_X1, NK_BUTTON_X2
+            };
+            int i;
+
+            /* Mouse Buttons*/
+            nk_layout_row_dynamic(ctx, 30, 1);
+            nk_label(ctx, "Mouse Buttons", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(ctx, 20, 2);
+            for (i = 0; i < 5; i++) {
+                nk_label(ctx, button_names[i], NK_TEXT_LEFT);
+                if (nk_input_is_mouse_down(in, button_ids[i]))
+                    nk_label(ctx, "Down", NK_TEXT_LEFT);
+                else if (nk_input_is_mouse_released(in, button_ids[i]))
+                    nk_label(ctx, "Released", NK_TEXT_LEFT);
+                else if (nk_input_is_mouse_pressed(in, button_ids[i]))
+                    nk_label(ctx, "Pressed", NK_TEXT_LEFT);
+                else
+                    nk_label(ctx, "Up", NK_TEXT_LEFT);
+            }
+
+            /* Double Click */
+            nk_label(ctx, "Double Click", NK_TEXT_LEFT);
+            if (nk_input_is_mouse_down(in, NK_BUTTON_DOUBLE))
+                nk_label(ctx, "Down", NK_TEXT_LEFT);
+            else if (nk_input_is_mouse_released(in, NK_BUTTON_DOUBLE))
+                nk_label(ctx, "Released", NK_TEXT_LEFT);
+            else if (nk_input_is_mouse_pressed(in, NK_BUTTON_DOUBLE))
+                nk_label(ctx, "Pressed", NK_TEXT_LEFT);
+            else
+                nk_label(ctx, "Up", NK_TEXT_LEFT);
+
+            /* Mouse Wheel */
+            nk_layout_row_dynamic(ctx, 30, 1);
+            nk_label(ctx, "Mouse Wheel", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(ctx, 20, 2);
+            nk_labelf(ctx, NK_TEXT_LEFT, "X: %.2f", in->mouse.scroll_delta.x);
+            nk_labelf(ctx, NK_TEXT_LEFT, "Y: %.2f", in->mouse.scroll_delta.y);
+            nk_tree_pop(ctx);
+        }
+
         if (disable_widgets)
      		nk_widget_disable_end(ctx);
     }
