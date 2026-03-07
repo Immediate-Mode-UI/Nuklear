@@ -15,13 +15,10 @@ jobs:
       run: sudo apt-get install -y --no-install-recommends glslc liballegro5-dev liballegro-image5-dev liballegro-ttf5-dev libcairo2-dev libglfw3 libglfw3-dev libglew-dev libsdl2-dev libvulkan-dev libwayland-dev libx11-dev libxcb1-dev libxcb-util0-dev libxcb-keysyms1-dev libxft-dev libxkbcommon-x11-dev wayland-protocols
 
     # Verify ./nuklear.h mirrors ./src/*
+    - name: Rebuild ./nuklear.h
+      run: make nuke
     - name: Verify ./nuklear.h
-      run: make nuke && \
-           if ! git diff --exit-code nuklear.h ; then \
-               echo "Did you forgot to rebuild ./nuklear.h ?" >/dev/stderr ; \
-               echo "Make sure to apply your changes to ./src/* first, and only then rebuild the amalgamation with ./src/paq* !"  >/dev/stderr ; \
-               exit 1 ; \
-           fi ;
+      run: make test-nuke
 
     # Build the Demos
     - name: build allegro5
