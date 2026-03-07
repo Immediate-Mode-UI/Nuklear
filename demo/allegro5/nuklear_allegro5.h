@@ -370,7 +370,7 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
                 case 3: button = NK_BUTTON_MIDDLE; break;
                 case 4: button = NK_BUTTON_X1; break;
                 case 5: button = NK_BUTTON_X2; break;
-                default:
+                default: break;
             }
             nk_input_button(ctx, button, ev->mouse.x, ev->mouse.y, ev->type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN);
             return 1;
