@@ -823,6 +823,8 @@ enum nk_buttons {
     NK_BUTTON_MIDDLE,
     NK_BUTTON_RIGHT,
     NK_BUTTON_DOUBLE,
+    NK_BUTTON_X1,
+    NK_BUTTON_X2,
     NK_BUTTON_MAX
 };
 

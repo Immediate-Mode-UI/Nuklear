@@ -380,6 +380,12 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
                 case XCB_BUTTON_INDEX_5:
                     nk_input_scroll(nk_ctx, nk_vec2(0, -1.0f));
                     break;
+                case 8:
+                    nk_input_button(nk_ctx, NK_BUTTON_X1, bp->event_x, bp->event_y, press);
+                    break;
+                case 9:
+                    nk_input_button(nk_ctx, NK_BUTTON_X2, bp->event_x, bp->event_y, press);
+                    break;
                 default: break;
                 }
             }
