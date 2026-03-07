@@ -13,6 +13,10 @@ jobs:
       run: sudo apt-get update -qq
     - name: apt get demo-libs
       run: sudo apt-get install -y --no-install-recommends glslc liballegro5-dev liballegro-image5-dev liballegro-ttf5-dev libcairo2-dev libglfw3 libglfw3-dev libglew-dev libsdl2-dev libvulkan-dev libwayland-dev libx11-dev libxcb1-dev libxcb-util0-dev libxcb-keysyms1-dev libxft-dev libxkbcommon-x11-dev wayland-protocols
+    - name: Rebuild Nuklear.h
+      run: make nuke
+    - name: Verify Nuklear.h is Clean
+      run: git diff --exit-code nuklear.h
     - name: build allegro5
       run: make -C demo/allegro5
     - name: build glfw_opengl2
