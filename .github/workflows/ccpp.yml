@@ -10,10 +10,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Verify ./nuklear.h matches sources
-      run: |
-        make nuke
-        make nuke-test
+    - name: Rebuild ./nuklear.h
+      run: make nuke
+    - name: Verify ./nuklear.h
+      run: make nuke-test
 
     - name: apt-update
       run: sudo apt-get update -qq
