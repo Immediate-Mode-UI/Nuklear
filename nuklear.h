@@ -17791,7 +17791,6 @@ nk_font_atlas_add(struct nk_font_atlas *atlas, const struct nk_font_config *conf
     NK_ASSERT(config->ttf_size);
     NK_ASSERT(config->size > 0.0f);
 
-    // Adding stuff to Amagamation.
     if (!atlas || !config || !config->ttf_blob || !config->ttf_size || config->size <= 0.0f||
         !atlas->permanent.alloc || !atlas->permanent.free ||
         !atlas->temporary.alloc || !atlas->temporary.free)
