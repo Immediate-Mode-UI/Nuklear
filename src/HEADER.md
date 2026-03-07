@@ -20,9 +20,8 @@
     7. Tree section
     8. Properties section
 7. License section
-8. Changelog section
-9. Gallery section
-10. Credits section
+8. Gallery section
+9. Credits section
 
 ## About
 This is a minimal state immediate mode graphical user interface toolkit
