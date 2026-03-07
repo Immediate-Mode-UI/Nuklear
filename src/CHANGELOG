@@ -16,6 +16,7 @@
 ///                       - Fix: guard nk_pow, nk_ifloord, nk_log10 with preprocessor
 /// - 2025/11/15 (4.13.0) - Fix: nk_property not updating 'win->edit.active'
 ///                         Add new updated demo: sdl3_renderer
+///                       - Add printf formatting macros for nk data types
 /// - 2025/10/08 (4.12.8) - Fix nk_widget_text to use NK_TEXT_ALIGN_LEFT by default,
 ///                         instead of silently failing when no x-axis alignment is provided,
 ///                         and refactor this function to keep the code style consistent
