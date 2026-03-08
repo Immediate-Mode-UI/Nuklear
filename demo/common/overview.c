@@ -839,12 +839,87 @@ overview(struct nk_context *ctx)
                 } else popup_active = nk_false;
             }
 
-            /* tooltip */
-            nk_layout_row_static(ctx, 30, 150, 1);
+            /* tooltips */
+            nk_layout_row_static(ctx, 30, 400, 1);
             bounds = nk_widget_bounds(ctx);
-            nk_label(ctx, "Hover me for tooltip", NK_TEXT_LEFT);
-            if (nk_input_is_mouse_hovering_rect(in, bounds))
-                nk_tooltip(ctx, "This is a tooltip");
+            nk_label(ctx, "Hover for default tooltip", NK_TEXT_LEFT);
+            if (nk_input_is_mouse_hovering_rect(in, bounds)) {
+                nk_tooltip(ctx, "This is a default tooltip");
+            }
+            bounds = nk_widget_bounds(ctx);
+            nk_label(ctx, "Hover for Gnome-like tooltip", NK_TEXT_LEFT);
+            if (nk_input_is_mouse_hovering_rect(in, bounds)) {
+                struct nk_vec2 offset = { 0, -15 };
+                nk_tooltip_offset(ctx, "Gnome bottom centers plus a -y offset", NK_BOTTOM_CENTER, offset);
+            }
+            bounds = nk_widget_bounds(ctx);
+            nk_label(ctx, "Hover for a bottom left tooltip", NK_TEXT_LEFT);
+            if (nk_input_is_mouse_hovering_rect(in, bounds)) {
+                struct nk_vec2 offset = { 0, 0 };
+                nk_tooltip_offset(ctx, "Bottom left positioning", NK_BOTTOM_LEFT, offset);
+            }
+            bounds = nk_widget_bounds(ctx);
+            nk_label(ctx, "Hover for MAGIC!", NK_TEXT_LEFT);
+            if (nk_input_is_mouse_hovering_rect(in, bounds)) {
+                static double accum_time_seconds = 0.0;
+                const double speed = 3.0, radius = 50.0;
+                struct nk_vec2 offset;
+                offset.x = radius * NK_COS(accum_time_seconds * speed);
+                offset.y = radius * NK_SIN(accum_time_seconds * speed);
+                nk_tooltip_offset(ctx, "WOW!", NK_MIDDLE_CENTER, offset);
+                accum_time_seconds += (double)(ctx->delta_time_seconds);
+            }
+
+            /* editor for custom tooltip */
+            {
+                static char text_buf[64] = {0};
+                static int text_len = 0;
+                static int text_initialized = 0;
+                static struct nk_vec2 offset = {0};
+                static const char* tooltip_positions[] =
+                {
+                    "TOP_LEFT",
+                    "TOP_CENTER",
+                    "TOP_RIGHT",
+
+                    "MIDDLE_LEFT",
+                    "MIDDLE_CENTER",
+                    "MIDDLE_RIGHT",
+
+                    "BOTTOM_LEFT",
+                    "BOTTOM_CENTER",
+                    "BOTTOM_RIGHT"
+                };
+                static int cur_pos = NK_TOP_LEFT;
+
+                if (!text_initialized) {
+                    const char text_default[] = "you can customize this!";
+                    NK_ASSERT(sizeof(text_default) < sizeof(text_buf));
+                    memcpy(text_buf, text_default, sizeof(text_default));
+                    text_len = sizeof(text_default) - 1;
+                    text_initialized = 1;
+                }
+                bounds = nk_widget_bounds(ctx);
+                nk_label(ctx, "Hover for custom tooltip (you can customize it below)", NK_TEXT_LEFT);
+                if (nk_input_is_mouse_hovering_rect(in, bounds)) {
+                    nk_tooltip_offset(ctx, text_buf, cur_pos, offset);
+                }
+                nk_layout_row_dynamic(ctx, 1, 1);
+                nk_rule_horizontal(ctx, nk_white, nk_true);
+                nk_layout_row_dynamic(ctx, 30, 2);
+                nk_label(ctx, "custom tooltip text:", NK_TEXT_LEFT);
+                nk_edit_string(ctx, NK_EDIT_FIELD, text_buf, &text_len, sizeof(text_buf), nk_filter_default);
+                text_buf[text_len] = '\0';  /* TODO: why nk_edit_string is NOT setting this on its own? */
+                nk_layout_row_dynamic(ctx, 30, 1);
+                cur_pos = nk_combo(ctx, tooltip_positions, NK_LEN(tooltip_positions), cur_pos, 25, nk_vec2(200, 200));
+
+
+                nk_layout_row_dynamic(ctx, 30, 2);
+                nk_label(ctx, "custom tooltip offset", NK_TEXT_LEFT);
+                nk_property_float(ctx, "x", -100.0f, &offset.x, 100.0f, 5.0f, 0.5f);
+                nk_label(ctx, "custom tooltip offset", NK_TEXT_LEFT);
+                nk_property_float(ctx, "y", -100.0f, &offset.y, 100.0f, 5.0f, 0.5f);
+            }
 
             nk_tree_pop(ctx);
         }
