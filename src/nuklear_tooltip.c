@@ -9,8 +9,8 @@
 NK_API nk_bool
 nk_tooltip_begin(struct nk_context *ctx, float width)
 {
-    struct nk_vec2 offset = {0};
-    return nk_tooltip_begin_offset(ctx, width, NK_TOP_LEFT, offset);
+    NK_ASSERT(ctx);
+    return nk_tooltip_begin_offset(ctx, width, ctx->style.window.tooltip_origin, ctx->style.window.tooltip_offset);
 }
 
 NK_API nk_bool
@@ -144,8 +144,8 @@ nk_tooltip_offset(struct nk_context *ctx, const char *text, enum nk_tooltip_pos 
 NK_API void
 nk_tooltip(struct nk_context *ctx, const char *text)
 {
-    struct nk_vec2 offset = { 12, 12 };
-    nk_tooltip_offset(ctx, text, NK_TOP_LEFT, offset);
+    NK_ASSERT(ctx);
+    nk_tooltip_offset(ctx, text, ctx->style.window.tooltip_origin, ctx->style.window.tooltip_offset);
 }
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 NK_API void

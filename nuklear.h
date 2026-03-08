@@ -5599,6 +5599,9 @@ struct nk_style_window {
     struct nk_vec2 contextual_padding;
     struct nk_vec2 menu_padding;
     struct nk_vec2 tooltip_padding;
+
+    enum nk_tooltip_pos tooltip_origin;
+    struct nk_vec2 tooltip_offset;
 };
 
 struct nk_style {
@@ -19246,6 +19249,15 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     win->contextual_padding = nk_vec2(4,4);
     win->menu_padding = nk_vec2(4,4);
     win->tooltip_padding = nk_vec2(4,4);
+
+    /* default tooltip just down and to the right of the cursor
+     * so it doesn't cover the text
+     *
+     * TODO might be worth consolidating tooltip styling
+     * into its own style structure, though it is a
+     * type of window...*/
+    win->tooltip_origin = NK_TOP_LEFT;
+    win->tooltip_offset = nk_vec2(12, 12);
 }
 NK_API void
 nk_style_set_font(struct nk_context *ctx, const struct nk_user_font *font)
@@ -30650,8 +30662,8 @@ nk_combobox_callback(struct nk_context *ctx,
 NK_API nk_bool
 nk_tooltip_begin(struct nk_context *ctx, float width)
 {
-    struct nk_vec2 offset = {0};
-    return nk_tooltip_begin_offset(ctx, width, NK_TOP_LEFT, offset);
+    NK_ASSERT(ctx);
+    return nk_tooltip_begin_offset(ctx, width, ctx->style.window.tooltip_origin, ctx->style.window.tooltip_offset);
 }
 
 NK_API nk_bool
@@ -30785,8 +30797,8 @@ nk_tooltip_offset(struct nk_context *ctx, const char *text, enum nk_tooltip_pos 
 NK_API void
 nk_tooltip(struct nk_context *ctx, const char *text)
 {
-    struct nk_vec2 offset = { 12, 12 };
-    nk_tooltip_offset(ctx, text, NK_TOP_LEFT, offset);
+    NK_ASSERT(ctx);
+    nk_tooltip_offset(ctx, text, ctx->style.window.tooltip_origin, ctx->style.window.tooltip_offset);
 }
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 NK_API void
