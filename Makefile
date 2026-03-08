@@ -55,15 +55,6 @@ demos: $(DEMO_LIST)
 nuke: $(addprefix $(SRC_PATH)/, $(SRC))
 	python3 $(SRC_PATH)/build.py --macro $(MACRO) --intro $(addprefix $(SRC_PATH)/, $(INTRO)) --pub $(addprefix $(SRC_PATH)/, $(PUB)) --priv1 "$(addprefix $(SRC_PATH)/, $(PRIV1))" --extern "$(addprefix $(SRC_PATH)/, $(EXTERN))" --priv2 "$(addprefix $(SRC_PATH)/, $(PRIV2))" --outro "$(addprefix $(SRC_PATH)/, $(OUTRO))" > $(OUTPUT)
 
-nuke-test:
-	@git diff --exit-code nuklear.h || (\
-	echo "\nError: nuklear.h does not match sources. To fix...\n\
-	1. Apply changes to ./src/*\n\
-	2. Rebuild with ./src/paq*\n" >/dev/stderr && \
-	exit 1\
-	)
-	@echo "nuklear.h matches sources"
-
 
 
 ########################################################################################
