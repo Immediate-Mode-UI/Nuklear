@@ -17797,7 +17797,7 @@ nk_font_atlas_add(struct nk_font_atlas *atlas, const struct nk_font_config *conf
         !atlas->permanent.alloc || !atlas->permanent.free ||
         !atlas->temporary.alloc || !atlas->temporary.free)
         return 0;
-d
+
     /* allocate font config  */
     cfg = (struct nk_font_config*)
         atlas->permanent.alloc(atlas->permanent.userdata,0, sizeof(struct nk_font_config));
