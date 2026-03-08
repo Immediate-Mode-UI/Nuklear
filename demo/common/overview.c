@@ -864,8 +864,8 @@ overview(struct nk_context *ctx)
                 static double accum_time_seconds = 0.0;
                 const double speed = 3.0, radius = 50.0;
                 struct nk_vec2 offset;
-                offset.x = radius * cos(accum_time_seconds * speed);
-                offset.y = radius * sin(accum_time_seconds * speed);
+                offset.x = radius * NK_COS(accum_time_seconds * speed);
+                offset.y = radius * NK_SIN(accum_time_seconds * speed);
                 nk_tooltip_offset(ctx, "WOW!", NK_MIDDLE_CENTER, offset);
                 accum_time_seconds += (double)(ctx->delta_time_seconds);
             }

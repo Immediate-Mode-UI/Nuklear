@@ -30688,8 +30688,7 @@ nk_tooltip_begin_offset(struct nk_context *ctx, float width, enum nk_tooltip_pos
         return 0;
 
     w = nk_iceilf(width);
-    /* Should I use text_height? Any difference? */
-    h = ctx->current->layout->row.min_height;
+    h = NK_MAX(win->layout->row.min_height, ctx->style.font->height+2*ctx->style.window.padding.y);
 
     /* Default origin is top left, plus user offset */
     x = nk_ifloorf(in->mouse.pos.x + 1) - (int)win->layout->clip.x + offset.x;
