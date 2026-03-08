@@ -416,7 +416,7 @@ nk_property(struct nk_context *ctx, const char *name, struct nk_property_variant
             win->property.prev_state = prev_state;
             win->property.prev_name = win->property.name;
             win->property.prev_length = win->property.length;
-            NK_MEMCPY(win->property.prev_buffer, win->property.buffer, win->property.length);
+            NK_MEMCPY(win->property.prev_buffer, win->property.buffer, (nk_size)win->property.length);
         }
         /* current property is now hot */
         win->property.active = 1;
