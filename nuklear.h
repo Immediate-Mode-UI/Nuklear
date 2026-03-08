@@ -21,8 +21,9 @@
     7. Tree section
     8. Properties section
 7. License section
-8. Gallery section
-9. Credits section
+8. Changelog section
+9. Gallery section
+10. Credits section
 
 ## About
 This is a minimal state immediate mode graphical user interface toolkit
@@ -30778,6 +30779,14 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    ------------------------------------------------------------------------------
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+/// ## Changelog
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~none
+/// The CHANGELOG can be found for each release in:
+/// https://github.com/Immediate-Mode-UI/Nuklear/releases
+///
+/// An archive of the old changelog can be found in the wiki:
+/// https://github.com/Immediate-Mode-UI/Nuklear/wiki/CHANGELOG
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 /// ## Gallery
 /// ![Figure [blue]: Feature overview with blue color styling](https://cloud.githubusercontent.com/assets/8057201/13538240/acd96876-e249-11e5-9547-5ac0b19667a0.png)
 /// ![Figure [red]: Feature overview with red color styling](https://cloud.githubusercontent.com/assets/8057201/13538243/b04acd4c-e249-11e5-8fd2-ad7744a5b446.png)
