@@ -10,15 +10,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Ensure ./nuklear.h matches sources
-      run: make nuke && git diff --exit-code nuklear.h
+    - name: Rebuild ./nuklear.h
+      run: make nuke
 
-    - name: Need to Rebuild ./nuklear.h
-      if: failure()
+    - name: Ensure ./nuklear.h matches sources
       run: |
-        echo "Error: nuklear.h does not match sources. To fix:"
-        echo "1. Apply changes to ./src/*"
-        echo "2. Rebuild with 'make nuke'"
+        git diff --exit-code nuklear.h || (echo "Error: nuklear.h does not match sources. To fix:\n1. Apply changes to ./src/*\n2. Rebuild with 'make nuke' && exit 1)"
 
     - name: apt-update
       run: sudo apt-get update -qq
