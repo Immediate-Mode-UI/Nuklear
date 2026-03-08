@@ -17606,7 +17606,7 @@ nk__lit(unsigned char *data, unsigned int length)
     NK_ASSERT (nk__dout + length <= nk__barrier);
     if (nk__dout + length > nk__barrier) { nk__dout += length; return; }
     if (data < nk__barrier2) { nk__dout = nk__barrier+1; return; }
-    NK_MEMCPY(nk__dout, data, length);
+    NK_MEMCPY(nk__dout, data, (nk_size)length);
     nk__dout += length;
 }
 NK_INTERN unsigned char*
@@ -29155,7 +29155,7 @@ nk_property(struct nk_context *ctx, const char *name, struct nk_property_variant
             win->property.prev_state = prev_state;
             win->property.prev_name = win->property.name;
             win->property.prev_length = win->property.length;
-            NK_MEMCPY(win->property.prev_buffer, win->property.buffer, win->property.length);
+            NK_MEMCPY(win->property.prev_buffer, win->property.buffer, (nk_size)win->property.length);
         }
         /* current property is now hot */
         win->property.active = 1;
