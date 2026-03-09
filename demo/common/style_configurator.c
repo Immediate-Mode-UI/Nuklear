@@ -1260,6 +1260,9 @@ export_window_style(struct nk_style_window* win, FILE* out)
 	export_vec2(win->menu_padding, out);
 	export_vec2(win->tooltip_padding, out);
 
+	export_int(win->tooltip_origin, out);
+	export_vec2(win->tooltip_offset, out);
+
 	fputs("},\n", out);
 }
 
@@ -2017,7 +2020,7 @@ style_window(struct nk_context* ctx, struct nk_style_window* out_style)
 }
 
 static int
-style_configurator(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_COUNT])
+style_configurator(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_COUNT], struct nk_style* used_style)
 {
 	/* window flags */
 	int border = nk_true;
@@ -2029,6 +2032,7 @@ style_configurator(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_
 	int minimizable = nk_true;
 	struct nk_style *style = NULL;
 	struct nk_style_button* dups[1];
+	static struct nk_style tmp_style;
 
 	/* window flags */
 	window_flags = 0;
@@ -2039,7 +2043,10 @@ style_configurator(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_
 	if (scale_left) window_flags |= NK_WINDOW_SCALE_LEFT;
 	if (minimizable) window_flags |= NK_WINDOW_MINIMIZABLE;
 
-	style = &ctx->style;
+	memcpy(&tmp_style, &ctx->style, sizeof(tmp_style));
+	memcpy(&ctx->style, used_style, sizeof(tmp_style));
+
+	style = &tmp_style;
 
 	if (nk_begin(ctx, "Configurator", nk_rect(10, 10, 400, 600), window_flags))
 	{
@@ -2178,5 +2185,7 @@ style_configurator(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_
 	}
 
 	nk_end(ctx);
+
+	memcpy(&ctx->style, &tmp_style, sizeof(tmp_style));
 	return !nk_window_is_closed(ctx, "Configurator");
 }
