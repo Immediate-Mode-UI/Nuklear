@@ -901,10 +901,10 @@ nk_gdi_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_XBUTTONDOWN:
         switch (GET_XBUTTON_WPARAM(wparam)) {
         case XBUTTON1:
-            nk_input_button(&d3d9.ctx, NK_BUTTON_X1, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
+            nk_input_button(&gdi.ctx, NK_BUTTON_X1, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
             break;
         case XBUTTON2:
-            nk_input_button(&d3d9.ctx, NK_BUTTON_X2, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
+            nk_input_button(&gdi.ctx, NK_BUTTON_X2, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
             break;
         }
         SetCapture(wnd);
@@ -913,10 +913,10 @@ nk_gdi_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_XBUTTONUP:
         switch (GET_XBUTTON_WPARAM(wparam)) {
         case XBUTTON1:
-            nk_input_button(&d3d9.ctx, NK_BUTTON_X1, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
+            nk_input_button(&gdi.ctx, NK_BUTTON_X1, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
             break;
         case XBUTTON2:
-            nk_input_button(&d3d9.ctx, NK_BUTTON_X2, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
+            nk_input_button(&gdi.ctx, NK_BUTTON_X2, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
             break;
         }
         ReleaseCapture();
