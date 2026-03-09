@@ -366,9 +366,9 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
         case ALLEGRO_EVENT_MOUSE_BUTTON_UP: {
             int button;
             switch (ev->mouse.button) {
-                case ALLEGRO_MOUSE_BUTTON_LEFT: button = NK_BUTTON_LEFT; break;
-                case ALLEGRO_MOUSE_BUTTON_RIGHT: button = NK_BUTTON_RIGHT; break;
-                case ALLEGRO_MOUSE_BUTTON_MIDDLE: button = NK_BUTTON_MIDDLE; break;
+                case 1: button = NK_BUTTON_LEFT; break;
+                case 2: button = NK_BUTTON_RIGHT; break;
+                case 3: button = NK_BUTTON_MIDDLE; break;
                 case 4: button = NK_BUTTON_X1; break;
                 case 5: button = NK_BUTTON_X2; break;
                 default: return 0; break;
