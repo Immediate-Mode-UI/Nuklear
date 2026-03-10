@@ -90,7 +90,8 @@ main(void)
 
     #ifdef INCLUDE_CONFIGURATOR
     static struct nk_color color_table[NK_COLOR_COUNT];
-    struct nk_style default_style;
+    memcpy(color_table, nk_get_default_color_table(), sizeof(color_table));
+
     #endif
 
     /* SDL setup */
@@ -165,11 +166,6 @@ main(void)
         nk_style_set_font(ctx, &font->handle);
     }
 
-    #ifdef INCLUDE_CONFIGURATOR
-    memcpy(&default_style, &ctx->style, sizeof(default_style));
-    memcpy(color_table, nk_get_default_color_table(), sizeof(color_table));
-    #endif
-
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
     while (running)
     {
@@ -228,7 +224,7 @@ main(void)
           overview(ctx);
         #endif
         #ifdef INCLUDE_CONFIGURATOR
-          style_configurator(ctx, color_table, &default_style);
+          style_configurator(ctx, color_table);
         #endif
         #ifdef INCLUDE_NODE_EDITOR
           node_editor(ctx);

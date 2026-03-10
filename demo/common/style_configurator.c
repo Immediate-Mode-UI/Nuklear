@@ -40,6 +40,17 @@ export_color(struct nk_color c, FILE* out)
 }
 
 static void
+read_color(struct nk_color* c, FILE* in)
+{
+	int r, g, b, a;
+	fscanf(in, " { %d, %d, %d, %d },", &r, &g, &b, &a);
+	c->r = NK_CLAMP(0, r, 255);
+	c->g = NK_CLAMP(0, g, 255);
+	c->b = NK_CLAMP(0, b, 255);
+	c->a = NK_CLAMP(0, a, 255);
+}
+
+static void
 export_global_color_table(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_COUNT], nk_bool use_labels, FILE* out)
 {
 	int i;
@@ -57,6 +68,19 @@ export_global_color_table(struct nk_context* ctx, struct nk_color color_table[NK
 	}
 	fputs("};\n", out);
 }
+
+static void load_global_color_table(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_COUNT], FILE* in)
+{
+	int i;
+	fscanf(in, " {");
+	for (i=0; i<NK_COLOR_COUNT; i++) {
+		read_color(&color_table[i], in);
+	}
+	fscanf(in, " };");
+	nk_style_from_table(ctx, color_table);
+}
+
+
 
 #if 0
 NK_API void
@@ -699,15 +723,33 @@ export_vec2(struct nk_vec2 v, FILE* out)
 }
 
 static void
+read_vec2(struct nk_vec2* v, FILE* in)
+{
+	fscanf(in, " { %f, %f },\n", &v->x, &v->y);
+}
+
+static void
 export_float(float f, FILE* out)
 {
 	fprintf(out, "%f,\n", f);
 }
 
 static void
+read_float(float* f, FILE* in)
+{
+	fscanf(in, " %f,\n", f);
+}
+
+static void
 export_int(int i, FILE* out)
 {
 	fprintf(out, "%d,\n", i);
+}
+
+static void
+read_int(int* i, FILE* in)
+{
+	fscanf(in, " %d,\n", i);
 }
 
 static void
@@ -1281,9 +1323,6 @@ export_styles(struct nk_context* ctx, FILE* out)
 
 	fputs("{\n", out);
 
-	/* TODO handle un-saved members if we want to export full
-	 * style struct directly as C code */
-
 	/* *font, *cursors[], *cursor_active, *cursor_last, int cursor visible */
 	fprintf(out, "NULL, { NULL }, NULL, NULL, 0,\n");
 
@@ -1317,6 +1356,615 @@ export_styles(struct nk_context* ctx, FILE* out)
 
 	fputs("};\n", out);
 }
+
+/* Read style functions */
+/**********************/
+static void
+read_text_style(struct nk_style_text* text, FILE* in)
+{
+	fscanf(in, " {\n");
+	read_color(&text->color, in);
+	read_vec2(&text->padding, in);
+	read_float(&text->color_factor, in);
+	read_float(&text->disabled_factor, in);
+	fscanf(in, " },\n");
+}
+
+/*TODO image and 9-slice?*/
+static void
+read_style_item_color(struct nk_style_item* s, FILE* in)
+{
+	fscanf(in, " {\n");
+	/*s->type = NK_STYLE_ITEM_COLOR;*/
+	fscanf(in, "%d,\n", &s->type);
+	fscanf(in, " {");
+	read_color(&s->data.color, in);
+	fscanf(in, " }\n");
+	fscanf(in, " },\n");
+}
+
+static void
+read_button_style(struct nk_style_button* button, FILE* in)
+{
+	/*TODO maybe just do normal color convert it to style_item on read?*/
+	fscanf(in, " {\n");
+	read_style_item_color(&button->normal, in);
+	/*prouttf("%d %d %d %d\n", c->r, c->g, c->b, c->a);*/
+	read_style_item_color(&button->hover, in);
+	read_style_item_color(&button->active, in);
+
+	read_color(&button->border_color, in);
+	read_float(&button->color_factor_background, in);
+
+	read_color(&button->text_background, in);
+	read_color(&button->text_normal, in);
+	read_color(&button->text_hover, in);
+	read_color(&button->text_active, in);
+	/*TODO nk_flags text_alignment*/
+	read_float(&button->color_factor_text, in);
+
+	read_float(&button->border, in);
+	read_float(&button->rounding, in);
+	read_vec2(&button->padding, in);
+	read_vec2(&button->image_padding, in);
+	read_vec2(&button->touch_padding, in);
+	read_float(&button->disabled_factor, in);
+
+	/* unused but need to exist for C code */
+	/* userdata, draw_begout, draw_end */
+	fscanf(in, " { 0 },\nNULL,\nNULL\n");
+	fscanf(in, " },\n");
+}
+
+static void
+read_toggle_style(struct nk_style_toggle* toggle, FILE* in)
+{
+	fscanf(in, " {\n");
+	read_style_item_color(&toggle->normal, in);
+	read_style_item_color(&toggle->hover, in);
+	read_style_item_color(&toggle->active, in);
+
+	read_color(&toggle->border_color, in);
+
+	/* cursor_normal, cursor_hover */
+	struct nk_style_item tmp = { 0 };
+	read_style_item_color(&tmp, in);
+	read_style_item_color(&tmp, in);
+
+	/* koutd of annoying the order changes across structures */
+	read_color(&toggle->text_normal, in);
+	read_color(&toggle->text_hover, in);
+	read_color(&toggle->text_active, in);
+	read_color(&toggle->text_background, in);
+	/*TODO nk_flags text_alignment*/
+
+	read_vec2(&toggle->padding, in);
+	read_vec2(&toggle->touch_padding, in);
+	read_float(&toggle->spacing, in);
+	read_float(&toggle->border, in);
+	read_float(&toggle->color_factor, in);
+	read_float(&toggle->disabled_factor, in);
+
+	/* unused but need to exist for C code */
+	/* userdata, draw_begout, draw_end */
+	fscanf(in, " { 0 },\nNULL,\nNULL\n");
+	fscanf(in, " },\n");
+}
+
+static void
+read_selectable_style(struct nk_style_selectable* selectable, FILE* in)
+{
+	fscanf(in, " {\n");
+
+	/* background outactive */
+	read_style_item_color(&selectable->normal, in);
+	read_style_item_color(&selectable->hover, in);
+	read_style_item_color(&selectable->pressed, in);
+
+	/* background active */
+	read_style_item_color(&selectable->normal_active, in);
+	read_style_item_color(&selectable->hover_active, in);
+	read_style_item_color(&selectable->pressed_active, in);
+
+	/* text outactive */
+	read_color(&selectable->text_normal, in);
+	read_color(&selectable->text_hover, in);
+	read_color(&selectable->text_pressed, in);
+
+	/* text active */
+	read_color(&selectable->text_normal_active, in);
+	read_color(&selectable->text_hover_active, in);
+	read_color(&selectable->text_pressed_active, in);
+
+	read_color(&selectable->text_background, in);
+
+	/*TODO nk_flags text_alignment*/
+
+	/* properties */
+	read_float(&selectable->rounding, in);
+	read_vec2(&selectable->padding, in);
+	read_vec2(&selectable->touch_padding, in);
+	read_vec2(&selectable->image_padding, in);
+	read_float(&selectable->color_factor, in);
+	read_float(&selectable->disabled_factor, in);
+
+	/* unused but need to exist for C code */
+	/* userdata, draw_begout, draw_end */
+	fscanf(in, " { 0 },\nNULL,\nNULL\n");
+	fscanf(in, " },\n");
+}
+
+static void
+read_slider_style(struct nk_style_slider* slider, FILE* in)
+{
+	fscanf(in, " {\n");
+
+	/* background */
+	read_style_item_color(&slider->normal, in);
+	read_style_item_color(&slider->hover, in);
+	read_style_item_color(&slider->active, in);
+	read_color(&slider->border_color, in);
+
+	/* background bar */
+	read_color(&slider->bar_normal, in);
+	read_color(&slider->bar_hover, in);
+	read_color(&slider->bar_active, in);
+	read_color(&slider->bar_filled, in);
+
+	/* cursor_normal, cursor_hover, cursor_active */
+	struct nk_style_item tmp = { 0 };
+	read_style_item_color(&tmp, in);
+	read_style_item_color(&tmp, in);
+	read_style_item_color(&tmp, in);
+
+	/* properties */
+	read_float(&slider->border, in);
+	read_float(&slider->rounding, in);
+	read_float(&slider->bar_height, in);
+	read_vec2(&slider->padding, in);
+	read_vec2(&slider->spacing, in);
+	read_vec2(&slider->cursor_size, in);
+	read_float(&slider->color_factor, in);
+	read_float(&slider->disabled_factor, in);
+
+	/* optional buttons */
+	/* read_bool? */
+	read_int(&slider->show_buttons, in);
+
+	read_button_style(&slider->inc_button, in);
+	read_button_style(&slider->dec_button, in);
+	/* outt for enums too for now, enums later for better
+	 * human readability */
+	read_int(&slider->inc_symbol, in);
+	read_int(&slider->dec_symbol, in);
+
+	/* unused but need to exist for C code */
+	/* userdata, draw_begout, draw_end */
+	fscanf(in, " { 0 },\nNULL,\nNULL\n");
+	fscanf(in, " },\n");
+}
+
+static void
+read_knob_style(struct nk_style_knob* knob, FILE* in)
+{
+	fscanf(in, " {\n");
+
+	/* background */
+	read_style_item_color(&knob->normal, in);
+	read_style_item_color(&knob->hover, in);
+	read_style_item_color(&knob->active, in);
+	read_color(&knob->border_color, in);
+
+	/* knob */
+	read_color(&knob->knob_normal, in);
+	read_color(&knob->knob_hover, in);
+	read_color(&knob->knob_active, in);
+	read_color(&knob->knob_border_color, in);
+
+	/* cursor_normal, cursor_hover, cursor_active */
+	struct nk_style_item tmp = { 0 };
+	read_style_item_color(&tmp, in);
+	read_style_item_color(&tmp, in);
+	read_style_item_color(&tmp, in);
+
+	/* properties */
+	read_float(&knob->border, in);
+	read_float(&knob->knob_border, in);
+	read_vec2(&knob->padding, in);
+	read_vec2(&knob->spacing, in);
+	read_float(&knob->cursor_width, in);
+	read_float(&knob->color_factor, in);
+	read_float(&knob->disabled_factor, in);
+
+	/* unused but need to exist for C code */
+	/* userdata, draw_begout, draw_end */
+	fscanf(in, " { 0 },\nNULL,\nNULL\n");
+	fscanf(in, " },\n");
+}
+
+static void
+read_progress_style(struct nk_style_progress* progress, FILE* in)
+{
+	fscanf(in, " {\n");
+
+	/* background */
+	read_style_item_color(&progress->normal, in);
+	read_style_item_color(&progress->hover, in);
+	read_style_item_color(&progress->active, in);
+	read_color(&progress->border_color, in);
+
+	/* cursor_normal, cursor_hover, cursor_active */
+	struct nk_style_item tmp = { 0 };
+	read_style_item_color(&tmp, in);
+	read_style_item_color(&tmp, in);
+	read_style_item_color(&tmp, in);
+
+	/* properties */
+	read_float(&progress->rounding, in);
+	read_float(&progress->border, in);
+	read_float(&progress->cursor_border, in);
+	read_float(&progress->cursor_rounding, in);
+	read_vec2(&progress->padding, in);
+	read_float(&progress->color_factor, in);
+	read_float(&progress->disabled_factor, in);
+
+	/* unused but need to exist for C code */
+	/* userdata, draw_begout, draw_end */
+	fscanf(in, " { 0 },\nNULL,\nNULL\n");
+	fscanf(in, " },\n");
+}
+
+static void
+read_scrollbar_style(struct nk_style_scrollbar* scroll, FILE* in)
+{
+	fscanf(in, " {\n");
+
+	/* background */
+	read_style_item_color(&scroll->normal, in);
+	read_style_item_color(&scroll->hover, in);
+	read_style_item_color(&scroll->active, in);
+	read_color(&scroll->border_color, in);
+
+	/* cursor_normal, cursor_hover, cursor_active */
+	struct nk_style_item tmp = { 0 };
+	read_style_item_color(&tmp, in);
+	read_style_item_color(&tmp, in);
+	read_style_item_color(&tmp, in);
+
+	/* properties */
+	read_float(&scroll->border, in);
+	read_float(&scroll->rounding, in);
+	read_float(&scroll->border_cursor, in);
+	read_float(&scroll->rounding_cursor, in);
+	read_vec2(&scroll->padding, in);
+	read_float(&scroll->color_factor, in);
+	read_float(&scroll->disabled_factor, in);
+
+	/* optional buttons */
+	/* read_bool? */
+	read_int(&scroll->show_buttons, in);
+
+	read_button_style(&scroll->inc_button, in);
+	read_button_style(&scroll->dec_button, in);
+	/* outt for enums too for now, enums later for better
+	 * human readability */
+	read_int(&scroll->inc_symbol, in);
+	read_int(&scroll->dec_symbol, in);
+
+	/* unused but need to exist for C code */
+	/* userdata, draw_begout, draw_end */
+	fscanf(in, " { 0 },\nNULL,\nNULL\n");
+	fscanf(in, " },\n");
+}
+
+
+static void
+read_edit_style(struct nk_style_edit* edit, FILE* in)
+{
+	fscanf(in, " {\n");
+
+	/* background */
+	read_style_item_color(&edit->normal, in);
+	read_style_item_color(&edit->hover, in);
+	read_style_item_color(&edit->active, in);
+	read_color(&edit->border_color, in);
+	read_scrollbar_style(&edit->scrollbar, in);
+
+	/* cursor */
+	read_color(&edit->cursor_normal, in);
+	read_color(&edit->cursor_hover, in);
+	read_color(&edit->cursor_text_normal, in);
+	read_color(&edit->cursor_text_hover, in);
+
+	/* text unselected */
+	read_color(&edit->text_normal, in);
+	read_color(&edit->text_hover, in);
+	read_color(&edit->text_active, in);
+
+	/* text selected */
+	read_color(&edit->selected_normal, in);
+	read_color(&edit->selected_hover, in);
+	read_color(&edit->selected_text_normal, in);
+	read_color(&edit->selected_text_hover, in);
+
+	/* properties */
+	read_float(&edit->border, in);
+	read_float(&edit->rounding, in);
+	read_float(&edit->cursor_size, in);
+	read_vec2(&edit->scrollbar_size, in);
+	read_vec2(&edit->padding, in);
+	read_float(&edit->row_padding, in);
+	read_float(&edit->color_factor, in);
+	read_float(&edit->disabled_factor, in);
+
+	fscanf(in, " },\n");
+}
+
+
+static void
+read_property_style(struct nk_style_property* property, FILE* in)
+{
+	fscanf(in, " {\n");
+
+	/* background */
+	read_style_item_color(&property->normal, in);
+	read_style_item_color(&property->hover, in);
+	read_style_item_color(&property->active, in);
+	read_color(&property->border_color, in);
+
+	/* text */
+	read_color(&property->label_normal, in);
+	read_color(&property->label_hover, in);
+	read_color(&property->label_active, in);
+
+	/* symbols */
+	read_int(&property->sym_left, in);
+	read_int(&property->sym_right, in);
+
+	/* properties */
+	read_float(&property->border, in);
+	read_float(&property->rounding, in);
+	read_vec2(&property->padding, in);
+	read_float(&property->color_factor, in);
+	read_float(&property->disabled_factor, in);
+
+	/* TODO style_edit */
+	read_edit_style(&property->edit, in);
+	read_button_style(&property->inc_button, in);
+	read_button_style(&property->dec_button, in);
+
+	/* unused but need to exist for C code */
+	/* userdata, draw_begout, draw_end */
+	fscanf(in, " { 0 },\nNULL,\nNULL\n");
+	fscanf(in, " },\n");
+}
+
+static void
+read_chart_style(struct nk_style_chart* chart, FILE* in)
+{
+	fscanf(in, " {\n");
+
+	/* colors */
+	read_style_item_color(&chart->background, in);
+	read_color(&chart->border_color, in);
+	read_color(&chart->selected_color, in);
+	read_color(&chart->color, in);
+
+	/* properties */
+	read_float(&chart->border, in);
+	read_float(&chart->rounding, in);
+	read_vec2(&chart->padding, in);
+	read_float(&chart->color_factor, in);
+	read_float(&chart->disabled_factor, in);
+	/* bool */
+	read_int(&chart->show_markers, in);
+
+	fscanf(in, " },\n");
+}
+
+static void
+read_tab_style(struct nk_style_tab* tab, FILE* in)
+{
+	fscanf(in, " {\n");
+
+	/* background */
+	read_style_item_color(&tab->background, in);
+	read_color(&tab->border_color, in);
+	read_color(&tab->text, in);
+
+	/* button */
+	read_button_style(&tab->tab_maximize_button, in);
+	read_button_style(&tab->tab_minimize_button, in);
+	read_button_style(&tab->node_maximize_button, in);
+	read_button_style(&tab->node_minimize_button, in);
+	read_int(&tab->sym_minimize, in);
+	read_int(&tab->sym_maximize, in);
+
+	/* properties */
+	read_float(&tab->border, in);
+	read_float(&tab->rounding, in);
+	read_float(&tab->indent, in);
+	read_vec2(&tab->padding, in);
+	read_vec2(&tab->spacing, in);
+	read_float(&tab->color_factor, in);
+	read_float(&tab->disabled_factor, in);
+
+	fscanf(in, " },\n");
+}
+
+static void
+read_combo_style(struct nk_style_combo* combo, FILE* in)
+{
+	fscanf(in, " {\n");
+
+	/* background */
+	read_style_item_color(&combo->normal, in);
+	read_style_item_color(&combo->hover, in);
+	read_style_item_color(&combo->active, in);
+	read_color(&combo->border_color, in);
+
+	/* label */
+	read_color(&combo->label_normal, in);
+	read_color(&combo->label_hover, in);
+	read_color(&combo->label_active, in);
+
+	/* symbol */
+	read_color(&combo->symbol_normal, in);
+	read_color(&combo->symbol_hover, in);
+	read_color(&combo->symbol_active, in);
+
+	/* button */
+	read_button_style(&combo->button, in);
+	read_int(&combo->sym_normal, in);
+	read_int(&combo->sym_hover, in);
+	read_int(&combo->sym_active, in);
+
+	/* properties */
+	read_float(&combo->border, in);
+	read_float(&combo->rounding, in);
+	read_vec2(&combo->content_padding, in);
+	read_vec2(&combo->button_padding, in);
+	read_vec2(&combo->spacing, in);
+	read_float(&combo->color_factor, in);
+	read_float(&combo->disabled_factor, in);
+
+	fscanf(in, " },\n");
+}
+
+static void
+read_window_header_style(struct nk_style_window_header* header, FILE* in)
+{
+	fscanf(in, " {\n");
+
+	/* background */
+	read_style_item_color(&header->normal, in);
+	read_style_item_color(&header->hover, in);
+	read_style_item_color(&header->active, in);
+
+	/* button */
+	read_button_style(&header->close_button, in);
+	read_button_style(&header->minimize_button, in);
+	read_int(&header->close_symbol, in);
+	read_int(&header->minimize_symbol, in);
+	read_int(&header->maximize_symbol, in);
+
+	/* title */
+	read_color(&header->label_normal, in);
+	read_color(&header->label_hover, in);
+	read_color(&header->label_active, in);
+
+
+	/* properties */
+	read_int(&header->align, in);
+	read_vec2(&header->padding, in);
+	read_vec2(&header->label_padding, in);
+	read_vec2(&header->spacing, in);
+
+	fscanf(in, " },\n");
+}
+
+static void
+read_window_style(struct nk_style_window* win, FILE* in)
+{
+	fscanf(in, " {\n");
+
+	read_window_header_style(&win->header, in);
+	read_style_item_color(&win->fixed_background, in);
+	read_color(&win->background, in);
+
+	read_color(&win->border_color, in);
+	read_color(&win->popup_border_color, in);
+	read_color(&win->combo_border_color, in);
+	read_color(&win->contextual_border_color, in);
+	read_color(&win->menu_border_color, in);
+	read_color(&win->group_border_color, in);
+	read_color(&win->tooltip_border_color, in);
+	read_style_item_color(&win->scaler, in);
+
+	/* properties */
+	read_float(&win->border, in);
+	read_float(&win->combo_border, in);
+	read_float(&win->contextual_border, in);
+	read_float(&win->menu_border, in);
+	read_float(&win->group_border, in);
+	read_float(&win->tooltip_border, in);
+	read_float(&win->popup_border, in);
+	read_float(&win->min_row_height_padding, in);
+
+	read_float(&win->rounding, in);
+	read_vec2(&win->spacing, in);
+	read_vec2(&win->scrollbar_size, in);
+	read_vec2(&win->min_size, in);
+
+	read_vec2(&win->padding, in);
+	read_vec2(&win->group_padding, in);
+	read_vec2(&win->popup_padding, in);
+	read_vec2(&win->combo_padding, in);
+	read_vec2(&win->contextual_padding, in);
+	read_vec2(&win->menu_padding, in);
+	read_vec2(&win->tooltip_padding, in);
+
+	read_int(&win->tooltip_origin, in);
+	read_vec2(&win->tooltip_offset, in);
+
+	fscanf(in, " },\n");
+}
+
+static void
+read_styles(struct nk_context* ctx, FILE* in)
+{
+	struct nk_style* style;
+
+	NK_ASSERT(ctx);
+	if (!ctx) return;
+	style = &ctx->style;
+
+	if (!in) {
+		in = stdin;
+	}
+
+	fscanf(in, " {\n");
+
+	/* *font, *cursors[], *cursor_active, *cursor_last, outt cursor visible */
+	fscanf(in, " NULL, { NULL }, NULL, NULL, 0,\n");
+
+	read_text_style(&style->text, in);
+
+	read_button_style(&style->button, in);
+
+	read_button_style(&style->contextual_button, in);
+	read_button_style(&style->menu_button, in);
+
+	read_toggle_style(&style->option, in);
+	read_toggle_style(&style->checkbox, in);
+
+	read_selectable_style(&style->selectable, in);
+	read_slider_style(&style->slider, in);
+	read_knob_style(&style->knob, in);
+	read_progress_style(&style->progress, in);
+
+	read_property_style(&style->property, in);
+
+	read_edit_style(&style->edit, in);
+	read_chart_style(&style->chart, in);
+
+	read_scrollbar_style(&style->scrollh, in);
+	read_scrollbar_style(&style->scrollv, in);
+
+	read_tab_style(&style->tab, in);
+	read_combo_style(&style->combo, in);
+
+	read_window_style(&style->window, in);
+
+	fscanf(in, " };\n");
+}
+
+
+
+
+
+
+
 
 /*TODO rgba options*/
 static int
@@ -2020,7 +2668,7 @@ style_window(struct nk_context* ctx, struct nk_style_window* out_style)
 }
 
 static int
-style_configurator(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_COUNT], struct nk_style* used_style)
+style_configurator(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_COUNT])
 {
 	/* window flags */
 	int border = nk_true;
@@ -2032,7 +2680,6 @@ style_configurator(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_
 	int minimizable = nk_true;
 	struct nk_style *style = NULL;
 	struct nk_style_button* dups[1];
-	static struct nk_style tmp_style;
 
 	/* window flags */
 	window_flags = 0;
@@ -2043,10 +2690,7 @@ style_configurator(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_
 	if (scale_left) window_flags |= NK_WINDOW_SCALE_LEFT;
 	if (minimizable) window_flags |= NK_WINDOW_MINIMIZABLE;
 
-	memcpy(&tmp_style, &ctx->style, sizeof(tmp_style));
-	memcpy(&ctx->style, used_style, sizeof(tmp_style));
-
-	style = &tmp_style;
+	style =&ctx->style;
 
 	if (nk_begin(ctx, "Configurator", nk_rect(10, 10, 400, 600), window_flags))
 	{
@@ -2059,6 +2703,9 @@ style_configurator(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_
 			}
 			if (nk_button_label(ctx, "Export global color styles with labels")) {
 				export_global_color_table(ctx, color_table, nk_true, stdout);
+			}
+			if (nk_button_label(ctx, "Load global color styles")) {
+				load_global_color_table(ctx, color_table, stdin);
 			}
 
 			nk_tree_pop(ctx);
@@ -2178,14 +2825,18 @@ style_configurator(struct nk_context* ctx, struct nk_color color_table[NK_COLOR_
 			memcpy(color_table, nk_default_color_style, sizeof(nk_default_color_style));
 			nk_style_default(ctx);
 		}
-		if (nk_button_label(ctx, "Export styles")) {
+		if (nk_button_label(ctx, "Export colors and styles")) {
+			export_global_color_table(ctx, color_table, nk_false, stdout);
 			export_styles(ctx, stdout);
+		}
+		if (nk_button_label(ctx, "Load colors and styles")) {
+			load_global_color_table(ctx, color_table, stdin);
+			read_styles(ctx, stdin);
 		}
 
 	}
 
 	nk_end(ctx);
 
-	memcpy(&ctx->style, &tmp_style, sizeof(tmp_style));
 	return !nk_window_is_closed(ctx, "Configurator");
 }
