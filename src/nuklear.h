@@ -4500,7 +4500,8 @@ enum nk_command_type {
     NK_COMMAND_POLYLINE,
     NK_COMMAND_TEXT,
     NK_COMMAND_IMAGE,
-    NK_COMMAND_CUSTOM
+    NK_COMMAND_CUSTOM,
+    NK_COMMAND_POLYLINE_FLOAT
 };
 
  /** command base and header of every command inside the buffer */
@@ -4632,6 +4633,14 @@ struct nk_command_polyline {
     unsigned short line_thickness;
     unsigned short point_count;
     struct nk_vec2i points[1];
+};
+
+struct nk_command_polyline_float {
+    struct nk_command header;
+    struct nk_color color;
+    unsigned short line_thickness;
+    unsigned short point_count;
+    struct nk_vec2 *points;
 };
 
 struct nk_command_image {
