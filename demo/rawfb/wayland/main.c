@@ -180,14 +180,42 @@ static void nk_wayland_pointer_button (void *data, struct wl_pointer *pointer, u
     NK_UNUSED(serial);
     NK_UNUSED(time);
 
-    if (button == 272){ //left mouse button
+    switch (button) {
+    case 272: // Left Mouse Button
         if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
-           // printf("nk_input_button x=%d, y=%d press: 1 \n", win->mouse_pointer_x, win->mouse_pointer_y);
             nk_input_button(&(win->rawfb->ctx), NK_BUTTON_LEFT, win->mouse_pointer_x, win->mouse_pointer_y, 1);
-
         } else if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
             nk_input_button(&(win->rawfb->ctx), NK_BUTTON_LEFT, win->mouse_pointer_x, win->mouse_pointer_y, 0);
         }
+        break;
+    case 273: // Right Mouse Button
+        if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
+            nk_input_button(&(win->rawfb->ctx), NK_BUTTON_RIGHT, win->mouse_pointer_x, win->mouse_pointer_y, 1);
+        } else if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
+            nk_input_button(&(win->rawfb->ctx), NK_BUTTON_RIGHT, win->mouse_pointer_x, win->mouse_pointer_y, 0);
+        }
+        break;
+    case 274: // Middle Mouse Button
+        if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
+            nk_input_button(&(win->rawfb->ctx), NK_BUTTON_MIDDLE, win->mouse_pointer_x, win->mouse_pointer_y, 1);
+        } else if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
+            nk_input_button(&(win->rawfb->ctx), NK_BUTTON_MIDDLE, win->mouse_pointer_x, win->mouse_pointer_y, 0);
+        }
+        break;
+    case 275: // X1
+        if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
+            nk_input_button(&(win->rawfb->ctx), NK_BUTTON_X1, win->mouse_pointer_x, win->mouse_pointer_y, 1);
+        } else if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
+            nk_input_button(&(win->rawfb->ctx), NK_BUTTON_X1, win->mouse_pointer_x, win->mouse_pointer_y, 0);
+        }
+        break;
+    case 276: // X2
+        if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
+            nk_input_button(&(win->rawfb->ctx), NK_BUTTON_X2, win->mouse_pointer_x, win->mouse_pointer_y, 1);
+        } else if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
+            nk_input_button(&(win->rawfb->ctx), NK_BUTTON_X2, win->mouse_pointer_x, win->mouse_pointer_y, 0);
+        }
+        break;
     }
 }
 

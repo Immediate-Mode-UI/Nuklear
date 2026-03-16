@@ -613,7 +613,9 @@ enum nk_buttons {
     NK_BUTTON_LEFT,
     NK_BUTTON_MIDDLE,
     NK_BUTTON_RIGHT,
-    NK_BUTTON_DOUBLE,
+    NK_BUTTON_DOUBLE, /* Double click of the Left mouse button. */
+    NK_BUTTON_X1, /* Commonly used for "Back" in UI navigation. Mouse Button 4. */
+    NK_BUTTON_X2, /* Commonly used for "Forward" in UI navigation. Mouse Button 5. */
     NK_BUTTON_MAX
 };
 
