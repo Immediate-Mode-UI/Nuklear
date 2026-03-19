@@ -1218,7 +1218,7 @@ cleanup:
     return ret;
 }
 
-bool create_shader_module(VkDevice device, char *shader_buffer,
+bool create_shader_module(VkDevice device, uint32_t *shader_buffer,
                           size_t shader_buffer_len,
                           VkShaderModule *shader_module) {
     VkShaderModuleCreateInfo create_info;
@@ -1227,7 +1227,7 @@ bool create_shader_module(VkDevice device, char *shader_buffer,
     memset(&create_info, 0, sizeof(VkShaderModuleCreateInfo));
     create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     create_info.codeSize = shader_buffer_len;
-    create_info.pCode = (const uint32_t *)shader_buffer;
+    create_info.pCode = shader_buffer;
 
     result = vkCreateShaderModule(device, &create_info, NULL, shader_module);
     if (result != VK_SUCCESS) {
@@ -1263,7 +1263,7 @@ bool create_graphics_pipeline(struct vulkan_demo *demo) {
     VkGraphicsPipelineCreateInfo pipeline_info;
     size_t read_result;
 
-    fp = fopen("shaders/demo.vert.spv", "r");
+    fp = fopen("shaders/demo.vert.spv", "rb");
     if (!fp) {
         fprintf(stderr, "Couldn't open shaders/demo.vert.spv\n");
         return false;
@@ -1274,8 +1274,7 @@ bool create_graphics_pipeline(struct vulkan_demo *demo) {
     fseek(fp, 0, 0);
     read_result = fread(vert_shader_code, 4, file_len, fp);
     fclose(fp);
-    /* For some reason doesn't match length of actual file */
-    if (read_result == 0) {
+    if (read_result != file_len/4) {
         fprintf(stderr, "Could not read vertex shader\n");
         goto cleanup;
     }
@@ -1285,7 +1284,7 @@ bool create_graphics_pipeline(struct vulkan_demo *demo) {
         goto cleanup;
     }
 
-    fp = fopen("shaders/demo.frag.spv", "r");
+    fp = fopen("shaders/demo.frag.spv", "rb");
     if (!fp) {
         fprintf(stderr, "Couldn't open shaders/demo.frag.spv\n");
         return false;
