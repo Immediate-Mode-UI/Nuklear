@@ -89,8 +89,7 @@ Also optionally define the symbols listed in the section "OPTIONAL DEFINES"
 below in header and implementation mode if you want to use additional functionality
 or need more control over the library.
 
-!!! WARNING
-    Every time nuklear is included define the same compiler flags. This very important not doing so could lead to compiler errors or even worse stack corruptions.
+\warning Every time nuklear is included define the same compiler flags. This very important not doing so could lead to compiler errors or even worse stack corruptions.
 
 ### Flags
 Flag                            | Description
@@ -111,14 +110,12 @@ NK_UINT_DRAW_INDEX              | Defining this will set the size of vertex inde
 NK_KEYSTATE_BASED_INPUT         | Define this if your backend uses key state for each frame rather than key press/release events
 NK_IS_WORD_BOUNDARY(c)          | Define this to a function macro that takes a single nk_rune (nk_uint) and returns true if it's a word separator. If not defined, uses the default definition (see nk_is_word_boundary())
 
-!!! WARNING
-    The following flags will pull in the standard C library:
+\warning The following flags will pull in the standard C library:
     - NK_INCLUDE_DEFAULT_ALLOCATOR
     - NK_INCLUDE_STANDARD_IO
     - NK_INCLUDE_STANDARD_VARARGS
 
-!!! WARNING
-    The following flags if defined need to be defined for both header and implementation:
+\warning The following flags if defined need to be defined for both header and implementation:
     - NK_INCLUDE_FIXED_TYPES
     - NK_INCLUDE_DEFAULT_ALLOCATOR
     - NK_INCLUDE_STANDARD_VARARGS
@@ -137,8 +134,7 @@ NK_BUFFER_DEFAULT_INITIAL_SIZE  | Initial buffer size allocated by all buffers w
 NK_MAX_NUMBER_BUFFER            | Maximum buffer size for the conversion buffer between float and string Under normal circumstances this should be more than sufficient.
 NK_INPUT_MAX                    | Defines the max number of bytes which can be added as text input in one frame. Under normal circumstances this should be more than sufficient.
 
-!!! WARNING
-    The following constants if defined need to be defined for both header and implementation:
+\warning The following constants if defined need to be defined for both header and implementation:
     - NK_MAX_NUMBER_BUFFER
     - NK_BUFFER_DEFAULT_INITIAL_SIZE
     - NK_INPUT_MAX
@@ -156,16 +152,13 @@ NK_STRTOD   | You can define this to `strtod` or your own string to double conve
 NK_DTOA     | You can define this to `dtoa` or your own double to string conversion implementation replacement. If not defined nuklear will use its own imprecise and possibly unsafe version (does not handle nan or infinity!).
 NK_VSNPRINTF| If you define `NK_INCLUDE_STANDARD_VARARGS` as well as `NK_INCLUDE_STANDARD_IO` and want to be safe define this to `vsnprintf` on compilers supporting later versions of C or C++. By default nuklear will check for your stdlib version in C as well as compiler version in C++. if `vsnprintf` is available it will define it to `vsnprintf` directly. If not defined and if you have older versions of C or C++ it will be defined to `vsprintf` which is unsafe.
 
-!!! WARNING
-    The following dependencies will pull in the standard C library if not redefined:
+\warning The following dependencies will pull in the standard C library if not redefined:
     - NK_ASSERT
 
-!!! WARNING
-    The following dependencies if defined need to be defined for both header and implementation:
+\warning The following dependencies if defined need to be defined for both header and implementation:
     - NK_ASSERT
 
-!!! WARNING
-    The following dependencies if defined need to be defined only for the implementation part:
+\warning The following dependencies if defined need to be defined only for the implementation part:
     - NK_MEMSET
     - NK_MEMCPY
     - NK_SQRT
@@ -633,8 +626,7 @@ NK_API nk_bool nk_init_default(struct nk_context*, const struct nk_user_font*);
  * nk_bool nk_init_fixed(struct nk_context *ctx, void *memory, nk_size size, const struct nk_user_font *font);
  * ```
  *
- * !!! Warning
- *     make sure the passed memory block is aligned correctly for `nk_draw_commands`.
+ * \warning Make sure the passed memory block is aligned correctly for `nk_draw_commands`.
  *
  * Parameter   | Description
  * ------------|--------------------------------------------------------------
@@ -922,8 +914,7 @@ NK_API void nk_input_scroll(struct nk_context*, struct nk_vec2 val);
  * This is basically a helper function to quickly push ASCII characters into
  * nuklear.
  *
- * \note
- *     Stores up to NK_INPUT_MAX bytes between `nk_input_begin` and `nk_input_end`.
+ * \note Stores up to NK_INPUT_MAX bytes between `nk_input_begin` and `nk_input_end`.
  *
  * ```c
  * void nk_input_char(struct nk_context *ctx, char c);
@@ -938,8 +929,7 @@ NK_API void nk_input_char(struct nk_context*, char);
  * \brief Converts an encoded unicode rune into UTF-8 and copies the result into an
  * internal text buffer.
  *
- * \note
- *     Stores up to NK_INPUT_MAX bytes between `nk_input_begin` and `nk_input_end`.
+ * \note Stores up to NK_INPUT_MAX bytes between `nk_input_begin` and `nk_input_end`.
  *
  * ```c
  * void nk_input_glyph(struct nk_context *ctx, const nk_glyph g);
@@ -955,8 +945,7 @@ NK_API void nk_input_glyph(struct nk_context*, const nk_glyph);
  * into an internal text buffer.
  *
  * \details
- * \note
- *     Stores up to NK_INPUT_MAX bytes between `nk_input_begin` and `nk_input_end`.
+ * \note Stores up to NK_INPUT_MAX bytes between `nk_input_begin` and `nk_input_end`.
  *
  * ```c
  * void nk_input_unicode(struct nk_context*, nk_rune rune);
@@ -1632,8 +1621,7 @@ NK_API struct nk_window *nk_window_find(const struct nk_context *ctx, const char
  * # # nk_window_get_bounds
  * \returns a rectangle with screen position and size of the currently processed window
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  * ```c
  * struct nk_rect nk_window_get_bounds(const struct nk_context *ctx);
  * ```
@@ -1651,8 +1639,7 @@ NK_API struct nk_rect nk_window_get_bounds(const struct nk_context *ctx);
  * # # nk_window_get_position
  * \returns the position of the currently processed window.
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  * ```c
  * struct nk_vec2 nk_window_get_position(const struct nk_context *ctx);
  * ```
@@ -1670,8 +1657,7 @@ NK_API struct nk_vec2 nk_window_get_position(const struct nk_context *ctx);
  * # # nk_window_get_size
  * \returns the size with width and height of the currently processed window.
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  * ```c
  * struct nk_vec2 nk_window_get_size(const struct nk_context *ctx);
  * ```
@@ -1689,8 +1675,7 @@ NK_API struct nk_vec2 nk_window_get_size(const struct nk_context *ctx);
  * nk_window_get_width
  * \returns the width of the currently processed window.
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  * ```c
  * float nk_window_get_width(const struct nk_context *ctx);
  * ```
@@ -1707,8 +1692,7 @@ NK_API float nk_window_get_width(const struct nk_context *ctx);
  * # # nk_window_get_height
  * \returns the height of the currently processed window.
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  * ```c
  * float nk_window_get_height(const struct nk_context *ctx);
  * ```
@@ -1726,10 +1710,8 @@ NK_API float nk_window_get_height(const struct nk_context* ctx);
  * # # nk_window_get_panel
  * \returns the underlying panel which contains all processing state of the current window.
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
- * !!! \warning
- *     Do not keep the returned panel pointer around, it is only valid until `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Do not keep the returned panel pointer around, it is only valid until `nk_end`
  * ```c
  * struct nk_panel* nk_window_get_panel(struct nk_context *ctx);
  * ```
@@ -1748,8 +1730,7 @@ NK_API struct nk_panel* nk_window_get_panel(const struct nk_context* ctx);
  * \returns the position and size of the currently visible and non-clipped space
  * inside the currently processed window.
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  *
  * ```c
  * struct nk_rect nk_window_get_content_region(struct nk_context *ctx);
@@ -1770,8 +1751,7 @@ NK_API struct nk_rect nk_window_get_content_region(const struct nk_context* ctx)
  * \returns the upper left position of the currently visible and non-clipped
  * space inside the currently processed window.
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  *
  * ```c
  * struct nk_vec2 nk_window_get_content_region_min(struct nk_context *ctx);
@@ -1792,8 +1772,7 @@ NK_API struct nk_vec2 nk_window_get_content_region_min(const struct nk_context *
  * \returns the lower right screen position of the currently visible and
  * non-clipped space inside the currently processed window.
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  *
  * ```c
  * struct nk_vec2 nk_window_get_content_region_max(struct nk_context *ctx);
@@ -1814,8 +1793,7 @@ NK_API struct nk_vec2 nk_window_get_content_region_max(const struct nk_context *
  * \returns the size of the currently visible and non-clipped space inside the
  * currently processed window
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  *
  * ```c
  * struct nk_vec2 nk_window_get_content_region_size(struct nk_context *ctx);
@@ -1833,10 +1811,8 @@ NK_API struct nk_vec2 nk_window_get_content_region_size(const struct nk_context 
 /**
  * # # nk_window_get_canvas
  * \returns the draw command buffer. Can be used to draw custom widgets
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
- * !!! \warning
- *     Do not keep the returned command buffer pointer around it is only valid until `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Do not keep the returned command buffer pointer around it is only valid until `nk_end`
  *
  * ```c
  * struct nk_command_buffer* nk_window_get_canvas(struct nk_context *ctx);
@@ -1854,8 +1830,7 @@ NK_API struct nk_command_buffer* nk_window_get_canvas(const struct nk_context* c
 /**
  * # # nk_window_get_scroll
  * Gets the scroll offset for the current window
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  *
  * ```c
  * void nk_window_get_scroll(struct nk_context *ctx, nk_uint *offset_x, nk_uint *offset_y);
@@ -1873,8 +1848,7 @@ NK_API void nk_window_get_scroll(const struct nk_context *ctx, nk_uint *offset_x
 /**
  * # # nk_window_has_focus
  * \returns if the currently processed window is currently active
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  * ```c
  * nk_bool nk_window_has_focus(const struct nk_context *ctx);
  * ```
@@ -1891,8 +1865,7 @@ NK_API nk_bool nk_window_has_focus(const struct nk_context *ctx);
 /**
  * # # nk_window_is_hovered
  * Return if the current window is being hovered
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  * ```c
  * nk_bool nk_window_is_hovered(struct nk_context *ctx);
  * ```
@@ -2073,8 +2046,7 @@ NK_API void nk_window_set_focus(struct nk_context *ctx, const char *name);
 /**
  * # # nk_window_set_scroll
  * Sets the scroll offset for the current window
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  *
  * ```c
  * void nk_window_set_scroll(struct nk_context *ctx, nk_uint offset_x, nk_uint offset_y);
@@ -2472,8 +2444,7 @@ enum nk_widget_alignment {
 
 /**
  * Sets the currently used minimum row height.
- * !!! \warning
- *     The passed height needs to include both your preferred row height
+ * \warning The passed height needs to include both your preferred row height
  *     as well as padding. No internal padding is added.
  *
  * ```c
@@ -3070,9 +3041,8 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
  * or hidden and therefore does not need to be filled with content or `true(1)`
  * if visible and required to be filled.
  *
- * !!! Note
- *     The tree header does not require and layouting function and instead
- *     calculates a auto height based on the currently used font size
+ * \note The tree header does not require and layouting function and instead
+ * calculates a auto height based on the currently used font size
  *
  * The tree ending functions only need to be called if the tree content is
  * actually visible. So make sure the tree push function is guarded by `if`
@@ -3110,8 +3080,7 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
 /**
  * # # nk_tree_push
  * Starts a collapsible UI section with internal state management
- * !!! \warning
- *     To keep track of the runtime tree collapsible state this function uses
+ * \warning To keep track of the runtime tree collapsible state this function uses
  *     defines `__FILE__` and `__LINE__` to generate a unique ID. If you want
  *     to call this function in a loop please use `nk_tree_push_id` or
  *     `nk_tree_push_hashed` instead.
@@ -3175,8 +3144,7 @@ NK_API nk_bool nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const 
 /**
  * # # nk_tree_image_push
  * Start a collapsible UI section with image and label header
- * !!! \warning
- *     To keep track of the runtime tree collapsible state this function uses
+ * \warning To keep track of the runtime tree collapsible state this function uses
  *     defines `__FILE__` and `__LINE__` to generate a unique ID. If you want
  *     to call this function in a loop please use `nk_tree_image_push_id` or
  *     `nk_tree_image_push_hashed` instead.
@@ -3590,8 +3558,7 @@ NK_API nk_bool nk_color_pick(struct nk_context*, struct nk_colorf*, enum nk_colo
 
  * # # nk_property_int
  * Integer property directly modifying a passed in value
- * !!! \warning
- *     To generate a unique property ID using the same label make sure to insert
+ * \warning To generate a unique property ID using the same label make sure to insert
  *     a `#` at the beginning. It will not be shown but guarantees correct behavior.
  *
  * ```c
@@ -3615,8 +3582,7 @@ NK_API nk_bool nk_property_int(struct nk_context*, const char *name, int min, in
 /**
  * # # nk_property_float
  * Float property directly modifying a passed in value
- * !!! \warning
- *     To generate a unique property ID using the same label make sure to insert
+ * \warning To generate a unique property ID using the same label make sure to insert
  *     a `#` at the beginning. It will not be shown but guarantees correct behavior.
  *
  * ```c
@@ -3640,8 +3606,7 @@ NK_API nk_bool nk_property_float(struct nk_context*, const char *name, float min
 /**
  * # # nk_property_double
  * Double property directly modifying a passed in value
- * !!! \warning
- *     To generate a unique property ID using the same label make sure to insert
+ * \warning To generate a unique property ID using the same label make sure to insert
  *     a `#` at the beginning. It will not be shown but guarantees correct behavior.
  *
  * ```c
@@ -3665,8 +3630,7 @@ NK_API nk_bool nk_property_double(struct nk_context*, const char *name, double m
 /**
  * # # nk_propertyi
  * Integer property modifying a passed in value and returning the new value
- * !!! \warning
- *     To generate a unique property ID using the same label make sure to insert
+ * \warning To generate a unique property ID using the same label make sure to insert
  *     a `#` at the beginning. It will not be shown but guarantees correct behavior.
  *
  * ```c
@@ -3688,8 +3652,7 @@ NK_API int nk_propertyi(struct nk_context*, const char *name, int min, int val, 
 /**
  * # # nk_propertyf
  * Float property modifying a passed in value and returning the new value
- * !!! \warning
- *     To generate a unique property ID using the same label make sure to insert
+ * \warning To generate a unique property ID using the same label make sure to insert
  *     a `#` at the beginning. It will not be shown but guarantees correct behavior.
  *
  * ```c
@@ -3711,8 +3674,7 @@ NK_API float nk_propertyf(struct nk_context*, const char *name, float min, float
 /**
  * # # nk_propertyd
  * Float property modifying a passed in value and returning the new value
- * !!! \warning
- *     To generate a unique property ID using the same label make sure to insert
+ * \warning To generate a unique property ID using the same label make sure to insert
  *     a `#` at the beginning. It will not be shown but guarantees correct behavior.
  *
  * ```c

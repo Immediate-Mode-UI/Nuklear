@@ -88,8 +88,7 @@ Also optionally define the symbols listed in the section "OPTIONAL DEFINES"
 below in header and implementation mode if you want to use additional functionality
 or need more control over the library.
 
-!!! WARNING
-    Every time nuklear is included define the same compiler flags. This very important not doing so could lead to compiler errors or even worse stack corruptions.
+\warning Every time nuklear is included define the same compiler flags. This very important not doing so could lead to compiler errors or even worse stack corruptions.
 
 ### Flags
 Flag                            | Description
@@ -110,14 +109,12 @@ NK_UINT_DRAW_INDEX              | Defining this will set the size of vertex inde
 NK_KEYSTATE_BASED_INPUT         | Define this if your backend uses key state for each frame rather than key press/release events
 NK_IS_WORD_BOUNDARY(c)          | Define this to a function macro that takes a single nk_rune (nk_uint) and returns true if it's a word separator. If not defined, uses the default definition (see nk_is_word_boundary())
 
-!!! WARNING
-    The following flags will pull in the standard C library:
+\warning The following flags will pull in the standard C library:
     - NK_INCLUDE_DEFAULT_ALLOCATOR
     - NK_INCLUDE_STANDARD_IO
     - NK_INCLUDE_STANDARD_VARARGS
 
-!!! WARNING
-    The following flags if defined need to be defined for both header and implementation:
+\warning The following flags if defined need to be defined for both header and implementation:
     - NK_INCLUDE_FIXED_TYPES
     - NK_INCLUDE_DEFAULT_ALLOCATOR
     - NK_INCLUDE_STANDARD_VARARGS
@@ -136,8 +133,7 @@ NK_BUFFER_DEFAULT_INITIAL_SIZE  | Initial buffer size allocated by all buffers w
 NK_MAX_NUMBER_BUFFER            | Maximum buffer size for the conversion buffer between float and string Under normal circumstances this should be more than sufficient.
 NK_INPUT_MAX                    | Defines the max number of bytes which can be added as text input in one frame. Under normal circumstances this should be more than sufficient.
 
-!!! WARNING
-    The following constants if defined need to be defined for both header and implementation:
+\warning The following constants if defined need to be defined for both header and implementation:
     - NK_MAX_NUMBER_BUFFER
     - NK_BUFFER_DEFAULT_INITIAL_SIZE
     - NK_INPUT_MAX
@@ -155,16 +151,13 @@ NK_STRTOD   | You can define this to `strtod` or your own string to double conve
 NK_DTOA     | You can define this to `dtoa` or your own double to string conversion implementation replacement. If not defined nuklear will use its own imprecise and possibly unsafe version (does not handle nan or infinity!).
 NK_VSNPRINTF| If you define `NK_INCLUDE_STANDARD_VARARGS` as well as `NK_INCLUDE_STANDARD_IO` and want to be safe define this to `vsnprintf` on compilers supporting later versions of C or C++. By default nuklear will check for your stdlib version in C as well as compiler version in C++. if `vsnprintf` is available it will define it to `vsnprintf` directly. If not defined and if you have older versions of C or C++ it will be defined to `vsprintf` which is unsafe.
 
-!!! WARNING
-    The following dependencies will pull in the standard C library if not redefined:
+\warning The following dependencies will pull in the standard C library if not redefined:
     - NK_ASSERT
 
-!!! WARNING
-    The following dependencies if defined need to be defined for both header and implementation:
+\warning The following dependencies if defined need to be defined for both header and implementation:
     - NK_ASSERT
 
-!!! WARNING
-    The following dependencies if defined need to be defined only for the implementation part:
+\warning The following dependencies if defined need to be defined only for the implementation part:
     - NK_MEMSET
     - NK_MEMCPY
     - NK_SQRT
