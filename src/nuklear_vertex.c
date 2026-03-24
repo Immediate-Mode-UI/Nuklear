@@ -229,7 +229,7 @@ nk_draw_list_alloc_vertices(struct nk_draw_list *list, nk_size count)
     /* This assert triggers because your are drawing a lot of stuff and nuklear
      * defined `nk_draw_index` as `nk_ushort` to safe space be default.
      *
-     * So you reached the maximum number of indices or rather vertexes.
+     * So you reached the maximum number of indices or rather vertices.
      * To solve this issue please change typedef `nk_draw_index` to `nk_uint`
      * and don't forget to specify the new element size in your drawing
      * backend (OpenGL, DirectX, ...). For example in OpenGL for `glDrawElements`

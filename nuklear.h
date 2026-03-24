@@ -1151,7 +1151,7 @@ NK_API void nk_input_end(struct nk_context*);
  * hardware directly. Therefore it is possible to just define
  * `NK_INCLUDE_VERTEX_BUFFER_OUTPUT` which includes optional vertex output.
  * To access the vertex output you first have to convert all draw commands into
- * vertexes by calling `nk_convert` which takes in your preferred vertex format.
+ * vertices by calling `nk_convert` which takes in your preferred vertex format.
  * After successfully converting all draw commands just iterate over and execute all
  * vertex draw commands:
  *
@@ -1282,7 +1282,7 @@ NK_API const struct nk_command* nk__next(struct nk_context*, const struct nk_com
 
 /**
  * \brief Converts all internal draw commands into vertex draw commands and fills
- * three buffers with vertexes, vertex draw commands and vertex indices.
+ * three buffers with vertices, vertex draw commands and vertex indices.
  *
  * \details
  * The vertex format as well as some other configuration values have to be
@@ -4993,7 +4993,7 @@ NK_API nk_bool nk_input_is_key_down(const struct nk_input*, enum nk_keys);
  * \page "Draw List"
  * The optional vertex buffer draw list provides a 2D drawing context
  * with antialiasing functionality which takes basic filled or outlined shapes
- * or a path and outputs vertexes, elements and draw commands.
+ * or a path and outputs vertices, elements and draw commands.
  * The actual draw list API is not required to be used directly while using this
  * library since converting the default library draw command output is done by
  * just calling `nk_convert` but I decided to still make this library accessible
@@ -10058,7 +10058,7 @@ nk_draw_list_alloc_vertices(struct nk_draw_list *list, nk_size count)
     /* This assert triggers because your are drawing a lot of stuff and nuklear
      * defined `nk_draw_index` as `nk_ushort` to safe space be default.
      *
-     * So you reached the maximum number of indices or rather vertexes.
+     * So you reached the maximum number of indices or rather vertices.
      * To solve this issue please change typedef `nk_draw_index` to `nk_uint`
      * and don't forget to specify the new element size in your drawing
      * backend (OpenGL, DirectX, ...). For example in OpenGL for `glDrawElements`
