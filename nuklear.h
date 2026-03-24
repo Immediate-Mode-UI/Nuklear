@@ -3762,8 +3762,11 @@ enum nk_edit_events {
     NK_EDIT_INACTIVE    = NK_FLAG(1), /**!< edit widget is not active and is not being modified */
     NK_EDIT_ACTIVATED   = NK_FLAG(2), /**!< edit widget went from state inactive to state active */
     NK_EDIT_DEACTIVATED = NK_FLAG(3), /**!< edit widget went from state active to state inactive */
-    NK_EDIT_COMMITED    = NK_FLAG(4)  /**!< edit widget has received an enter and lost focus */
+    NK_EDIT_COMMITTED   = NK_FLAG(4)  /**!< edit widget has received an enter and lost focus */
 };
+
+#define NK_EDIT_COMMITED NK_EDIT_COMMITTED
+
 NK_API nk_flags nk_edit_string(struct nk_context*, nk_flags, char *buffer, int *len, int max, nk_plugin_filter);
 NK_API nk_flags nk_edit_string_zero_terminated(struct nk_context*, nk_flags, char *buffer, int max, nk_plugin_filter);
 NK_API nk_flags nk_edit_buffer(struct nk_context*, nk_flags, struct nk_text_edit*, nk_plugin_filter);
@@ -28189,7 +28192,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
             if (flags & NK_EDIT_CTRL_ENTER_NEWLINE && shift_mod)
                 nk_textedit_text(edit, "\n", 1);
             else if (flags & NK_EDIT_SIG_ENTER)
-                ret |= NK_EDIT_COMMITED;
+                ret |= NK_EDIT_COMMITTED;
             else nk_textedit_text(edit, "\n", 1);
         }
 
