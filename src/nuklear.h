@@ -1405,7 +1405,8 @@ NK_API struct nk_window *nk_window_find(const struct nk_context *ctx, const char
  * # # nk_window_get_bounds
  * \returns a rectangle with screen position and size of the currently processed window
  *
- * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`.
+ *
  * ```c
  * struct nk_rect nk_window_get_bounds(const struct nk_context *ctx);
  * ```
@@ -1423,7 +1424,8 @@ NK_API struct nk_rect nk_window_get_bounds(const struct nk_context *ctx);
  * # # nk_window_get_position
  * \returns the position of the currently processed window.
  *
- * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`.
+ *
  * ```c
  * struct nk_vec2 nk_window_get_position(const struct nk_context *ctx);
  * ```
@@ -1441,7 +1443,8 @@ NK_API struct nk_vec2 nk_window_get_position(const struct nk_context *ctx);
  * # # nk_window_get_size
  * \returns the size with width and height of the currently processed window.
  *
- * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`.
+ *
  * ```c
  * struct nk_vec2 nk_window_get_size(const struct nk_context *ctx);
  * ```
@@ -1459,7 +1462,8 @@ NK_API struct nk_vec2 nk_window_get_size(const struct nk_context *ctx);
  * nk_window_get_width
  * \returns the width of the currently processed window.
  *
- * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`.
+ *
  * ```c
  * float nk_window_get_width(const struct nk_context *ctx);
  * ```
@@ -1476,7 +1480,8 @@ NK_API float nk_window_get_width(const struct nk_context *ctx);
  * # # nk_window_get_height
  * \returns the height of the currently processed window.
  *
- * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`.
+ *
  * ```c
  * float nk_window_get_height(const struct nk_context *ctx);
  * ```
@@ -1495,7 +1500,9 @@ NK_API float nk_window_get_height(const struct nk_context* ctx);
  * \returns the underlying panel which contains all processing state of the current window.
  *
  * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
- * \warning Do not keep the returned panel pointer around, it is only valid until `nk_end`
+ *
+ * \warning Do not keep the returned panel pointer around, it is only valid until `nk_end`.
+ *
  * ```c
  * struct nk_panel* nk_window_get_panel(struct nk_context *ctx);
  * ```
@@ -1632,7 +1639,8 @@ NK_API void nk_window_get_scroll(const struct nk_context *ctx, nk_uint *offset_x
 /**
  * # # nk_window_has_focus
  * \returns if the currently processed window is currently active
- * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`.
+ *
  * ```c
  * nk_bool nk_window_has_focus(const struct nk_context *ctx);
  * ```
@@ -1649,7 +1657,8 @@ NK_API nk_bool nk_window_has_focus(const struct nk_context *ctx);
 /**
  * # # nk_window_is_hovered
  * Return if the current window is being hovered
- * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`.
+ *
  * ```c
  * nk_bool nk_window_is_hovered(struct nk_context *ctx);
  * ```
