@@ -1178,7 +1178,7 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
  * order. The topmost window thereby is the currently active window.<br /><br />
  *
  * To change window position inside the stack occurs either automatically by
- * user input by being clicked on or programmatically by calling `nk_window_focus`.
+ * user input by being clicked on or programmatically by calling `nk_window_set_focus`.
  * Windows by default are visible unless explicitly being defined with flag
  * `NK_WINDOW_HIDDEN`, the user clicked the close button on windows with flag
  * `NK_WINDOW_CLOSABLE` or if a window was explicitly hidden by calling
