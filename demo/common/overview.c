@@ -1429,6 +1429,41 @@ overview(struct nk_context *ctx)
             }
             nk_tree_pop(ctx);
         }
+
+        /* Input */
+        if (nk_tree_push(ctx, NK_TREE_TAB, "Input", NK_MINIMIZED))
+        {
+            const struct nk_input *in = &ctx->input;
+            static const char *button_names[NK_BUTTON_MAX] = {
+                "Left", "Middle", "Right", "Double Click", "X1", "X2"
+            };
+            int i;
+
+            /* Mouse Buttons*/
+            nk_layout_row_dynamic(ctx, 30, 1);
+            nk_label(ctx, "Mouse Buttons", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(ctx, 20, 2);
+            for (i = 0; i < NK_BUTTON_MAX; i++) {
+                nk_label(ctx, button_names[i], NK_TEXT_LEFT);
+                if (nk_input_is_mouse_pressed(in, i))
+                    nk_label(ctx, "Pressed", NK_TEXT_LEFT);
+                else if (nk_input_is_mouse_down(in, i))
+                    nk_label(ctx, "Down", NK_TEXT_LEFT);
+                else if (nk_input_is_mouse_released(in, i))
+                    nk_label(ctx, "Released", NK_TEXT_LEFT);
+                else
+                    nk_label(ctx, "Up", NK_TEXT_LEFT);
+            }
+
+            /* Mouse Wheel */
+            nk_layout_row_dynamic(ctx, 30, 1);
+            nk_label(ctx, "Mouse Wheel", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(ctx, 20, 2);
+            nk_labelf(ctx, NK_TEXT_LEFT, "X: %.2f", in->mouse.scroll_delta.x);
+            nk_labelf(ctx, NK_TEXT_LEFT, "Y: %.2f", in->mouse.scroll_delta.y);
+            nk_tree_pop(ctx);
+        }
+
         if (disable_widgets)
      		nk_widget_disable_end(ctx);
     }
