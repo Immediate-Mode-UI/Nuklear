@@ -30780,7 +30780,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 /// ## Changelog
-/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~none
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 /// The CHANGELOG can be found for each release in:
 /// https://github.com/Immediate-Mode-UI/Nuklear/releases
 ///
