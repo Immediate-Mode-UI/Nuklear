@@ -811,7 +811,7 @@ bool create_swap_chain(struct vulkan_demo *demo) {
     }
 
     create_info.preTransform = swap_chain_support.capabilities.currentTransform;
-        
+
     if(swap_chain_support.capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR) {
     	create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     } else if(swap_chain_support.capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR) {
@@ -821,7 +821,7 @@ bool create_swap_chain(struct vulkan_demo *demo) {
     } else if(swap_chain_support.capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR) {
     	create_info.compositeAlpha = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
     }
-    
+
     create_info.presentMode = present_mode;
     create_info.clipped = VK_TRUE;
 
@@ -1267,7 +1267,7 @@ bool create_graphics_pipeline(struct vulkan_demo *demo) {
     VkGraphicsPipelineCreateInfo pipeline_info;
     size_t read_result;
 
-    fp = fopen("shaders/demo.vert.spv", "r");
+    fp = fopen("shaders/demo.vert.spv", "rb");
     if (!fp) {
         fprintf(stderr, "Couldn't open shaders/demo.vert.spv\n");
         return false;
@@ -1288,7 +1288,7 @@ bool create_graphics_pipeline(struct vulkan_demo *demo) {
         goto cleanup;
     }
 
-    fp = fopen("shaders/demo.frag.spv", "r");
+    fp = fopen("shaders/demo.frag.spv", "rb");
     if (!fp) {
         fprintf(stderr, "Couldn't open shaders/demo.frag.spv\n");
         return false;
@@ -1497,7 +1497,7 @@ bool create_semaphores(struct vulkan_demo *demo) {
     VkSemaphoreCreateInfo semaphore_info;
     VkResult result;
     uint32_t i;
-    
+
     demo->image_available = (VkSemaphore*)malloc(MAX_IN_FLIGHT_FRAMES * sizeof(VkSemaphore));
     demo->render_finished = (VkSemaphore*)malloc(demo->swap_chain_images_len * sizeof(VkSemaphore));
     memset(&semaphore_info, 0, sizeof(VkSemaphoreCreateInfo));
@@ -1525,13 +1525,13 @@ bool create_fence(struct vulkan_demo *demo) {
     VkResult result;
     VkFenceCreateInfo fence_create_info;
     uint32_t i;
-    
+
     demo->render_fence = (VkFence*)malloc(MAX_IN_FLIGHT_FRAMES * sizeof(VkFence));
 
     memset(&fence_create_info, 0, sizeof(VkFenceCreateInfo));
     fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-    
+
     for(i = 0; i < MAX_IN_FLIGHT_FRAMES; i++) {
         result = vkCreateFence(demo->device, &fence_create_info, NULL,
                            &demo->render_fence[i]);
@@ -2032,7 +2032,7 @@ destroy_debug_utils_messenger_ext(VkInstance instance,
 bool cleanup(struct vulkan_demo *demo) {
     VkResult result;
     uint32_t i;
-    
+
     printf("cleaning up\n");
     result = vkDeviceWaitIdle(demo->device);
     if (result != VK_SUCCESS) {
@@ -2046,22 +2046,22 @@ bool cleanup(struct vulkan_demo *demo) {
                          MAX_IN_FLIGHT_FRAMES, demo->command_buffers);
     vkDestroyCommandPool(demo->device, demo->command_pool, NULL);
     vkDestroySampler(demo->device, demo->sampler, NULL);
-    
+
     for(i = 0; i < demo->swap_chain_images_len; i++)
      vkDestroySemaphore(demo->device, demo->render_finished[i], NULL);
     if(demo->render_finished)
      free(demo->render_finished);
-     
+
     for(i = 0; i < MAX_IN_FLIGHT_FRAMES; i++)
      vkDestroySemaphore(demo->device, demo->image_available[i], NULL);
     if(demo->image_available)
      free(demo->image_available);
-     
+
     for(i = 0; i < MAX_IN_FLIGHT_FRAMES; i++)
     vkDestroyFence(demo->device, demo->render_fence[i], NULL);
     if(demo->render_fence)
      free(demo->render_fence);
-    
+
     vkDestroyImage(demo->device, demo->demo_texture_image, NULL);
     vkDestroyImageView(demo->device, demo->demo_texture_image_view, NULL);
     vkFreeMemory(demo->device, demo->demo_texture_memory, NULL);
@@ -2140,6 +2140,11 @@ int main(void) {
         "Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH,
         WINDOW_HEIGHT,
         SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+
+    if (!demo.win) {
+        SDL_Log("Error SDL_CreateWindow %s", SDL_GetError());
+        exit(1);
+    }
 
     if (!create_vulkan_demo(&demo)) {
         fprintf(stderr, "failed to create vulkan demo!\n");
@@ -2255,7 +2260,7 @@ int main(void) {
 
         result = vkWaitForFences(demo.device, 1, &demo.render_fence[demo.current_in_flight_frame], VK_TRUE,
                                  UINT64_MAX);
-                                 
+
         if (result != VK_SUCCESS) {
             fprintf(stderr, "vkWaitForFences failed: %d\n", result);
             return false;
