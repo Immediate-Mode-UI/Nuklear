@@ -439,6 +439,10 @@ nk_sfml_handle_event(sf::Event* evt)
             nk_input_button(ctx, NK_BUTTON_MIDDLE, x, y, down);
         if(evt->mouseButton.button == sf::Mouse::Right)
             nk_input_button(ctx, NK_BUTTON_RIGHT, x, y, down);
+        if(evt->mouseButton.button == sf::Mouse::XButton1)
+            nk_input_button(ctx, NK_BUTTON_X1, x, y, down);
+        if(evt->mouseButton.button == sf::Mouse::XButton2)
+            nk_input_button(ctx, NK_BUTTON_X2, x, y, down);
         else return 0;
         return 1;
     } else if(evt->type == sf::Event::MouseMoved) {
