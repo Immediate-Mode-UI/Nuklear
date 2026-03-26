@@ -9,6 +9,7 @@ def print_help():
 """usage: python single_header_packer.py --macro <macro> [--intro <files>] --extern <files> --pub <files> --priv1 <files> --priv2 <files> [--outro <files>]
 
        where <files> can be a comma-separated list of files. e.g. --priv *.c,inc/*.h
+       or a space separated list encapsulated in quotes. e.g. --priv1 "file.c file2.c file3.c"
 
        The 'extern' files are placed between 'priv1' and 'priv2'.
 
@@ -33,7 +34,8 @@ def print_help():
 
 def parse_files(arg):
     files = []
-    paths = arg.split(",")
+    paths = re.split(r'[,\s]', arg)
+
     for path in paths:
         if "*" in path:
             # Wildcard

@@ -62,28 +62,28 @@ nk_draw_progress(struct nk_command_buffer *out, nk_flags state,
     /* draw background */
     switch(background->type) {
         case NK_STYLE_ITEM_IMAGE:
-            nk_draw_image(out, *bounds, &background->data.image, nk_white);
+            nk_draw_image(out, *bounds, &background->data.image, nk_rgb_factor(nk_white, style->color_factor));
             break;
         case NK_STYLE_ITEM_NINE_SLICE:
-            nk_draw_nine_slice(out, *bounds, &background->data.slice, nk_white);
+            nk_draw_nine_slice(out, *bounds, &background->data.slice, nk_rgb_factor(nk_white, style->color_factor));
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, *bounds, style->rounding, background->data.color);
-            nk_stroke_rect(out, *bounds, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, *bounds, style->rounding, nk_rgb_factor(background->data.color, style->color_factor));
+            nk_stroke_rect(out, *bounds, style->rounding, style->border, nk_rgb_factor(style->border_color, style->color_factor));
             break;
     }
 
     /* draw cursor */
     switch(cursor->type) {
         case NK_STYLE_ITEM_IMAGE:
-            nk_draw_image(out, *scursor, &cursor->data.image, nk_white);
+            nk_draw_image(out, *scursor, &cursor->data.image, nk_rgb_factor(nk_white, style->color_factor));
             break;
         case NK_STYLE_ITEM_NINE_SLICE:
-            nk_draw_nine_slice(out, *scursor, &cursor->data.slice, nk_white);
+            nk_draw_nine_slice(out, *scursor, &cursor->data.slice, nk_rgb_factor(nk_white, style->color_factor));
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, *scursor, style->rounding, cursor->data.color);
-            nk_stroke_rect(out, *scursor, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, *scursor, style->rounding, nk_rgb_factor(cursor->data.color, style->color_factor));
+            nk_stroke_rect(out, *scursor, style->rounding, style->border, nk_rgb_factor(style->border_color, style->color_factor));
             break;
     }
 }
@@ -143,7 +143,7 @@ nk_progress(struct nk_context *ctx, nk_size *cur, nk_size max, nk_bool is_modify
     state = nk_widget(&bounds, ctx);
     if (!state) return 0;
 
-    in = (state == NK_WIDGET_ROM || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
+    in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
     old_value = *cur;
     *cur = nk_do_progress(&ctx->last_widget_state, &win->buffer, bounds,
             *cur, max, is_modifyable, &style->progress, in);

@@ -52,7 +52,7 @@ struct nk_glfw_vertex {
 
 struct device {
     struct nk_buffer cmds;
-    struct nk_draw_null_texture null;
+    struct nk_draw_null_texture tex_null;
     GLuint vbo, vao, ebo;
     GLuint prog;
     GLuint vert_shdr;
@@ -78,24 +78,24 @@ die(const char *fmt, ...)
     exit(EXIT_FAILURE);
 }
 
-static struct nk_image	
-icon_load(const char *filename)	
-{	
-    int x,y,n;	
-    GLuint tex;	
-    unsigned char *data = stbi_load(filename, &x, &y, &n, 0);	
-    if (!data) die("[SDL]: failed to load image: %s", filename);	
+static struct nk_image
+icon_load(const char *filename)
+{
+    int x,y,n;
+    GLuint tex;
+    unsigned char *data = stbi_load(filename, &x, &y, &n, 0);
+    if (!data) die("[SDL]: failed to load image: %s", filename);
 
-     glGenTextures(1, &tex);	
-    glBindTexture(GL_TEXTURE_2D, tex);	
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);	
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);	
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);	
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);	
-    glGenerateMipmap(GL_TEXTURE_2D);	
-    stbi_image_free(data);	
-    return nk_image_id((int)tex);	
+     glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(data);
+    return nk_image_id((int)tex);
 }
 */
 
@@ -262,7 +262,7 @@ device_draw(struct device *dev, struct nk_context *ctx, int width, int height,
             config.vertex_layout = vertex_layout;
             config.vertex_size = sizeof(struct nk_glfw_vertex);
             config.vertex_alignment = NK_ALIGNOF(struct nk_glfw_vertex);
-            config.null = dev->null;
+            config.tex_null = dev->tex_null;
             config.circle_segment_count = 22;
             config.curve_segment_count = 22;
             config.arc_segment_count = 22;
@@ -441,7 +441,7 @@ int main(int argc, char *argv[])
     font = nk_font_atlas_add_default(&atlas, 13, 0);
     image = nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
     device_upload_atlas(&device, image, w, h);
-    nk_font_atlas_end(&atlas, nk_handle_id((int)device.font_tex), &device.null);
+    nk_font_atlas_end(&atlas, nk_handle_id((int)device.font_tex), &device.tex_null);
     nk_init_default(&ctx, &font->handle);
 
     glEnable(GL_TEXTURE_2D);

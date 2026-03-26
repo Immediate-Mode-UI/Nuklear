@@ -478,7 +478,7 @@ struct nk_glfw_vertex {
 
 struct device {
     struct nk_buffer cmds;
-    struct nk_draw_null_texture null;
+    struct nk_draw_null_texture tex_null;
     GLuint vbo, vao, ebo;
     GLuint prog;
     GLuint vert_shdr;
@@ -685,7 +685,7 @@ device_draw(struct device *dev, struct nk_context *ctx, int width, int height,
             config.vertex_layout = vertex_layout;
             config.vertex_size = sizeof(struct nk_glfw_vertex);
             config.vertex_alignment = NK_ALIGNOF(struct nk_glfw_vertex);
-            config.null = dev->null;
+            config.tex_null = dev->tex_null;
             config.circle_segment_count = 22;
             config.curve_segment_count = 22;
             config.arc_segment_count = 22;
@@ -795,7 +795,7 @@ int main(int argc, char *argv[])
     media.font_22 = nk_font_atlas_add_from_file(&atlas, "../../extra_font/Roboto-Regular.ttf", 22.0f, &cfg);
     image = nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
     device_upload_atlas(&device, image, w, h);
-    nk_font_atlas_end(&atlas, nk_handle_id((int)device.font_tex), &device.null);}
+    nk_font_atlas_end(&atlas, nk_handle_id((int)device.font_tex), &device.tex_null);}
     nk_init_default(&ctx, &media.font_14->handle);}
 
     /* icons */

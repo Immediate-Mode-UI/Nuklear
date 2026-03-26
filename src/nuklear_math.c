@@ -6,33 +6,35 @@
  *                              MATH
  *
  * ===============================================================*/
-/*  Since nuklear is supposed to work on all systems providing floating point
-    math without any dependencies I also had to implement my own math functions
-    for sqrt, sin and cos. Since the actual highly accurate implementations for
-    the standard library functions are quite complex and I do not need high
-    precision for my use cases I use approximations.
-
-    Sqrt
-    ----
-    For square root nuklear uses the famous fast inverse square root:
-    https://en.wikipedia.org/wiki/Fast_inverse_square_root with
-    slightly tweaked magic constant. While on today's hardware it is
-    probably not faster it is still fast and accurate enough for
-    nuklear's use cases. IMPORTANT: this requires float format IEEE 754
-
-    Sine/Cosine
-    -----------
-    All constants inside both function are generated Remez's minimax
-    approximations for value range 0...2*PI. The reason why I decided to
-    approximate exactly that range is that nuklear only needs sine and
-    cosine to generate circles which only requires that exact range.
-    In addition I used Remez instead of Taylor for additional precision:
-    www.lolengine.net/blog/2011/12/21/better-function-approximations.
-
-    The tool I used to generate constants for both sine and cosine
-    (it can actually approximate a lot more functions) can be
-    found here: www.lolengine.net/wiki/oss/lolremez
+/*/// ### Math
+///  Since nuklear is supposed to work on all systems providing floating point
+///  math without any dependencies I also had to implement my own math functions
+///  for sqrt, sin and cos. Since the actual highly accurate implementations for
+///  the standard library functions are quite complex and I do not need high
+///  precision for my use cases I use approximations.
+///
+///  Sqrt
+///  ----
+///  For square root nuklear uses the famous fast inverse square root:
+///  https://en.wikipedia.org/wiki/Fast_inverse_square_root with
+///  slightly tweaked magic constant. While on today's hardware it is
+///  probably not faster it is still fast and accurate enough for
+///  nuklear's use cases. IMPORTANT: this requires float format IEEE 754
+///
+///  Sine/Cosine
+///  -----------
+///  All constants inside both function are generated Remez's minimax
+///  approximations for value range 0...2*PI. The reason why I decided to
+///  approximate exactly that range is that nuklear only needs sine and
+///  cosine to generate circles which only requires that exact range.
+///  In addition I used Remez instead of Taylor for additional precision:
+///  www.lolengine.net/blog/2011/12/21/better-function-approximations.
+///
+///  The tool I used to generate constants for both sine and cosine
+///  (it can actually approximate a lot more functions) can be
+///  found here: www.lolengine.net/wiki/oss/lolremez
 */
+#ifdef NK_INV_SQRT_NEEDED
 NK_LIB float
 nk_inv_sqrt(float n)
 {
@@ -45,8 +47,8 @@ nk_inv_sqrt(float n)
     conv.f = conv.f * (threehalfs - (x2 * conv.f * conv.f));
     return conv.f;
 }
-#ifndef NK_SIN
-#define NK_SIN nk_sin
+#endif
+#ifdef NK_SIN_NEEDED
 NK_LIB float
 nk_sin(float x)
 {
@@ -61,8 +63,7 @@ nk_sin(float x)
     return a0 + x*(a1 + x*(a2 + x*(a3 + x*(a4 + x*(a5 + x*(a6 + x*a7))))));
 }
 #endif
-#ifndef NK_COS
-#define NK_COS nk_cos
+#ifdef NK_COS_NEEDED
 NK_LIB float
 nk_cos(float x)
 {
@@ -80,6 +81,50 @@ nk_cos(float x)
     return a0 + x*(a1 + x*(a2 + x*(a3 + x*(a4 + x*(a5 + x*(a6 + x*(a7 + x*a8)))))));
 }
 #endif
+#ifdef NK_ATAN_NEEDED
+NK_LIB float
+nk_atan(float x)
+{
+    /* ./lolremez --progress --float -d 9 -r "0:pi*2" "atan(x)" */
+    float u = -1.0989005e-05f;
+    NK_ASSERT(x >= 0.0f && "TODO support negative floats");
+    u = u * x + 0.00034117949f;
+    u = u * x + -0.0044932296f;
+    u = u * x + 0.032596264f;
+    u = u * x + -0.14088021f;
+    u = u * x + 0.36040401f;
+    u = u * x + -0.47017866f;
+    u = u * x + 0.00050198776f;
+    u = u * x + 1.0077682f;
+    u = u * x + -0.0004765437f;
+    return u;
+}
+#endif
+#ifdef NK_ATAN2_NEEDED
+NK_LIB float
+nk_atan2(float y, float x)
+{
+    float ax = NK_ABS(x),
+          ay = NK_ABS(y);
+    /* 0 = +y +x    1 = -y +x
+       2 = +y -x    3 = -y -x */
+    nk_uint signs = (y < 0) | ((x < 0) << 1);
+
+    float a;
+    if(y == 0.0 && x == 0.0) return 0.0f;
+    a = (ay > ax)
+        ? NK_PI_HALF - NK_ATAN(ax / ay)
+        : NK_ATAN(ay / ax);
+
+    switch(signs){
+        case 0: return a;
+        case 1: return -a;
+        case 2: return -a + NK_PI;
+        case 3: return a - NK_PI;
+    }
+    return 0.0f; /* prevents warning */
+}
+#endif
 NK_LIB nk_uint
 nk_round_up_pow2(nk_uint v)
 {
@@ -92,6 +137,7 @@ nk_round_up_pow2(nk_uint v)
     v++;
     return v;
 }
+#ifdef NK_DTOA_NEEDED
 NK_LIB double
 nk_pow(double x, int n)
 {
@@ -107,12 +153,15 @@ nk_pow(double x, int n)
     }
     return plus ? r : 1.0 / r;
 }
+#endif
+#ifdef NK_DTOA_NEEDED
 NK_LIB int
 nk_ifloord(double x)
 {
     x = (double)((int)x - ((x < 0.0) ? 1 : 0));
     return (int)x;
 }
+#endif
 NK_LIB int
 nk_ifloorf(float x)
 {
@@ -131,6 +180,7 @@ nk_iceilf(float x)
         return (r > 0.0f) ? t+1: t;
     }
 }
+#ifdef NK_DTOA_NEEDED
 NK_LIB int
 nk_log10(double n)
 {
@@ -146,6 +196,12 @@ nk_log10(double n)
     }
     if (neg) exp = -exp;
     return exp;
+}
+#endif
+NK_LIB float
+nk_roundf(float x)
+{
+    return (x >= 0.0f) ? (float)nk_ifloorf(x + 0.5f) : (float)nk_iceilf(x - 0.5f);
 }
 NK_API struct nk_rect
 nk_get_null_rect(void)

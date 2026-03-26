@@ -92,7 +92,7 @@ typedef enum {
     StringFormatFlagsMeasureTrailingSpaces   = 0x00000800,
     StringFormatFlagsNoWrap                  = 0x00001000,
     StringFormatFlagsLineLimit               = 0x00002000,
-    StringFormatFlagsNoClip                  = 0x00004000 
+    StringFormatFlagsNoClip                  = 0x00004000
 } StringFormatFlags;
 
 typedef enum
@@ -272,25 +272,25 @@ GdipSetStringFormatFlags(GpStringFormat *format, INT flags);
 GpStatus WINGDIPAPI
 GdipDeleteStringFormat(GpStringFormat *format);
 
-GpStatus WINGDIPAPI 
-GdipPrivateAddMemoryFont(GpFontCollection* fontCollection, 
+GpStatus WINGDIPAPI
+GdipPrivateAddMemoryFont(GpFontCollection* fontCollection,
                          GDIPCONST void* memory, INT length);
 
-GpStatus WINGDIPAPI 
-GdipPrivateAddFontFile(GpFontCollection* fontCollection, 
+GpStatus WINGDIPAPI
+GdipPrivateAddFontFile(GpFontCollection* fontCollection,
                        GDIPCONST WCHAR* filename);
 
-GpStatus WINGDIPAPI 
+GpStatus WINGDIPAPI
 GdipNewPrivateFontCollection(GpFontCollection** fontCollection);
 
-GpStatus WINGDIPAPI 
+GpStatus WINGDIPAPI
 GdipDeletePrivateFontCollection(GpFontCollection** fontCollection);
 
-GpStatus WINGDIPAPI 
-GdipGetFontCollectionFamilyList(GpFontCollection* fontCollection, 
+GpStatus WINGDIPAPI
+GdipGetFontCollectionFamilyList(GpFontCollection* fontCollection,
                         INT numSought, GpFontFamily* gpfamilies[], INT* numFound);
 
-GpStatus WINGDIPAPI 
+GpStatus WINGDIPAPI
 GdipGetFontCollectionFamilyCount(GpFontCollection* fontCollection, INT* numFound);
 
 
@@ -374,8 +374,8 @@ GdipGraphicsClear(GpGraphics *graphics, ARGB color);
 GpStatus WINGDIPAPI
 GdipDrawImageI(GpGraphics *graphics, GpImage *image, INT x, INT y);
 
-GpStatus WINGDIPAPI 
-GdipDrawImageRectI(GpGraphics *graphics, GpImage *image, INT x, INT y, 
+GpStatus WINGDIPAPI
+GdipDrawImageRectI(GpGraphics *graphics, GpImage *image, INT x, INT y,
                    INT width, INT height);
 
 GpStatus WINGDIPAPI
@@ -673,7 +673,7 @@ nk_gdip_load_image_from_memory(const void *membuf, nk_uint membufSize)
     IStream *stream = SHCreateMemStream((const BYTE*)membuf, membufSize);
     if (!stream)
         return nk_image_id(0);
-    
+
     status = GdipLoadImageFromStream(stream, &image);
     stream->lpVtbl->Release(stream);
 
@@ -709,7 +709,7 @@ nk_gdipfont_create(const char *name, int size)
     return font;
 }
 
-GpFontCollection* 
+GpFontCollection*
 nk_gdip_getCurFontCollection(){
     return gdip.fontCollection[gdip.curFontCollection];
 }
@@ -744,7 +744,7 @@ nk_gdipfont_create_from_file(const WCHAR* filename, int size)
 {
     if( !nk_gdip_getCurFontCollection() )
         if( GdipNewPrivateFontCollection(&gdip.fontCollection[gdip.curFontCollection]) ) return NULL;
-    if( GdipPrivateAddFontFile(nk_gdip_getCurFontCollection(), filename) ) return NULL;    
+    if( GdipPrivateAddFontFile(nk_gdip_getCurFontCollection(), filename) ) return NULL;
     return nk_gdipfont_create_from_collection(size);
 }
 
@@ -761,7 +761,7 @@ nk_gdipfont_get_text_width(nk_handle handle, float height, const char *text, int
 
     (void)height;
     wsize = MultiByteToWideChar(CP_UTF8, 0, text, len, NULL, 0);
-    wstr = (WCHAR*)_alloca(wsize * sizeof(wchar_t));
+    wstr = (WCHAR*)_malloca(wsize * sizeof(wchar_t));
     MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
 
     GdipMeasureString(gdip.memory, wstr, wsize, font->handle, &layout, gdip.format, &bbox, NULL, NULL);
@@ -777,93 +777,63 @@ nk_gdipfont_del(GdipFont *font)
 }
 
 static void
-nk_gdip_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
+nk_gdip_clipboard_paste(nk_handle usr, struct nk_text_edit* edit)
 {
-    HGLOBAL mem;
-    SIZE_T size;
-    LPCWSTR wstr;
-    int utf8size;
-    char* utf8;
     (void)usr;
-
-    if (!IsClipboardFormatAvailable(CF_UNICODETEXT) && OpenClipboard(NULL))
-        return;
-
-    mem = (HGLOBAL)GetClipboardData(CF_UNICODETEXT);
-    if (!mem) {
+    if (IsClipboardFormatAvailable(CF_UNICODETEXT) && OpenClipboard(NULL))
+    {
+        HGLOBAL mem = GetClipboardData(CF_UNICODETEXT);
+        if (mem)
+        {
+            SIZE_T size = GlobalSize(mem) - 1;
+            if (size)
+            {
+                LPCWSTR wstr = (LPCWSTR)GlobalLock(mem);
+                if (wstr)
+                {
+                    int utf8size = WideCharToMultiByte(CP_UTF8, 0, wstr, (int)(size / sizeof(wchar_t)), NULL, 0, NULL, NULL);
+                    if (utf8size)
+                    {
+                        char* utf8 = (char*)malloc(utf8size);
+                        if (utf8)
+                        {
+                            WideCharToMultiByte(CP_UTF8, 0, wstr, (int)(size / sizeof(wchar_t)), utf8, utf8size, NULL, NULL);
+                            nk_textedit_paste(edit, utf8, utf8size);
+                            free(utf8);
+                        }
+                    }
+                    GlobalUnlock(mem);
+                }
+            }
+        }
         CloseClipboard();
-        return;
     }
-
-    size = GlobalSize(mem) - 1;
-    if (!size) {
-        CloseClipboard();
-        return;
-    }
-
-    wstr = (LPCWSTR)GlobalLock(mem);
-    if (!wstr) {
-        CloseClipboard();
-        return;
-    }
-
-    utf8size = WideCharToMultiByte(CP_UTF8, 0, wstr, (int)(size / sizeof(wchar_t)), NULL, 0, NULL, NULL);
-    if (!utf8size) {
-        GlobalUnlock(mem);
-        CloseClipboard();
-        return;
-    }
-
-    utf8 = (char*)malloc(utf8size);
-    if (!utf8) {
-        GlobalUnlock(mem);
-        CloseClipboard();
-        return;
-    }
-
-    WideCharToMultiByte(CP_UTF8, 0, wstr, (int)(size / sizeof(wchar_t)), utf8, utf8size, NULL, NULL);
-    nk_textedit_paste(edit, utf8, utf8size);
-    free(utf8);
-    GlobalUnlock(mem);
-    CloseClipboard();
 }
 
 static void
-nk_gdip_clipboard_copy(nk_handle usr, const char *text, int len)
+nk_gdip_clipboard_copy(nk_handle usr, const char* text, int len)
 {
-    HGLOBAL mem;
-    wchar_t* wstr;
-    int wsize;
-    (void)usr;
+    if (OpenClipboard(NULL))
+    {
+        int wsize = MultiByteToWideChar(CP_UTF8, 0, text, len, NULL, 0);
+        if (wsize)
+        {
+            HGLOBAL mem = (HGLOBAL)GlobalAlloc(GMEM_MOVEABLE, (wsize + 1) * sizeof(wchar_t));
+            if (mem)
+            {
+                wchar_t* wstr = (wchar_t*)GlobalLock(mem);
+                if (wstr)
+                {
+                    MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
+                    wstr[wsize] = 0;
+                    GlobalUnlock(mem);
 
-    if (!OpenClipboard(NULL))
-        return;
-
-    wsize = MultiByteToWideChar(CP_UTF8, 0, text, len, NULL, 0);
-    if (!wsize) {
+                    SetClipboardData(CF_UNICODETEXT, mem);
+                }
+            }
+        }
         CloseClipboard();
-        return;
     }
-
-    mem = (HGLOBAL)GlobalAlloc(GMEM_MOVEABLE, (wsize + 1) * sizeof(wchar_t));
-    if (!mem) {
-        CloseClipboard();
-        return;
-    }
-
-    wstr = (wchar_t*)GlobalLock(mem);
-    if (!wstr) {
-        GlobalFree(mem);
-        CloseClipboard();
-        return;
-    }
-
-    MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
-    wstr[wsize] = 0;
-    GlobalUnlock(mem);
-    if (!SetClipboardData(CF_UNICODETEXT, mem))
-        GlobalFree(mem);
-    CloseClipboard();
 }
 
 NK_API struct nk_context*
@@ -879,7 +849,7 @@ nk_gdip_init(HWND hwnd, unsigned int width, unsigned int height)
     GdipCreatePen1(0, 1.0f, UnitPixel, &gdip.pen);
     GdipCreateSolidFill(0, &gdip.brush);
     GdipStringFormatGetGenericTypographic(&gdip.format);
-    GdipSetStringFormatFlags(gdip.format, StringFormatFlagsNoFitBlackBox | 
+    GdipSetStringFormatFlags(gdip.format, StringFormatFlagsNoFitBlackBox |
         StringFormatFlagsMeasureTrailingSpaces | StringFormatFlagsNoWrap |
         StringFormatFlagsNoClip);
 
@@ -905,6 +875,7 @@ nk_gdip_set_font(GdipFont *gdipfont)
 NK_API int
 nk_gdip_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+    static int insert_toggle = 0;
     switch (msg)
     {
     case WM_SIZE:
@@ -954,6 +925,7 @@ nk_gdip_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             return 1;
 
         case VK_RETURN:
+        case VK_SEPARATOR:
             nk_input_key(&gdip.ctx, NK_KEY_ENTER, down);
             return 1;
 
@@ -996,6 +968,49 @@ nk_gdip_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case VK_PRIOR:
             nk_input_key(&gdip.ctx, NK_KEY_SCROLL_UP, down);
             return 1;
+
+        case VK_ESCAPE:
+            nk_input_key(&gdip.ctx, NK_KEY_TEXT_RESET_MODE, down);
+            return 1;
+
+        case VK_INSERT:
+        /* Only switch on release to avoid repeat issues
+         * kind of confusing since we have to negate it but we're already
+         * hacking it since Nuklear treats them as two separate keys rather
+         * than a single toggle state */
+            if (!down) {
+                insert_toggle = !insert_toggle;
+                if (insert_toggle) {
+                    nk_input_key(&gdip.ctx, NK_KEY_TEXT_INSERT_MODE, !down);
+                    /* nk_input_key(&gdip.ctx, NK_KEY_TEXT_REPLACE_MODE, down); */
+                } else {
+                    nk_input_key(&gdip.ctx, NK_KEY_TEXT_REPLACE_MODE, !down);
+                    /* nk_input_key(&gdip.ctx, NK_KEY_TEXT_INSERT_MODE, down); */
+                }
+            }
+            return 1;
+
+        case 'A':
+            if (ctrl) {
+                nk_input_key(&gdip.ctx, NK_KEY_TEXT_SELECT_ALL, down);
+                return 1;
+            }
+            break;
+
+        case 'B':
+            if (ctrl) {
+                nk_input_key(&gdip.ctx, NK_KEY_TEXT_LINE_START, down);
+                return 1;
+            }
+            break;
+
+        case 'E':
+            if (ctrl) {
+                nk_input_key(&gdip.ctx, NK_KEY_TEXT_LINE_END, down);
+                return 1;
+            }
+            break;
+
 
         case 'C':
             if (ctrl) {
@@ -1071,6 +1086,30 @@ nk_gdip_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     case WM_MBUTTONUP:
         nk_input_button(&gdip.ctx, NK_BUTTON_MIDDLE, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
+        ReleaseCapture();
+        return 1;
+
+    case WM_XBUTTONDOWN:
+        switch (GET_XBUTTON_WPARAM(wparam)) {
+        case XBUTTON1:
+            nk_input_button(&gdip.ctx, NK_BUTTON_X1, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
+            break;
+        case XBUTTON2:
+            nk_input_button(&gdip.ctx, NK_BUTTON_X2, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
+            break;
+        }
+        SetCapture(wnd);
+        return 1;
+
+    case WM_XBUTTONUP:
+        switch (GET_XBUTTON_WPARAM(wparam)) {
+        case XBUTTON1:
+            nk_input_button(&gdip.ctx, NK_BUTTON_X1, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
+            break;
+        case XBUTTON2:
+            nk_input_button(&gdip.ctx, NK_BUTTON_X2, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
+            break;
+        }
         ReleaseCapture();
         return 1;
 

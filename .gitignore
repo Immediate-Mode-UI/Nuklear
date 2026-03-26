@@ -1,11 +1,12 @@
-demo/*/*.exe
-demo/*/*.obj
+demo/*/*/demo
 demo/*/bin/*
 example/bin/*
-docs/xml
-docs/build
-docs/src
+/doc
 *.tmp
 *.swo
 *.swp
+*.o
+*.obj
+*.exe
+*.dSYM
 /private/

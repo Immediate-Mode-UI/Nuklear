@@ -13,8 +13,7 @@ NK_LIB nk_bool nk_is_upper(int c){return (c >= 'A' && c <= 'Z') || (c >= 0xC0 &&
 NK_LIB int nk_to_upper(int c) {return (c >= 'a' && c <= 'z') ? (c - ('a' - 'A')) : c;}
 NK_LIB int nk_to_lower(int c) {return (c >= 'A' && c <= 'Z') ? (c - ('a' + 'A')) : c;}
 
-#ifndef NK_MEMCPY
-#define NK_MEMCPY nk_memcopy
+#ifdef NK_MEMCPY_NEEDED
 NK_LIB void*
 nk_memcopy(void *dst0, const void *src0, nk_size length)
 {
@@ -72,8 +71,7 @@ done:
     return (dst0);
 }
 #endif
-#ifndef NK_MEMSET
-#define NK_MEMSET nk_memset
+#ifdef NK_MEMSET_NEEDED
 NK_LIB void
 nk_memset(void *ptr, int c0, nk_size size)
 {
@@ -141,7 +139,7 @@ nk_strlen(const char *str)
     return siz;
 }
 NK_API int
-nk_strtoi(const char *str, const char **endptr)
+nk_strtoi(const char *str, char **endptr)
 {
     int neg = 1;
     const char *p = str;
@@ -161,15 +159,16 @@ nk_strtoi(const char *str, const char **endptr)
         p++;
     }
     if (endptr)
-        *endptr = p;
+        *endptr = (char *)p;
     return neg*value;
 }
+#ifdef NK_STRTOD_NEEDED
 NK_API double
-nk_strtod(const char *str, const char **endptr)
+nk_strtod(const char *str, char **endptr)
 {
     double m;
     double neg = 1.0;
-    const char *p = str;
+    char *p = (char *)str;
     double value = 0;
     double number = 0;
 
@@ -218,11 +217,12 @@ nk_strtod(const char *str, const char **endptr)
     }
     number = value * neg;
     if (endptr)
-        *endptr = p;
+        *endptr = (char *)p;
     return number;
 }
+#endif
 NK_API float
-nk_strtof(const char *str, const char **endptr)
+nk_strtof(const char *str, char **endptr)
 {
     float float_value;
     double double_value;
@@ -499,8 +499,7 @@ nk_itoa(char *s, long n)
     nk_strrev_ascii(s);
     return s;
 }
-#ifndef NK_DTOA
-#define NK_DTOA nk_dtoa
+#ifdef NK_DTOA_NEEDED
 NK_LIB char*
 nk_dtoa(char *s, double n)
 {
@@ -633,7 +632,7 @@ nk_vsnprintf(char *buf, int buf_size, const char *fmt, va_list args)
         /* width argument */
         width = NK_DEFAULT;
         if (*iter >= '1' && *iter <= '9') {
-            const char *end;
+            char *end;
             width = nk_strtoi(iter, &end);
             if (end == iter)
                 width = -1;
@@ -651,7 +650,7 @@ nk_vsnprintf(char *buf, int buf_size, const char *fmt, va_list args)
                 precision = va_arg(args, int);
                 iter++;
             } else {
-                const char *end;
+                char *end;
                 precision = nk_strtoi(iter, &end);
                 if (end == iter)
                     precision = -1;
@@ -984,7 +983,7 @@ nk_murmur_hash(const void * key, int len, nk_hash seed)
 }
 #ifdef NK_INCLUDE_STANDARD_IO
 NK_LIB char*
-nk_file_load(const char* path, nk_size* siz, struct nk_allocator *alloc)
+nk_file_load(const char* path, nk_size* siz, const struct nk_allocator *alloc)
 {
     char *buf;
     FILE *fd;

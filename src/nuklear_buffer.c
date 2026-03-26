@@ -242,7 +242,7 @@ nk_buffer_free(struct nk_buffer *b)
     b->pool.free(b->pool.userdata, b->memory.ptr);
 }
 NK_API void
-nk_buffer_info(struct nk_memory_status *s, struct nk_buffer *b)
+nk_buffer_info(struct nk_memory_status *s, const struct nk_buffer *b)
 {
     NK_ASSERT(b);
     NK_ASSERT(s);
@@ -268,10 +268,9 @@ nk_buffer_memory_const(const struct nk_buffer *buffer)
     return buffer->memory.ptr;
 }
 NK_API nk_size
-nk_buffer_total(struct nk_buffer *buffer)
+nk_buffer_total(const struct nk_buffer *buffer)
 {
     NK_ASSERT(buffer);
     if (!buffer) return 0;
     return buffer->memory.size;
 }
-

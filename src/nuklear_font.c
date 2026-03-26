@@ -85,7 +85,7 @@ nk_font_chinese_glyph_ranges(void)
         0x3000, 0x30FF,
         0x31F0, 0x31FF,
         0xFF00, 0xFFEF,
-        0x4e00, 0x9FAF,
+        0x4E00, 0x9FAF,
         0
     };
     return ranges;
@@ -146,7 +146,7 @@ nk_font_baker_memory(nk_size *temp, int *glyph_count,
     *temp += nk_build_align + nk_baker_align;
 }
 NK_INTERN struct nk_font_baker*
-nk_font_baker(void *memory, int glyph_count, int count, struct nk_allocator *alloc)
+nk_font_baker(void *memory, int glyph_count, int count, const struct nk_allocator *alloc)
 {
     struct nk_font_baker *baker;
     if (!memory) return 0;
@@ -163,7 +163,7 @@ NK_INTERN int
 nk_font_bake_pack(struct nk_font_baker *baker,
     nk_size *image_memory, int *width, int *height, struct nk_recti *custom,
     const struct nk_font_config *config_list, int count,
-    struct nk_allocator *alloc)
+    const struct nk_allocator *alloc)
 {
     NK_STORAGE const nk_size max_height = 1024 * 32;
     const struct nk_font_config *config_iter, *it;
@@ -192,15 +192,15 @@ nk_font_bake_pack(struct nk_font_baker *baker,
         it = config_iter;
         do {
             struct stbtt_fontinfo *font_info = &baker->build[i++].info;
-            font_info->userdata = alloc;
+            font_info->userdata = (void*)alloc;
 
-            if (!stbtt_InitFont(font_info, (const unsigned char*)it->ttf_blob, 0))
+            if (!stbtt_InitFont(font_info, (const unsigned char*)it->ttf_blob, stbtt_GetFontOffsetForIndex((const unsigned char*)it->ttf_blob, 0)))
                 return nk_false;
         } while ((it = it->n) != config_iter);
     }
     *height = 0;
     *width = (total_glyph_count > 1000) ? 1024 : 512;
-    stbtt_PackBegin(&baker->spc, 0, (int)*width, (int)max_height, 0, 1, alloc);
+    stbtt_PackBegin(&baker->spc, 0, (int)*width, (int)max_height, 0, 1, (void*)alloc);
     {
         int input_i = 0;
         int range_n = 0;
@@ -354,7 +354,6 @@ nk_font_bake(struct nk_font_baker *baker, void *image_memory, int width, int hei
 
                     /* query glyph bounds from stb_truetype */
                     const stbtt_packedchar *pc = &range->chardata_for_range[char_idx];
-                    if (!pc->x0 && !pc->x1 && !pc->y0 && !pc->y1) continue;
                     codepoint = (nk_rune)(range->first_unicode_codepoint_in_range + char_idx);
                     stbtt_GetPackedQuad(range->chardata_for_range, (int)width,
                         (int)height, char_idx, &dummy_x, &dummy_y, &q, 0);
@@ -505,7 +504,7 @@ nk_font_query_font_glyph(nk_handle handle, float height,
 }
 #endif
 NK_API const struct nk_font_glyph*
-nk_font_find_glyph(struct nk_font *font, nk_rune unicode)
+nk_font_find_glyph(const struct nk_font *font, nk_rune unicode)
 {
     int i = 0;
     int count;
@@ -568,8 +567,8 @@ nk_font_init(struct nk_font *font, float pixel_height,
  *
  * ProggyClean.ttf
  * Copyright (c) 2004, 2005 Tristan Grimmer
- * MIT license (see License.txt in http://www.upperbounds.net/download/ProggyClean.ttf.zip)
- * Download and more information at http://upperbounds.net
+ * MIT license https://github.com/bluescan/proggyfonts/blob/master/LICENSE
+ * Download and more information at https://github.com/bluescan/proggyfonts
  *-----------------------------------------------------------------------------*/
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -894,7 +893,7 @@ nk_font_atlas_init_default(struct nk_font_atlas *atlas)
 }
 #endif
 NK_API void
-nk_font_atlas_init(struct nk_font_atlas *atlas, struct nk_allocator *alloc)
+nk_font_atlas_init(struct nk_font_atlas *atlas, const struct nk_allocator *alloc)
 {
     NK_ASSERT(atlas);
     NK_ASSERT(alloc);
@@ -905,7 +904,7 @@ nk_font_atlas_init(struct nk_font_atlas *atlas, struct nk_allocator *alloc)
 }
 NK_API void
 nk_font_atlas_init_custom(struct nk_font_atlas *atlas,
-    struct nk_allocator *permanent, struct nk_allocator *temporary)
+    const struct nk_allocator *permanent, const struct nk_allocator *temporary)
 {
     NK_ASSERT(atlas);
     NK_ASSERT(permanent);
@@ -1276,20 +1275,20 @@ failed:
 }
 NK_API void
 nk_font_atlas_end(struct nk_font_atlas *atlas, nk_handle texture,
-    struct nk_draw_null_texture *null)
+    struct nk_draw_null_texture *tex_null)
 {
     int i = 0;
     struct nk_font *font_iter;
     NK_ASSERT(atlas);
     if (!atlas) {
-        if (!null) return;
-        null->texture = texture;
-        null->uv = nk_vec2(0.5f,0.5f);
+        if (!tex_null) return;
+        tex_null->texture = texture;
+        tex_null->uv = nk_vec2(0.5f,0.5f);
     }
-    if (null) {
-        null->texture = texture;
-        null->uv.x = (atlas->custom.x + 0.5f)/(float)atlas->tex_width;
-        null->uv.y = (atlas->custom.y + 0.5f)/(float)atlas->tex_height;
+    if (tex_null) {
+        tex_null->texture = texture;
+        tex_null->uv.x = (atlas->custom.x + 0.5f)/(float)atlas->tex_width;
+        tex_null->uv.y = (atlas->custom.y + 0.5f)/(float)atlas->tex_height;
     }
     for (font_iter = atlas->fonts; font_iter; font_iter = font_iter->next) {
         font_iter->texture = texture;
@@ -1371,4 +1370,3 @@ nk_font_atlas_clear(struct nk_font_atlas *atlas)
     nk_zero_struct(*atlas);
 }
 #endif
-

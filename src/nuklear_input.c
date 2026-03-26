@@ -83,6 +83,17 @@ nk_input_button(struct nk_context *ctx, enum nk_buttons id, int x, int y, nk_boo
     btn->clicked_pos.y = (float)y;
     btn->down = down;
     btn->clicked++;
+
+    /* Fix Click-Drag for touch events. */
+    in->mouse.delta.x = 0;
+    in->mouse.delta.y = 0;
+#ifdef NK_BUTTON_TRIGGER_ON_RELEASE
+    if (down == 1 && id == NK_BUTTON_LEFT)
+    {
+        in->mouse.down_pos.x = btn->clicked_pos.x;
+        in->mouse.down_pos.y = btn->clicked_pos.y;
+    }
+#endif
 }
 NK_API void
 nk_input_scroll(struct nk_context *ctx, struct nk_vec2 val)
@@ -113,7 +124,7 @@ nk_input_glyph(struct nk_context *ctx, const nk_glyph glyph)
 NK_API void
 nk_input_char(struct nk_context *ctx, char c)
 {
-    nk_glyph glyph;
+    nk_glyph glyph = {0};
     NK_ASSERT(ctx);
     if (!ctx) return;
     glyph[0] = c;
@@ -144,6 +155,22 @@ nk_input_has_mouse_click_in_rect(const struct nk_input *i, enum nk_buttons id,
     if (!i) return nk_false;
     btn = &i->mouse.buttons[id];
     if (!NK_INBOX(btn->clicked_pos.x,btn->clicked_pos.y,b.x,b.y,b.w,b.h))
+        return nk_false;
+    return nk_true;
+}
+NK_API nk_bool
+nk_input_has_mouse_click_in_button_rect(const struct nk_input *i, enum nk_buttons id,
+    struct nk_rect b)
+{
+    const struct nk_mouse_button *btn;
+    if (!i) return nk_false;
+    btn = &i->mouse.buttons[id];
+#ifdef NK_BUTTON_TRIGGER_ON_RELEASE
+    if (!NK_INBOX(btn->clicked_pos.x,btn->clicked_pos.y,b.x,b.y,b.w,b.h)
+        || !NK_INBOX(i->mouse.down_pos.x,i->mouse.down_pos.y,b.x,b.y,b.w,b.h))
+#else
+    if (!NK_INBOX(btn->clicked_pos.x,btn->clicked_pos.y,b.x,b.y,b.w,b.h))
+#endif
         return nk_false;
     return nk_true;
 }
@@ -224,6 +251,12 @@ nk_input_is_mouse_released(const struct nk_input *i, enum nk_buttons id)
 {
     if (!i) return nk_false;
     return (!i->mouse.buttons[id].down && i->mouse.buttons[id].clicked);
+}
+NK_API nk_bool
+nk_input_is_mouse_moved(const struct nk_input *i)
+{
+    if (!i) return nk_false;
+    return i->mouse.delta.x != 0 || i->mouse.delta.y != 0;
 }
 NK_API nk_bool
 nk_input_is_key_pressed(const struct nk_input *i, enum nk_keys key)
