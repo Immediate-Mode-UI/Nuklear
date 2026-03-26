@@ -1154,7 +1154,7 @@ NK_API int nk_sdl_handle_event(SDL_Event *evt) {
     }
 
     case SDL_MOUSEWHEEL:
-        nk_input_scroll(ctx, nk_vec2((float)evt->wheel.x, (float)evt->wheel.y));
+        nk_input_scroll(ctx,nk_vec2(evt->wheel.preciseX, evt->wheel.preciseY));
         return 1;
     }
     return 0;
@@ -1374,9 +1374,10 @@ VkSemaphore nk_sdl_render(VkQueue graphics_queue, uint32_t buffer_index,
 NK_INTERN void nk_sdl_clipboard_paste(nk_handle usr,
                                       struct nk_text_edit *edit) {
     const char *text = SDL_GetClipboardText();
-    if (text)
+    if (text) {
         nk_textedit_paste(edit, text, nk_strlen(text));
-    SDL_free((void *)text);
+        SDL_free((void *)text);
+    }
     (void)usr;
 }
 

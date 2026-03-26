@@ -275,6 +275,7 @@ style_slider(struct nk_context* ctx, struct nk_style_slider* out_style)
 {
 	struct nk_style_slider slider = *out_style;
 	struct nk_style_button* dups[1];
+	nk_bool show_buttons_b;
 
 	nk_layout_row_dynamic(ctx, 30, 2);
 
@@ -299,7 +300,9 @@ style_slider(struct nk_context* ctx, struct nk_style_slider* out_style)
 	nk_property_float(ctx, "#Rounding:", -100.0f, &slider.rounding, 100.0f, 1,0.5f);
 
 	nk_layout_row_dynamic(ctx, 30, 1);
-	nk_checkbox_label(ctx, "Show Buttons", &slider.show_buttons);
+	show_buttons_b = (nk_bool)slider.show_buttons;
+	nk_checkbox_label(ctx, "Show Buttons", &show_buttons_b);
+	slider.show_buttons = (int)show_buttons_b;
 
 	if (slider.show_buttons) {
 		nk_layout_row_dynamic(ctx, 30, 2);
@@ -355,6 +358,7 @@ style_scrollbars(struct nk_context* ctx, struct nk_style_scrollbar* out_style, s
 {
 	struct nk_style_scrollbar scroll = *out_style;
 	struct nk_style_button* dups[3];
+	nk_bool show_buttons_b;
 
 	nk_layout_row_dynamic(ctx, 30, 2);
 
@@ -380,7 +384,9 @@ style_scrollbars(struct nk_context* ctx, struct nk_style_scrollbar* out_style, s
 
 	/* TODO what is wrong with scrollbar buttons?  Also look into controlling the total width (and height) of scrollbars */
 	nk_layout_row_dynamic(ctx, 30, 1);
-	nk_checkbox_label(ctx, "Show Buttons", &scroll.show_buttons);
+	show_buttons_b = (nk_bool)scroll.show_buttons;
+	nk_checkbox_label(ctx, "Show Buttons", &show_buttons_b);
+	scroll.show_buttons = (int)show_buttons_b;
 
 	if (scroll.show_buttons) {
 		nk_layout_row_dynamic(ctx, 30, 2);
@@ -626,6 +632,22 @@ style_window_header(struct nk_context* ctx, struct nk_style_window_header* out_s
 static void
 style_window(struct nk_context* ctx, struct nk_style_window* out_style)
 {
+	static const char* tooltip_positions[] =
+	{
+		"TOP_LEFT",
+		"TOP_CENTER",
+		"TOP_RIGHT",
+
+		"MIDDLE_LEFT",
+		"MIDDLE_CENTER",
+		"MIDDLE_RIGHT",
+
+		"BOTTOM_LEFT",
+		"BOTTOM_CENTER",
+		"BOTTOM_RIGHT"
+	};
+	/*static int cur_tooltip_pos = NK_TOP_LEFT;*/
+
 	struct nk_style_window win = *out_style;
 
 	nk_layout_row_dynamic(ctx, 30, 2);
@@ -654,6 +676,10 @@ style_window(struct nk_context* ctx, struct nk_style_window* out_style)
 	style_vec2(ctx, "Contextual Padding:", &win.contextual_padding);
 	style_vec2(ctx, "Menu Padding:", &win.menu_padding);
 	style_vec2(ctx, "Tooltip Padding:", &win.tooltip_padding);
+
+    nk_label(ctx, "Tooltip Origin", NK_TEXT_LEFT);
+    win.tooltip_origin = nk_combo(ctx, tooltip_positions, NK_LEN(tooltip_positions), win.tooltip_origin, 25, nk_vec2(200, 200));
+    style_vec2(ctx, "Tooltip offset:", &win.tooltip_offset);
 
 	nk_property_float(ctx, "#Rounding:", -100.0f, &win.rounding, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Combo Border:", -100.0f, &win.combo_border, 100.0f, 1,0.5f);

@@ -44,7 +44,8 @@ struct nk_cairo_context;
 enum nk_xcb_event_type {
     NK_XCB_EVENT_PAINT      = 0x02,
     NK_XCB_EVENT_RESIZED    = 0x04,
-    NK_XCB_EVENT_STOP       = 0x08
+    NK_XCB_EVENT_STOP       = 0x08,
+    NK_XCB_CLIENT_MESSAGE   = 0x10
 };
 
 /* Xcb part: work on windows */
@@ -114,13 +115,13 @@ NK_API void nk_xcb_resize_cairo_surface(struct nk_xcb_context *xcb_ctx, void *su
 #define NK_XCB_TO_CAIRO(x) ((double) x / 255.0)
 #define NK_XCB_DEG_TO_RAD(x) ((double) x * NK_XCB_PI / 180.0)
 
-typedef struct xkb_context xkb_context; 
+typedef struct xkb_context xkb_context;
 typedef struct xkb_keymap xkb_keymap;
 typedef struct xkb_state xkb_state;
 typedef struct xkbcommon_context xkbcommon_context;
 typedef struct nk_xcb_context nk_xcb_context;
 
-struct xkbcommon_context 
+struct xkbcommon_context
 {
 	struct xkb_context *ctx;
 	struct xkb_keymap *keymap;
@@ -155,6 +156,7 @@ struct nk_xcb_context {
     int events;
     xcb_intern_atom_reply_t* del_atom;
     int width, height;
+    xcb_client_message_event_t last_client_message;
 };
 
 NK_API struct nk_xcb_context *nk_xcb_init(const char *title, int pos_x, int pos_y, int width, int height)
@@ -240,6 +242,8 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
 {
     int events = 0;
     xcb_generic_event_t *event;
+    static int insert_toggle = 0;
+    static const xcb_client_message_event_t EMPTY_CLIENT_MESSAGE;
 
 #ifdef NK_XCB_MIN_FRAME_TIME
     struct timespec tp;
@@ -250,6 +254,7 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
 
     event = xcb_wait_for_event(xcb_ctx->conn);
 
+    xcb_ctx->last_client_message = EMPTY_CLIENT_MESSAGE;
     nk_input_begin(nk_ctx);
     do {
         switch (XCB_EVENT_RESPONSE_TYPE(event)) {
@@ -260,7 +265,7 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
                 xcb_key_press_event_t *kp = (xcb_key_press_event_t *)event;
                 /* xcb_keysym_t sym = xcb_key_symbols_get_keysym(xcb_ctx->key_symbols, kp->detail, kp->state);*/
                 xcb_keysym_t sym = keycode_to_keysym(xcb_ctx, kp->detail, press);
-                
+
                 switch (sym) {
                 case XK_Shift_L:
                 case XK_Shift_R:
@@ -274,6 +279,7 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
                     nk_input_key(nk_ctx, NK_KEY_DEL, press);
                     break;
                 case XK_Return:
+                case XK_KP_Enter:
                     nk_input_key(nk_ctx, NK_KEY_ENTER, press);
                     break;
                 case XK_Tab:
@@ -297,8 +303,14 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
                 case XK_Right:
                     nk_input_key(nk_ctx, NK_KEY_RIGHT, press);
                     break;
-                /* NK_KEY_TEXT_INSERT_MODE, */
-                /* NK_KEY_TEXT_REPLACE_MODE, */
+                case XK_Insert:
+                    if (press) insert_toggle = !insert_toggle;
+                    if (insert_toggle) {
+                        nk_input_key(nk_ctx, NK_KEY_TEXT_INSERT_MODE, press);
+                    } else {
+                        nk_input_key(nk_ctx, NK_KEY_TEXT_REPLACE_MODE, press);
+                    }
+                    break;
                 case XK_Escape:
                     nk_input_key(nk_ctx, NK_KEY_TEXT_RESET_MODE, press);
                     break;
@@ -368,6 +380,12 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
                 case XCB_BUTTON_INDEX_5:
                     nk_input_scroll(nk_ctx, nk_vec2(0, -1.0f));
                     break;
+                case 8:
+                    nk_input_button(nk_ctx, NK_BUTTON_X1, bp->event_x, bp->event_y, press);
+                    break;
+                case 9:
+                    nk_input_button(nk_ctx, NK_BUTTON_X2, bp->event_x, bp->event_y, press);
+                    break;
                 default: break;
                 }
             }
@@ -415,6 +433,11 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
                 if (cm->data.data32[0] == xcb_ctx->del_atom->atom)
                 {
                     events = NK_XCB_EVENT_STOP;
+                }
+                else
+                {
+                    xcb_ctx->last_client_message = *cm;
+                    events = NK_XCB_CLIENT_MESSAGE;
                 }
             }
             break;
@@ -873,7 +896,7 @@ NK_INTERN xkbcommon_context *xkbcommon_init(xcb_connection_t *conn)
 {
 	xkbcommon_context *kbdctx;
 	int32_t device_id;
-	
+
 	int ret = xkb_x11_setup_xkb_extension(conn,
 		XKB_X11_MIN_MAJOR_XKB_VERSION,
 		XKB_X11_MIN_MINOR_XKB_VERSION,
@@ -884,26 +907,26 @@ NK_INTERN xkbcommon_context *xkbcommon_init(xcb_connection_t *conn)
 	{
 		return NULL;
 	}
-	
+
 	kbdctx = (xkbcommon_context *)malloc(sizeof(xkbcommon_context));
 	kbdctx->ctx = NULL;
 	kbdctx->keymap = NULL;
 	kbdctx->state = NULL;
-	
+
 	kbdctx->ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!kbdctx->ctx)
 	{
 		xkbcommon_free(kbdctx);
 		return NULL;
 	}
-	
+
 	device_id = xkb_x11_get_core_keyboard_device_id(conn);
 	if (device_id == -1)
 	{
 		xkbcommon_free(kbdctx);
 		return NULL;
 	}
-	
+
 	kbdctx->keymap = xkb_x11_keymap_new_from_device(kbdctx->ctx, conn, device_id, XKB_KEYMAP_COMPILE_NO_FLAGS);
 	if (!kbdctx->keymap)
 	{
@@ -927,12 +950,12 @@ NK_INTERN void xkbcommon_free(xkbcommon_context *kbdctx)
 	{
 		if (kbdctx->state) xkb_state_unref(kbdctx->state);
 		if (kbdctx->keymap) xkb_keymap_unref(kbdctx->keymap);
-		if (kbdctx->ctx) xkb_context_unref(kbdctx->ctx);	
+		if (kbdctx->ctx) xkb_context_unref(kbdctx->ctx);
 
 		kbdctx->ctx = NULL;
 		kbdctx->keymap = NULL;
 		kbdctx->state = NULL;
-		
+
 		free(kbdctx);
 	}
 }
@@ -941,7 +964,7 @@ NK_INTERN xkb_keysym_t keycode_to_keysym(nk_xcb_context *ctx, xkb_keycode_t keyc
 {
 	xkb_keysym_t keysym;
 	xkbcommon_context *kbdctx = ctx->xkbcommon_ctx;
-	
+
 	if (kbdctx != NULL)
 	{
 		keysym = xkb_state_key_get_one_sym(kbdctx->state, keycode);
@@ -953,7 +976,7 @@ NK_INTERN xkb_keysym_t keycode_to_keysym(nk_xcb_context *ctx, xkb_keycode_t keyc
 	{
 		keysym = 0;
 	}
-	
+
 	return keysym;
 }
 

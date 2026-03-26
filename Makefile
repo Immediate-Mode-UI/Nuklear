@@ -10,7 +10,7 @@ SRC_PATH=src
 
 
 ## Documents settings
-DOXYFILE:=$(DOCS_PATH)/Doxyfile
+DOXYFILE:=.Doxyfile
 
 
 ## HEADER file packing settings

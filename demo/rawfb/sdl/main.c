@@ -89,6 +89,12 @@ static int sdl_button_to_nk(int button)
         case SDL_BUTTON_RIGHT:
             return NK_BUTTON_RIGHT;
             break;
+        case SDL_BUTTON_X1:
+            return NK_BUTTON_X1;
+            break;
+        case SDL_BUTTON_X2:
+            return NK_BUTTON_X2;
+            break;
 
     }
 }
@@ -216,8 +222,8 @@ int main(int argc, char **argv)
                     nk_input_button(&(context->ctx), sdl_button_to_nk(event.button.button), event.button.x, event.button.y,0);
                 break;
                 case SDL_MOUSEWHEEL:
-                    vec.x = event.wheel.x;
-                    vec.y = event.wheel.y;
+                    vec.x = event.wheel.preciseX;
+                    vec.y = event.wheel.preciseY;
                     nk_input_scroll(&(context->ctx), vec );
 
                 break;
