@@ -112,10 +112,10 @@ nk_draw_symbol(struct nk_command_buffer *out, enum nk_symbol_type type,
         nk_stroke_line(out, points[1].x, points[1].y, points[2].x, points[2].y, border_width, foreground);
     } break;
     case NK_SYMBOL_HAMBURGER: {
-        float y2 = content.y + content.h * 0.5f;
-        float y3 = content.y + content.h;
-        float x1 = content.x + content.w;
         float line_thickness = border_width > 0.0f ? border_width : 1.0f;
+        float y2 = content.y + content.h * 0.5f;
+        float y3 = content.y + content.h - line_thickness;
+        float x1 = content.x + content.w;
         nk_stroke_line(out, content.x, content.y, x1, content.y, line_thickness, foreground);
         nk_stroke_line(out, content.x, y2, x1, y2, line_thickness, foreground);
         nk_stroke_line(out, content.x, y3, x1, y3, line_thickness, foreground);
