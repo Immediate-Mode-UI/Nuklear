@@ -1,4 +1,17 @@
 /* nuklear - 1.32.0 - public domain */
+
+/*
+ *   === IMPORTATE NOTE FOR D3D12 ===  
+ *
+ * Due to a bug in the Windows SDK that
+ * was fixed in version 10.0.22000.0 the
+ * D3D12 Backend requires this version as
+ * a minimum! Compiling with a lower version
+ * will result in compiler warnings and a
+ * crashing application!
+ * 
+ */
+
 #define COBJMACROS
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -40,7 +53,8 @@
 /*#define INCLUDE_STYLE */
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
-/*#define INCLUDE_OVERVIEW */
+#define INCLUDE_OVERVIEW
+/*#define INCLUDE_CONFIGURATOR */
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
@@ -48,6 +62,7 @@
   #define INCLUDE_CALCULATOR
   #define INCLUDE_CANVAS
   #define INCLUDE_OVERVIEW
+  #define INCLUDE_CONFIGURATOR
   #define INCLUDE_NODE_EDITOR
 #endif
 
@@ -62,6 +77,9 @@
 #endif
 #ifdef INCLUDE_OVERVIEW
   #include "../../demo/common/overview.c"
+#endif
+#ifdef INCLUDE_CONFIGURATOR
+  #include "../../demo/common/style_configurator.c"
 #endif
 #ifdef INCLUDE_NODE_EDITOR
   #include "../../demo/common/node_editor.c"
@@ -191,7 +209,7 @@ WindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 int main(void)
-{  
+{
     struct nk_context *ctx;
     struct nk_colorf bg;
 
@@ -207,6 +225,11 @@ int main(void)
     DXGI_SWAP_CHAIN_DESC1 swap_chain_desc;
     D3D12_DESCRIPTOR_HEAP_DESC rtv_desc_heap_desc;
 
+    #ifdef INCLUDE_CONFIGURATOR
+    static struct nk_color color_table[NK_COLOR_COUNT];
+    memcpy(color_table, nk_default_color_style, sizeof(color_table));
+    #endif
+
     /* Win32 */
     memset(&wc, 0, sizeof(wc));
     wc.style = CS_DBLCLKS;
@@ -219,7 +242,7 @@ int main(void)
 
     AdjustWindowRectEx(&rect, style, FALSE, exstyle);
 
-    wnd = CreateWindowExW(exstyle, wc.lpszClassName, L"Nuklear Demo",
+    wnd = CreateWindowExW(exstyle, wc.lpszClassName, L"Nuklear Direct3D 12 Demo",
         style | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT,
         rect.right - rect.left, rect.bottom - rect.top,
         NULL, NULL, wc.hInstance, NULL);
@@ -278,7 +301,7 @@ int main(void)
 
     /* GUI */
     ctx = nk_d3d12_init(device, WINDOW_WIDTH, WINDOW_HEIGHT, MAX_VERTEX_BUFFER, MAX_INDEX_BUFFER, USER_TEXTURES);
-    
+
     /* Load Fonts: if none of these are loaded a default font will be used  */
     /* Load Cursor: if you uncomment cursor loading please hide the cursor */
     {
@@ -299,14 +322,6 @@ int main(void)
     execute_commands();
     /* Now we can cleanup all resources consumed by font stashing that are no longer used */
     nk_d3d12_font_stash_cleanup();
-
-    /* style.c */
-    #ifdef INCLUDE_STYLE
-    /*set_style(ctx, THEME_WHITE);*/
-    /*set_style(ctx, THEME_RED);*/
-    /*set_style(ctx, THEME_BLUE);*/
-    /*set_style(ctx, THEME_DARK);*/
-    #endif
 
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
     while (running)
@@ -366,6 +381,9 @@ int main(void)
         #endif
         #ifdef INCLUDE_OVERVIEW
           overview(ctx);
+        #endif
+        #ifdef INCLUDE_CONFIGURATOR
+          style_configurator(ctx, color_table);
         #endif
         #ifdef INCLUDE_NODE_EDITOR
           node_editor(ctx);

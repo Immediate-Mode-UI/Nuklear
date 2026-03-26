@@ -7,7 +7,7 @@
  *
  * ===============================================================*/
 NK_LIB void
-nk_pool_init(struct nk_pool *pool, struct nk_allocator *alloc,
+nk_pool_init(struct nk_pool *pool, const struct nk_allocator *alloc,
     unsigned int capacity)
 {
     NK_ASSERT(capacity >= 1);

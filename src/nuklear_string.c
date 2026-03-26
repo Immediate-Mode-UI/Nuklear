@@ -64,7 +64,6 @@ nk_str_append_text_utf8(struct nk_str *str, const char *text, int len)
 NK_API int
 nk_str_append_str_utf8(struct nk_str *str, const char *text)
 {
-    int runes = 0;
     int byte_len = 0;
     int num_runes = 0;
     int glyph_len = 0;
@@ -78,7 +77,7 @@ nk_str_append_str_utf8(struct nk_str *str, const char *text)
         num_runes++;
     }
     nk_str_append_text_char(str, text, byte_len);
-    return runes;
+    return num_runes;
 }
 NK_API int
 nk_str_append_text_runes(struct nk_str *str, const nk_rune *text, int len)
@@ -193,7 +192,6 @@ nk_str_insert_text_utf8(struct nk_str *str, int pos, const char *text, int len)
 NK_API int
 nk_str_insert_str_utf8(struct nk_str *str, int pos, const char *text)
 {
-    int runes = 0;
     int byte_len = 0;
     int num_runes = 0;
     int glyph_len = 0;
@@ -207,7 +205,7 @@ nk_str_insert_str_utf8(struct nk_str *str, int pos, const char *text)
         num_runes++;
     }
     nk_str_insert_at_rune(str, pos, text, byte_len);
-    return runes;
+    return num_runes;
 }
 NK_API int
 nk_str_insert_text_runes(struct nk_str *str, int pos, const nk_rune *runes, int len)
@@ -421,14 +419,14 @@ nk_str_get_const(const struct nk_str *s)
     return (const char*)s->buffer.memory.ptr;
 }
 NK_API int
-nk_str_len(struct nk_str *s)
+nk_str_len(const struct nk_str *s)
 {
     NK_ASSERT(s);
     if (!s || !s->len || !s->buffer.allocated) return 0;
     return s->len;
 }
 NK_API int
-nk_str_len_char(struct nk_str *s)
+nk_str_len_char(const struct nk_str *s)
 {
     NK_ASSERT(s);
     if (!s || !s->len || !s->buffer.allocated) return 0;
@@ -448,4 +446,3 @@ nk_str_free(struct nk_str *str)
     nk_buffer_free(&str->buffer);
     str->len = 0;
 }
-

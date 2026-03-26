@@ -94,6 +94,9 @@ nk_edit_draw_text(struct nk_command_buffer *out,
     txt.background = background;
     txt.text = foreground;
 
+    foreground = nk_rgb_factor(foreground, style->color_factor);
+    background = nk_rgb_factor(background, style->color_factor);
+
     glyph_len = nk_utf_decode(text+text_len, &unicode, byte_len-text_len);
     if (!glyph_len) return;
     while ((text_len < byte_len) && glyph_len)
@@ -185,7 +188,6 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
 
     /* update edit state */
     prev_state = (char)edit->active;
-    is_hovered = (char)nk_input_is_mouse_hovering_rect(in, bounds);
     if (in && in->mouse.buttons[NK_BUTTON_LEFT].clicked && in->mouse.buttons[NK_BUTTON_LEFT].down) {
         edit->active = NK_INBOX(in->mouse.pos.x, in->mouse.pos.y,
                                 bounds.x, bounds.y, bounds.w, bounds.h);
@@ -230,7 +232,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
             in->mouse.buttons[NK_BUTTON_LEFT].clicked) {
             nk_textedit_click(edit, mouse_x, mouse_y, font, row_height);
         } else if (is_hovered && in->mouse.buttons[NK_BUTTON_LEFT].down &&
-            (in->mouse.delta.x != 0.0f || in->mouse.delta.y != 0.0f)) {
+            nk_input_is_mouse_moved(in)) {
             nk_textedit_drag(edit, mouse_x, mouse_y, font, row_height);
             cursor_follow = nk_true;
         } else if (is_hovered && in->mouse.buttons[NK_BUTTON_RIGHT].clicked &&
@@ -331,14 +333,14 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
     /* draw background frame */
     switch(background->type) {
         case NK_STYLE_ITEM_IMAGE:
-            nk_draw_image(out, bounds, &background->data.image, nk_white);
+            nk_draw_image(out, bounds, &background->data.image, nk_rgb_factor(nk_white, style->color_factor));
             break;
         case NK_STYLE_ITEM_NINE_SLICE:
-            nk_draw_nine_slice(out, bounds, &background->data.slice, nk_white);
+            nk_draw_nine_slice(out, bounds, &background->data.slice, nk_rgb_factor(nk_white, style->color_factor));
             break;
         case NK_STYLE_ITEM_COLOR:
-            nk_fill_rect(out, bounds, style->rounding, background->data.color);
-            nk_stroke_rect(out, bounds, style->rounding, style->border, style->border_color);
+            nk_fill_rect(out, bounds, style->rounding, nk_rgb_factor(background->data.color, style->color_factor));
+            nk_stroke_rect(out, bounds, style->rounding, style->border, nk_rgb_factor(style->border_color, style->color_factor));
             break;
     }}
 
@@ -477,10 +479,12 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                 } else edit->scrollbar.x = 0;
 
                 if (flags & NK_EDIT_MULTILINE) {
-                    /* vertical scroll */
+                    /* vertical scroll: like horizontal, it only adjusts if the
+                     * cursor leaves the visible area, and then only just enough
+                     * to keep it visible */
                     if (cursor_pos.y < edit->scrollbar.y)
-                        edit->scrollbar.y = NK_MAX(0.0f, cursor_pos.y - row_height);
-                    if (cursor_pos.y >= edit->scrollbar.y + row_height)
+                        edit->scrollbar.y = NK_MAX(0.0f, cursor_pos.y);
+                    if (cursor_pos.y > edit->scrollbar.y + area.h - row_height)
                         edit->scrollbar.y = edit->scrollbar.y + row_height;
                 } else edit->scrollbar.y = 0;
             }
@@ -503,9 +507,13 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                 scroll_step = scroll.h * 0.10f;
                 scroll_inc = scroll.h * 0.01f;
                 scroll_target = text_size.y;
-                edit->scrollbar.y = nk_do_scrollbarv(&ws, out, scroll, 0,
+                edit->scrollbar.y = nk_do_scrollbarv(&ws, out, scroll, is_hovered,
                         scroll_offset, scroll_target, scroll_step, scroll_inc,
                         &style->scrollbar, in, font);
+                /* Eat mouse scroll if we're active */
+                if (is_hovered && in->mouse.scroll_delta.y) {
+                    in->mouse.scroll_delta.y = 0;
+                }
             }
         }
 
@@ -547,6 +555,8 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         else
             background_color = background->data.color;
 
+        cursor_color = nk_rgb_factor(cursor_color, style->color_factor);
+        cursor_text_color = nk_rgb_factor(cursor_text_color, style->color_factor);
 
         if (edit->select_start == edit->select_end) {
             /* no selection so just draw the complete text */
@@ -654,6 +664,10 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
             background_color = nk_rgba(0,0,0,0);
         else
             background_color = background->data.color;
+
+        background_color = nk_rgb_factor(background_color, style->color_factor);
+        text_color = nk_rgb_factor(text_color, style->color_factor);
+
         nk_edit_draw_text(out, style, area.x - edit->scrollbar.x,
             area.y - edit->scrollbar.y, 0, begin, l, row_height, font,
             background_color, text_color, nk_false);
@@ -773,6 +787,8 @@ nk_edit_buffer(struct nk_context *ctx, nk_flags flags,
     style = &ctx->style;
     state = nk_widget(&bounds, ctx);
     if (!state) return state;
+    else if (state == NK_WIDGET_DISABLED)
+        flags |= NK_EDIT_READ_ONLY;
     in = (win->layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
 
     /* check if edit is currently hot item */

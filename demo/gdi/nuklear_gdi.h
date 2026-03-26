@@ -15,6 +15,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <wingdi.h>
 
 typedef struct GdiFont GdiFont;
 NK_API struct nk_context* nk_gdi_init(GdiFont *font, HDC window_dc, unsigned int width, unsigned int height);
@@ -37,7 +38,7 @@ NK_API void nk_gdi_set_font(GdiFont *font);
  * ===============================================================
  */
 #ifdef NK_GDI_IMPLEMENTATION
-
+#include <string.h>
 #include <stdlib.h>
 #include <malloc.h>
 
@@ -75,7 +76,7 @@ nk_create_image(struct nk_image * image, const char * frame_buffer, const int wi
         image->region[1] = 0;
         image->region[2] = width;
         image->region[3] = height;
-        
+
         bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
         bi.bmiHeader.biWidth = width;
         bi.bmiHeader.biHeight = height;
@@ -83,9 +84,9 @@ nk_create_image(struct nk_image * image, const char * frame_buffer, const int wi
         bi.bmiHeader.biBitCount = 24;
         bi.bmiHeader.biCompression = BI_RGB;
         bi.bmiHeader.biSizeImage = row * height;
-        
+
         hbm = CreateDIBSection(NULL, &bi, DIB_RGB_COLORS, (void**)&lpBuf, NULL, 0);
-        
+
         pb = lpBuf + row * height;
         for (v = 0; v < height; v++)
         {
@@ -97,7 +98,7 @@ nk_create_image(struct nk_image * image, const char * frame_buffer, const int wi
                 pb[i + 2] = src[2];
                 src += 3;
             }
-        }        
+        }
         SetDIBits(NULL, hbm, 0, height, lpBuf, &bi, DIB_RGB_COLORS);
         image->handle.ptr = hbm;
     }
@@ -121,10 +122,10 @@ nk_gdi_draw_image(short x, short y, unsigned short w, unsigned short h,
     HBITMAP hbm = (HBITMAP)img.handle.ptr;
     HDC     hDCBits;
     BITMAP  bitmap;
-    
+
     if (!gdi.memory_dc || !hbm)
         return;
-    
+
     hDCBits = CreateCompatibleDC(gdi.memory_dc);
     GetObject(hbm, sizeof(BITMAP), (LPSTR)&bitmap);
     SelectObject(hDCBits, hbm);
@@ -191,7 +192,7 @@ nk_gdi_stroke_rect(HDC dc, short x, short y, unsigned short w,
     }
     SelectObject(dc, br);
 
-    if (pen) { 
+    if (pen) {
         SelectObject(dc, GetStockObject(DC_PEN));
         DeleteObject(pen);
     }
@@ -392,6 +393,62 @@ nk_gdi_stroke_polyline(HDC dc, const struct nk_vec2i *pnts,
 }
 
 static void
+nk_gdi_stroke_arc(HDC dc, short cx, short cy, unsigned short r, float amin, float adelta, unsigned short line_thickness, struct nk_color col)
+{
+    COLORREF color = convert_color(col);
+
+    /* setup pen */
+    HPEN pen = NULL;
+    if (line_thickness == 1)
+        SetDCPenColor(dc, color);
+    else
+    {
+        /* the flat endcap makes thick arcs look better */
+        DWORD pen_style = PS_SOLID | PS_ENDCAP_FLAT | PS_GEOMETRIC;
+
+        LOGBRUSH brush;
+        brush.lbStyle = BS_SOLID;
+        brush.lbColor = color;
+        brush.lbHatch = 0;
+
+        pen = ExtCreatePen(pen_style, line_thickness, &brush, 0, NULL);
+        SelectObject(dc, pen);
+    }
+
+    /* calculate arc and draw */
+    int start_x = cx + (int) ((float)r*nk_cos(amin+adelta)),
+        start_y = cy + (int) ((float)r*nk_sin(amin+adelta)),
+        end_x = cx + (int) ((float)r*nk_cos(amin)),
+        end_y = cy + (int) ((float)r*nk_sin(amin));
+
+    HGDIOBJ br = SelectObject(dc, GetStockObject(NULL_BRUSH));
+    SetArcDirection(dc, AD_COUNTERCLOCKWISE);
+    Pie(dc, cx-r, cy-r, cx+r, cy+r, start_x, start_y, end_x, end_y);
+    SelectObject(dc, br);
+
+    if (pen)
+    {
+        SelectObject(dc, GetStockObject(DC_PEN));
+        DeleteObject(pen);
+    }
+}
+
+static void
+nk_gdi_fill_arc(HDC dc, short cx, short cy, unsigned short r, float amin, float adelta, struct nk_color col)
+{
+    COLORREF color = convert_color(col);
+    SetDCBrushColor(dc, color);
+    SetDCPenColor(dc, color);
+
+    int start_x = cx + (int) ((float)r*nk_cos(amin+adelta)),
+        start_y = cy + (int) ((float)r*nk_sin(amin+adelta)),
+        end_x = cx + (int) ((float)r*nk_cos(amin)),
+        end_y = cy + (int) ((float)r*nk_sin(amin));
+
+    Pie(dc, cx-r, cy-r, cx+r, cy+r, start_x, start_y, end_x, end_y);
+}
+
+static void
 nk_gdi_fill_circle(HDC dc, short x, short y, unsigned short w,
     unsigned short h, struct nk_color col)
 {
@@ -414,8 +471,10 @@ nk_gdi_stroke_circle(HDC dc, short x, short y, unsigned short w,
         SelectObject(dc, pen);
     }
 
+    HGDIOBJ br = SelectObject(dc, GetStockObject(NULL_BRUSH));
     SetDCBrushColor(dc, OPAQUE);
     Ellipse(dc, x, y, x + w, y + h);
+    SelectObject(dc, br);
 
     if (pen) {
         SelectObject(dc, GetStockObject(DC_PEN));
@@ -466,6 +525,7 @@ nk_gdi_draw_text(HDC dc, short x, short y, unsigned short w, unsigned short h,
     wstr = (WCHAR*)_alloca(wsize * sizeof(wchar_t));
     MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
 
+    SetBkMode(dc, TRANSPARENT); /* Transparent Text Background */
     SetBkColor(dc, convert_color(cbg));
     SetTextColor(dc, convert_color(cfg));
 
@@ -539,14 +599,14 @@ nk_gdi_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
     (void)usr;
     if (IsClipboardFormatAvailable(CF_UNICODETEXT) && OpenClipboard(NULL))
     {
-        HGLOBAL mem = GetClipboardData(CF_UNICODETEXT); 
+        HGLOBAL mem = GetClipboardData(CF_UNICODETEXT);
         if (mem)
         {
             SIZE_T size = GlobalSize(mem) - 1;
             if (size)
             {
                 LPCWSTR wstr = (LPCWSTR)GlobalLock(mem);
-                if (wstr) 
+                if (wstr)
                 {
                     int utf8size = WideCharToMultiByte(CP_UTF8, 0, wstr, (int)(size / sizeof(wchar_t)), NULL, 0, NULL, NULL);
                     if (utf8size)
@@ -559,7 +619,7 @@ nk_gdi_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
                             free(utf8);
                         }
                     }
-                    GlobalUnlock(mem); 
+                    GlobalUnlock(mem);
                 }
             }
         }
@@ -583,9 +643,9 @@ nk_gdi_clipboard_copy(nk_handle usr, const char *text, int len)
                 {
                     MultiByteToWideChar(CP_UTF8, 0, text, len, wstr, wsize);
                     wstr[wsize] = 0;
-                    GlobalUnlock(mem); 
+                    GlobalUnlock(mem);
 
-                    SetClipboardData(CF_UNICODETEXT, mem); 
+                    SetClipboardData(CF_UNICODETEXT, mem);
                 }
             }
         }
@@ -627,6 +687,7 @@ nk_gdi_set_font(GdiFont *gdifont)
 NK_API int
 nk_gdi_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+    static int insert_toggle = 0;
     switch (msg)
     {
     case WM_SIZE:
@@ -674,6 +735,7 @@ nk_gdi_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             return 1;
 
         case VK_RETURN:
+        case VK_SEPARATOR:
             nk_input_key(&gdi.ctx, NK_KEY_ENTER, down);
             return 1;
 
@@ -716,6 +778,48 @@ nk_gdi_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case VK_PRIOR:
             nk_input_key(&gdi.ctx, NK_KEY_SCROLL_UP, down);
             return 1;
+
+        case VK_ESCAPE:
+            nk_input_key(&gdi.ctx, NK_KEY_TEXT_RESET_MODE, down);
+            return 1;
+
+        case VK_INSERT:
+        /* Only switch on release to avoid repeat issues
+         * kind of confusing since we have to negate it but we're already
+         * hacking it since Nuklear treats them as two separate keys rather
+         * than a single toggle state */
+            if (!down) {
+                insert_toggle = !insert_toggle;
+                if (insert_toggle) {
+                    nk_input_key(&gdi.ctx, NK_KEY_TEXT_INSERT_MODE, !down);
+                    /* nk_input_key(&gdi.ctx, NK_KEY_TEXT_REPLACE_MODE, down); */
+                } else {
+                    nk_input_key(&gdi.ctx, NK_KEY_TEXT_REPLACE_MODE, !down);
+                    /* nk_input_key(&gdi.ctx, NK_KEY_TEXT_INSERT_MODE, down); */
+                }
+            }
+            return 1;
+
+        case 'A':
+            if (ctrl) {
+                nk_input_key(&gdi.ctx, NK_KEY_TEXT_SELECT_ALL, down);
+                return 1;
+            }
+            break;
+
+        case 'B':
+            if (ctrl) {
+                nk_input_key(&gdi.ctx, NK_KEY_TEXT_LINE_START, down);
+                return 1;
+            }
+            break;
+
+        case 'E':
+            if (ctrl) {
+                nk_input_key(&gdi.ctx, NK_KEY_TEXT_LINE_END, down);
+                return 1;
+            }
+            break;
 
         case 'C':
             if (ctrl) {
@@ -794,6 +898,30 @@ nk_gdi_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         ReleaseCapture();
         return 1;
 
+    case WM_XBUTTONDOWN:
+        switch (GET_XBUTTON_WPARAM(wparam)) {
+        case XBUTTON1:
+            nk_input_button(&gdi.ctx, NK_BUTTON_X1, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
+            break;
+        case XBUTTON2:
+            nk_input_button(&gdi.ctx, NK_BUTTON_X2, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
+            break;
+        }
+        SetCapture(wnd);
+        return 1;
+
+    case WM_XBUTTONUP:
+        switch (GET_XBUTTON_WPARAM(wparam)) {
+        case XBUTTON1:
+            nk_input_button(&gdi.ctx, NK_BUTTON_X1, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
+            break;
+        case XBUTTON2:
+            nk_input_button(&gdi.ctx, NK_BUTTON_X2, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
+            break;
+        }
+        ReleaseCapture();
+        return 1;
+
     case WM_MOUSEWHEEL:
         nk_input_scroll(&gdi.ctx, nk_vec2(0,(float)(short)HIWORD(wparam) / WHEEL_DELTA));
         return 1;
@@ -859,6 +987,14 @@ nk_gdi_render(struct nk_color clear)
             const struct nk_command_circle_filled *c = (const struct nk_command_circle_filled *)cmd;
             nk_gdi_fill_circle(memory_dc, c->x, c->y, c->w, c->h, c->color);
         } break;
+        case NK_COMMAND_ARC: {
+            const struct nk_command_arc *q = (const struct nk_command_arc *)cmd;
+            nk_gdi_stroke_arc(memory_dc, q->cx, q->cy, q->r, q->a[0], q->a[1], q->line_thickness, q->color);
+        } break;
+        case NK_COMMAND_ARC_FILLED: {
+            const struct nk_command_arc_filled *q = (const struct nk_command_arc_filled *)cmd;
+            nk_gdi_fill_arc(memory_dc, q->cx, q->cy, q->r, q->a[0], q->a[1], q->color);
+        } break;
         case NK_COMMAND_TRIANGLE: {
             const struct nk_command_triangle*t = (const struct nk_command_triangle*)cmd;
             nk_gdi_stroke_triangle(memory_dc, t->a.x, t->a.y, t->b.x, t->b.y,
@@ -901,8 +1037,7 @@ nk_gdi_render(struct nk_color clear)
             const struct nk_command_image *i = (const struct nk_command_image *)cmd;
             nk_gdi_draw_image(i->x, i->y, i->w, i->h, i->img, i->col);
         } break;
-        case NK_COMMAND_ARC:
-        case NK_COMMAND_ARC_FILLED:
+        case NK_COMMAND_CUSTOM:
         default: break;
         }
     }

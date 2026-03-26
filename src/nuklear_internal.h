@@ -71,11 +71,7 @@ NK_STATIC_ASSERT(sizeof(nk_short) == 2);
 NK_STATIC_ASSERT(sizeof(nk_uint) == 4);
 NK_STATIC_ASSERT(sizeof(nk_int) == 4);
 NK_STATIC_ASSERT(sizeof(nk_byte) == 1);
-#ifdef NK_INCLUDE_STANDARD_BOOL
-NK_STATIC_ASSERT(sizeof(nk_bool) == sizeof(bool));
-#else
-NK_STATIC_ASSERT(sizeof(nk_bool) == 4);
-#endif
+NK_STATIC_ASSERT(sizeof(nk_bool) <= sizeof(int));
 
 NK_GLOBAL const struct nk_rect nk_null_rect = {-8192.0f, -8192.0f, 16384, 16384};
 #define NK_FLOAT_PRECISION 0.00000000000001
@@ -95,23 +91,37 @@ NK_GLOBAL const struct nk_color nk_yellow = {255,255,0,255};
 
 /* math */
 #ifndef NK_INV_SQRT
+#define NK_INV_SQRT nk_inv_sqrt
+#define NK_INV_SQRT_NEEDED
 NK_LIB float nk_inv_sqrt(float n);
 #endif
 #ifndef NK_SIN
+#define NK_SIN nk_sin
+#define NK_SIN_NEEDED
 NK_LIB float nk_sin(float x);
 #endif
 #ifndef NK_COS
+#define NK_COS nk_cos
+#define NK_COS_NEEDED
 NK_LIB float nk_cos(float x);
+#endif
+#ifndef NK_ATAN
+#define NK_ATAN nk_atan
+#define NK_ATAN_NEEDED
+NK_LIB float nk_atan(float x);
+#endif
+#ifndef NK_ATAN2
+#define NK_ATAN2 nk_atan2
+#define NK_ATAN2_NEEDED
+NK_LIB float nk_atan2(float y, float x);
 #endif
 NK_LIB nk_uint nk_round_up_pow2(nk_uint v);
 NK_LIB struct nk_rect nk_shrink_rect(struct nk_rect r, float amount);
 NK_LIB struct nk_rect nk_pad_rect(struct nk_rect r, struct nk_vec2 pad);
 NK_LIB void nk_unify(struct nk_rect *clip, const struct nk_rect *a, float x0, float y0, float x1, float y1);
-NK_LIB double nk_pow(double x, int n);
-NK_LIB int nk_ifloord(double x);
 NK_LIB int nk_ifloorf(float x);
 NK_LIB int nk_iceilf(float x);
-NK_LIB int nk_log10(double n);
+NK_LIB float nk_roundf(float x);
 
 /* util */
 enum {NK_DO_NOT_STOP_ON_NEW_LINE, NK_STOP_ON_NEW_LINE};
@@ -121,15 +131,21 @@ NK_LIB int nk_to_upper(int c);
 NK_LIB int nk_to_lower(int c);
 
 #ifndef NK_MEMCPY
+#define NK_MEMCPY nk_memcopy
+#define NK_MEMCPY_NEEDED
 NK_LIB void* nk_memcopy(void *dst, const void *src, nk_size n);
 #endif
 #ifndef NK_MEMSET
+#define NK_MEMSET nk_memset
+#define NK_MEMSET_NEEDED
 NK_LIB void nk_memset(void *ptr, int c0, nk_size size);
 #endif
 NK_LIB void nk_zero(void *ptr, nk_size size);
 NK_LIB char *nk_itoa(char *s, long n);
 NK_LIB int nk_string_float_limit(char *string, int prec);
 #ifndef NK_DTOA
+#define NK_DTOA nk_dtoa
+#define NK_DTOA_NEEDED
 NK_LIB char *nk_dtoa(char *s, double n);
 #endif
 NK_LIB int nk_text_clamp(const struct nk_user_font *font, const char *text, int text_len, float space, int *glyphs, float *text_width, nk_rune *sep_list, int sep_count);
@@ -138,7 +154,14 @@ NK_LIB struct nk_vec2 nk_text_calculate_text_bounds(const struct nk_user_font *f
 NK_LIB int nk_strfmt(char *buf, int buf_size, const char *fmt, va_list args);
 #endif
 #ifdef NK_INCLUDE_STANDARD_IO
-NK_LIB char *nk_file_load(const char* path, nk_size* siz, struct nk_allocator *alloc);
+NK_LIB char *nk_file_load(const char* path, nk_size* siz, const struct nk_allocator *alloc);
+#endif
+
+/* math helpers that are only used by nk_dtoa */
+#ifdef NK_DTOA_NEEDED
+NK_LIB double nk_pow(double x, int n);
+NK_LIB int nk_ifloord(double x);
+NK_LIB int nk_log10(double n);
 #endif
 
 /* buffer */
@@ -179,11 +202,11 @@ enum nk_window_insert_location {
 NK_LIB void *nk_create_window(struct nk_context *ctx);
 NK_LIB void nk_remove_window(struct nk_context*, struct nk_window*);
 NK_LIB void nk_free_window(struct nk_context *ctx, struct nk_window *win);
-NK_LIB struct nk_window *nk_find_window(struct nk_context *ctx, nk_hash hash, const char *name);
+NK_LIB struct nk_window *nk_find_window(const struct nk_context *ctx, nk_hash hash, const char *name);
 NK_LIB void nk_insert_window(struct nk_context *ctx, struct nk_window *win, enum nk_window_insert_location loc);
 
 /* pool */
-NK_LIB void nk_pool_init(struct nk_pool *pool, struct nk_allocator *alloc, unsigned int capacity);
+NK_LIB void nk_pool_init(struct nk_pool *pool, const struct nk_allocator *alloc, unsigned int capacity);
 NK_LIB void nk_pool_free(struct nk_pool *pool);
 NK_LIB void nk_pool_init_fixed(struct nk_pool *pool, void *memory, nk_size size);
 NK_LIB struct nk_page_element *nk_pool_alloc(struct nk_pool *pool);
@@ -199,7 +222,7 @@ NK_LIB void nk_remove_table(struct nk_window *win, struct nk_table *tbl);
 NK_LIB void nk_free_table(struct nk_context *ctx, struct nk_table *tbl);
 NK_LIB void nk_push_table(struct nk_window *win, struct nk_table *tbl);
 NK_LIB nk_uint *nk_add_value(struct nk_context *ctx, struct nk_window *win, nk_hash name, nk_uint value);
-NK_LIB nk_uint *nk_find_value(struct nk_window *win, nk_hash name);
+NK_LIB nk_uint *nk_find_value(const struct nk_window *win, nk_hash name);
 
 /* panel */
 NK_LIB void *nk_create_panel(struct nk_context *ctx);
@@ -220,7 +243,7 @@ NK_LIB void nk_row_layout(struct nk_context *ctx, enum nk_layout_format fmt, flo
 NK_LIB void nk_panel_alloc_row(const struct nk_context *ctx, struct nk_window *win);
 NK_LIB void nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx, struct nk_window *win, int modify);
 NK_LIB void nk_panel_alloc_space(struct nk_rect *bounds, const struct nk_context *ctx);
-NK_LIB void nk_layout_peek(struct nk_rect *bounds, struct nk_context *ctx);
+NK_LIB void nk_layout_peek(struct nk_rect *bounds, const struct nk_context *ctx);
 
 /* popup */
 NK_LIB nk_bool nk_nonblock_begin(struct nk_context *ctx, nk_flags flags, struct nk_rect body, struct nk_rect header, enum nk_panel_type panel_type);
@@ -255,9 +278,9 @@ enum nk_toggle_type {
     NK_TOGGLE_OPTION
 };
 NK_LIB nk_bool nk_toggle_behavior(const struct nk_input *in, struct nk_rect select, nk_flags *state, nk_bool active);
-NK_LIB void nk_draw_checkbox(struct nk_command_buffer *out, nk_flags state, const struct nk_style_toggle *style, nk_bool active, const struct nk_rect *label, const struct nk_rect *selector, const struct nk_rect *cursors, const char *string, int len, const struct nk_user_font *font);
-NK_LIB void nk_draw_option(struct nk_command_buffer *out, nk_flags state, const struct nk_style_toggle *style, nk_bool active, const struct nk_rect *label, const struct nk_rect *selector, const struct nk_rect *cursors, const char *string, int len, const struct nk_user_font *font);
-NK_LIB nk_bool nk_do_toggle(nk_flags *state, struct nk_command_buffer *out, struct nk_rect r, nk_bool *active, const char *str, int len, enum nk_toggle_type type, const struct nk_style_toggle *style, const struct nk_input *in, const struct nk_user_font *font);
+NK_LIB void nk_draw_checkbox(struct nk_command_buffer *out, nk_flags state, const struct nk_style_toggle *style, nk_bool active, const struct nk_rect *label, const struct nk_rect *selector, const struct nk_rect *cursors, const char *string, int len, const struct nk_user_font *font, nk_flags text_alignment);
+NK_LIB void nk_draw_option(struct nk_command_buffer *out, nk_flags state, const struct nk_style_toggle *style, nk_bool active, const struct nk_rect *label, const struct nk_rect *selector, const struct nk_rect *cursors, const char *string, int len, const struct nk_user_font *font, nk_flags text_alignment);
+NK_LIB nk_bool nk_do_toggle(nk_flags *state, struct nk_command_buffer *out, struct nk_rect r, nk_bool *active, const char *str, int len, enum nk_toggle_type type, const struct nk_style_toggle *style, const struct nk_input *in, const struct nk_user_font *font, nk_flags widget_alignment, nk_flags text_alignment);
 
 /* progress */
 NK_LIB nk_size nk_progress_behavior(nk_flags *state, struct nk_input *in, struct nk_rect r, struct nk_rect cursor, nk_size max, nk_size value, nk_bool modifiable);
@@ -328,21 +351,36 @@ NK_LIB void nk_property(struct nk_context *ctx, const char *name, struct nk_prop
 
 #ifdef NK_INCLUDE_FONT_BAKING
 
+/**
+ * @def NK_NO_STB_RECT_PACK_IMPLEMENTATION
+ *
+ * When defined, will avoid enabling STB_RECT_PACK_IMPLEMENTATION for when stb_rect_pack.h is already implemented elsewhere.
+ */
+#ifndef NK_NO_STB_RECT_PACK_IMPLEMENTATION
 #define STB_RECT_PACK_IMPLEMENTATION
+#endif /* NK_NO_STB_RECT_PACK_IMPLEMENTATION */
+
+/**
+ * @def NK_NO_STB_TRUETYPE_IMPLEMENTATION
+ *
+ * When defined, will avoid enabling STB_TRUETYPE_IMPLEMENTATION for when stb_truetype.h is already implemented elsewhere.
+ */
+#ifndef NK_NO_STB_TRUETYPE_IMPLEMENTATION
 #define STB_TRUETYPE_IMPLEMENTATION
+#endif /* NK_NO_STB_TRUETYPE_IMPLEMENTATION */
 
 /* Allow consumer to define own STBTT_malloc/STBTT_free, and use the font atlas' allocator otherwise */
 #ifndef STBTT_malloc
 static void*
 nk_stbtt_malloc(nk_size size, void *user_data) {
-	struct nk_allocator *alloc = (struct nk_allocator *) user_data;
-	return alloc->alloc(alloc->userdata, 0, size);
+    struct nk_allocator *alloc = (struct nk_allocator *) user_data;
+    return alloc->alloc(alloc->userdata, 0, size);
 }
 
 static void
 nk_stbtt_free(void *ptr, void *user_data) {
-	struct nk_allocator *alloc = (struct nk_allocator *) user_data;
-	alloc->free(alloc->userdata, ptr);
+    struct nk_allocator *alloc = (struct nk_allocator *) user_data;
+    alloc->free(alloc->userdata, ptr);
 }
 
 #define STBTT_malloc(x,u)  nk_stbtt_malloc(x,u)
@@ -353,4 +391,3 @@ nk_stbtt_free(void *ptr, void *user_data) {
 #endif /* NK_INCLUDE_FONT_BAKING */
 
 #endif
-

@@ -32,6 +32,7 @@ NK_API void                 nk_x11_device_destroy(void);
  * ===============================================================
  */
 #ifdef NK_XLIB_GL3_IMPLEMENTATION
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,10 +50,10 @@ NK_API void                 nk_x11_device_destroy(void);
 #include <GL/glx.h>
 
 #ifndef NK_X11_DOUBLE_CLICK_LO
-#define NK_X11_DOUBLE_CLICK_LO 20
+#define NK_X11_DOUBLE_CLICK_LO 0.02
 #endif
 #ifndef NK_X11_DOUBLE_CLICK_HI
-#define NK_X11_DOUBLE_CLICK_HI 200
+#define NK_X11_DOUBLE_CLICK_HI 0.20
 #endif
 
 #ifdef NK_XLIB_LOAD_OPENGL_EXTENSIONS
@@ -173,7 +174,7 @@ struct nk_x11_device {
     struct opengl_info info;
 #endif
     struct nk_buffer cmds;
-    struct nk_draw_null_texture null;
+    struct nk_draw_null_texture tex_null;
     GLuint vbo, vao, ebo;
     GLuint prog;
     GLuint vert_shdr;
@@ -193,7 +194,8 @@ static struct nk_x11 {
     Cursor cursor;
     Display *dpy;
     Window win;
-    long last_button_click;
+    double last_button_click;
+    double time_of_last_frame;
 } x11;
 
 #ifdef __APPLE__
@@ -205,12 +207,12 @@ static struct nk_x11 {
 #ifdef NK_XLIB_LOAD_OPENGL_EXTENSIONS
 #include <GL/glx.h>
 
-NK_INTERN long
-nk_timestamp(void)
+NK_INTERN double
+nk_get_time(void)
 {
     struct timeval tv;
     if (gettimeofday(&tv, NULL) < 0) return 0;
-    return (long)((long)tv.tv_sec * 1000 + (long)tv.tv_usec/1000);
+    return ((double)tv.tv_sec + (double)tv.tv_usec/1000000);
 }
 
 NK_INTERN int
@@ -479,11 +481,15 @@ nk_x11_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
     XWindowAttributes attr;
     struct nk_x11_device *dev = &x11.ogl;
     GLfloat ortho[4][4] = {
-        {2.0f, 0.0f, 0.0f, 0.0f},
-        {0.0f,-2.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f,-1.0f, 0.0f},
-        {-1.0f,1.0f, 0.0f, 1.0f},
+        {  2.0f,  0.0f,  0.0f, 0.0f },
+        {  0.0f, -2.0f,  0.0f, 0.0f },
+        {  0.0f,  0.0f, -1.0f, 0.0f },
+        { -1.0f,  1.0f,  0.0f, 1.0f },
     };
+    double now = nk_get_time();
+    x11.ctx.delta_time_seconds = now - x11.time_of_last_frame;
+    x11.time_of_last_frame = now;
+
     XGetWindowAttributes(x11.dpy, x11.win, &attr);
     width = attr.width;
     height = attr.height;
@@ -536,7 +542,7 @@ nk_x11_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
             config.vertex_layout = vertex_layout;
             config.vertex_size = sizeof(struct nk_x11_vertex);
             config.vertex_alignment = NK_ALIGNOF(struct nk_x11_vertex);
-            config.null = dev->null;
+            config.tex_null = dev->tex_null;
             config.circle_segment_count = 22;
             config.curve_segment_count = 22;
             config.arc_segment_count = 22;
@@ -592,7 +598,7 @@ nk_x11_font_stash_end(void)
     const void *image; int w, h;
     image = nk_font_atlas_bake(&x11.atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
     nk_x11_device_upload_atlas(image, w, h);
-    nk_font_atlas_end(&x11.atlas, nk_handle_id((int)x11.ogl.font_tex), &x11.ogl.null);
+    nk_font_atlas_end(&x11.atlas, nk_handle_id((int)x11.ogl.font_tex), &x11.ogl.tex_null);
     if (x11.atlas.default_font)
         nk_style_set_font(&x11.ctx, &x11.atlas.default_font->handle);
 }
@@ -601,6 +607,7 @@ NK_API int
 nk_x11_handle_event(XEvent *evt)
 {
     struct nk_context *ctx = &x11.ctx;
+    static int insert_toggle = 0;
 
     /* optional grabbing behavior */
     if (ctx->input.mouse.grab) {
@@ -621,14 +628,14 @@ nk_x11_handle_event(XEvent *evt)
         if (*code == XK_Shift_L || *code == XK_Shift_R) nk_input_key(ctx, NK_KEY_SHIFT, down);
         else if (*code == XK_Control_L || *code == XK_Control_R) nk_input_key(ctx, NK_KEY_CTRL, down);
         else if (*code == XK_Delete)    nk_input_key(ctx, NK_KEY_DEL, down);
-        else if (*code == XK_Return)    nk_input_key(ctx, NK_KEY_ENTER, down);
+        else if (*code == XK_Return || *code == XK_KP_Enter)    nk_input_key(ctx, NK_KEY_ENTER, down);
         else if (*code == XK_Tab)       nk_input_key(ctx, NK_KEY_TAB, down);
         else if (*code == XK_Left)      nk_input_key(ctx, NK_KEY_LEFT, down);
         else if (*code == XK_Right)     nk_input_key(ctx, NK_KEY_RIGHT, down);
         else if (*code == XK_Up)        nk_input_key(ctx, NK_KEY_UP, down);
         else if (*code == XK_Down)      nk_input_key(ctx, NK_KEY_DOWN, down);
         else if (*code == XK_BackSpace) nk_input_key(ctx, NK_KEY_BACKSPACE, down);
-        else if (*code == XK_space && !down) nk_input_char(ctx, ' ');
+        else if (*code == XK_Escape)    nk_input_key(ctx, NK_KEY_TEXT_RESET_MODE, down);
         else if (*code == XK_Page_Up)   nk_input_key(ctx, NK_KEY_SCROLL_UP, down);
         else if (*code == XK_Page_Down) nk_input_key(ctx, NK_KEY_SCROLL_DOWN, down);
         else if (*code == XK_Home) {
@@ -656,11 +663,14 @@ nk_x11_handle_event(XEvent *evt)
                 nk_input_key(ctx, NK_KEY_TEXT_LINE_START, down);
             else if (*code == 'e' && (evt->xkey.state & ControlMask))
                 nk_input_key(ctx, NK_KEY_TEXT_LINE_END, down);
-            else {
-                if (*code == 'i')
+            else if (*code == XK_Insert) {
+                if (down) insert_toggle = !insert_toggle;
+                if (insert_toggle) {
                     nk_input_key(ctx, NK_KEY_TEXT_INSERT_MODE, down);
-                else if (*code == 'r')
+                } else {
                     nk_input_key(ctx, NK_KEY_TEXT_REPLACE_MODE, down);
+                }
+            } else {
                 if (down) {
                     char buf[32];
                     KeySym keysym = 0;
@@ -677,10 +687,10 @@ nk_x11_handle_event(XEvent *evt)
         const int x = evt->xbutton.x, y = evt->xbutton.y;
         if (evt->xbutton.button == Button1) {
             if (down) { /* Double-Click Button handler */
-                long dt = nk_timestamp() - x11.last_button_click;
+                float dt = nk_get_time() - x11.last_button_click;
                 if (dt > NK_X11_DOUBLE_CLICK_LO && dt < NK_X11_DOUBLE_CLICK_HI)
                     nk_input_button(ctx, NK_BUTTON_DOUBLE, x, y, nk_true);
-                x11.last_button_click = nk_timestamp();
+                x11.last_button_click = nk_get_time();
             } else nk_input_button(ctx, NK_BUTTON_DOUBLE, x, y, nk_false);
             nk_input_button(ctx, NK_BUTTON_LEFT, x, y, down);
         } else if (evt->xbutton.button == Button2)
@@ -691,6 +701,10 @@ nk_x11_handle_event(XEvent *evt)
             nk_input_scroll(ctx, nk_vec2(0,1.0f));
         else if (evt->xbutton.button == Button5)
             nk_input_scroll(ctx, nk_vec2(0,-1.0f));
+        else if (evt->xbutton.button == 8)
+            nk_input_button(ctx, NK_BUTTON_X1, x, y, down);
+        else if (evt->xbutton.button == 9)
+            nk_input_button(ctx, NK_BUTTON_X2, x, y, down);
         else return 0;
         return 1;
     } else if (evt->type == MotionNotify) {
@@ -729,6 +743,7 @@ nk_x11_init(Display *dpy, Window win)
     XFreePixmap(dpy, blank);}
 
     nk_init_default(&x11.ctx, 0);
+    x11.time_of_last_frame = nk_get_time();
     return &x11.ctx;
 }
 

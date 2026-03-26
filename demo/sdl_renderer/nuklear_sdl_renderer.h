@@ -11,13 +11,17 @@
 #ifndef NK_SDL_RENDERER_H_
 #define NK_SDL_RENDERER_H_
 
-#include <SDL2/SDL.h>
+#ifndef NK_SDL_RENDERER_SDL_H
+#define NK_SDL_RENDERER_SDL_H <SDL.h>
+#endif
+#include NK_SDL_RENDERER_SDL_H
 NK_API struct nk_context*   nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer);
 NK_API void                 nk_sdl_font_stash_begin(struct nk_font_atlas **atlas);
 NK_API void                 nk_sdl_font_stash_end(void);
 NK_API int                  nk_sdl_handle_event(SDL_Event *evt);
 NK_API void                 nk_sdl_render(enum nk_anti_aliasing);
 NK_API void                 nk_sdl_shutdown(void);
+NK_API void                 nk_sdl_handle_grab(void);
 
 #if SDL_COMPILEDVERSION < SDL_VERSIONNUM(2, 0, 22)
 /* Metal API does not support cliprects with negative coordinates or large
@@ -39,12 +43,12 @@ NK_API void                 nk_sdl_shutdown(void);
  * ===============================================================
  */
 #ifdef NK_SDL_RENDERER_IMPLEMENTATION
-
-#include <strings.h>
+#include <string.h>
+#include <stdlib.h>
 
 struct nk_sdl_device {
     struct nk_buffer cmds;
-    struct nk_draw_null_texture null;
+    struct nk_draw_null_texture tex_null;
     SDL_Texture *font_tex;
 };
 
@@ -60,9 +64,8 @@ static struct nk_sdl {
     struct nk_sdl_device ogl;
     struct nk_context ctx;
     struct nk_font_atlas atlas;
+    Uint64 time_of_last_frame;
 } sdl;
-
-
 
 NK_INTERN void
 nk_sdl_device_upload_atlas(const void *image, int width, int height)
@@ -109,11 +112,16 @@ nk_sdl_render(enum nk_anti_aliasing AA)
             {NK_VERTEX_COLOR, NK_FORMAT_R8G8B8A8, NK_OFFSETOF(struct nk_sdl_vertex, col)},
             {NK_VERTEX_LAYOUT_END}
         };
+
+        Uint64 now = SDL_GetTicks64();
+        sdl.ctx.delta_time_seconds = (float)(now - sdl.time_of_last_frame) / 1000;
+        sdl.time_of_last_frame = now;
+
         NK_MEMSET(&config, 0, sizeof(config));
         config.vertex_layout = vertex_layout;
         config.vertex_size = sizeof(struct nk_sdl_vertex);
         config.vertex_alignment = NK_ALIGNOF(struct nk_sdl_vertex);
-        config.null = dev->null;
+        config.tex_null = dev->tex_null;
         config.circle_segment_count = 22;
         config.curve_segment_count = 22;
         config.arc_segment_count = 22;
@@ -195,7 +203,10 @@ static void
 nk_sdl_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
 {
     const char *text = SDL_GetClipboardText();
-    if (text) nk_textedit_paste(edit, text, nk_strlen(text));
+    if (text) {
+        nk_textedit_paste(edit, text, nk_strlen(text));
+        SDL_free((void *)text);
+    }
     (void)usr;
 }
 
@@ -237,6 +248,7 @@ nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer)
 #endif
     sdl.win = win;
     sdl.renderer = renderer;
+    sdl.time_of_last_frame = SDL_GetTicks64();
     nk_init_default(&sdl.ctx, 0);
     sdl.ctx.clip.copy = nk_sdl_clipboard_copy;
     sdl.ctx.clip.paste = nk_sdl_clipboard_paste;
@@ -259,26 +271,33 @@ nk_sdl_font_stash_end(void)
     const void *image; int w, h;
     image = nk_font_atlas_bake(&sdl.atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
     nk_sdl_device_upload_atlas(image, w, h);
-    nk_font_atlas_end(&sdl.atlas, nk_handle_ptr(sdl.ogl.font_tex), &sdl.ogl.null);
+    nk_font_atlas_end(&sdl.atlas, nk_handle_ptr(sdl.ogl.font_tex), &sdl.ogl.tex_null);
     if (sdl.atlas.default_font)
         nk_style_set_font(&sdl.ctx, &sdl.atlas.default_font->handle);
+}
+
+NK_API void
+nk_sdl_handle_grab(void)
+{
+    struct nk_context *ctx = &sdl.ctx;
+    if (ctx->input.mouse.grab) {
+        SDL_SetRelativeMouseMode(SDL_TRUE);
+    } else if (ctx->input.mouse.ungrab) {
+        /* better support for older SDL by setting mode first; causes an extra mouse motion event */
+        SDL_SetRelativeMouseMode(SDL_FALSE);
+        SDL_WarpMouseInWindow(sdl.win, (int)ctx->input.mouse.prev.x, (int)ctx->input.mouse.prev.y);
+    } else if (ctx->input.mouse.grabbed) {
+        ctx->input.mouse.pos.x = ctx->input.mouse.prev.x;
+        ctx->input.mouse.pos.y = ctx->input.mouse.prev.y;
+    }
 }
 
 NK_API int
 nk_sdl_handle_event(SDL_Event *evt)
 {
     struct nk_context *ctx = &sdl.ctx;
-
-    /* optional grabbing behavior */
-    if (ctx->input.mouse.grab) {
-        SDL_SetRelativeMouseMode(SDL_TRUE);
-        ctx->input.mouse.grab = 0;
-    } else if (ctx->input.mouse.ungrab) {
-        int x = (int)ctx->input.mouse.prev.x, y = (int)ctx->input.mouse.prev.y;
-        SDL_SetRelativeMouseMode(SDL_FALSE);
-        SDL_WarpMouseInWindow(sdl.win, x, y);
-        ctx->input.mouse.ungrab = 0;
-    }
+    int ctrl_down = SDL_GetModState() & KMOD_CTRL;
+    static int insert_toggle = 0;
 
     switch(evt->type)
     {
@@ -286,13 +305,15 @@ nk_sdl_handle_event(SDL_Event *evt)
         case SDL_KEYDOWN:
             {
                 int down = evt->type == SDL_KEYDOWN;
-                const Uint8* state = SDL_GetKeyboardState(0);
                 switch(evt->key.keysym.sym)
                 {
                     case SDLK_RSHIFT: /* RSHIFT & LSHIFT share same routine */
                     case SDLK_LSHIFT:    nk_input_key(ctx, NK_KEY_SHIFT, down); break;
                     case SDLK_DELETE:    nk_input_key(ctx, NK_KEY_DEL, down); break;
+
+                    case SDLK_KP_ENTER:
                     case SDLK_RETURN:    nk_input_key(ctx, NK_KEY_ENTER, down); break;
+
                     case SDLK_TAB:       nk_input_key(ctx, NK_KEY_TAB, down); break;
                     case SDLK_BACKSPACE: nk_input_key(ctx, NK_KEY_BACKSPACE, down); break;
                     case SDLK_HOME:      nk_input_key(ctx, NK_KEY_TEXT_START, down);
@@ -301,22 +322,35 @@ nk_sdl_handle_event(SDL_Event *evt)
                                          nk_input_key(ctx, NK_KEY_SCROLL_END, down); break;
                     case SDLK_PAGEDOWN:  nk_input_key(ctx, NK_KEY_SCROLL_DOWN, down); break;
                     case SDLK_PAGEUP:    nk_input_key(ctx, NK_KEY_SCROLL_UP, down); break;
-                    case SDLK_z:         nk_input_key(ctx, NK_KEY_TEXT_UNDO, down && state[SDL_SCANCODE_LCTRL]); break;
-                    case SDLK_r:         nk_input_key(ctx, NK_KEY_TEXT_REDO, down && state[SDL_SCANCODE_LCTRL]); break;
-                    case SDLK_c:         nk_input_key(ctx, NK_KEY_COPY, down && state[SDL_SCANCODE_LCTRL]); break;
-                    case SDLK_v:         nk_input_key(ctx, NK_KEY_PASTE, down && state[SDL_SCANCODE_LCTRL]); break;
-                    case SDLK_x:         nk_input_key(ctx, NK_KEY_CUT, down && state[SDL_SCANCODE_LCTRL]); break;
-                    case SDLK_b:         nk_input_key(ctx, NK_KEY_TEXT_LINE_START, down && state[SDL_SCANCODE_LCTRL]); break;
-                    case SDLK_e:         nk_input_key(ctx, NK_KEY_TEXT_LINE_END, down && state[SDL_SCANCODE_LCTRL]); break;
+                    case SDLK_z:         nk_input_key(ctx, NK_KEY_TEXT_UNDO, down && ctrl_down); break;
+                    case SDLK_r:         nk_input_key(ctx, NK_KEY_TEXT_REDO, down && ctrl_down); break;
+                    case SDLK_c:         nk_input_key(ctx, NK_KEY_COPY, down && ctrl_down); break;
+                    case SDLK_v:         nk_input_key(ctx, NK_KEY_PASTE, down && ctrl_down); break;
+                    case SDLK_x:         nk_input_key(ctx, NK_KEY_CUT, down && ctrl_down); break;
+                    case SDLK_b:         nk_input_key(ctx, NK_KEY_TEXT_LINE_START, down && ctrl_down); break;
+                    case SDLK_e:         nk_input_key(ctx, NK_KEY_TEXT_LINE_END, down && ctrl_down); break;
                     case SDLK_UP:        nk_input_key(ctx, NK_KEY_UP, down); break;
                     case SDLK_DOWN:      nk_input_key(ctx, NK_KEY_DOWN, down); break;
+                    case SDLK_ESCAPE:    nk_input_key(ctx, NK_KEY_TEXT_RESET_MODE, down); break;
+                    case SDLK_INSERT:
+                        if (down) insert_toggle = !insert_toggle;
+                        if (insert_toggle) {
+                            nk_input_key(ctx, NK_KEY_TEXT_INSERT_MODE, down);
+                        } else {
+                            nk_input_key(ctx, NK_KEY_TEXT_REPLACE_MODE, down);
+                        }
+                        break;
+                    case SDLK_a:
+                        if (ctrl_down)
+                            nk_input_key(ctx,NK_KEY_TEXT_SELECT_ALL, down);
+                        break;
                     case SDLK_LEFT:
-                        if (state[SDL_SCANCODE_LCTRL])
+                        if (ctrl_down)
                             nk_input_key(ctx, NK_KEY_TEXT_WORD_LEFT, down);
                         else nk_input_key(ctx, NK_KEY_LEFT, down);
                         break;
                     case SDLK_RIGHT:
-                        if (state[SDL_SCANCODE_LCTRL])
+                        if (ctrl_down)
                             nk_input_key(ctx, NK_KEY_TEXT_WORD_RIGHT, down);
                         else nk_input_key(ctx, NK_KEY_RIGHT, down);
                         break;
@@ -337,6 +371,8 @@ nk_sdl_handle_event(SDL_Event *evt)
                         nk_input_button(ctx, NK_BUTTON_LEFT, x, y, down); break;
                     case SDL_BUTTON_MIDDLE: nk_input_button(ctx, NK_BUTTON_MIDDLE, x, y, down); break;
                     case SDL_BUTTON_RIGHT:  nk_input_button(ctx, NK_BUTTON_RIGHT, x, y, down); break;
+                    case SDL_BUTTON_X1:     nk_input_button(ctx, NK_BUTTON_X1, x, y, down); break;
+                    case SDL_BUTTON_X2:     nk_input_button(ctx, NK_BUTTON_X2, x, y, down); break;
                 }
             }
             return 1;
@@ -358,7 +394,7 @@ nk_sdl_handle_event(SDL_Event *evt)
             return 1;
 
         case SDL_MOUSEWHEEL:
-            nk_input_scroll(ctx,nk_vec2((float)evt->wheel.x,(float)evt->wheel.y));
+            nk_input_scroll(ctx,nk_vec2(evt->wheel.preciseX, evt->wheel.preciseY));
             return 1;
     }
     return 0;

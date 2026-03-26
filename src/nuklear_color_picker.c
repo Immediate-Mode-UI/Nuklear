@@ -187,7 +187,7 @@ nk_color_pick(struct nk_context * ctx, struct nk_colorf *color,
     layout = win->layout;
     state = nk_widget(&bounds, ctx);
     if (!state) return 0;
-    in = (state == NK_WIDGET_ROM || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
+    in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
     return nk_do_color_picker(&ctx->last_widget_state, &win->buffer, color, fmt, bounds,
                 nk_vec2(0,0), in, config->font);
 }

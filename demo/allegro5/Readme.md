@@ -1,6 +1,6 @@
 # Allegro v5 nuklear backend
 
-This backend provides support for [Allegro version 5](http://liballeg.org/). It works on on all supported platforms with an OpenGL backend, including iOS and Android.
+This backend provides support for [Allegro version 5](https://liballeg.github.io). It works on on all supported platforms with an OpenGL backend, including iOS and Android.
 
 Touch support is provided by handling the first touch (ignoring any extra simultaneous touches) and emitting nuklear mouse events. nuklear will handle only the first touch like a single left-mouse click. Dragging the touch screen emits mouse-move events.
 

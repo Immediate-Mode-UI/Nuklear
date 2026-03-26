@@ -2,22 +2,22 @@
 BIN = demo
 
 # Compiler
-CC = clang
+CC ?= clang
 DCC = gcc
 
 # Flags
-CFLAGS += -std=c89 -Wall -Wextra -pedantic -O2
+CFLAGS += -std=c89 -Wall -Wextra -pedantic
 
 SRC = main.c
 OBJ = $(SRC:.c=.o)
 
 # Modes
 .PHONY: gcc
-gcc: CC = gcc
+gcc: CC ?= gcc
 gcc: $(BIN)
 
 .PHONY: clang
-clang: CC = clang
+clang: CC ?= clang
 clang: $(BIN)
 
 $(BIN):
