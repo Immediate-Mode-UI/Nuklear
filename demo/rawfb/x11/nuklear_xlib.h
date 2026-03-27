@@ -236,6 +236,10 @@ nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt, struct r
             nk_input_scroll(&rawfb->ctx, nk_vec2(0, 1.0f));
         else if (evt->xbutton.button == Button5)
             nk_input_scroll(&rawfb->ctx, nk_vec2(0, -1.0f));
+        else if (evt->xbutton.button == 8)
+            nk_input_button(&rawfb->ctx, NK_BUTTON_X1, x, y, down);
+        else if (evt->xbutton.button == 9)
+            nk_input_button(&rawfb->ctx, NK_BUTTON_X2, x, y, down);
         else return 0;
         return 1;
     } else if (evt->type == MotionNotify) {
