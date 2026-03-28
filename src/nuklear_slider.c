@@ -80,6 +80,7 @@ nk_draw_slider(struct nk_command_buffer *out, nk_flags state,
     }
 
     /* calculate slider background bar */
+    /* TODO style->bar_height should be used in here somewhere */
     bar.x = bounds->x;
     bar.y = (visual_cursor->y + visual_cursor->h/2) - bounds->h/12;
     bar.w = bounds->w;

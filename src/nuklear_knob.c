@@ -49,6 +49,7 @@ nk_knob_behavior(nk_flags *state, struct nk_input *in,
     }
 
     /* knob widget state */
+    /* TODO state is overwritten so it's never in ACTIVE state */
     if (nk_input_is_mouse_hovering_rect(in, bounds)){
         *state = NK_WIDGET_STATE_HOVERED;
         /* handle scroll and arrow inputs */
@@ -155,7 +156,7 @@ nk_draw_knob(struct nk_command_buffer *out, nk_flags state,
     cursor_start.x = (cursor_start.x + cursor_end.x) / 2;
     cursor_start.y = (cursor_start.y + cursor_end.y) / 2;
 
-    /* draw cursor */
+    /* draw cursor TODO should use style->cursor_width instead of 2 */
     nk_stroke_line(out, cursor_start.x, cursor_start.y, cursor_end.x, cursor_end.y, 2, nk_rgb_factor(cursor, style->color_factor));
     }
 }

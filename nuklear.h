@@ -5284,10 +5284,10 @@ struct nk_style_slider {
     /* properties */
     float border;
     float rounding;
-    float bar_height;
+    float bar_height; /* TODO not used at all */
     struct nk_vec2 padding;
     struct nk_vec2 spacing;
-    struct nk_vec2 cursor_size;
+    struct nk_vec2 cursor_size; /* NOTE y has no effect */
     float color_factor;
     float disabled_factor;
 
@@ -5320,14 +5320,14 @@ struct nk_style_knob {
     /* cursor */
     struct nk_color cursor_normal;
     struct nk_color cursor_hover;
-    struct nk_color cursor_active;
+    struct nk_color cursor_active; /* TODO not used because dead code */
 
     /* properties */
     float border;
     float knob_border;
     struct nk_vec2 padding;
     struct nk_vec2 spacing;
-    float cursor_width;
+    float cursor_width; /* TODO not used currently */
     float color_factor;
     float disabled_factor;
 
@@ -25978,6 +25978,7 @@ nk_draw_slider(struct nk_command_buffer *out, nk_flags state,
     }
 
     /* calculate slider background bar */
+    /* TODO style->bar_height should be used in here somewhere */
     bar.x = bounds->x;
     bar.y = (visual_cursor->y + visual_cursor->h/2) - bounds->h/12;
     bar.w = bounds->w;
@@ -26210,6 +26211,7 @@ nk_knob_behavior(nk_flags *state, struct nk_input *in,
     }
 
     /* knob widget state */
+    /* TODO state is overwritten so it's never in ACTIVE state */
     if (nk_input_is_mouse_hovering_rect(in, bounds)){
         *state = NK_WIDGET_STATE_HOVERED;
         /* handle scroll and arrow inputs */
@@ -26316,7 +26318,7 @@ nk_draw_knob(struct nk_command_buffer *out, nk_flags state,
     cursor_start.x = (cursor_start.x + cursor_end.x) / 2;
     cursor_start.y = (cursor_start.y + cursor_end.y) / 2;
 
-    /* draw cursor */
+    /* draw cursor TODO should use style->cursor_width instead of 2 */
     nk_stroke_line(out, cursor_start.x, cursor_start.y, cursor_end.x, cursor_end.y, 2, nk_rgb_factor(cursor, style->color_factor));
     }
 }
