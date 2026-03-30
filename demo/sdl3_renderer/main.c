@@ -58,11 +58,8 @@
     #define NK_POINTER_TYPE      uintptr_t
 #endif
 
-/* FIXME: We could also use the `bool` symbol provided by SDL,
- * but this is currently broken due to internal Nuklear issue, see:
- * https://github.com/Immediate-Mode-UI/Nuklear/issues/849
- * */
-#define NK_INCLUDE_STANDARD_BOOL
+/* We can reuse the `bool` symbol because SDL3 guarantees its existence */
+/*#define NK_INCLUDE_STANDARD_BOOL*/
 #ifndef NK_INCLUDE_STANDARD_BOOL
     #define NK_BOOL               bool
 #endif
@@ -75,8 +72,10 @@
 #define NK_VSNPRINTF(s, n, f, a)  SDL_vsnprintf(s, n, f, a)
 #define NK_STRTOD(str, endptr)    SDL_strtod(str, endptr)
 
-/* sadly, SDL3 does not provide "dtoa" (only integer version) */
-/*#define NK_DTOA (str, d)*/
+/* SDL3 does not provide "dtoa" (only integer versions)
+ * but we can emulate it with SDL_snprintf */
+static char* nk_sdl_dtoa(char *str, double d);
+#define NK_DTOA(str, d) nk_sdl_dtoa(str, d)
 
 /* SDL can also provide us with math functions, but beware that Nuklear's own
  * implementation can be slightly faster at the cost of some precision */
@@ -288,6 +287,8 @@ SDL_AppInit(void** appstate, int argc, char* argv[])
     }
 #endif
 
+    nk_input_begin(ctx);
+
     return SDL_APP_CONTINUE;
 }
 
@@ -407,10 +408,20 @@ SDL_AppQuit(void* appstate, SDL_AppResult result)
     NK_UNUSED(result);
 
     if (app) {
+        nk_input_end(app->ctx);
         nk_sdl_shutdown(app->ctx);
         SDL_DestroyRenderer(app->renderer);
         SDL_DestroyWindow(app->window);
         SDL_free(app);
     }
+}
+
+static char*
+nk_sdl_dtoa(char *str, double d)
+{
+    NK_ASSERT(str);
+    if (!str) return NULL;
+    (void)SDL_snprintf(str, 99999, "%.17g", d);
+    return str;
 }
 

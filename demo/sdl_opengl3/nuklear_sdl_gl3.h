@@ -450,6 +450,8 @@ nk_sdl_handle_event(SDL_Event *evt)
                         nk_input_button(ctx, NK_BUTTON_LEFT, x, y, down); break;
                     case SDL_BUTTON_MIDDLE: nk_input_button(ctx, NK_BUTTON_MIDDLE, x, y, down); break;
                     case SDL_BUTTON_RIGHT:  nk_input_button(ctx, NK_BUTTON_RIGHT, x, y, down); break;
+                    case SDL_BUTTON_X1:     nk_input_button(ctx, NK_BUTTON_X1, x, y, down); break;
+                    case SDL_BUTTON_X2:     nk_input_button(ctx, NK_BUTTON_X2, x, y, down); break;
                 }
             }
             return 1;
