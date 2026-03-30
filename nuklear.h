@@ -28209,7 +28209,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
 				/*Reuse temporary variables (unicode, glyph_len)*/
                 text_end = nk_str_at_const(&edit->string, end, &unicode, &glyph_len);
 
-                edit->clip.copy(edit->clip.userdata, text_begin, text_end - text_begin);
+                edit->clip.copy(edit->clip.userdata, text_begin, (int)(text_end - text_begin));
             }
             if (cut && !(flags & NK_EDIT_READ_ONLY)){
                 nk_textedit_cut(edit);
