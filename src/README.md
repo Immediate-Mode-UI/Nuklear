@@ -4,5 +4,5 @@ This will build out [nuklear.h](../nuklear.h).
 
 ## Usage
 
-- On Linux/Mac just run `./paq.sh > ../nuklear.h`
+- On Linux/Mac, run `./paq.sh`
 - On Windows just run `paq.bat`
