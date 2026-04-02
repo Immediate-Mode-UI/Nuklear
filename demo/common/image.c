@@ -103,6 +103,7 @@ static void
 image_demo(struct nk_context *ctx)
 {
 	if (!imagesLoaded) {
+		nk_ushort region[4] = { 76, 144, 146, 189 };
 		/* It would be more convenient if we could pass the type as a third parameter
 		 * to nk_image() but that would be a breaking change and require a few more
 		 * internal changes */
@@ -131,13 +132,12 @@ image_demo(struct nk_context *ctx)
 		tile_center = tile_stretch; tile_center.type = NK_IMAGE_CENTER;
 		tile_tile = tile_stretch; tile_tile.type = NK_IMAGE_TILE;
 
-		nk_ushort region[4] = { 76, 144, 146, 189 };
 		bp_si_stretch = bp_stretch; memcpy(bp_si_stretch.region, region, sizeof(region));
 		bp_si_fill = bp_fill; memcpy(bp_si_fill.region, region, sizeof(region));
 		bp_si_fit = bp_fit; memcpy(bp_si_fit.region, region, sizeof(region));
 		bp_si_center = bp_center; memcpy(bp_si_center.region, region, sizeof(region));
 
-#ifdef NO_TILING
+#ifndef NO_TILING
 		{
 		struct nk_image tmp = nk_tile_image(bunny_wide, nk_vec2(10, 1));
 		bw_tile = create_nk_image(tmp); /* free(tmp.handle.ptr); */
@@ -260,7 +260,7 @@ image_demo(struct nk_context *ctx)
 	}
 	nk_end(ctx);
 
-	if (nk_begin(ctx, "Subimages", nk_rect(5, 25, 250, 700),
+	if (nk_begin(ctx, "Subimages", nk_rect(740, 25, 250, 700),
 	             NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
 	             NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR))
 	{
