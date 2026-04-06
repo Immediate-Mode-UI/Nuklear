@@ -177,6 +177,11 @@ main(void)
         while (XPending(xw.dpy)) {
             XNextEvent(xw.dpy, &evt);
             if (evt.type == ClientMessage) goto cleanup;
+            if (evt.type == KeyPress) {
+                int ret;
+                KeySym *code = XGetKeyboardMapping(xlib.surf->dpy, (KeyCode)evt.xkey.keycode, 1, &ret);
+                if (*code == 'q' && (evt.xkey.state & ControlMask)) goto cleanup;
+            }
             if (XFilterEvent(&evt, xw.win)) continue;
             nk_xlib_handle_event(xw.dpy, xw.screen, xw.win, &evt);
         }
