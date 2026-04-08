@@ -188,7 +188,7 @@ main(void)
         XDefaultDepth(xw.dpy, xw.screen), InputOutput,
         xw.vis, CWEventMask | CWColormap, &xw.swa);
 
-    XStoreName(xw.dpy, xw.win, "X11");
+    XStoreName(xw.dpy, xw.win, "rawfb X11");
     XMapWindow(xw.dpy, xw.win);
     XGetWindowAttributes(xw.dpy, xw.win, &xw.attr);
     xw.width = (unsigned int)xw.attr.width;
@@ -209,6 +209,12 @@ main(void)
         started = timestamp();
         nk_input_begin(&rawfb->ctx);
         while (XCheckWindowEvent(xw.dpy, xw.win, xw.swa.event_mask, &evt)) {
+            if (evt.type == ClientMessage) goto cleanup;
+            if (evt.type == KeyPress) {
+                int ret;
+                KeySym *code = XGetKeyboardMapping(xw.dpy, (KeyCode)evt.xkey.keycode, 1, &ret);
+                if (*code == 'q' && (evt.xkey.state & ControlMask)) goto cleanup;
+            }
             if (XFilterEvent(&evt, xw.win)) continue;
             nk_xlib_handle_event(xw.dpy, xw.screen, xw.win, &evt, rawfb);
         }
@@ -266,6 +272,7 @@ main(void)
             sleep_for(DTIME - dt);
     }
 
+cleanup:
     nk_rawfb_shutdown(rawfb);
     nk_xlib_shutdown();
     XUnmapWindow(xw.dpy, xw.win);
