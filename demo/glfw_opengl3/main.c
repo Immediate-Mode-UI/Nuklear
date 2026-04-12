@@ -139,6 +139,11 @@ int main(void)
     {
         /* Input */
         glfwPollEvents();
+        if (glfwGetKey(win, GLFW_KEY_Q) == GLFW_PRESS &&
+             (glfwGetKey(win, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ||
+              glfwGetKey(win, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS)) {
+            glfwSetWindowShouldClose(win, nk_true);
+        }
         nk_glfw3_new_frame(&glfw);
 
         /* GUI */

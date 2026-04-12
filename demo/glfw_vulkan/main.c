@@ -2183,6 +2183,11 @@ int main(void) {
     while (!glfwWindowShouldClose(demo.win)) {
         /* Input */
         glfwPollEvents();
+        if (glfwGetKey(demo.win, GLFW_KEY_Q) == GLFW_PRESS &&
+             (glfwGetKey(demo.win, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ||
+              glfwGetKey(demo.win, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS)) {
+            glfwSetWindowShouldClose(demo.win, nk_true);
+        }
         nk_glfw3_new_frame();
 
         /* GUI */
