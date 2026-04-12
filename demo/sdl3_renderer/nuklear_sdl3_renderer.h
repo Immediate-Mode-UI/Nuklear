@@ -27,6 +27,10 @@
     #define NK_BUFFER_DEFAULT_INITIAL_SIZE (4*1024)
 #endif
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 NK_API struct nk_context*   nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer, struct nk_allocator allocator);
 #ifdef NK_INCLUDE_FONT_BAKING
 NK_API struct nk_font_atlas* nk_sdl_font_stash_begin(struct nk_context* ctx);
@@ -40,6 +44,10 @@ NK_API nk_handle            nk_sdl_get_userdata(struct nk_context* ctx);
 NK_API void                 nk_sdl_set_userdata(struct nk_context* ctx, nk_handle userdata);
 NK_API void                 nk_sdl_style_set_debug_font(struct nk_context* ctx);
 NK_API struct nk_allocator  nk_sdl_allocator(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NK_SDL3_RENDERER_H_ */
 
@@ -445,8 +453,6 @@ nk_sdl_handle_event(struct nk_context* ctx, SDL_Event *evt)
                 int down = evt->type == SDL_EVENT_KEY_DOWN;
                 int ctrl_down = evt->key.mod & SDL_KMOD_CTRL;
 
-                /* Scancodes usually make more sense for games, but key codes are better for
-                 * general application */
                 switch(evt->key.key)
                 {
                     case SDLK_RSHIFT: /* RSHIFT & LSHIFT share same routine */
