@@ -9,9 +9,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: butlerlogic/action-autotag@1.1.2
+    - uses: actions/checkout@v6
+
+    # https://github.com/butlerlogic/action-autotag
+    - uses: butlerlogic/action-autotag@stable
       env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       with:
         root: clib.json
+        tag_prefix: "v"
