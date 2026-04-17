@@ -261,7 +261,7 @@ nk_sdl_render(struct nk_context* ctx, enum nk_anti_aliasing AA)
         config.shape_AA = AA;
         config.line_AA = AA;
 
-        /* convert shapes into vertexes */
+        /* convert shapes into vertices */
         nk_buffer_init(&vbuf, &sdl->allocator, NK_BUFFER_DEFAULT_INITIAL_SIZE);
         nk_buffer_init(&ebuf, &sdl->allocator, NK_BUFFER_DEFAULT_INITIAL_SIZE);
         nk_convert(&sdl->ctx, &sdl->ogl.cmds, &vbuf, &ebuf, &config);

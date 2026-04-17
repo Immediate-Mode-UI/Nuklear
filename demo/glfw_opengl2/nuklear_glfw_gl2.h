@@ -154,7 +154,7 @@ nk_glfw3_render(enum nk_anti_aliasing AA)
         config.shape_AA = AA;
         config.line_AA = AA;
 
-        /* convert shapes into vertexes */
+        /* convert shapes into vertices */
         nk_buffer_init_default(&vbuf);
         nk_buffer_init_default(&ebuf);
         nk_convert(&glfw.ctx, &dev->cmds, &vbuf, &ebuf, &config);
