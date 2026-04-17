@@ -355,7 +355,8 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
             al_acknowledge_resize(ev->display.source);
             return 1;
         } break;
-        case ALLEGRO_EVENT_MOUSE_AXES: {
+        case ALLEGRO_EVENT_MOUSE_AXES:
+        case ALLEGRO_EVENT_MOUSE_WARPED: {
             nk_input_motion(ctx, ev->mouse.x, ev->mouse.y);
             if (ev->mouse.dz != 0) {
                 nk_input_scroll(ctx, nk_vec2(0,(float)ev->mouse.dz / al_get_mouse_wheel_precision()));
