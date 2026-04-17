@@ -278,7 +278,7 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     slider->spacing         = nk_vec2(2,2);
     slider->userdata        = nk_handle_ptr(0);
     slider->show_buttons    = nk_false;
-    slider->bar_height      = 8;
+    slider->bar_height      = 4;
     slider->rounding        = 0;
     slider->color_factor    = 1.0f;
     slider->disabled_factor = NK_WIDGET_DISABLED_FACTOR;

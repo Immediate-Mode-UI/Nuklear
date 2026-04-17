@@ -5287,7 +5287,7 @@ struct nk_style_slider {
     float bar_height;
     struct nk_vec2 padding;
     struct nk_vec2 spacing;
-    struct nk_vec2 cursor_size;
+    struct nk_vec2 cursor_size; /* NOTE y has no effect on vertex buffer backends */
     float color_factor;
     float disabled_factor;
 
@@ -18814,7 +18814,7 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     slider->spacing         = nk_vec2(2,2);
     slider->userdata        = nk_handle_ptr(0);
     slider->show_buttons    = nk_false;
-    slider->bar_height      = 8;
+    slider->bar_height      = 4;
     slider->rounding        = 0;
     slider->color_factor    = 1.0f;
     slider->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
@@ -25979,12 +25979,12 @@ nk_draw_slider(struct nk_command_buffer *out, nk_flags state,
 
     /* calculate slider background bar */
     bar.x = bounds->x;
-    bar.y = (visual_cursor->y + visual_cursor->h/2) - bounds->h/12;
+    bar.y = (bounds->y + bounds->h*0.5f) - style->bar_height*0.5f;
     bar.w = bounds->w;
-    bar.h = bounds->h/6;
+    bar.h = style->bar_height;
 
     /* filled background bar style */
-    fill.w = (visual_cursor->x + (visual_cursor->w/2.0f)) - bar.x;
+    fill.w = visual_cursor->x+ 0.5*visual_cursor->w - bar.x;
     fill.x = bar.x;
     fill.y = bar.y;
     fill.h = bar.h;
@@ -26066,10 +26066,6 @@ nk_do_slider(nk_flags *state,
         bounds.x = bounds.x + button.w + style->spacing.x;
         bounds.w = bounds.w - (2*button.w + 2*style->spacing.x);
     }
-
-    /* remove one cursor size to support visual cursor */
-    bounds.x += style->cursor_size.x*0.5f;
-    bounds.w -= style->cursor_size.x;
 
     /* make sure the provided values are correct */
     slider_max = NK_MAX(min, max);
@@ -26211,7 +26207,7 @@ nk_knob_behavior(nk_flags *state, struct nk_input *in,
 
     /* knob widget state */
     if (nk_input_is_mouse_hovering_rect(in, bounds)){
-        *state = NK_WIDGET_STATE_HOVERED;
+        *state |= NK_WIDGET_STATE_HOVERED;
         /* handle scroll and arrow inputs */
         if (in->mouse.scroll_delta.y > 0 ||
            (in->keyboard.keys[NK_KEY_UP].down && in->keyboard.keys[NK_KEY_UP].clicked)) {
@@ -26317,7 +26313,7 @@ nk_draw_knob(struct nk_command_buffer *out, nk_flags state,
     cursor_start.y = (cursor_start.y + cursor_end.y) / 2;
 
     /* draw cursor */
-    nk_stroke_line(out, cursor_start.x, cursor_start.y, cursor_end.x, cursor_end.y, 2, nk_rgb_factor(cursor, style->color_factor));
+    nk_stroke_line(out, cursor_start.x, cursor_start.y, cursor_end.x, cursor_end.y, style->cursor_width, nk_rgb_factor(cursor, style->color_factor));
     }
 }
 NK_LIB float

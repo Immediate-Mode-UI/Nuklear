@@ -20,7 +20,11 @@ static const char* symbols[NK_SYMBOL_MAX] =
     "TRIANGLE_LEFT",
     "TRIANGLE_RIGHT",
     "PLUS",
-    "MINUS"
+    "MINUS",
+    "TRIANGLE_UP_OUTLINE",
+    "TRIANGLE_DOWN_OUTLINE",
+    "TRIANGLE_LEFT_OUTLINE",
+    "TRIANGLE_RIGHT_OUTLINE"
 };
 
 static int
@@ -49,6 +53,7 @@ static void
 style_item_color(struct nk_context* ctx, const char* name, struct nk_style_item* item)
 {
 	style_rgb(ctx, name, &item->data.color);
+
 }
 
 static void
@@ -118,6 +123,8 @@ style_global_colors(struct nk_context* ctx, struct nk_color color_table[NK_COLOR
 	}
 }
 
+
+
 static void
 style_text(struct nk_context* ctx, struct nk_style_text* out_style)
 {
@@ -127,6 +134,8 @@ style_text(struct nk_context* ctx, struct nk_style_text* out_style)
 	style_rgb(ctx, "Color:", &text.color);
 
 	style_vec2(ctx, "Padding:", &text.padding);
+	nk_property_float(ctx, "#Color Factor:", 0.0f, &text.color_factor, 1.0f, 0.1, 0.0025f);
+	nk_property_float(ctx, "#Disabled Factor:", 0.0f, &text.disabled_factor, 1.0f, 0.1, 0.0025f);
 
 	*out_style = text;
 }
@@ -140,8 +149,9 @@ style_button(struct nk_context* ctx, struct nk_style_button* out_style, struct n
 	style_item_color(ctx, "Normal:", &button.normal);
 	style_item_color(ctx, "Hover:", &button.hover);
 	style_item_color(ctx, "Active:", &button.active);
-
 	style_rgb(ctx, "Border:", &button.border_color);
+
+
 	style_rgb(ctx, "Text Background:", &button.text_background);
 	style_rgb(ctx, "Text Normal:", &button.text_normal);
 	style_rgb(ctx, "Text Hover:", &button.text_hover);
@@ -200,6 +210,11 @@ style_button(struct nk_context* ctx, struct nk_style_button* out_style, struct n
 	nk_property_float(ctx, "#Border:", -100.0f, &button.border, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Rounding:", -100.0f, &button.rounding, 100.0f, 1,0.5f);
 
+	nk_layout_row_dynamic(ctx, 30, 1);
+	nk_property_float(ctx, "#Color Factor Background:", 0.0f, &button.color_factor_background, 1.0f, 0.1, 0.0025f);
+	nk_property_float(ctx, "#Color Factor Text:", 0.0f, &button.color_factor_text, 1.0f, 0.1, 0.0025f);
+	nk_property_float(ctx, "#Disabled Factor:", 0.0f, &button.disabled_factor, 1.0f, 0.1, 0.0025f);
+
 	*out_style = button;
 	if (duplicate_styles) {
 		int i;
@@ -234,6 +249,8 @@ static void style_toggle(struct nk_context* ctx, struct nk_style_toggle* out_sty
 
 	nk_property_float(ctx, "#Border:", -100.0f, &toggle.border, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Spacing:", -100.0f, &toggle.spacing, 100.0f, 1,0.5f);
+	nk_property_float(ctx, "#Color Factor:", 0.0f, &toggle.color_factor, 1.0f, 0.1, 0.0025f);
+	nk_property_float(ctx, "#Disabled Factor:", 0.0f, &toggle.disabled_factor, 1.0f, 0.1, 0.0025f);
 
 	*out_style = toggle;
 
@@ -265,6 +282,8 @@ style_selectable(struct nk_context* ctx, struct nk_style_selectable* out_style)
 	style_vec2(ctx, "Touch Padding:", &select.touch_padding);
 
 	nk_property_float(ctx, "#Rounding:", -100.0f, &select.rounding, 100.0f, 1,0.5f);
+	nk_property_float(ctx, "#Color Factor:", 0.0f, &select.color_factor, 1.0f, 0.1, 0.0025f);
+	nk_property_float(ctx, "#Disabled Factor:", 0.0f, &select.disabled_factor, 1.0f, 0.1, 0.0025f);
 
 
 	*out_style = select;
@@ -298,6 +317,8 @@ style_slider(struct nk_context* ctx, struct nk_style_slider* out_style)
 
 	nk_property_float(ctx, "#Bar Height:", -100.0f, &slider.bar_height, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Rounding:", -100.0f, &slider.rounding, 100.0f, 1,0.5f);
+	nk_property_float(ctx, "#Color Factor:", 0.0f, &slider.color_factor, 1.0f, 0.1, 0.0025f);
+	nk_property_float(ctx, "#Disabled Factor:", 0.0f, &slider.disabled_factor, 1.0f, 0.1, 0.0025f);
 
 	nk_layout_row_dynamic(ctx, 30, 1);
 	show_buttons_b = (nk_bool)slider.show_buttons;
@@ -325,6 +346,42 @@ style_slider(struct nk_context* ctx, struct nk_style_slider* out_style)
 }
 
 static void
+style_knob(struct nk_context* ctx, struct nk_style_knob* out_style)
+{
+	struct nk_style_knob knob = *out_style;
+
+	nk_layout_row_dynamic(ctx, 30, 2);
+
+	/* background */
+	style_item_color(ctx, "Normal:", &knob.normal);
+	style_item_color(ctx, "Hover:", &knob.hover);
+	style_item_color(ctx, "Active:", &knob.active);
+	style_rgb(ctx, "Border:", &knob.border_color);
+
+	/* knob */
+	style_rgb(ctx, "Knob Normal:", &knob.knob_normal);
+	style_rgb(ctx, "Knob Hover:", &knob.knob_hover);
+	style_rgb(ctx, "Knob Active:", &knob.knob_active);
+	style_rgb(ctx, "Knob Border:", &knob.knob_border_color);
+
+	/* cursor */
+	style_rgb(ctx, "Cursor Normal:", &knob.cursor_normal);
+	style_rgb(ctx, "Cursor Hover:", &knob.cursor_hover);
+	style_rgb(ctx, "Cursor Active:", &knob.cursor_active);
+
+	/* properties */
+	style_vec2(ctx, "Padding:", &knob.padding);
+	style_vec2(ctx, "Spacing:", &knob.spacing);
+	nk_property_float(ctx, "#Border:", -100.0f, &knob.border, 100.0f, 1,0.5f);
+	nk_property_float(ctx, "#Knob Border:", -100.0f, &knob.knob_border, 100.0f, 1,0.5f);
+	nk_property_float(ctx, "#Cursor Width:", -100.0f, &knob.cursor_width, 100.0f, 1,0.5f);
+	nk_property_float(ctx, "#Color Factor:", 0.0f, &knob.color_factor, 1.0f, 0.1, 0.0025f);
+	nk_property_float(ctx, "#Disabled Factor:", 0.0f, &knob.disabled_factor, 1.0f, 0.1, 0.0025f);
+
+	*out_style = knob;
+}
+
+static void
 style_progress(struct nk_context* ctx, struct nk_style_progress* out_style)
 {
 	struct nk_style_progress prog = *out_style;
@@ -346,8 +403,10 @@ style_progress(struct nk_context* ctx, struct nk_style_progress* out_style)
 
 	nk_property_float(ctx, "#Rounding:", -100.0f, &prog.rounding, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Border:", -100.0f, &prog.border, 100.0f, 1,0.5f);
-	nk_property_float(ctx, "#Cursor Rounding:", -100.0f, &prog.cursor_rounding, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Cursor Border:", -100.0f, &prog.cursor_border, 100.0f, 1,0.5f);
+	nk_property_float(ctx, "#Cursor Rounding:", -100.0f, &prog.cursor_rounding, 100.0f, 1,0.5f);
+	nk_property_float(ctx, "#Color Factor:", 0.0f, &prog.color_factor, 1.0f, 0.1, 0.0025f);
+	nk_property_float(ctx, "#Disabled Factor:", 0.0f, &prog.disabled_factor, 1.0f, 0.1, 0.0025f);
 
 
 	*out_style = prog;
@@ -381,6 +440,8 @@ style_scrollbars(struct nk_context* ctx, struct nk_style_scrollbar* out_style, s
 	/* TODO naming inconsistency with style_scrollress? */
 	nk_property_float(ctx, "#Cursor Border:", -100.0f, &scroll.border_cursor, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Cursor Rounding:", -100.0f, &scroll.rounding_cursor, 100.0f, 1,0.5f);
+	nk_property_float(ctx, "#Color Factor:", 0.0f, &scroll.color_factor, 1.0f, 0.1, 0.0025f);
+	nk_property_float(ctx, "#Disabled Factor:", 0.0f, &scroll.disabled_factor, 1.0f, 0.1, 0.0025f);
 
 	/* TODO what is wrong with scrollbar buttons?  Also look into controlling the total width (and height) of scrollbars */
 	nk_layout_row_dynamic(ctx, 30, 1);
@@ -441,10 +502,12 @@ style_edit(struct nk_context* ctx, struct nk_style_edit* out_style)
 	style_vec2(ctx, "Scrollbar Size:", &edit.scrollbar_size);
 	style_vec2(ctx, "Padding:", &edit.padding);
 
-	nk_property_float(ctx, "#Row Padding:", -100.0f, &edit.row_padding, 100.0f, 1,0.5f);
-	nk_property_float(ctx, "#Cursor Size:", -100.0f, &edit.cursor_size, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Border:", -100.0f, &edit.border, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Rounding:", -100.0f, &edit.rounding, 100.0f, 1,0.5f);
+	nk_property_float(ctx, "#Cursor Size:", -100.0f, &edit.cursor_size, 100.0f, 1,0.5f);
+	nk_property_float(ctx, "#Row Padding:", -100.0f, &edit.row_padding, 100.0f, 1,0.5f);
+	nk_property_float(ctx, "#Color Factor:", 0.0f, &edit.color_factor, 1.0f, 0.1, 0.0025f);
+	nk_property_float(ctx, "#Disabled Factor:", 0.0f, &edit.disabled_factor, 1.0f, 0.1, 0.0025f);
 
 
 	*out_style = edit;
@@ -472,6 +535,8 @@ style_property(struct nk_context* ctx, struct nk_style_property* out_style)
 	/* TODO check weird hover bug with properties, happens in overview basic section too */
 	nk_property_float(ctx, "#Border:", -100.0f, &property.border, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Rounding:", -100.0f, &property.rounding, 100.0f, 1,0.5f);
+	nk_property_float(ctx, "#Color Factor:", 0.0f, &property.color_factor, 1.0f, 0.1, 0.0025f);
+	nk_property_float(ctx, "#Disabled Factor:", 0.0f, &property.disabled_factor, 1.0f, 0.1, 0.0025f);
 
 	/* there is no property.show_buttons, they're always there */
 
@@ -511,6 +576,8 @@ style_chart(struct nk_context* ctx, struct nk_style_chart* out_style)
 
 	nk_property_float(ctx, "#Border:", -100.0f, &chart.border, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Rounding:", -100.0f, &chart.rounding, 100.0f, 1,0.5f);
+	nk_property_float(ctx, "#Color Factor:", 0.0f, &chart.color_factor, 1.0f, 0.1, 0.0025f);
+	nk_property_float(ctx, "#Disabled Factor:", 0.0f, &chart.disabled_factor, 1.0f, 0.1, 0.0025f);
 
 	*out_style = chart;
 }
@@ -544,6 +611,8 @@ style_combo(struct nk_context* ctx, struct nk_style_combo* out_style)
 
 	nk_property_float(ctx, "#Border:", -100.0f, &combo.border, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Rounding:", -100.0f, &combo.rounding, 100.0f, 1,0.5f);
+	nk_property_float(ctx, "#Color Factor:", 0.0f, &combo.color_factor, 1.0f, 0.1, 0.0025f);
+	nk_property_float(ctx, "#Disabled Factor:", 0.0f, &combo.disabled_factor, 1.0f, 0.1, 0.0025f);
 
 	*out_style = combo;
 }
@@ -575,6 +644,8 @@ style_tab(struct nk_context* ctx, struct nk_style_tab* out_style)
 	nk_property_float(ctx, "#Indent:", -100.0f, &tab.indent, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Border:", -100.0f, &tab.border, 100.0f, 1,0.5f);
 	nk_property_float(ctx, "#Rounding:", -100.0f, &tab.rounding, 100.0f, 1,0.5f);
+	nk_property_float(ctx, "#Color Factor:", 0.0f, &tab.color_factor, 1.0f, 0.1, 0.0025f);
+	nk_property_float(ctx, "#Disabled Factor:", 0.0f, &tab.disabled_factor, 1.0f, 0.1, 0.0025f);
 
 
 
@@ -796,6 +867,11 @@ style_configurator(struct nk_context *ctx, struct nk_color color_table[NK_COLOR_
 
 		if (nk_tree_push(ctx, NK_TREE_TAB, "Slider", NK_MINIMIZED)) {
 			style_slider(ctx, &style->slider);
+			nk_tree_pop(ctx);
+		}
+
+		if (nk_tree_push(ctx, NK_TREE_TAB, "Knob", NK_MINIMIZED)) {
+			style_knob(ctx, &style->knob);
 			nk_tree_pop(ctx);
 		}
 

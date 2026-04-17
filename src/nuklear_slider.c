@@ -81,12 +81,12 @@ nk_draw_slider(struct nk_command_buffer *out, nk_flags state,
 
     /* calculate slider background bar */
     bar.x = bounds->x;
-    bar.y = (visual_cursor->y + visual_cursor->h/2) - bounds->h/12;
+    bar.y = (bounds->y + bounds->h*0.5f) - style->bar_height*0.5f;
     bar.w = bounds->w;
-    bar.h = bounds->h/6;
+    bar.h = style->bar_height;
 
     /* filled background bar style */
-    fill.w = (visual_cursor->x + (visual_cursor->w/2.0f)) - bar.x;
+    fill.w = visual_cursor->x+ 0.5*visual_cursor->w - bar.x;
     fill.x = bar.x;
     fill.y = bar.y;
     fill.h = bar.h;
@@ -168,10 +168,6 @@ nk_do_slider(nk_flags *state,
         bounds.x = bounds.x + button.w + style->spacing.x;
         bounds.w = bounds.w - (2*button.w + 2*style->spacing.x);
     }
-
-    /* remove one cursor size to support visual cursor */
-    bounds.x += style->cursor_size.x*0.5f;
-    bounds.w -= style->cursor_size.x;
 
     /* make sure the provided values are correct */
     slider_max = NK_MAX(min, max);

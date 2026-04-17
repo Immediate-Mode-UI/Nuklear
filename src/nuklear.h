@@ -5064,7 +5064,7 @@ struct nk_style_slider {
     float bar_height;
     struct nk_vec2 padding;
     struct nk_vec2 spacing;
-    struct nk_vec2 cursor_size;
+    struct nk_vec2 cursor_size; /* NOTE y has no effect on vertex buffer backends */
     float color_factor;
     float disabled_factor;
 
