@@ -300,6 +300,11 @@ SDL_AppEvent(void *appstate, SDL_Event* event)
     switch (event->type) {
         case SDL_EVENT_QUIT:
             return SDL_APP_SUCCESS;
+        case SDL_EVENT_KEY_DOWN:
+            if (event->key.key == SDLK_Q && event->key.mod & SDL_KMOD_CTRL) {
+                return SDL_APP_SUCCESS;
+            }
+            break;
         case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
             /* You may wish to rescale the renderer and Nuklear during this event.
              * Without this the UI and Font could appear too small or too big.

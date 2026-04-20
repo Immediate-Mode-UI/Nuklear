@@ -204,7 +204,7 @@ int main(void)
             win.vis->visual, CWBorderPixel|CWColormap|CWEventMask, &win.swa);
         if (!win.win) die("[X11]: Failed to create window\n");
         XFree(win.vis);
-        XStoreName(win.dpy, win.win, "Demo");
+        XStoreName(win.dpy, win.win, "x11_opengl3");
         XMapWindow(win.dpy, win.win);
         win.wm_delete_window = XInternAtom(win.dpy, "WM_DELETE_WINDOW", False);
         XSetWMProtocols(win.dpy, win.win, &win.wm_delete_window, 1);
@@ -272,6 +272,11 @@ int main(void)
         while (XPending(win.dpy)) {
             XNextEvent(win.dpy, &evt);
             if (evt.type == ClientMessage) goto cleanup;
+            if (evt.type == KeyPress) {
+                int ret;
+                KeySym *code = XGetKeyboardMapping(x11.dpy, (KeyCode)evt.xkey.keycode, 1, &ret);
+                if (*code == 'q' && (evt.xkey.state & ControlMask)) goto cleanup;
+            }
             if (XFilterEvent(&evt, win.win)) continue;
             nk_x11_handle_event(&evt);
         }
