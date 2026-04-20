@@ -4961,6 +4961,7 @@ NK_API nk_bool nk_input_is_mouse_click_down_in_rect(const struct nk_input *i, en
 NK_API nk_bool nk_input_any_mouse_click_in_rect(const struct nk_input*, struct nk_rect);
 NK_API nk_bool nk_input_is_mouse_prev_hovering_rect(const struct nk_input*, struct nk_rect);
 NK_API nk_bool nk_input_is_mouse_hovering_rect(const struct nk_input*, struct nk_rect);
+NK_API nk_bool nk_input_is_mouse_hovering_delay_rect(const struct nk_context*, struct nk_rect, float*, float);
 NK_API nk_bool nk_input_is_mouse_moved(const struct nk_input*);
 NK_API nk_bool nk_input_mouse_clicked(const struct nk_input*, enum nk_buttons, struct nk_rect);
 NK_API nk_bool nk_input_is_mouse_down(const struct nk_input*, enum nk_buttons);
@@ -18450,6 +18451,19 @@ nk_input_is_mouse_hovering_rect(const struct nk_input *i, struct nk_rect rect)
 {
     if (!i) return nk_false;
     return NK_INBOX(i->mouse.pos.x, i->mouse.pos.y, rect.x, rect.y, rect.w, rect.h);
+}
+NK_API nk_bool
+nk_input_is_mouse_hovering_delay_rect(const struct nk_context *ctx, struct nk_rect rect, float* timer, float delay)
+{
+    NK_ASSERT(ctx);
+    if (!ctx) return nk_false;
+    if (NK_INBOX(ctx->input.mouse.pos.x, ctx->input.mouse.pos.y, rect.x, rect.y, rect.w, rect.h)) {
+        *timer += ctx->delta_time_seconds;
+    } else {
+        *timer = 0;
+    }
+    return *timer >= delay;
+
 }
 NK_API nk_bool
 nk_input_is_mouse_prev_hovering_rect(const struct nk_input *i, struct nk_rect rect)
