@@ -224,10 +224,11 @@ nk_input_is_mouse_hovering_delay_rect(const struct nk_context *ctx, struct nk_re
     if (!ctx) return nk_false;
     if (NK_INBOX(ctx->input.mouse.pos.x, ctx->input.mouse.pos.y, rect.x, rect.y, rect.w, rect.h)) {
         *timer += ctx->delta_time_seconds;
-    } else {
+        return *timer >= delay;
+    } else if (NK_INBOX(ctx->input.mouse.prev.x, ctx->input.mouse.prev.y, rect.x, rect.y, rect.w, rect.h)) {
         *timer = 0;
     }
-    return *timer >= delay;
+    return nk_false;
 
 }
 NK_API nk_bool

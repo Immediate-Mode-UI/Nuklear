@@ -105,6 +105,24 @@ nk_tooltip_end(struct nk_context *ctx)
 }
 
 NK_API void
+nk_do_tooltip(struct nk_context* ctx, const char* text, struct nk_rect bounds)
+{
+    NK_ASSERT(ctx);
+    if (nk_input_is_mouse_hovering_rect(&ctx->input, bounds)) {
+        nk_tooltip_offset(ctx, text, ctx->style.window.tooltip_origin, ctx->style.window.tooltip_offset);
+    }
+}
+
+NK_API void
+nk_do_tooltip_delay(struct nk_context* ctx, const char* text, struct nk_rect bounds, float* timer)
+{
+    NK_ASSERT(ctx);
+    if (nk_input_is_mouse_hovering_delay_rect(ctx, bounds, timer, ctx->style.window.tooltip_delay)) {
+        nk_tooltip_offset(ctx, text, ctx->style.window.tooltip_origin, ctx->style.window.tooltip_offset);
+    }
+}
+
+NK_API void
 nk_tooltip_offset(struct nk_context *ctx, const char *text, enum nk_tooltip_pos position, struct nk_vec2 offset)
 {
     const struct nk_style *style;
