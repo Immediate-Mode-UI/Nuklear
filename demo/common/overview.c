@@ -851,12 +851,12 @@ overview(struct nk_context *ctx)
             }
 
             bounds = nk_widget_bounds(ctx);
-            nk_label(ctx, "Hover for default delayed tooltip", NK_TEXT_LEFT);
+            nk_label(ctx, "Hover motionless for a default delayed tooltip", NK_TEXT_LEFT);
             nk_do_tooltip_delay(ctx, "This is a delayed tooltip", bounds, &delay_timer);
 
             bounds = nk_widget_bounds(ctx);
-            nk_label(ctx, "Hover longer a custom delayed tooltip", NK_TEXT_LEFT);
-            if (nk_input_is_mouse_hovering_delay_rect(ctx, bounds, &delay_timer, 1.5)) {
+            nk_label(ctx, "Hover motionless longer a custom delayed tooltip", NK_TEXT_LEFT);
+            if (nk_input_is_mouse_hovering_still_delay_rect(ctx, bounds, &delay_timer, 1.5)) {
                 nk_tooltip(ctx, "This is a custom delayed tooltip");
             }
 
