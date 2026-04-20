@@ -1984,7 +1984,7 @@ NK_API void nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, nk
  * reset it back to be derived from font height. <br /><br />
  *
  * Also if you change the font in nuklear it will automatically change the minimum
- * row height for you and. This means if you change the font but still want
+ * row height for you. This means if you change the font but still want
  * a minimum row height smaller than the font you have to repush your value. <br /><br />
  *
  * For actually more advanced UI I would even recommend using the `nk_layout_space_xxx`
@@ -2471,7 +2471,7 @@ NK_API void nk_layout_space_begin(struct nk_context*, enum nk_layout_format, flo
  * Parameter   | Description
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct after call `nk_layout_space_begin`
- * \param[in] bounds  | Position and size in laoyut space local coordinates
+ * \param[in] bounds  | Position and size in layout space local coordinates
  */
 NK_API void nk_layout_space_push(struct nk_context*, struct nk_rect bounds);
 
