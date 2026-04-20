@@ -8963,12 +8963,12 @@ nk_str_insert_at_rune(struct nk_str *str, int pos, const char *cstr, int len)
 NK_API int
 nk_str_insert_text_char(struct nk_str *str, int pos, const char *text, int len)
 {
-    return nk_str_insert_text_utf8(str, pos, text, len);
+    return nk_str_insert_at_rune(str, pos, text, len) ? len : 0;
 }
 NK_API int
 nk_str_insert_str_char(struct nk_str *str, int pos, const char *text)
 {
-    return nk_str_insert_text_utf8(str, pos, text, nk_strlen(text));
+    return nk_str_insert_text_char(str, pos, text, nk_strlen(text));
 }
 NK_API int
 nk_str_insert_text_utf8(struct nk_str *str, int pos, const char *text, int len)
@@ -27209,7 +27209,7 @@ nk_textedit_paste(struct nk_text_edit *state, char const *ctext, int len)
     glyphs = nk_utf_len(ctext, len);
     if (nk_str_insert_text_char(&state->string, state->cursor, text, len)) {
         nk_textedit_makeundo_insert(state, state->cursor, glyphs);
-        state->cursor += len;
+        state->cursor += glyphs;
         state->has_preferred_x = 0;
         return 1;
     }
@@ -28168,17 +28168,19 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         int cut = nk_input_is_key_pressed(in, NK_KEY_CUT);
         if ((copy || cut) && (flags & NK_EDIT_CLIPBOARD))
         {
-            int glyph_len;
-            nk_rune unicode;
-            const char *text;
-            int b = edit->select_start;
-            int e = edit->select_end;
+            int begin = NK_MIN(edit->select_start, edit->select_end);
+            int end = NK_MAX(edit->select_start, edit->select_end);
 
-            int begin = NK_MIN(b, e);
-            int end = NK_MAX(b, e);
-            text = nk_str_at_const(&edit->string, begin, &unicode, &glyph_len);
-            if (edit->clip.copy)
-                edit->clip.copy(edit->clip.userdata, text, end - begin);
+            if (edit->clip.copy) {
+                int glyph_len;
+                nk_rune unicode;
+                const char *text_begin, *text_end;
+                text_begin = nk_str_at_const(&edit->string, begin, &unicode, &glyph_len);
+				/*Reuse temporary variables (unicode, glyph_len)*/
+                text_end = nk_str_at_const(&edit->string, end, &unicode, &glyph_len);
+
+                edit->clip.copy(edit->clip.userdata, text_begin, (int)(text_end - text_begin));
+            }
             if (cut && !(flags & NK_EDIT_READ_ONLY)){
                 nk_textedit_cut(edit);
                 cursor_follow = nk_true;

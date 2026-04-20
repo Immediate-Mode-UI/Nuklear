@@ -319,20 +319,12 @@ nk_sdl_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
     char *text;
     int len;
     NK_UNUSED(usr);
-
     /* this function returns empty string on failure, not NULL */
     text = SDL_GetClipboardText();
     NK_ASSERT(text);
 
     if (text[0] != '\0') {
-        /* FIXME: there is a bug in Nuklear that affects UTF8 clipboard handling
-         * "len" should be a buffer length, but due to bug it must be a glyph count
-         * see: https://github.com/Immediate-Mode-UI/Nuklear/pull/841 */
-#if 0
         len = nk_strlen(text);
-#else
-        len = SDL_utf8strlen(text);
-#endif
         nk_textedit_paste(edit, text, len);
     }
     SDL_free(text);
@@ -341,27 +333,13 @@ nk_sdl_clipboard_paste(nk_handle usr, struct nk_text_edit *edit)
 NK_INTERN void
 nk_sdl_clipboard_copy(nk_handle usr, const char *text, int len)
 {
-    const char *ptext;
     char *str;
     size_t buflen;
-    int i;
     struct nk_sdl* sdl = (struct nk_sdl*)usr.ptr;
     NK_ASSERT(sdl);
     if (len <= 0 || text == NULL) return;
 
-    /* FIXME: there is a bug in Nuklear that affects UTF8 clipboard handling
-     * "len" is expected to be a buffer length, but due to bug it actually is a glyph count
-     * see: https://github.com/Immediate-Mode-UI/Nuklear/pull/841 */
-#if 0
     buflen = len + 1;
-    NK_UNUSED(ptext);
-#else
-    ptext = text;
-    for (i = len; i > 0; i--)
-        (void)SDL_StepUTF8(&ptext, NULL);
-    buflen = (size_t)(ptext - text) + 1;
-#endif
-
     str = sdl->allocator.alloc(sdl->allocator.userdata, 0, buflen);
     if (!str) return;
     SDL_strlcpy(str, text, buflen);
