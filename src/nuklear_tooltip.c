@@ -117,7 +117,7 @@ NK_API void
 nk_do_tooltip_delay(struct nk_context* ctx, const char* text, struct nk_rect bounds, float* timer)
 {
     NK_ASSERT(ctx);
-    if (nk_input_is_mouse_hovering_delay_rect(ctx, bounds, timer, ctx->style.window.tooltip_delay)) {
+    if (nk_input_is_mouse_hovering_still_delay_rect(ctx, bounds, timer, ctx->style.window.tooltip_delay)) {
         nk_tooltip_offset(ctx, text, ctx->style.window.tooltip_origin, ctx->style.window.tooltip_offset);
     }
 }
