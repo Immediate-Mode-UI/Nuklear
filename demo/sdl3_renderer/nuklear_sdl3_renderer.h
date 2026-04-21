@@ -27,6 +27,10 @@
     #define NK_BUFFER_DEFAULT_INITIAL_SIZE (4*1024)
 #endif
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 NK_API struct nk_context*   nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer, struct nk_allocator allocator);
 #ifdef NK_INCLUDE_FONT_BAKING
 NK_API struct nk_font_atlas* nk_sdl_font_stash_begin(struct nk_context* ctx);
@@ -41,6 +45,10 @@ NK_API void                 nk_sdl_set_userdata(struct nk_context* ctx, nk_handl
 NK_API void                 nk_sdl_style_set_debug_font(struct nk_context* ctx);
 NK_API struct nk_allocator  nk_sdl_allocator(void);
 
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* NK_SDL3_RENDERER_H_ */
 
 /*
@@ -53,13 +61,6 @@ NK_API struct nk_allocator  nk_sdl_allocator(void);
 #ifdef NK_SDL3_RENDERER_IMPLEMENTATION
 #ifndef NK_SDL3_RENDERER_IMPLEMENTATION_ONCE
 #define NK_SDL3_RENDERER_IMPLEMENTATION_ONCE
-
-#ifndef NK_SDL_DOUBLE_CLICK_LO
-#define NK_SDL_DOUBLE_CLICK_LO 0.02
-#endif
-#ifndef NK_SDL_DOUBLE_CLICK_HI
-#define NK_SDL_DOUBLE_CLICK_HI 0.2
-#endif
 
 struct nk_sdl_device {
     struct nk_buffer cmds;
@@ -84,7 +85,6 @@ struct nk_sdl {
 #endif
     struct nk_allocator allocator;
     nk_handle userdata;
-    Uint64 last_left_click;
     Uint64 last_render;
     bool insert_toggle;
     bool edit_was_active;
@@ -362,7 +362,7 @@ nk_sdl_clipboard_copy(nk_handle usr, const char *text, int len)
     buflen = (size_t)(ptext - text) + 1;
 #endif
 
-    str = sdl->allocator.alloc(sdl->allocator.userdata, 0, buflen);
+    str = (char*)sdl->allocator.alloc(sdl->allocator.userdata, 0, buflen);
     if (!str) return;
     SDL_strlcpy(str, text, buflen);
     SDL_SetClipboardText(str);
@@ -377,7 +377,7 @@ nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer, struct nk_allocator allocat
     NK_ASSERT(renderer);
     NK_ASSERT(allocator.alloc);
     NK_ASSERT(allocator.free);
-    sdl = allocator.alloc(allocator.userdata, 0, sizeof(*sdl));
+    sdl = (struct nk_sdl*)allocator.alloc(allocator.userdata, 0, sizeof(*sdl));
     NK_ASSERT(sdl);
     SDL_zerop(sdl);
     sdl->allocator.userdata = allocator.userdata;
@@ -391,7 +391,6 @@ nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer, struct nk_allocator allocat
     sdl->ctx.clip.paste = nk_sdl_clipboard_paste;
     sdl->ctx.clip.userdata = nk_handle_ptr((void*)sdl);
     nk_buffer_init(&sdl->ogl.cmds, &sdl->allocator, NK_BUFFER_DEFAULT_INITIAL_SIZE);
-    sdl->last_left_click = 0;
     sdl->edit_was_active = false;
     sdl->insert_toggle = false;
     return &sdl->ctx;
@@ -452,36 +451,34 @@ nk_sdl_handle_event(struct nk_context* ctx, SDL_Event *evt)
         case SDL_EVENT_KEY_DOWN:
             {
                 int down = evt->type == SDL_EVENT_KEY_DOWN;
-                int ctrl_down = evt->key.mod & (SDL_KMOD_LCTRL | SDL_KMOD_RCTRL);
+                int ctrl_down = evt->key.mod & SDL_KMOD_CTRL;
 
-                /* In 99% of the time, you want to use scancodes, not real key codes,
-                 * see: https://wiki.libsdl.org/SDL3/BestKeyboardPractices */
-                switch(evt->key.scancode)
+                switch(evt->key.key)
                 {
-                    case SDL_SCANCODE_RSHIFT: /* RSHIFT & LSHIFT share same routine */
-                    case SDL_SCANCODE_LSHIFT:    nk_input_key(ctx, NK_KEY_SHIFT, down); break;
-                    case SDL_SCANCODE_DELETE:    nk_input_key(ctx, NK_KEY_DEL, down); break;
-                    case SDL_SCANCODE_RETURN:    nk_input_key(ctx, NK_KEY_ENTER, down); break;
-                    case SDL_SCANCODE_TAB:       nk_input_key(ctx, NK_KEY_TAB, down); break;
-                    case SDL_SCANCODE_BACKSPACE: nk_input_key(ctx, NK_KEY_BACKSPACE, down); break;
-                    case SDL_SCANCODE_HOME:      nk_input_key(ctx, NK_KEY_TEXT_START, down);
-                                                 nk_input_key(ctx, NK_KEY_SCROLL_START, down); break;
-                    case SDL_SCANCODE_END:       nk_input_key(ctx, NK_KEY_TEXT_END, down);
-                                                 nk_input_key(ctx, NK_KEY_SCROLL_END, down); break;
-                    case SDL_SCANCODE_PAGEDOWN:  nk_input_key(ctx, NK_KEY_SCROLL_DOWN, down); break;
-                    case SDL_SCANCODE_PAGEUP:    nk_input_key(ctx, NK_KEY_SCROLL_UP, down); break;
-                    case SDL_SCANCODE_A:         nk_input_key(ctx, NK_KEY_TEXT_SELECT_ALL, down && ctrl_down); break;
-                    case SDL_SCANCODE_Z:         nk_input_key(ctx, NK_KEY_TEXT_UNDO, down && ctrl_down); break;
-                    case SDL_SCANCODE_R:         nk_input_key(ctx, NK_KEY_TEXT_REDO, down && ctrl_down); break;
-                    case SDL_SCANCODE_C:         nk_input_key(ctx, NK_KEY_COPY, down && ctrl_down); break;
-                    case SDL_SCANCODE_V:         nk_input_key(ctx, NK_KEY_PASTE, down && ctrl_down); break;
-                    case SDL_SCANCODE_X:         nk_input_key(ctx, NK_KEY_CUT, down && ctrl_down); break;
-                    case SDL_SCANCODE_B:         nk_input_key(ctx, NK_KEY_TEXT_LINE_START, down && ctrl_down); break;
-                    case SDL_SCANCODE_E:         nk_input_key(ctx, NK_KEY_TEXT_LINE_END, down && ctrl_down); break;
-                    case SDL_SCANCODE_UP:        nk_input_key(ctx, NK_KEY_UP, down); break;
-                    case SDL_SCANCODE_DOWN:      nk_input_key(ctx, NK_KEY_DOWN, down); break;
-                    case SDL_SCANCODE_ESCAPE:    nk_input_key(ctx, NK_KEY_TEXT_RESET_MODE, down); break;
-                    case SDL_SCANCODE_INSERT:
+                    case SDLK_RSHIFT: /* RSHIFT & LSHIFT share same routine */
+                    case SDLK_LSHIFT:    nk_input_key(ctx, NK_KEY_SHIFT, down); break;
+                    case SDLK_DELETE:    nk_input_key(ctx, NK_KEY_DEL, down); break;
+                    case SDLK_RETURN:    nk_input_key(ctx, NK_KEY_ENTER, down); break;
+                    case SDLK_TAB:       nk_input_key(ctx, NK_KEY_TAB, down); break;
+                    case SDLK_BACKSPACE: nk_input_key(ctx, NK_KEY_BACKSPACE, down); break;
+                    case SDLK_HOME:      nk_input_key(ctx, NK_KEY_TEXT_START, down);
+                                         nk_input_key(ctx, NK_KEY_SCROLL_START, down); break;
+                    case SDLK_END:       nk_input_key(ctx, NK_KEY_TEXT_END, down);
+                                         nk_input_key(ctx, NK_KEY_SCROLL_END, down); break;
+                    case SDLK_PAGEDOWN:  nk_input_key(ctx, NK_KEY_SCROLL_DOWN, down); break;
+                    case SDLK_PAGEUP:    nk_input_key(ctx, NK_KEY_SCROLL_UP, down); break;
+                    case SDLK_A:         nk_input_key(ctx, NK_KEY_TEXT_SELECT_ALL, down && ctrl_down); break;
+                    case SDLK_Z:         nk_input_key(ctx, NK_KEY_TEXT_UNDO, down && ctrl_down); break;
+                    case SDLK_R:         nk_input_key(ctx, NK_KEY_TEXT_REDO, down && ctrl_down); break;
+                    case SDLK_C:         nk_input_key(ctx, NK_KEY_COPY, down && ctrl_down); break;
+                    case SDLK_V:         nk_input_key(ctx, NK_KEY_PASTE, down && ctrl_down); break;
+                    case SDLK_X:         nk_input_key(ctx, NK_KEY_CUT, down && ctrl_down); break;
+                    case SDLK_B:         nk_input_key(ctx, NK_KEY_TEXT_LINE_START, down && ctrl_down); break;
+                    case SDLK_E:         nk_input_key(ctx, NK_KEY_TEXT_LINE_END, down && ctrl_down); break;
+                    case SDLK_UP:        nk_input_key(ctx, NK_KEY_UP, down); break;
+                    case SDLK_DOWN:      nk_input_key(ctx, NK_KEY_DOWN, down); break;
+                    case SDLK_ESCAPE:    nk_input_key(ctx, NK_KEY_TEXT_RESET_MODE, down); break;
+                    case SDLK_INSERT:
                         if (down) sdl->insert_toggle = !sdl->insert_toggle;
                         if (sdl->insert_toggle) {
                             nk_input_key(ctx, NK_KEY_TEXT_INSERT_MODE, down);
@@ -489,13 +486,13 @@ nk_sdl_handle_event(struct nk_context* ctx, SDL_Event *evt)
                             nk_input_key(ctx, NK_KEY_TEXT_REPLACE_MODE, down);
                         }
                         break;
-                    case SDL_SCANCODE_LEFT:
+                    case SDLK_LEFT:
                         if (ctrl_down)
                             nk_input_key(ctx, NK_KEY_TEXT_WORD_LEFT, down);
                         else
                             nk_input_key(ctx, NK_KEY_LEFT, down);
                         break;
-                    case SDL_SCANCODE_RIGHT:
+                    case SDLK_RIGHT:
                         if (ctrl_down)
                             nk_input_key(ctx, NK_KEY_TEXT_WORD_RIGHT, down);
                         else
@@ -512,14 +509,12 @@ nk_sdl_handle_event(struct nk_context* ctx, SDL_Event *evt)
             {
                 const int x = evt->button.x, y = evt->button.y;
                 const int down = evt->button.down;
-                const double dt = (double)(evt->button.timestamp - sdl->last_left_click) / 1000000000.0;
                 switch(evt->button.button)
                 {
                     case SDL_BUTTON_LEFT:
+                        if (evt->button.clicks > 1)
+                            nk_input_button(ctx, NK_BUTTON_DOUBLE, x, y, down);
                         nk_input_button(ctx, NK_BUTTON_LEFT, x, y, down);
-                        nk_input_button(ctx, NK_BUTTON_DOUBLE, x, y,
-                                down && dt > NK_SDL_DOUBLE_CLICK_LO && dt < NK_SDL_DOUBLE_CLICK_HI);
-                        sdl->last_left_click = evt->button.timestamp;
                         break;
                     case SDL_BUTTON_MIDDLE: nk_input_button(ctx, NK_BUTTON_MIDDLE, x, y, down); break;
                     case SDL_BUTTON_RIGHT:  nk_input_button(ctx, NK_BUTTON_RIGHT, x, y, down); break;
@@ -684,7 +679,7 @@ nk_sdl_style_set_debug_font(struct nk_context* ctx)
     success = SDL_RenderPresent(renderer);
     NK_ASSERT(success);
 
-    font = sdl->allocator.alloc(sdl->allocator.userdata, 0, sizeof(*font));
+    font = (struct nk_user_font*)sdl->allocator.alloc(sdl->allocator.userdata, 0, sizeof(*font));
     NK_ASSERT(font);
     font->userdata.ptr = sdl;
     font->height = SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE;
