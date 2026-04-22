@@ -38,7 +38,7 @@
 /*#define INCLUDE_CALCULATOR */
 /*#define INCLUDE_CANVAS */
 #define INCLUDE_OVERVIEW
-/*#define INCLUDE_CONFIGURATOR */
+#define INCLUDE_CONFIGURATOR
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
@@ -90,7 +90,8 @@ main(void)
 
     #ifdef INCLUDE_CONFIGURATOR
     static struct nk_color color_table[NK_COLOR_COUNT];
-    memcpy(color_table, nk_default_color_style, sizeof(color_table));
+    memcpy(color_table, nk_get_default_color_table(), sizeof(color_table));
+
     #endif
 
     /* SDL setup */
