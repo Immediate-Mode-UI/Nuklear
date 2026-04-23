@@ -112,7 +112,7 @@ int main(void)
     }
     win = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "glfw_opengl2", NULL, NULL);
     glfwMakeContextCurrent(win);
-    glfwGetWindowSize(win, &width, &height);
+    glfwGetFramebufferSize(win, &width, &height);
 
     /* GUI */
     ctx = nk_glfw3_init(win, NK_GLFW3_INSTALL_CALLBACKS);
@@ -218,7 +218,7 @@ int main(void)
         /* ----------------------------------------- */
 
         /* Draw */
-        glfwGetWindowSize(win, &width, &height);
+        glfwGetFramebufferSize(win, &width, &height);
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(bg.r, bg.g, bg.b, bg.a);

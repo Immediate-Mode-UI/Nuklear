@@ -109,10 +109,10 @@ int main(void)
 #endif
     win = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "glfw_opengl4", NULL, NULL);
     glfwMakeContextCurrent(win);
-    glfwGetWindowSize(win, &width, &height);
+    glfwGetFramebufferSize(win, &width, &height);
 
     /* OpenGL */
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    glViewport(0, 0, width, height);
     glewExperimental = 1;
     if (glewInit() != GLEW_OK) {
         fprintf(stderr, "Failed to setup GLEW\n");
@@ -221,7 +221,7 @@ int main(void)
         /* ----------------------------------------- */
 
         /* Draw */
-        glfwGetWindowSize(win, &width, &height);
+        glfwGetFramebufferSize(win, &width, &height);
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(bg.r, bg.g, bg.b, bg.a);
