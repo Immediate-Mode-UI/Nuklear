@@ -1267,7 +1267,7 @@ bool create_graphics_pipeline(struct vulkan_demo *demo) {
     VkGraphicsPipelineCreateInfo pipeline_info;
     size_t read_result;
 
-    fp = fopen("shaders/demo.vert.spv", "r");
+    fp = fopen("shaders/demo.vert.spv", "rb");
     if (!fp) {
         fprintf(stderr, "Couldn't open shaders/demo.vert.spv\n");
         return false;
@@ -1288,7 +1288,7 @@ bool create_graphics_pipeline(struct vulkan_demo *demo) {
         goto cleanup;
     }
 
-    fp = fopen("shaders/demo.frag.spv", "r");
+    fp = fopen("shaders/demo.frag.spv", "rb");
     if (!fp) {
         fprintf(stderr, "Couldn't open shaders/demo.frag.spv\n");
         return false;
@@ -2140,6 +2140,11 @@ int main(void) {
         "sdl_vulkan", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH,
         WINDOW_HEIGHT,
         SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+
+    if (!demo.win) {
+        SDL_Log("Error SDL_CreateWindow %s", SDL_GetError());
+        exit(1);
+    }
 
     if (!create_vulkan_demo(&demo)) {
         fprintf(stderr, "failed to create vulkan demo!\n");
