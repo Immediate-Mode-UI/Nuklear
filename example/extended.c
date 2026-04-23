@@ -127,8 +127,8 @@ ui_piemenu(struct nk_context *ctx, struct nk_vec2 pos, float radius,
 
                 /* separator line */
                 rx = bounds.w/2.0f; ry = 0;
-                dx = rx * (float)cos(a_min) - ry * (float)sin(a_min);
-                dy = rx * (float)sin(a_min) + ry * (float)cos(a_min);
+                dx = rx * (float)NK_COS(a_min) - ry * (float)NK_SIN(a_min);
+                dy = rx * (float)NK_SIN(a_min) + ry * (float)NK_COS(a_min);
                 nk_stroke_line(out, center.x, center.y,
                     center.x + dx, center.y + dy, 1.0f, nk_rgb(50,50,50));
 
@@ -136,8 +136,8 @@ ui_piemenu(struct nk_context *ctx, struct nk_vec2 pos, float radius,
                 a = a_min + (a_max - a_min)/2.0f;
                 rx = bounds.w/2.5f; ry = 0;
                 content.w = 30; content.h = 30;
-                content.x = center.x + ((rx * (float)cos(a) - ry * (float)sin(a)) - content.w/2.0f);
-                content.y = center.y + (rx * (float)sin(a) + ry * (float)cos(a) - content.h/2.0f);
+                content.x = center.x + ((rx * (float)NK_COS(a) - ry * (float)NK_SIN(a)) - content.w/2.0f);
+                content.y = center.y + (rx * (float)NK_SIN(a) + ry * (float)NK_COS(a) - content.h/2.0f);
                 nk_draw_image(out, content, &icons[i], nk_rgb(255,255,255));
                 a_min = a_max; a_max += step;
             }
