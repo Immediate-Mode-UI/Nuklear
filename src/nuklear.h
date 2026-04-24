@@ -5604,6 +5604,7 @@ struct nk_window {
  * draw the button with a red color and then you just pop the old color
  * back from the stack:
  *
+ * ```c
  *     nk_style_push_style_item(ctx, &ctx->style.button.normal, nk_style_item_color(nk_rgb(255,0,0)));
  *     nk_style_push_style_item(ctx, &ctx->style.button.hover, nk_style_item_color(nk_rgb(255,0,0)));
  *     nk_style_push_style_item(ctx, &ctx->style.button.active, nk_style_item_color(nk_rgb(255,0,0)));
@@ -5615,6 +5616,7 @@ struct nk_window {
  *     nk_style_pop_style_item(ctx);
  *     nk_style_pop_style_item(ctx);
  *     nk_style_pop_vec2(ctx);
+ * ```
  *
  * Nuklear has a stack for style_items, float properties, vector properties,
  * flags, colors, fonts and for button_behavior. Each has it's own fixed size stack
