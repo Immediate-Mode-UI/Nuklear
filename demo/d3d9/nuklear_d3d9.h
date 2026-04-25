@@ -341,6 +341,47 @@ nk_d3d9_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             nk_input_key(&d3d9.ctx, NK_KEY_TEXT_RESET_MODE, down);
             return 1;
 
+        case VK_MENU:
+            nk_input_key(&d3d9.ctx, NK_KEY_ALT, down);
+            return 1;
+
+        case VK_F1:
+            nk_input_key(&d3d9.ctx, NK_KEY_F1, down);
+            return 1;
+        case VK_F2:
+            nk_input_key(&d3d9.ctx, NK_KEY_F2, down);
+            return 1;
+        case VK_F3:
+            nk_input_key(&d3d9.ctx, NK_KEY_F3, down);
+            return 1;
+        case VK_F4:
+            nk_input_key(&d3d9.ctx, NK_KEY_F4, down);
+            return 1;
+        case VK_F5:
+            nk_input_key(&d3d9.ctx, NK_KEY_F5, down);
+            return 1;
+        case VK_F6:
+            nk_input_key(&d3d9.ctx, NK_KEY_F6, down);
+            return 1;
+        case VK_F7:
+            nk_input_key(&d3d9.ctx, NK_KEY_F7, down);
+            return 1;
+        case VK_F8:
+            nk_input_key(&d3d9.ctx, NK_KEY_F8, down);
+            return 1;
+        case VK_F9:
+            nk_input_key(&d3d9.ctx, NK_KEY_F9, down);
+            return 1;
+        case VK_F10:
+            nk_input_key(&d3d9.ctx, NK_KEY_F10, down);
+            return 1;
+        case VK_F11:
+            nk_input_key(&d3d9.ctx, NK_KEY_F11, down);
+            return 1;
+        case VK_F12:
+            nk_input_key(&d3d9.ctx, NK_KEY_F12, down);
+            return 1;
+
         case VK_INSERT:
         /* Only switch on release to avoid repeat issues
          * kind of confusing since we have to negate it but we're already

@@ -1068,6 +1068,21 @@ NK_API void nk_glfw3_new_frame(void) {
                  glfwGetKey(win, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS);
     nk_input_key(ctx, NK_KEY_SCROLL_UP,
                  glfwGetKey(win, GLFW_KEY_PAGE_UP) == GLFW_PRESS);
+    nk_input_key(ctx, NK_KEY_ALT,
+                 glfwGetKey(win, GLFW_KEY_LEFT_ALT) == GLFW_PRESS ||
+                     glfwGetKey(win, GLFW_KEY_RIGHT_ALT) == GLFW_PRESS);
+    nk_input_key(ctx, NK_KEY_F1,  glfwGetKey(win, GLFW_KEY_F1)  == GLFW_PRESS);
+    nk_input_key(ctx, NK_KEY_F2,  glfwGetKey(win, GLFW_KEY_F2)  == GLFW_PRESS);
+    nk_input_key(ctx, NK_KEY_F3,  glfwGetKey(win, GLFW_KEY_F3)  == GLFW_PRESS);
+    nk_input_key(ctx, NK_KEY_F4,  glfwGetKey(win, GLFW_KEY_F4)  == GLFW_PRESS);
+    nk_input_key(ctx, NK_KEY_F5,  glfwGetKey(win, GLFW_KEY_F5)  == GLFW_PRESS);
+    nk_input_key(ctx, NK_KEY_F6,  glfwGetKey(win, GLFW_KEY_F6)  == GLFW_PRESS);
+    nk_input_key(ctx, NK_KEY_F7,  glfwGetKey(win, GLFW_KEY_F7)  == GLFW_PRESS);
+    nk_input_key(ctx, NK_KEY_F8,  glfwGetKey(win, GLFW_KEY_F8)  == GLFW_PRESS);
+    nk_input_key(ctx, NK_KEY_F9,  glfwGetKey(win, GLFW_KEY_F9)  == GLFW_PRESS);
+    nk_input_key(ctx, NK_KEY_F10, glfwGetKey(win, GLFW_KEY_F10) == GLFW_PRESS);
+    nk_input_key(ctx, NK_KEY_F11, glfwGetKey(win, GLFW_KEY_F11) == GLFW_PRESS);
+    nk_input_key(ctx, NK_KEY_F12, glfwGetKey(win, GLFW_KEY_F12) == GLFW_PRESS);
     nk_input_key(ctx, NK_KEY_SHIFT,
                  glfwGetKey(win, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
                      glfwGetKey(win, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS);

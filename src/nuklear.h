@@ -606,6 +606,19 @@ enum nk_keys {
     NK_KEY_SCROLL_END,
     NK_KEY_SCROLL_DOWN,
     NK_KEY_SCROLL_UP,
+    NK_KEY_ALT,
+    NK_KEY_F1,
+    NK_KEY_F2,
+    NK_KEY_F3,
+    NK_KEY_F4,
+    NK_KEY_F5,
+    NK_KEY_F6,
+    NK_KEY_F7,
+    NK_KEY_F8,
+    NK_KEY_F9,
+    NK_KEY_F10,
+    NK_KEY_F11,
+    NK_KEY_F12,
     NK_KEY_MAX
 };
 enum nk_buttons {

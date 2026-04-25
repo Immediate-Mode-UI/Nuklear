@@ -1038,6 +1038,10 @@ NK_API int nk_sdl_handle_event(SDL_Event *evt) {
         int down = evt->type == SDL_KEYDOWN;
         const Uint8 *state = SDL_GetKeyboardState(0);
         switch (evt->key.keysym.sym) {
+        case SDLK_LALT:
+        case SDLK_RALT:
+            nk_input_key(ctx, NK_KEY_ALT, down);
+            break;
         case SDLK_RSHIFT: /* RSHIFT & LSHIFT share same routine */
         case SDLK_LSHIFT:
             nk_input_key(ctx, NK_KEY_SHIFT, down);
@@ -1067,6 +1071,42 @@ NK_API int nk_sdl_handle_event(SDL_Event *evt) {
             break;
         case SDLK_PAGEUP:
             nk_input_key(ctx, NK_KEY_SCROLL_UP, down);
+            break;
+        case SDLK_F1:
+            nk_input_key(ctx, NK_KEY_F1, down);
+            break;
+        case SDLK_F2:
+            nk_input_key(ctx, NK_KEY_F2, down);
+            break;
+        case SDLK_F3:
+            nk_input_key(ctx, NK_KEY_F3, down);
+            break;
+        case SDLK_F4:
+            nk_input_key(ctx, NK_KEY_F4, down);
+            break;
+        case SDLK_F5:
+            nk_input_key(ctx, NK_KEY_F5, down);
+            break;
+        case SDLK_F6:
+            nk_input_key(ctx, NK_KEY_F6, down);
+            break;
+        case SDLK_F7:
+            nk_input_key(ctx, NK_KEY_F7, down);
+            break;
+        case SDLK_F8:
+            nk_input_key(ctx, NK_KEY_F8, down);
+            break;
+        case SDLK_F9:
+            nk_input_key(ctx, NK_KEY_F9, down);
+            break;
+        case SDLK_F10:
+            nk_input_key(ctx, NK_KEY_F10, down);
+            break;
+        case SDLK_F11:
+            nk_input_key(ctx, NK_KEY_F11, down);
+            break;
+        case SDLK_F12:
+            nk_input_key(ctx, NK_KEY_F12, down);
             break;
         case SDLK_z:
             nk_input_key(ctx, NK_KEY_TEXT_UNDO,

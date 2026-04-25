@@ -420,10 +420,23 @@ nk_allegro5_handle_event(ALLEGRO_EVENT *ev)
             int down = ev->type == ALLEGRO_EVENT_KEY_DOWN;
 
             /* do we need this? */
-            if (kc == ALLEGRO_KEY_LSHIFT || kc == ALLEGRO_KEY_RSHIFT) nk_input_key(ctx, NK_KEY_SHIFT, down);
+            if (kc == ALLEGRO_KEY_ALT || kc == ALLEGRO_KEY_ALTGR) nk_input_key(ctx, NK_KEY_ALT, down);
+            else if (kc == ALLEGRO_KEY_LSHIFT || kc == ALLEGRO_KEY_RSHIFT) nk_input_key(ctx, NK_KEY_SHIFT, down);
             else if (kc == ALLEGRO_KEY_ESCAPE)    nk_input_key(ctx, NK_KEY_TEXT_RESET_MODE, down);
             else if (kc == ALLEGRO_KEY_PGUP)      nk_input_key(ctx, NK_KEY_SCROLL_UP, down);
             else if (kc == ALLEGRO_KEY_PGDN)      nk_input_key(ctx, NK_KEY_SCROLL_DOWN, down);
+            else if (kc == ALLEGRO_KEY_F1)        nk_input_key(ctx, NK_KEY_F1, down);
+            else if (kc == ALLEGRO_KEY_F2)        nk_input_key(ctx, NK_KEY_F2, down);
+            else if (kc == ALLEGRO_KEY_F3)        nk_input_key(ctx, NK_KEY_F3, down);
+            else if (kc == ALLEGRO_KEY_F4)        nk_input_key(ctx, NK_KEY_F4, down);
+            else if (kc == ALLEGRO_KEY_F5)        nk_input_key(ctx, NK_KEY_F5, down);
+            else if (kc == ALLEGRO_KEY_F6)        nk_input_key(ctx, NK_KEY_F6, down);
+            else if (kc == ALLEGRO_KEY_F7)        nk_input_key(ctx, NK_KEY_F7, down);
+            else if (kc == ALLEGRO_KEY_F8)        nk_input_key(ctx, NK_KEY_F8, down);
+            else if (kc == ALLEGRO_KEY_F9)        nk_input_key(ctx, NK_KEY_F9, down);
+            else if (kc == ALLEGRO_KEY_F10)       nk_input_key(ctx, NK_KEY_F10, down);
+            else if (kc == ALLEGRO_KEY_F11)       nk_input_key(ctx, NK_KEY_F11, down);
+            else if (kc == ALLEGRO_KEY_F12)       nk_input_key(ctx, NK_KEY_F12, down);
             else if (kc == ALLEGRO_KEY_INSERT) {
                 if (down) insert_toggle = !insert_toggle;
                 if (insert_toggle) {
