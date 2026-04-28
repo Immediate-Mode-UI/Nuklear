@@ -25958,7 +25958,7 @@ nk_draw_slider(struct nk_command_buffer *out, nk_flags state,
     bar.h = style->bar_height;
 
     /* filled background bar style */
-    fill.w = visual_cursor->x+ 0.5*visual_cursor->w - bar.x;
+    fill.w = visual_cursor->x + 0.5f * visual_cursor->w - bar.x;
     fill.x = bar.x;
     fill.y = bar.y;
     fill.h = bar.h;
