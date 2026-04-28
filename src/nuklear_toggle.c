@@ -358,7 +358,7 @@ nk_option_text(struct nk_context *ctx, const char *text, int len, nk_bool is_act
     layout = win->layout;
 
     state = nk_widget(&bounds, ctx);
-    if (!state) return (int)state;
+    if (!state) return is_active;
     in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
     nk_do_toggle(&ctx->last_widget_state, &win->buffer, bounds, &is_active,
         text, len, NK_TOGGLE_OPTION, &style->option, in, style->font, NK_WIDGET_LEFT, NK_TEXT_LEFT);
@@ -386,7 +386,7 @@ nk_option_text_align(struct nk_context *ctx, const char *text, int len, nk_bool 
     layout = win->layout;
 
     state = nk_widget(&bounds, ctx);
-    if (!state) return (int)state;
+    if (!state) return is_active;
     in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
     nk_do_toggle(&ctx->last_widget_state, &win->buffer, bounds, &is_active,
         text, len, NK_TOGGLE_OPTION, &style->option, in, style->font, widget_alignment, text_alignment);
