@@ -1,22 +1,36 @@
-name: Documentation on github.io
+name: Docs, Webverion and Deploy
 
-on:
-  push:
-    branches: [ master ]
+on: [push, pull_request]
 
 jobs:
-  build-documentation:
+  build:
     runs-on: ubuntu-latest
     steps:
     - name: checkout
       uses: actions/checkout@v4
-    - name: apt-update
-      run: sudo apt-get update -qq
-    - name: apt-get doxygen
-      run: sudo apt-get install -y doxygen
+      #Documentation
+    - name: Install packages for docs
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y doxygen
     - name: build doc
       run: make docs
-    - name: deploy
+      #Webversion
+    - name: Install packages for webver
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y make
+    - name: Setup Emscripten SDK
+      uses: mymindstorm/setup-emsdk@v14
+    - name: Verify Emscripten
+      run: emcc -v
+    - name: Build SDL3 port for Emscripten
+      run: embuilder build sdl3
+    - name: Build webversion
+      run: make webver
+      #Deploy to GitHub Pages
+    - name: Deploy to GitHub Pages
+      if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/feat/webver') }}
       uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
