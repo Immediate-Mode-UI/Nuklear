@@ -333,11 +333,51 @@ NK_API int nk_xcb_handle_event(struct nk_xcb_context *xcb_ctx, struct nk_context
                 /* NK_KEY_TEXT_SELECT_ALL, */
                 /* NK_KEY_TEXT_WORD_LEFT, */
                 /* NK_KEY_TEXT_WORD_RIGHT, */
+                case XK_Alt_L:
+                case XK_Alt_R:
+                    nk_input_key(nk_ctx, NK_KEY_ALT, press);
+                    break;
                 case XK_Page_Down:
                     nk_input_key(nk_ctx, NK_KEY_SCROLL_DOWN, press);
                     break;
                 case XK_Page_Up:
                     nk_input_key(nk_ctx, NK_KEY_SCROLL_UP, press);
+                    break;
+                case XK_F1:
+                    nk_input_key(nk_ctx, NK_KEY_F1, press);
+                    break;
+                case XK_F2:
+                    nk_input_key(nk_ctx, NK_KEY_F2, press);
+                    break;
+                case XK_F3:
+                    nk_input_key(nk_ctx, NK_KEY_F3, press);
+                    break;
+                case XK_F4:
+                    nk_input_key(nk_ctx, NK_KEY_F4, press);
+                    break;
+                case XK_F5:
+                    nk_input_key(nk_ctx, NK_KEY_F5, press);
+                    break;
+                case XK_F6:
+                    nk_input_key(nk_ctx, NK_KEY_F6, press);
+                    break;
+                case XK_F7:
+                    nk_input_key(nk_ctx, NK_KEY_F7, press);
+                    break;
+                case XK_F8:
+                    nk_input_key(nk_ctx, NK_KEY_F8, press);
+                    break;
+                case XK_F9:
+                    nk_input_key(nk_ctx, NK_KEY_F9, press);
+                    break;
+                case XK_F10:
+                    nk_input_key(nk_ctx, NK_KEY_F10, press);
+                    break;
+                case XK_F11:
+                    nk_input_key(nk_ctx, NK_KEY_F11, press);
+                    break;
+                case XK_F12:
+                    nk_input_key(nk_ctx, NK_KEY_F12, press);
                     break;
                 default:
                     if (press &&
