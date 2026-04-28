@@ -10,3 +10,5 @@ example/bin/*
 *.exe
 *.dSYM
 /private/
+*build*
+.idea
