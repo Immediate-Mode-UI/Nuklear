@@ -552,6 +552,11 @@ enum nk_symbol_type {
     NK_SYMBOL_TRIANGLE_DOWN_OUTLINE,
     NK_SYMBOL_TRIANGLE_LEFT_OUTLINE,
     NK_SYMBOL_TRIANGLE_RIGHT_OUTLINE,
+    NK_SYMBOL_CHEVRON_UP,
+    NK_SYMBOL_CHEVRON_RIGHT,
+    NK_SYMBOL_CHEVRON_DOWN,
+    NK_SYMBOL_CHEVRON_LEFT,
+    NK_SYMBOL_HAMBURGER, /** Three horizontal lines. */
     NK_SYMBOL_MAX
 };
 /* =============================================================================
@@ -24472,6 +24477,59 @@ nk_draw_symbol(struct nk_command_buffer *out, enum nk_symbol_type type,
         nk_triangle_from_direction(points, content, 0, 0, heading);
         nk_stroke_triangle(out, points[0].x, points[0].y, points[1].x, points[1].y,
             points[2].x, points[2].y, border_width, foreground);
+    } break;
+    case NK_SYMBOL_CHEVRON_UP:
+    case NK_SYMBOL_CHEVRON_RIGHT:
+    case NK_SYMBOL_CHEVRON_DOWN:
+    case NK_SYMBOL_CHEVRON_LEFT: {
+        struct nk_vec2 points[3];
+        switch (type) {
+            case NK_SYMBOL_CHEVRON_RIGHT:
+                points[0].x = content.x;
+                points[0].y = content.y;
+                points[1].x = content.x + content.w;
+                points[1].y = content.y + content.h * 0.5f;
+                points[2].x = content.x;
+                points[2].y = content.y + content.h;
+                break;
+            case NK_SYMBOL_CHEVRON_LEFT:
+                points[0].x = content.x + content.w;
+                points[0].y = content.y;
+                points[1].x = content.x;
+                points[1].y = content.y + content.h * 0.5f;
+                points[2].x = content.x + content.w;
+                points[2].y = content.y + content.h;
+                break;
+            case NK_SYMBOL_CHEVRON_UP:
+                points[0].x = content.x;
+                points[0].y = content.y + content.h;
+                points[1].x = content.x + content.w * 0.5f;
+                points[1].y = content.y;
+                points[2].x = content.x + content.w;
+                points[2].y = content.y + content.h;
+                break;
+            case NK_SYMBOL_CHEVRON_DOWN:
+                points[0].x = content.x;
+                points[0].y = content.y;
+                points[1].x = content.x + content.w * 0.5f;
+                points[1].y = content.y + content.h;
+                points[2].x = content.x + content.w;
+                points[2].y = content.y;
+                break;
+            default:
+                break;
+        }
+        nk_stroke_line(out, points[0].x, points[0].y, points[1].x, points[1].y, border_width, foreground);
+        nk_stroke_line(out, points[1].x, points[1].y, points[2].x, points[2].y, border_width, foreground);
+    } break;
+    case NK_SYMBOL_HAMBURGER: {
+        float line_thickness = border_width > 0.0f ? border_width : 1.0f;
+        float y2 = content.y + content.h * 0.5f;
+        float y3 = content.y + content.h - line_thickness;
+        float x1 = content.x + content.w;
+        nk_stroke_line(out, content.x, content.y, x1, content.y, line_thickness, foreground);
+        nk_stroke_line(out, content.x, y2, x1, y2, line_thickness, foreground);
+        nk_stroke_line(out, content.x, y3, x1, y3, line_thickness, foreground);
     } break;
     default:
     case NK_SYMBOL_NONE:
