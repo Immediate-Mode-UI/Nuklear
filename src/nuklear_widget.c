@@ -184,23 +184,6 @@ nk_widget(struct nk_rect *bounds, const struct nk_context *ctx)
         return NK_WIDGET_ROM;
     return NK_WIDGET_VALID;
 }
-NK_API enum nk_widget_layout_states
-nk_widget_fitting(struct nk_rect *bounds, const struct nk_context *ctx,
-    struct nk_vec2 item_padding)
-{
-    /* update the bounds to stand without padding  */
-    enum nk_widget_layout_states state;
-    NK_UNUSED(item_padding);
-
-    NK_ASSERT(ctx);
-    NK_ASSERT(ctx->current);
-    NK_ASSERT(ctx->current->layout);
-    if (!ctx || !ctx->current || !ctx->current->layout)
-        return NK_WIDGET_INVALID;
-
-    state = nk_widget(bounds, ctx);
-    return state;
-}
 NK_API void
 nk_spacing(struct nk_context *ctx, int cols)
 {
