@@ -545,7 +545,7 @@ icon_load(const char *filename)
 {
     int x,y,n;
     GLuint tex;
-    unsigned char *data = stbi_load(filename, &x, &y, &n, 0);
+    unsigned char *data = stbi_load(filename, &x, &y, &n, 4);
     if (!data) die("[SDL]: failed to load image: %s", filename);
 
     glGenTextures(1, &tex);

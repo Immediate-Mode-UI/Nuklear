@@ -556,7 +556,7 @@ nk_xsurf_load_image_from_file(char const *filename)
 {
     int x,y,n;
     unsigned char *data;
-    data = stbi_load(filename, &x, &y, &n, 0);
+    data = stbi_load(filename, &x, &y, &n, 4);
     return nk_stbi_image_to_xsurf(data, x, y, n);
 }
 #endif /* NK_XLIB_INCLUDE_STB_IMAGE */
