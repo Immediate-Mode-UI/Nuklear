@@ -162,7 +162,7 @@ nk_do_property(nk_flags *ws,
     struct nk_rect empty;
 
     /* left decrement button */
-    left.h = font->height/2;
+    left.h = font->height;
     left.w = left.h;
     left.x = property.x + style->border + style->padding.x;
     left.y = property.y + style->border + property.h/2.0f - left.h/2;
@@ -416,7 +416,7 @@ nk_property(struct nk_context *ctx, const char *name, struct nk_property_variant
             win->property.prev_state = prev_state;
             win->property.prev_name = win->property.name;
             win->property.prev_length = win->property.length;
-            NK_MEMCPY(win->property.prev_buffer, win->property.buffer, win->property.length);
+            NK_MEMCPY(win->property.prev_buffer, win->property.buffer, (nk_size)win->property.length);
         }
         /* current property is now hot */
         win->property.active = 1;

@@ -1421,8 +1421,8 @@ VkSemaphore nk_glfw3_render(VkQueue graphics_queue, uint32_t buffer_index,
     memset(&render_pass_begin_nfo, 0, sizeof(VkRenderPassBeginInfo));
     render_pass_begin_nfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     render_pass_begin_nfo.renderPass = dev->render_pass;
-    render_pass_begin_nfo.renderArea.extent.width = (uint32_t)glfw.width;
-    render_pass_begin_nfo.renderArea.extent.height = (uint32_t)glfw.height;
+    render_pass_begin_nfo.renderArea.extent.width = (uint32_t)(glfw.width * glfw.fb_scale.x);
+    render_pass_begin_nfo.renderArea.extent.height = (uint32_t)(glfw.height * glfw.fb_scale.y);
     render_pass_begin_nfo.clearValueCount = 1;
     render_pass_begin_nfo.pClearValues = &clear_value;
     render_pass_begin_nfo.framebuffer = dev->framebuffers[buffer_index];
@@ -1435,8 +1435,8 @@ VkSemaphore nk_glfw3_render(VkQueue graphics_queue, uint32_t buffer_index,
                          VK_SUBPASS_CONTENTS_INLINE);
 
     memset(&viewport, 0, sizeof(VkViewport));
-    viewport.width = (float)glfw.width;
-    viewport.height = (float)glfw.height;
+    viewport.width = (float)(glfw.width * glfw.fb_scale.x);
+    viewport.height = (float)(glfw.height * glfw.fb_scale.y);
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(command_buffer, 0, 1, &viewport);
 

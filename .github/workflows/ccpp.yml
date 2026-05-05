@@ -9,6 +9,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Rebuild ./nuklear.h
+      run: make nuke
+
+    - name: Ensure ./nuklear.h matches sources
+      run: |
+        git diff --exit-code nuklear.h || (printf "\nError: nuklear.h does not match sources. To fix:\n1. Apply changes to ./src/*\n2. Rebuild with 'make nuke'\n" && exit 1)
+
     - name: apt-update
       run: sudo apt-get update -qq
     - name: apt get demo-libs

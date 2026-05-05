@@ -110,9 +110,9 @@ int main(void)
         fprintf(stdout, "[GFLW] failed to init!\n");
         exit(1);
     }
-    win = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Demo", NULL, NULL);
+    win = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "glfw_opengl2", NULL, NULL);
     glfwMakeContextCurrent(win);
-    glfwGetWindowSize(win, &width, &height);
+    glfwGetFramebufferSize(win, &width, &height);
 
     /* GUI */
     ctx = nk_glfw3_init(win, NK_GLFW3_INSTALL_CALLBACKS);
@@ -154,6 +154,11 @@ int main(void)
     {
         /* Input */
         glfwPollEvents();
+        if (glfwGetKey(win, GLFW_KEY_Q) == GLFW_PRESS &&
+             (glfwGetKey(win, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ||
+              glfwGetKey(win, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS)) {
+            glfwSetWindowShouldClose(win, nk_true);
+        }
         nk_glfw3_new_frame();
 
         /* GUI */
@@ -213,7 +218,7 @@ int main(void)
         /* ----------------------------------------- */
 
         /* Draw */
-        glfwGetWindowSize(win, &width, &height);
+        glfwGetFramebufferSize(win, &width, &height);
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(bg.r, bg.g, bg.b, bg.a);

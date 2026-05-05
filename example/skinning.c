@@ -774,9 +774,9 @@ int main(int argc, char *argv[])
                 nk_chart_add_slot_colored(&ctx, NK_CHART_LINES, nk_rgb(0,0,255), nk_rgb(0,0,150),32, -1.0f, 1.0f);
                 nk_chart_add_slot_colored(&ctx, NK_CHART_LINES, nk_rgb(0,255,0), nk_rgb(0,150,0), 32, -1.0f, 1.0f);
                 for (id = 0, i = 0; i < 32; ++i) {
-                    nk_chart_push_slot(&ctx, (float)fabs(sin(id)), 0);
-                    nk_chart_push_slot(&ctx, (float)cos(id), 1);
-                    nk_chart_push_slot(&ctx, (float)sin(id), 2);
+                    nk_chart_push_slot(&ctx, (float)NK_ABS(NK_SIN(id)), 0);
+                    nk_chart_push_slot(&ctx, (float)NK_COS(id), 1);
+                    nk_chart_push_slot(&ctx, (float)NK_SIN(id), 2);
                     id += step;
                 }
             }

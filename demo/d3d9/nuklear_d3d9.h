@@ -153,7 +153,7 @@ nk_d3d9_render(enum nk_anti_aliasing AA)
         config.arc_segment_count = 22;
         config.tex_null = d3d9.tex_null;
 
-        /* convert shapes into vertexes */
+        /* convert shapes into vertices */
         nk_buffer_init_default(&vbuf);
         nk_buffer_init_default(&ebuf);
         nk_convert(&d3d9.ctx, &d3d9.cmds, &vbuf, &ebuf, &config);

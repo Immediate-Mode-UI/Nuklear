@@ -79,7 +79,7 @@ int main(void)
 {
     /* Platform */
     sf::ContextSettings settings(24, 8, 4, 2, 2);
-    sf::Window win(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Demo", sf::Style::Default, settings);
+    sf::Window win(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "sfml_opengl2", sf::Style::Default, settings);
     win.setVerticalSyncEnabled(true);
     win.setActive(true);
     glViewport(0, 0, win.getSize().x, win.getSize().y);
@@ -115,6 +115,8 @@ int main(void)
         nk_input_begin(ctx);
         while(win.pollEvent(evt)) {
             if(evt.type == sf::Event::Closed)
+                win.close();
+            else if (evt.type == sf::Event::KeyPressed && evt.key.code == sf::Keyboard::Q && evt.key.control)
                 win.close();
             else if(evt.type == sf::Event::Resized)
                 glViewport(0, 0, evt.size.width, evt.size.height);
