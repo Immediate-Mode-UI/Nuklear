@@ -3622,6 +3622,7 @@ NK_API void nk_tooltip(struct nk_context*, const char*);
 NK_API void nk_tooltip_offset(struct nk_context *ctx, const char *text, enum nk_tooltip_pos position, struct nk_vec2 offset);
 NK_API void nk_do_tooltip(struct nk_context*, const char*, struct nk_rect);
 NK_API void nk_do_tooltip_delay(struct nk_context*, const char*, struct nk_rect, float*);
+NK_API void nk_do_tooltip_delay_clicked(struct nk_context*, const char*, struct nk_rect, float* timer, nk_bool*);
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 NK_API void nk_tooltipf(struct nk_context*, NK_PRINTF_FORMAT_STRING const char*, ...) NK_PRINTF_VARARG_FUNC(2);
 NK_API void nk_tooltipfv(struct nk_context*, NK_PRINTF_FORMAT_STRING const char*, va_list) NK_PRINTF_VALIST_FUNC(2);
@@ -4750,6 +4751,7 @@ NK_API nk_bool nk_input_is_mouse_hovering_rect(const struct nk_input*, struct nk
 NK_API nk_bool nk_input_is_mouse_hovering_still_rect(const struct nk_input*, struct nk_rect);
 NK_API nk_bool nk_input_is_mouse_hovering_delay_rect(const struct nk_context*, struct nk_rect, float*, float);
 NK_API nk_bool nk_input_is_mouse_hovering_still_delay_rect(const struct nk_context*, struct nk_rect, float*, float);
+NK_API nk_bool nk_input_is_mouse_hovering_still_delay_clicked_rect(const struct nk_context*, struct nk_rect, float*, float, nk_bool*);
 NK_API nk_bool nk_input_is_mouse_moved(const struct nk_input*);
 NK_API nk_bool nk_input_mouse_clicked(const struct nk_input*, enum nk_buttons, struct nk_rect);
 NK_API nk_bool nk_input_is_mouse_down(const struct nk_input*, enum nk_buttons);

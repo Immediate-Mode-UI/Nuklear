@@ -123,6 +123,15 @@ nk_do_tooltip_delay(struct nk_context* ctx, const char* text, struct nk_rect bou
 }
 
 NK_API void
+nk_do_tooltip_delay_clicked(struct nk_context* ctx, const char* text, struct nk_rect bounds, float* timer, nk_bool* clicked)
+{
+    NK_ASSERT(ctx);
+    if (nk_input_is_mouse_hovering_still_delay_clicked_rect(ctx, bounds, timer, ctx->style.window.tooltip_delay, clicked)) {
+        nk_tooltip_offset(ctx, text, ctx->style.window.tooltip_origin, ctx->style.window.tooltip_offset);
+    }
+}
+
+NK_API void
 nk_tooltip_offset(struct nk_context *ctx, const char *text, enum nk_tooltip_pos position, struct nk_vec2 offset)
 {
     const struct nk_style *style;

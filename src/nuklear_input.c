@@ -267,6 +267,38 @@ nk_input_is_mouse_hovering_still_delay_rect(const struct nk_context *ctx, struct
     }
 }
 NK_API nk_bool
+nk_input_is_mouse_hovering_still_delay_clicked_rect(const struct nk_context *ctx, struct nk_rect rect, float* timer, float delay, nk_bool* clicked)
+{
+    NK_ASSERT(ctx);
+    if (!ctx) {
+        return nk_false;
+    } else {
+        const struct nk_input* i = &ctx->input;
+        if (*clicked) {
+            /* could also be based on maintaining hover rather than motionless once clicked */
+            if (!nk_input_is_mouse_moved(i)) {
+                return nk_false;
+            }
+            *clicked = nk_false;
+            *timer = 0;
+        }
+        if (NK_INBOX(i->mouse.pos.x, i->mouse.pos.y, rect.x, rect.y, rect.w, rect.h)) {
+            /* once it triggers, moving within the bounds should not make it disappear */
+            if (*timer >= delay) {
+                return nk_true;
+            }
+            if (!nk_input_is_mouse_moved(i)) {
+                *timer += ctx->delta_time_seconds;
+                return *timer >= delay;
+            }
+            *timer = 0;
+        } else if (NK_INBOX(i->mouse.prev.x, i->mouse.prev.y, rect.x, rect.y, rect.w, rect.h)) {
+            *timer = 0;
+        }
+        return nk_false;
+    }
+}
+NK_API nk_bool
 nk_input_is_mouse_prev_hovering_rect(const struct nk_input *i, struct nk_rect rect)
 {
     if (!i) return nk_false;
