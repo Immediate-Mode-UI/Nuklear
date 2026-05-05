@@ -33,6 +33,7 @@ NK_API void                 nk_xlib_copy(nk_handle, const char*, int len);
 #ifdef NK_XLIB_INCLUDE_STB_IMAGE
 NK_API struct nk_image nk_xsurf_load_image_from_file(char const *filename);
 NK_API struct nk_image nk_xsurf_load_image_from_memory(const void *membuf, nk_uint membufSize);
+NK_API void            nk_xsurf_image_free(struct nk_image *image);
 #endif
 
 /* Font */
@@ -476,28 +477,44 @@ nk_xsurf_draw_text(XSurface *surf, short x, short y, const char *text, int len,
 
 #ifdef NK_XLIB_INCLUDE_STB_IMAGE
 NK_INTERN struct nk_image
-nk_stbi_image_to_xsurf(unsigned char *data, int width, int height, int channels) {
+nk_stbi_image_to_xsurf(const void *filename_or_membuf, nk_uint zero_or_membufSize) {
     XSurface *surf = xlib.surf;
-    struct nk_image img;
-    int bpl = channels;
-    long i, isize = width*height*channels;
-    XImageWithAlpha *aimage = (XImageWithAlpha*)calloc( 1, sizeof(XImageWithAlpha) );
-    int depth = DefaultDepth(surf->dpy, surf->screen);
-    if (data == NULL) return nk_image_id(0);
-    if (aimage == NULL) return nk_image_id(0);
+    struct nk_image img = nk_image_id(0);
+    unsigned char *data;
+    int width, height, channels, actual_channels;
+    long i, isize;
+    XImageWithAlpha *aimage = NULL;
+    int depth;
+
+    if (filename_or_membuf == NULL) goto bail;
+
+    aimage = (XImageWithAlpha*)calloc( 1, sizeof(XImageWithAlpha) );
+    if (aimage == NULL) goto bail;
+    img = nk_image_ptr( (void*)aimage);
+
+    depth = DefaultDepth(surf->dpy, surf->screen);
 
     switch (depth){
         case 24:
-            bpl = 4;
+            channels = 4;
         break;
         case 16:
         case 15:
-            bpl = 2;
+            channels = 2;
         break;
         default:
-            bpl = 1;
+            channels = 1;
         break;
     }
+
+    if (zero_or_membufSize) {
+        data = stbi_load_from_memory((const stbi_uc *)filename_or_membuf, zero_or_membufSize, &width, &height, &actual_channels, channels);
+    } else {
+        data = stbi_load(filename_or_membuf, &width, &height, &actual_channels, channels);
+    }
+    if (data == NULL) goto bail;
+
+    isize = width*height*channels;
 
     /* rgba to bgra */
     if (channels >= 3){
@@ -509,7 +526,7 @@ nk_stbi_image_to_xsurf(unsigned char *data, int width, int height, int channels)
         }
     }
 
-    if (channels == 4){
+    if (channels == 4 && actual_channels == 4){
         const unsigned alpha_treshold = 127;
         aimage->clipMask = XCreatePixmap(surf->dpy, surf->drawable, width, height, 1);
 
@@ -535,29 +552,30 @@ nk_stbi_image_to_xsurf(unsigned char *data, int width, int height, int channels)
            ZPixmap, 0,
            (char*)data,
            width, height,
-           bpl*8, bpl * width);
-    img = nk_image_ptr( (void*)aimage);
+           channels*8, channels*width);
     img.h = height;
     img.w = width;
+
     return img;
+bail:
+    nk_xsurf_image_free(&img);
+    return nk_image_id(0);
 }
 
 NK_API struct nk_image
 nk_xsurf_load_image_from_memory(const void *membuf, nk_uint membufSize)
 {
-    int x,y,n;
-    unsigned char *data;
-    data = stbi_load_from_memory(membuf, membufSize, &x, &y, &n, 0);
-    return nk_stbi_image_to_xsurf(data, x, y, n);
+    if (membufSize == 0) {
+        return nk_image_id(0);
+    } else {
+        return nk_stbi_image_to_xsurf(membuf, membufSize);
+    }
 }
 
 NK_API struct nk_image
 nk_xsurf_load_image_from_file(char const *filename)
 {
-    int x,y,n;
-    unsigned char *data;
-    data = stbi_load(filename, &x, &y, &n, 0);
-    return nk_stbi_image_to_xsurf(data, x, y, n);
+    return nk_stbi_image_to_xsurf((const void *)filename, 0);
 }
 #endif /* NK_XLIB_INCLUDE_STB_IMAGE */
 
@@ -579,15 +597,15 @@ nk_xsurf_draw_image(XSurface *surf, short x, short y, unsigned short w, unsigned
     }
 }
 
-void
+NK_API void
 nk_xsurf_image_free(struct nk_image* image)
 {
     XSurface *surf = xlib.surf;
     XImageWithAlpha *aimage = image->handle.ptr;
     if (!aimage) return;
-    XDestroyImage(aimage->ximage);
-    XFreePixmap(surf->dpy, aimage->clipMask);
-    XFreeGC(surf->dpy, aimage->clipMaskGC);
+    if (aimage->ximage)     XDestroyImage(aimage->ximage);
+    if (aimage->clipMask)   XFreePixmap(surf->dpy, aimage->clipMask);
+    if (aimage->clipMaskGC) XFreeGC(surf->dpy, aimage->clipMaskGC);
     free(aimage);
 }
 
