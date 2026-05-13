@@ -104,6 +104,9 @@ nk_tooltip_end(struct nk_context *ctx)
     nk_popup_end(ctx);
 }
 
+/**
+ * Display a default tooltip if the mouse is hovering over the rect `bounds`
+ */
 NK_API void
 nk_do_tooltip(struct nk_context* ctx, const char* text, struct nk_rect bounds)
 {
@@ -113,6 +116,10 @@ nk_do_tooltip(struct nk_context* ctx, const char* text, struct nk_rect bounds)
     }
 }
 
+/**
+ * Display a default tooltip if the mouse hovers motionless for the default delay (ctx->style.window.tooltip_delay)
+ * `timer` is used to track the time across frames.
+ */
 NK_API void
 nk_do_tooltip_delay(struct nk_context* ctx, const char* text, struct nk_rect bounds, float* timer)
 {
@@ -122,6 +129,11 @@ nk_do_tooltip_delay(struct nk_context* ctx, const char* text, struct nk_rect bou
     }
 }
 
+/**
+ * Display a default tooltip if the mouse hovers motionless for the default delay (ctx->style.window.tooltip_delay) unless
+ * `clicked` is true. `clicked` will be reset to false (and `timer` to 0) when the mouse moves.
+ * `timer` is used to track the time across frames.
+ */
 NK_API void
 nk_do_tooltip_delay_clicked(struct nk_context* ctx, const char* text, struct nk_rect bounds, float* timer, nk_bool* clicked)
 {
