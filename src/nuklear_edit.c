@@ -269,7 +269,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
             if (flags & NK_EDIT_CTRL_ENTER_NEWLINE && shift_mod)
                 nk_textedit_text(edit, "\n", 1);
             else if (flags & NK_EDIT_SIG_ENTER)
-                ret |= NK_EDIT_COMMITED;
+                ret |= NK_EDIT_COMMITTED;
             else nk_textedit_text(edit, "\n", 1);
         }
 

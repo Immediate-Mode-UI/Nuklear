@@ -9,9 +9,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: butlerlogic/action-autotag@1.1.2
+    - uses: actions/checkout@v6
+
+    # https://github.com/butlerlogic/action-autotag
+    - id: autotag
+      uses: butlerlogic/action-autotag@1.1.2
       env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       with:
         root: clib.json
+        tag_prefix: "v"
+
+    # https://github.com/softprops/action-gh-release
+    - name: Release
+      if: steps.autotag.outputs.tagcreated == 'yes'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: "${{ steps.autotag.outputs.tagname }}"
+        generate_release_notes: true
+        token: "${{ secrets.GITHUB_TOKEN }}"
