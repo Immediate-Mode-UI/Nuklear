@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: Checkers
 
 on: [push, pull_request]
 

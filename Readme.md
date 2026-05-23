@@ -11,6 +11,8 @@ draw commands describing primitive shapes as output. So instead of providing a
 layered library that tries to abstract over a number of platform and
 render backends, it focuses only on the actual UI.
 
+<a href="https://immediate-mode-ui.github.io/Nuklear/webver" target="_blank">Try Nuklear in Browser</a>
+
 ## Features
 
 - Immediate-mode graphical user interface toolkit

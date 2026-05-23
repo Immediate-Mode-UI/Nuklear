@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuklear Emscripten Demo with minimal shell</title>
+    <meta name="description" content="Run Nuklear demos in the browser with Emscripten. Our homepage is https://github.com/Immediate-Mode-UI/Nuklear">
+    <meta name="author" content="Initially created by PavelSharp(https://github.com/PavelSharp) (2026.02.11)">
+    <!--This work is released under Public Domain-->
+    <!--Inspired by Emscripten default shell, see https://github.com/emscripten-core/emscripten/blob/main/html/shell.html-->
+    <!--The purpose of this shell is to be minimal and widely compatible-->
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #555;
+            padding: 3px;
+        }
+
+        #canvas-block {
+            width: 100%;
+            height: 100%;
+            border: 1px solid red;
+        }
+
+            /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+            #canvas-block canvas {
+                display: block;
+                width: 100%;
+                height: 100%;
+                border: 0;
+            }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var canvas = document.getElementById('canvas');
+            canvas.addEventListener('webglcontextlost', function (e) { alert('WebGL context lost. Please reload the page.'); e.preventDefault(); }, false);
+            window.addEventListener('error', function (e) { alert('Exception thrown, see JavaScript console'); });
+            window.Module = {
+                canvas: canvas,
+                print: function (text) { console.log(text); },
+                printErr: function (text) { console.error(text); },
+                monitorRunDependencies: function (left) { console.log('[dependencies]', left); },
+                setStatus: function (text) { if (text) console.log('[status]', text); }
+            };
+            const script = document.createElement('script');
+            script.async = true;
+            script.src = 'demo_sdl3_renderer.js';
+            document.body.appendChild(script);
+        });
+    </script>
+</head>
+<body>
+    <div id="canvas-block">
+        <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+    </div>
+</body>
+</html>

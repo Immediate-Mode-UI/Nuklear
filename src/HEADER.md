@@ -34,6 +34,10 @@ commands describing primitive shapes as output. So instead of providing a
 layered library that tries to abstract over a number of platform and
 render backends it only focuses on the actual UI.
 
+<a href="webver/index.html" target="_blank">Try Nuklear in Browser</a>
+
+Nuklear in a <a href="webver/minshell.html" target="_blank">minimal shell</a> is also provided for compatibility and testing
+
 ## Highlights
 - Graphical user interface toolkit
 - Single header library

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuklear Emscripten Demo</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="home" href="https://github.com/Immediate-Mode-UI/Nuklear">
+    <meta name="description" content="Run Nuklear demos in the browser with Emscripten">
+    <meta name="author" content="Initially created by PavelSharp(https://github.com/PavelSharp) (2026.02.11)">
+    <!--This work is released under Public Domain-->
+    <!--Inspired by Emscripten default shell, see https://github.com/emscripten-core/emscripten/blob/main/html/shell.html-->
+    <!--The purpose of this shell is to provide a visually polished, production-quality showcase for Nuklear demos-->
+    <style>
+        /*================================
+                    BASIC SECTION
+        ==================================*/
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            scrollbar-width: thin; /* Firefox */
+        }
+
+        /*================================
+                    TAG SECTION
+        ==================================*/
+        body {
+            font-family: arial;
+            background: #222;
+            scrollbar-color: #555 #111;
+        }
+
+        button {
+            -webkit-tap-highlight-color: transparent;
+            background: #444;
+            color: white;
+            border: 1px solid #666;
+            padding: 6px 12px;
+            cursor: pointer;
+        }
+
+        @media (hover:hover) {
+            button:hover {
+                background: #555;
+            }
+        }
+
+        input[type="checkbox"] {
+            display: none;
+        }
+
+            input[type="checkbox"]:checked + button {
+                background: #762F84; /*#256839*/
+                border-color: #A245B2; /*#38935E*/
+            }
+
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /*================================
+                    HEADER SECTION
+        ==================================*/
+        #header {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 4px 7px;
+            gap: 5px;
+            background: #333;
+            color: white;
+        }
+
+        .header-clickable-logo {
+            display: flex;
+            align-items: center;
+            height: 70px;
+        }
+
+            .header-clickable-logo img {
+                object-fit: contain;
+                display: block;
+                height: 100%;
+                width: auto;
+                max-width: 300px;
+            }
+
+        .header-spacer {
+            flex: 1;
+        }
+
+        /*================================
+                    MAIN SECTION
+        ==================================*/
+        main {
+            flex: 1;
+            background: #222;
+            overflow: auto;
+            display: flex;
+        }
+
+        #main-canvas-block {
+            display: flex;
+            border: 1px solid #555;
+        }
+
+            #main-canvas-block:not(.fixed) {
+                flex: 1 1 auto;
+            }
+
+            #main-canvas-block.fixed {
+                flex: 0 0 auto;
+                width: var(--canvas-fixed-width);
+                height: var(--canvas-fixed-height);
+            }
+
+            /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+            #main-canvas-block canvas {
+                width: 100%;
+                height: 100%;
+                border: 0;
+            }
+
+        #app:has(#consoleshow-toggle:not(:checked)) #footer-console {
+            display: none;
+        }
+
+        /*================================
+                    FOOTER SECTION
+        ==================================*/
+        #footer-console {
+            padding: 3px;
+            width: 100%;
+            height: 3.5lh;
+            font-family: 'Lucida Console', Monaco, monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+        }
+
+            #footer-console > .line {
+                display: block;
+                margin: 0;
+                padding: 0;
+            }
+
+                #footer-console > .line.ok {
+                    color: #ddd;
+                }
+
+                #footer-console > .line.error {
+                    color: #ff5555;
+                }
+    </style>
+    <script>
+        class UIConsole {
+            constructor(container, toggle) {
+                this.container = container;
+                this.toggle = toggle;
+                this.line_style = "line";
+                this.ok_style = "ok";
+                this.error_style = "error";
+            }
+            #append(text, style) {
+                this.toggle.checked = true;
+                const line = document.createElement('div');
+                line.textContent = String(text);//textContent protects from XSS attacks
+                line.classList.add(this.line_style, style);
+                this.container.appendChild(line);
+                line.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
+            print(text) { this.#append(text, this.ok_style); }
+            print_error(text) { this.#append(text, this.error_style); }
+        }
+
+        class EmscriptenLogMonitor {
+            constructor(uiconsole) {
+                this.uiconsole = uiconsole;
+                this.total_depends = 0;
+            }
+            report_dependencies(left) {
+                if (!this.total_depends) this.total_depends = left;
+                const msg = left ? 'Preparing... (' + (this.total_depends - left) + '/' + this.total_depends + ')' : 'All downloads complete.';
+                console.log(`[dependencies] ${msg}`);
+                if (!left) this.total_depends = 0;
+            }
+            report_status(text) {
+                if (!text) return;
+                console.log(`[status] ${text}`);
+            }
+            report_glcontext_lost() {
+                alert('WebGL context lost. You will need to reload the page.');
+            }
+            report_runtime_initialized() {
+                this.report_status("WASM runtime initialized!")
+            }
+            report_window_error(e) {
+                this.uiconsole.print_error('Exception thrown, see JavaScript console');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const ui = {
+                canvas: document.getElementById('canvas'),
+                console: new UIConsole(document.getElementById('footer-console'), document.getElementById('consoleshow-toggle')),
+                init: function () {
+                    this.ems_monitor = new EmscriptenLogMonitor(this.console);
+                    return this;
+                }
+            }.init();
+            // As a default initial behavior, pop up an alert when webgl context is lost. To make your
+            // application robust, you may want to override this behavior before shipping!
+            // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+            ui.canvas.addEventListener('webglcontextlost', e => { ui.ems_monitor.report_glcontext_lost(); e.preventDefault(); }, false);
+            window.addEventListener('error', e => {
+                // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
+                ui.ems_monitor.report_window_error(e);
+            });
+            //[NOTE] Manual resize event dispatch seems to work around an Emscripten/SDL3 issue
+            const onresize_observe = () => { requestAnimationFrame(() => { window.dispatchEvent(new Event('resize')); }); }
+            const size_observer = new ResizeObserver(onresize_observe);
+            size_observer.observe(ui.canvas);
+            //TODO[Future]: use MODULARIZE or even EXPORT_ES6
+            window.Module = {
+                canvas: ui.canvas,
+                onRuntimeInitialized: () => { ui.ems_monitor.report_runtime_initialized(); onresize_observe(); },
+                print: text => { ui.console.print(text); console.log(text); },
+                printErr: text => { ui.console.print_error(text); console.error(text); },
+                monitorRunDependencies: left => { ui.ems_monitor.report_dependencies(left); },
+                setStatus: text => { ui.ems_monitor.report_status(text); }
+            };
+            const script = document.createElement('script');
+            script.async = true;
+            script.src = 'demo_sdl3_renderer.js';
+            document.body.appendChild(script);
+        });
+
+        function liveresize_changed(enabled) {
+            const canvas = document.getElementById('main-canvas-block');
+            if (enabled) {
+                canvas.classList.remove('fixed');
+            } else {
+                canvas.style.setProperty('--canvas-fixed-width', canvas.offsetWidth + 'px');
+                canvas.style.setProperty('--canvas-fixed-height', canvas.offsetHeight + 'px');
+                canvas.classList.add('fixed');
+            }
+        }
+
+        function fullscreen_click() {
+            const LOCK_POINTER = false;
+            const RESIZE_CANVAS = true;
+            window.Module.requestFullscreen(LOCK_POINTER, RESIZE_CANVAS);
+        }
+    </script>
+</head>
+<body>
+    <div id="app">
+        <header id="header">
+            <a class="header-clickable-logo" href="https://github.com/Immediate-Mode-UI/Nuklear" target="_blank">
+                <img src="nuklear_logo.png" alt="Nuklear Homepage">
+            </a>
+            <a class="header-clickable-logo" href="http://emscripten.org" target="_blank">
+                <img src="emscripten_logo.png" alt="Powered by Emscripten">
+            </a>
+            <div class="header-spacer"></div>
+            <!--NOTE[Future]: This is a good place to add a combobox for select backend/renderer-->
+            <input type="checkbox" id="liveresize-toggle" checked onchange="liveresize_changed(this.checked)" />
+            <button onclick="this.previousElementSibling.click();">Live resize</button>
+            <input type="checkbox" id="consoleshow-toggle" />
+            <button onclick="this.previousElementSibling.click();">Show console</button>
+            <button onclick="fullscreen_click()">Fullscreen</button>
+        </header>
+        <main>
+            <div id="main-canvas-block">
+                <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+            </div>
+        </main>
+        <footer>
+            <div id="footer-console"></div>
+        </footer>
+    </div>
+</body>
+</html>
+

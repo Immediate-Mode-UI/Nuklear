@@ -5,9 +5,18 @@
 
 ## path stuff
 DOCS_PATH:=./doc
+# Convenience shortcut to docs output path (as defined in Doxyfile)
+DOCS_OUT:=$(DOCS_PATH)/html
+
 DEMO_PATH=demo
 SRC_PATH=src
 
+WEBVER_BACKEND:=./demo/sdl3_renderer
+WEBVER_SITE:=./webver/site
+WEBVER_OUT:=$(DOCS_OUT)/webver
+WEBVER_CFLAGS:=-O2 -DINCLUDE_ALL -sEXPORTED_RUNTIME_METHODS=requestFullscreen
+#Possible choice: ccall,cwrap,requestFullscreen,FS
+WEBVER_CFLAGS+=${CFLAGS}
 
 ## Documents settings
 DOXYFILE:=.Doxyfile
@@ -37,15 +46,16 @@ DEMO_LIST = $(shell find $(DEMO_PATH) -type f -name Makefile -printf "%h ")
 ######################################################################################
 
 
-.PHONY: usage all demos $(DEMO_LIST)
+.PHONY: usage all demos webver $(DEMO_LIST)
 
 usage:
-	echo "make docs		to create documentation"
-	echo "make nuke		to rebuild the single header nuklear.h from source"
-	echo "make demos	to build all of the demos"
-	echo "make all 		to re-pack the header and create documentation"
+	@echo "make docs		to create documentation"
+	@echo "make webver		to build webversion on SDL3 + Emscripten (try to run 'embuilder build sdl3' if first time)"
+	@echo "make nuke		to rebuild the single header nuklear.h from source"
+	@echo "make demos		to build all of the demos"
+	@echo "make all 		to re-pack the header and create documentation"
 
-all: docs nuke demos 
+all: docs webver nuke demos 
 demos: $(DEMO_LIST)
 
 
@@ -57,14 +67,12 @@ nuke: $(addprefix $(SRC_PATH)/, $(SRC))
 
 
 
-
-
 ########################################################################################
 ##   Docs
 
-docs: $(DOCS_PATH)/html/index.html 
+docs: $(DOCS_OUT)/index.html 
 
-$(DOCS_PATH)/html/index.html: $(DOCS_PATH)/doxygen-awesome-css/doxygen-awesome.css $(DOXYFILE)
+$(DOCS_OUT)/index.html: $(DOCS_PATH)/doxygen-awesome-css/doxygen-awesome.css $(DOXYFILE)
 	doxygen $(DOXYFILE)
 
 $(DOXYFILE):
@@ -73,6 +81,16 @@ $(DOXYFILE):
 $(DOCS_PATH)/doxygen-awesome-css/doxygen-awesome.css:
 	git clone https://github.com/jothepro/doxygen-awesome-css.git $(DOCS_PATH)/doxygen-awesome-css --branch v2.3.4
 
+
+
+########################################################################################
+##   webver
+
+webver: 
+	mkdir -p $(WEBVER_OUT)
+	emmake make -C $(WEBVER_BACKEND) CFLAGS="$(WEBVER_CFLAGS)" BIN=$(abspath $(WEBVER_OUT)/demo_sdl3_renderer.js) TEMPDIR=$(abspath $(WEBVER_OUT))
+	cp -r $(WEBVER_SITE)/* $(WEBVER_OUT)/
+#[NOTE]We pass TEMPDIR directly for hide a potential issue 
 
 
 ########################################################################################
@@ -87,4 +105,4 @@ $(DEMO_LIST):
 ##   Utility helpers
 
 clean:
-	rm -rf $(DOCS_PATH)/html $(OUTPUT)
+	rm -rf $(DOCS_OUT) $(OUTPUT)
