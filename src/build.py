@@ -15,9 +15,7 @@ def print_help():
 
        The resulting code is packed as follows:
 
-           /*
            [intro file contents]
-           */
 
            #ifndef <macro>_SINGLE_HEADER
            #define <macro>_SINGLE_HEADER
@@ -131,10 +129,8 @@ if macro == "":
 
 # Print concatenated output
 # -------------------------
-print("/*")
 for f in intro_files:
     sys.stdout.write(open(f, 'r').read())
-print("*/")
 
 # print("\n#ifndef " + macro + "_SINGLE_HEADER");
 # print("#define " + macro + "_SINGLE_HEADER");
@@ -162,8 +158,8 @@ for f in priv_files2:
 
 print("#endif /* " + macro + "_IMPLEMENTATION */");
 
-print("\n/*")
+print("/*")
 for f in outro_files:
     sys.stdout.write(open(f, 'r').read())
-print("*/\n")
-
+    print("")
+print("*/")
