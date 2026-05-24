@@ -170,7 +170,7 @@ int main(int argc, char **argv)
     printf("desktop display mode %d %d\n", dm.w, dm.h);
 
 
-    window = SDL_CreateWindow("Puzzle", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w-200,dm.h-200, SDL_WINDOW_OPENGL);
+    window = SDL_CreateWindow("rawfb sdl", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w-200,dm.h-200, SDL_WINDOW_OPENGL);
     if (!window)
     {
         printf("can't open window!\n");
@@ -207,6 +207,7 @@ int main(int argc, char **argv)
                     exit(0);
                 break;
                 case SDL_KEYDOWN:
+                    if (event.key.keysym.sym == SDLK_q && SDL_GetModState() & KMOD_CTRL) exit(0);
                     nk_input_key(&(context->ctx), translate_sdl_key(&event.key.keysym), 1);
                 break;
                 case SDL_KEYUP:

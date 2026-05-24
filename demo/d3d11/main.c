@@ -228,6 +228,8 @@ int main(void)
         {
             if (msg.message == WM_QUIT)
                 running = 0;
+            if (msg.message == WM_SYSKEYDOWN && msg.wParam == 'Q' && GetKeyState(VK_CONTROL) & (1 << 15))
+                running = 0;
             TranslateMessage(&msg);
             DispatchMessageW(&msg);
         }

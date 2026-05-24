@@ -100,6 +100,7 @@ int main(void)
     al_set_mouse_wheel_precision(150);
     al_install_keyboard();
 
+    al_set_new_window_title("allegro5");
     al_set_new_display_flags(ALLEGRO_WINDOWED|ALLEGRO_RESIZABLE|ALLEGRO_OPENGL);
     al_set_new_display_option(ALLEGRO_SAMPLE_BUFFERS, 1, ALLEGRO_SUGGEST);
     al_set_new_display_option(ALLEGRO_SAMPLES, 8, ALLEGRO_SUGGEST);
@@ -133,8 +134,11 @@ int main(void)
 
         get_event = al_wait_for_event_until(event_queue, &ev, &timeout);
 
-        if (get_event && ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-            break;
+        if (get_event) {
+            if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE ||
+                (ev.keyboard.keycode == ALLEGRO_KEY_Q && ev.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL)) {
+                break;
+            }
         }
 
         /* Very Important: Always do nk_input_begin / nk_input_end even if

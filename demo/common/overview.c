@@ -640,7 +640,7 @@ overview(struct nk_context *ctx)
                 nk_layout_row(ctx, NK_STATIC, 25, 2, ratio);
                 active = nk_edit_string(ctx, NK_EDIT_FIELD|NK_EDIT_SIG_ENTER, text[7], &text_len[7], 64,  nk_filter_ascii);
                 if (nk_button_label(ctx, "Submit") ||
-                    (active & NK_EDIT_COMMITED))
+                    (active & NK_EDIT_COMMITTED))
                 {
                     text[7][text_len[7]] = '\n';
                     text_len[7]++;
@@ -864,8 +864,8 @@ overview(struct nk_context *ctx)
                 static double accum_time_seconds = 0.0;
                 const double speed = 3.0, radius = 50.0;
                 struct nk_vec2 offset;
-                offset.x = radius * NK_COS(accum_time_seconds * speed);
-                offset.y = radius * NK_SIN(accum_time_seconds * speed);
+                offset.x = radius * cos(accum_time_seconds * speed);
+                offset.y = radius * sin(accum_time_seconds * speed);
                 nk_tooltip_offset(ctx, "WOW!", NK_MIDDLE_CENTER, offset);
                 accum_time_seconds += (double)(ctx->delta_time_seconds);
             }
@@ -890,7 +890,7 @@ overview(struct nk_context *ctx)
                     "BOTTOM_CENTER",
                     "BOTTOM_RIGHT"
                 };
-                static int cur_pos = NK_TOP_LEFT;
+                int cur_pos = NK_TOP_LEFT;
 
                 if (!text_initialized) {
                     const char text_default[] = "you can customize this!";
@@ -902,7 +902,7 @@ overview(struct nk_context *ctx)
                 bounds = nk_widget_bounds(ctx);
                 nk_label(ctx, "Hover for custom tooltip (you can customize it below)", NK_TEXT_LEFT);
                 if (nk_input_is_mouse_hovering_rect(in, bounds)) {
-                    nk_tooltip_offset(ctx, text_buf, cur_pos, offset);
+                    nk_tooltip_offset(ctx, text_buf, (enum nk_tooltip_pos)cur_pos, offset);
                 }
                 nk_layout_row_dynamic(ctx, 1, 1);
                 nk_rule_horizontal(ctx, nk_white, nk_true);
@@ -1445,11 +1445,11 @@ overview(struct nk_context *ctx)
             nk_layout_row_dynamic(ctx, 20, 2);
             for (i = 0; i < NK_BUTTON_MAX; i++) {
                 nk_label(ctx, button_names[i], NK_TEXT_LEFT);
-                if (nk_input_is_mouse_pressed(in, i))
+                if (nk_input_is_mouse_pressed(in, (enum nk_buttons)i))
                     nk_label(ctx, "Pressed", NK_TEXT_LEFT);
-                else if (nk_input_is_mouse_down(in, i))
+                else if (nk_input_is_mouse_down(in, (enum nk_buttons)i))
                     nk_label(ctx, "Down", NK_TEXT_LEFT);
-                else if (nk_input_is_mouse_released(in, i))
+                else if (nk_input_is_mouse_released(in, (enum nk_buttons)i))
                     nk_label(ctx, "Released", NK_TEXT_LEFT);
                 else
                     nk_label(ctx, "Up", NK_TEXT_LEFT);
