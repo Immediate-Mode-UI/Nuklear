@@ -1287,8 +1287,21 @@ NK_API void nk_glfw3_new_frame(void) {
     if (k_state[NK_KEY_BACKSPACE] >= 0) nk_input_key(ctx, NK_KEY_BACKSPACE, k_state[NK_KEY_BACKSPACE]);
     if (k_state[NK_KEY_UP] >= 0) nk_input_key(ctx, NK_KEY_UP, k_state[NK_KEY_UP]);
     if (k_state[NK_KEY_DOWN] >= 0) nk_input_key(ctx, NK_KEY_DOWN, k_state[NK_KEY_DOWN]);
+    if (k_state[NK_KEY_ALT] >= 0) nk_input_key(ctx, NK_KEY_ALT, k_state[NK_KEY_ALT]);
     if (k_state[NK_KEY_SCROLL_UP] >= 0) nk_input_key(ctx, NK_KEY_SCROLL_UP, k_state[NK_KEY_SCROLL_UP]);
     if (k_state[NK_KEY_SCROLL_DOWN] >= 0) nk_input_key(ctx, NK_KEY_SCROLL_DOWN, k_state[NK_KEY_SCROLL_DOWN]);
+    if (k_state[NK_KEY_F1] >= 0) nk_input_key(ctx, NK_KEY_F1, k_state[NK_KEY_F1]);
+    if (k_state[NK_KEY_F2] >= 0) nk_input_key(ctx, NK_KEY_F2, k_state[NK_KEY_F2]);
+    if (k_state[NK_KEY_F3] >= 0) nk_input_key(ctx, NK_KEY_F3, k_state[NK_KEY_F3]);
+    if (k_state[NK_KEY_F4] >= 0) nk_input_key(ctx, NK_KEY_F4, k_state[NK_KEY_F4]);
+    if (k_state[NK_KEY_F5] >= 0) nk_input_key(ctx, NK_KEY_F5, k_state[NK_KEY_F5]);
+    if (k_state[NK_KEY_F6] >= 0) nk_input_key(ctx, NK_KEY_F6, k_state[NK_KEY_F6]);
+    if (k_state[NK_KEY_F7] >= 0) nk_input_key(ctx, NK_KEY_F7, k_state[NK_KEY_F7]);
+    if (k_state[NK_KEY_F8] >= 0) nk_input_key(ctx, NK_KEY_F8, k_state[NK_KEY_F8]);
+    if (k_state[NK_KEY_F9] >= 0) nk_input_key(ctx, NK_KEY_F9, k_state[NK_KEY_F9]);
+    if (k_state[NK_KEY_F10] >= 0) nk_input_key(ctx, NK_KEY_F10, k_state[NK_KEY_F10]);
+    if (k_state[NK_KEY_F11] >= 0) nk_input_key(ctx, NK_KEY_F11, k_state[NK_KEY_F11]);
+    if (k_state[NK_KEY_F12] >= 0) nk_input_key(ctx, NK_KEY_F12, k_state[NK_KEY_F12]);
 
     if (k_state[NK_KEY_TEXT_INSERT_MODE] >= 0) nk_input_key(ctx, NK_KEY_TEXT_INSERT_MODE, k_state[NK_KEY_TEXT_INSERT_MODE]);
     if (k_state[NK_KEY_TEXT_REPLACE_MODE] >= 0) nk_input_key(ctx, NK_KEY_TEXT_REPLACE_MODE, k_state[NK_KEY_TEXT_REPLACE_MODE]);
@@ -1421,8 +1434,8 @@ VkSemaphore nk_glfw3_render(VkQueue graphics_queue, uint32_t buffer_index,
     memset(&render_pass_begin_nfo, 0, sizeof(VkRenderPassBeginInfo));
     render_pass_begin_nfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     render_pass_begin_nfo.renderPass = dev->render_pass;
-    render_pass_begin_nfo.renderArea.extent.width = (uint32_t)glfw.width;
-    render_pass_begin_nfo.renderArea.extent.height = (uint32_t)glfw.height;
+    render_pass_begin_nfo.renderArea.extent.width = (uint32_t)(glfw.width * glfw.fb_scale.x);
+    render_pass_begin_nfo.renderArea.extent.height = (uint32_t)(glfw.height * glfw.fb_scale.y);
     render_pass_begin_nfo.clearValueCount = 1;
     render_pass_begin_nfo.pClearValues = &clear_value;
     render_pass_begin_nfo.framebuffer = dev->framebuffers[buffer_index];
@@ -1435,8 +1448,8 @@ VkSemaphore nk_glfw3_render(VkQueue graphics_queue, uint32_t buffer_index,
                          VK_SUBPASS_CONTENTS_INLINE);
 
     memset(&viewport, 0, sizeof(VkViewport));
-    viewport.width = (float)glfw.width;
-    viewport.height = (float)glfw.height;
+    viewport.width = (float)(glfw.width * glfw.fb_scale.x);
+    viewport.height = (float)(glfw.height * glfw.fb_scale.y);
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(command_buffer, 0, 1, &viewport);
 
@@ -1588,8 +1601,22 @@ nk_glfw3_key_callback(GLFWwindow *win, int key, int scancode, int action, int mo
     case GLFW_KEY_RIGHT:     glfw.key_events[NK_KEY_RIGHT] = a; break;
     case GLFW_KEY_ESCAPE:    glfw.key_events[NK_KEY_TEXT_RESET_MODE] = a; break;
 
+    case GLFW_KEY_LEFT_ALT:
+    case GLFW_KEY_RIGHT_ALT:  glfw.key_events[NK_KEY_ALT] = a; break;
     case GLFW_KEY_PAGE_UP:   glfw.key_events[NK_KEY_SCROLL_UP] = a; break;
     case GLFW_KEY_PAGE_DOWN: glfw.key_events[NK_KEY_SCROLL_DOWN] = a; break;
+    case GLFW_KEY_F1:        glfw.key_events[NK_KEY_F1] = a; break;
+    case GLFW_KEY_F2:        glfw.key_events[NK_KEY_F2] = a; break;
+    case GLFW_KEY_F3:        glfw.key_events[NK_KEY_F3] = a; break;
+    case GLFW_KEY_F4:        glfw.key_events[NK_KEY_F4] = a; break;
+    case GLFW_KEY_F5:        glfw.key_events[NK_KEY_F5] = a; break;
+    case GLFW_KEY_F6:        glfw.key_events[NK_KEY_F6] = a; break;
+    case GLFW_KEY_F7:        glfw.key_events[NK_KEY_F7] = a; break;
+    case GLFW_KEY_F8:        glfw.key_events[NK_KEY_F8] = a; break;
+    case GLFW_KEY_F9:        glfw.key_events[NK_KEY_F9] = a; break;
+    case GLFW_KEY_F10:       glfw.key_events[NK_KEY_F10] = a; break;
+    case GLFW_KEY_F11:       glfw.key_events[NK_KEY_F11] = a; break;
+    case GLFW_KEY_F12:       glfw.key_events[NK_KEY_F12] = a; break;
 
     /* have to add all keys used for nuklear to get correct repeat behavior
      * NOTE these are scancodes so your custom layout won't matter unfortunately

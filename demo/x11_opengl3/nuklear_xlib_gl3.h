@@ -636,8 +636,21 @@ nk_x11_handle_event(XEvent *evt)
         else if (*code == XK_Down)      nk_input_key(ctx, NK_KEY_DOWN, down);
         else if (*code == XK_BackSpace) nk_input_key(ctx, NK_KEY_BACKSPACE, down);
         else if (*code == XK_Escape)    nk_input_key(ctx, NK_KEY_TEXT_RESET_MODE, down);
+        else if (*code == XK_Alt_L || *code == XK_Alt_R) nk_input_key(ctx, NK_KEY_ALT, down);
         else if (*code == XK_Page_Up)   nk_input_key(ctx, NK_KEY_SCROLL_UP, down);
         else if (*code == XK_Page_Down) nk_input_key(ctx, NK_KEY_SCROLL_DOWN, down);
+        else if (*code == XK_F1)        nk_input_key(ctx, NK_KEY_F1, down);
+        else if (*code == XK_F2)        nk_input_key(ctx, NK_KEY_F2, down);
+        else if (*code == XK_F3)        nk_input_key(ctx, NK_KEY_F3, down);
+        else if (*code == XK_F4)        nk_input_key(ctx, NK_KEY_F4, down);
+        else if (*code == XK_F5)        nk_input_key(ctx, NK_KEY_F5, down);
+        else if (*code == XK_F6)        nk_input_key(ctx, NK_KEY_F6, down);
+        else if (*code == XK_F7)        nk_input_key(ctx, NK_KEY_F7, down);
+        else if (*code == XK_F8)        nk_input_key(ctx, NK_KEY_F8, down);
+        else if (*code == XK_F9)        nk_input_key(ctx, NK_KEY_F9, down);
+        else if (*code == XK_F10)       nk_input_key(ctx, NK_KEY_F10, down);
+        else if (*code == XK_F11)       nk_input_key(ctx, NK_KEY_F11, down);
+        else if (*code == XK_F12)       nk_input_key(ctx, NK_KEY_F12, down);
         else if (*code == XK_Home) {
             nk_input_key(ctx, NK_KEY_TEXT_START, down);
             nk_input_key(ctx, NK_KEY_SCROLL_START, down);

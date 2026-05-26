@@ -382,7 +382,9 @@ nk_sfml_handle_event(sf::Event* evt)
     {
         int down = evt->type == sf::Event::KeyPressed;
         sf::Keyboard::Key key = evt->key.code;
-        if(key == sf::Keyboard::RShift || key == sf::Keyboard::LShift)
+        if(key == sf::Keyboard::LAlt || key == sf::Keyboard::RAlt)
+            nk_input_key(ctx, NK_KEY_ALT, down);
+        else if(key == sf::Keyboard::RShift || key == sf::Keyboard::LShift)
             nk_input_key(ctx, NK_KEY_SHIFT, down);
         else if(key == sf::Keyboard::Delete)
             nk_input_key(ctx, NK_KEY_DEL, down);
@@ -402,6 +404,30 @@ nk_sfml_handle_event(sf::Event* evt)
             nk_input_key(ctx, NK_KEY_SCROLL_DOWN, down);
         else if(key == sf::Keyboard::PageUp)
             nk_input_key(ctx, NK_KEY_SCROLL_DOWN, down);
+        else if(key == sf::Keyboard::F1)
+            nk_input_key(ctx, NK_KEY_F1, down);
+        else if(key == sf::Keyboard::F2)
+            nk_input_key(ctx, NK_KEY_F2, down);
+        else if(key == sf::Keyboard::F3)
+            nk_input_key(ctx, NK_KEY_F3, down);
+        else if(key == sf::Keyboard::F4)
+            nk_input_key(ctx, NK_KEY_F4, down);
+        else if(key == sf::Keyboard::F5)
+            nk_input_key(ctx, NK_KEY_F5, down);
+        else if(key == sf::Keyboard::F6)
+            nk_input_key(ctx, NK_KEY_F6, down);
+        else if(key == sf::Keyboard::F7)
+            nk_input_key(ctx, NK_KEY_F7, down);
+        else if(key == sf::Keyboard::F8)
+            nk_input_key(ctx, NK_KEY_F8, down);
+        else if(key == sf::Keyboard::F9)
+            nk_input_key(ctx, NK_KEY_F9, down);
+        else if(key == sf::Keyboard::F10)
+            nk_input_key(ctx, NK_KEY_F10, down);
+        else if(key == sf::Keyboard::F11)
+            nk_input_key(ctx, NK_KEY_F11, down);
+        else if(key == sf::Keyboard::F12)
+            nk_input_key(ctx, NK_KEY_F12, down);
         else if(key == sf::Keyboard::Z)
             nk_input_key(ctx, NK_KEY_TEXT_UNDO, down && sf::Keyboard::isKeyPressed(sf::Keyboard::LControl));
         else if(key == sf::Keyboard::R)

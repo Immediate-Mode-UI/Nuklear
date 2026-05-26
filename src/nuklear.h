@@ -415,8 +415,7 @@ NK_API nk_bool nk_init_default(struct nk_context*, const struct nk_user_font*);
  * nk_bool nk_init_fixed(struct nk_context *ctx, void *memory, nk_size size, const struct nk_user_font *font);
  * ```
  *
- * !!! Warning
- *     make sure the passed memory block is aligned correctly for `nk_draw_commands`.
+ * \warning Make sure the passed memory block is aligned correctly for `nk_draw_commands`.
  *
  * Parameter   | Description
  * ------------|--------------------------------------------------------------
@@ -612,6 +611,19 @@ enum nk_keys {
     NK_KEY_SCROLL_END,
     NK_KEY_SCROLL_DOWN,
     NK_KEY_SCROLL_UP,
+    NK_KEY_ALT,
+    NK_KEY_F1,
+    NK_KEY_F2,
+    NK_KEY_F3,
+    NK_KEY_F4,
+    NK_KEY_F5,
+    NK_KEY_F6,
+    NK_KEY_F7,
+    NK_KEY_F8,
+    NK_KEY_F9,
+    NK_KEY_F10,
+    NK_KEY_F11,
+    NK_KEY_F12,
     NK_KEY_MAX
 };
 enum nk_buttons {
@@ -704,8 +716,7 @@ NK_API void nk_input_scroll(struct nk_context*, struct nk_vec2 val);
  * This is basically a helper function to quickly push ASCII characters into
  * nuklear.
  *
- * \note
- *     Stores up to NK_INPUT_MAX bytes between `nk_input_begin` and `nk_input_end`.
+ * \note Stores up to NK_INPUT_MAX bytes between `nk_input_begin` and `nk_input_end`.
  *
  * ```c
  * void nk_input_char(struct nk_context *ctx, char c);
@@ -720,8 +731,7 @@ NK_API void nk_input_char(struct nk_context*, char);
  * \brief Converts an encoded unicode rune into UTF-8 and copies the result into an
  * internal text buffer.
  *
- * \note
- *     Stores up to NK_INPUT_MAX bytes between `nk_input_begin` and `nk_input_end`.
+ * \note Stores up to NK_INPUT_MAX bytes between `nk_input_begin` and `nk_input_end`.
  *
  * ```c
  * void nk_input_glyph(struct nk_context *ctx, const nk_glyph g);
@@ -737,8 +747,7 @@ NK_API void nk_input_glyph(struct nk_context*, const nk_glyph);
  * into an internal text buffer.
  *
  * \details
- * \note
- *     Stores up to NK_INPUT_MAX bytes between `nk_input_begin` and `nk_input_end`.
+ * \note Stores up to NK_INPUT_MAX bytes between `nk_input_begin` and `nk_input_end`.
  *
  * ```c
  * void nk_input_unicode(struct nk_context*, nk_rune rune);
@@ -933,7 +942,7 @@ NK_API void nk_input_end(struct nk_context*);
  * hardware directly. Therefore it is possible to just define
  * `NK_INCLUDE_VERTEX_BUFFER_OUTPUT` which includes optional vertex output.
  * To access the vertex output you first have to convert all draw commands into
- * vertexes by calling `nk_convert` which takes in your preferred vertex format.
+ * vertices by calling `nk_convert` which takes in your preferred vertex format.
  * After successfully converting all draw commands just iterate over and execute all
  * vertex draw commands:
  *
@@ -1064,7 +1073,7 @@ NK_API const struct nk_command* nk__next(struct nk_context*, const struct nk_com
 
 /**
  * \brief Converts all internal draw commands into vertex draw commands and fills
- * three buffers with vertexes, vertex draw commands and vertex indices.
+ * three buffers with vertices, vertex draw commands and vertex indices.
  *
  * \details
  * The vertex format as well as some other configuration values have to be
@@ -1183,7 +1192,7 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
  * order. The topmost window thereby is the currently active window.<br /><br />
  *
  * To change window position inside the stack occurs either automatically by
- * user input by being clicked on or programmatically by calling `nk_window_focus`.
+ * user input by being clicked on or programmatically by calling `nk_window_set_focus`.
  * Windows by default are visible unless explicitly being defined with flag
  * `NK_WINDOW_HIDDEN`, the user clicked the close button on windows with flag
  * `NK_WINDOW_CLOSABLE` or if a window was explicitly hidden by calling
@@ -1414,8 +1423,8 @@ NK_API struct nk_window *nk_window_find(const struct nk_context *ctx, const char
  * # # nk_window_get_bounds
  * \returns a rectangle with screen position and size of the currently processed window
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`.
+ *
  * ```c
  * struct nk_rect nk_window_get_bounds(const struct nk_context *ctx);
  * ```
@@ -1433,8 +1442,8 @@ NK_API struct nk_rect nk_window_get_bounds(const struct nk_context *ctx);
  * # # nk_window_get_position
  * \returns the position of the currently processed window.
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`.
+ *
  * ```c
  * struct nk_vec2 nk_window_get_position(const struct nk_context *ctx);
  * ```
@@ -1452,8 +1461,8 @@ NK_API struct nk_vec2 nk_window_get_position(const struct nk_context *ctx);
  * # # nk_window_get_size
  * \returns the size with width and height of the currently processed window.
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`.
+ *
  * ```c
  * struct nk_vec2 nk_window_get_size(const struct nk_context *ctx);
  * ```
@@ -1471,8 +1480,8 @@ NK_API struct nk_vec2 nk_window_get_size(const struct nk_context *ctx);
  * nk_window_get_width
  * \returns the width of the currently processed window.
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`.
+ *
  * ```c
  * float nk_window_get_width(const struct nk_context *ctx);
  * ```
@@ -1489,8 +1498,8 @@ NK_API float nk_window_get_width(const struct nk_context *ctx);
  * # # nk_window_get_height
  * \returns the height of the currently processed window.
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`.
+ *
  * ```c
  * float nk_window_get_height(const struct nk_context *ctx);
  * ```
@@ -1508,10 +1517,10 @@ NK_API float nk_window_get_height(const struct nk_context* ctx);
  * # # nk_window_get_panel
  * \returns the underlying panel which contains all processing state of the current window.
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
- * !!! \warning
- *     Do not keep the returned panel pointer around, it is only valid until `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
+ *
+ * \warning Do not keep the returned panel pointer around, it is only valid until `nk_end`.
+ *
  * ```c
  * struct nk_panel* nk_window_get_panel(struct nk_context *ctx);
  * ```
@@ -1530,8 +1539,7 @@ NK_API struct nk_panel* nk_window_get_panel(const struct nk_context* ctx);
  * \returns the position and size of the currently visible and non-clipped space
  * inside the currently processed window.
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  *
  * ```c
  * struct nk_rect nk_window_get_content_region(struct nk_context *ctx);
@@ -1552,8 +1560,7 @@ NK_API struct nk_rect nk_window_get_content_region(const struct nk_context* ctx)
  * \returns the upper left position of the currently visible and non-clipped
  * space inside the currently processed window.
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  *
  * ```c
  * struct nk_vec2 nk_window_get_content_region_min(struct nk_context *ctx);
@@ -1574,8 +1581,7 @@ NK_API struct nk_vec2 nk_window_get_content_region_min(const struct nk_context *
  * \returns the lower right screen position of the currently visible and
  * non-clipped space inside the currently processed window.
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  *
  * ```c
  * struct nk_vec2 nk_window_get_content_region_max(struct nk_context *ctx);
@@ -1596,8 +1602,7 @@ NK_API struct nk_vec2 nk_window_get_content_region_max(const struct nk_context *
  * \returns the size of the currently visible and non-clipped space inside the
  * currently processed window
  *
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  *
  * ```c
  * struct nk_vec2 nk_window_get_content_region_size(struct nk_context *ctx);
@@ -1615,10 +1620,8 @@ NK_API struct nk_vec2 nk_window_get_content_region_size(const struct nk_context 
 /**
  * # # nk_window_get_canvas
  * \returns the draw command buffer. Can be used to draw custom widgets
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
- * !!! \warning
- *     Do not keep the returned command buffer pointer around it is only valid until `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Do not keep the returned command buffer pointer around it is only valid until `nk_end`
  *
  * ```c
  * struct nk_command_buffer* nk_window_get_canvas(struct nk_context *ctx);
@@ -1636,8 +1639,7 @@ NK_API struct nk_command_buffer* nk_window_get_canvas(const struct nk_context* c
 /**
  * # # nk_window_get_scroll
  * Gets the scroll offset for the current window
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  *
  * ```c
  * void nk_window_get_scroll(struct nk_context *ctx, nk_uint *offset_x, nk_uint *offset_y);
@@ -1655,8 +1657,8 @@ NK_API void nk_window_get_scroll(const struct nk_context *ctx, nk_uint *offset_x
 /**
  * # # nk_window_has_focus
  * \returns if the currently processed window is currently active
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`.
+ *
  * ```c
  * nk_bool nk_window_has_focus(const struct nk_context *ctx);
  * ```
@@ -1673,8 +1675,8 @@ NK_API nk_bool nk_window_has_focus(const struct nk_context *ctx);
 /**
  * # # nk_window_is_hovered
  * Return if the current window is being hovered
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`.
+ *
  * ```c
  * nk_bool nk_window_is_hovered(struct nk_context *ctx);
  * ```
@@ -1855,8 +1857,7 @@ NK_API void nk_window_set_focus(struct nk_context *ctx, const char *name);
 /**
  * # # nk_window_set_scroll
  * Sets the scroll offset for the current window
- * !!! \warning
- *     Only call this function between calls `nk_begin_xxx` and `nk_end`
+ * \warning Only call this function between calls `nk_begin_xxx` and `nk_end`
  *
  * ```c
  * void nk_window_set_scroll(struct nk_context *ctx, nk_uint offset_x, nk_uint offset_y);
@@ -2001,7 +2002,7 @@ NK_API void nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, nk
  * reset it back to be derived from font height. <br /><br />
  *
  * Also if you change the font in nuklear it will automatically change the minimum
- * row height for you and. This means if you change the font but still want
+ * row height for you. This means if you change the font but still want
  * a minimum row height smaller than the font you have to repush your value. <br /><br />
  *
  * For actually more advanced UI I would even recommend using the `nk_layout_space_xxx`
@@ -2254,8 +2255,7 @@ enum nk_widget_alignment {
 
 /**
  * Sets the currently used minimum row height.
- * !!! \warning
- *     The passed height needs to include both your preferred row height
+ * \warning The passed height needs to include both your preferred row height
  *     as well as padding. No internal padding is added.
  *
  * ```c
@@ -2489,7 +2489,7 @@ NK_API void nk_layout_space_begin(struct nk_context*, enum nk_layout_format, flo
  * Parameter   | Description
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct after call `nk_layout_space_begin`
- * \param[in] bounds  | Position and size in laoyut space local coordinates
+ * \param[in] bounds  | Position and size in layout space local coordinates
  */
 NK_API void nk_layout_space_push(struct nk_context*, struct nk_rect bounds);
 
@@ -2852,9 +2852,8 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
  * or hidden and therefore does not need to be filled with content or `true(1)`
  * if visible and required to be filled.
  *
- * !!! Note
- *     The tree header does not require and layouting function and instead
- *     calculates a auto height based on the currently used font size
+ * \note The tree header does not require and layouting function and instead
+ * calculates a auto height based on the currently used font size
  *
  * The tree ending functions only need to be called if the tree content is
  * actually visible. So make sure the tree push function is guarded by `if`
@@ -2892,8 +2891,7 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
 /**
  * # # nk_tree_push
  * Starts a collapsible UI section with internal state management
- * !!! \warning
- *     To keep track of the runtime tree collapsible state this function uses
+ * \warning To keep track of the runtime tree collapsible state this function uses
  *     defines `__FILE__` and `__LINE__` to generate a unique ID. If you want
  *     to call this function in a loop please use `nk_tree_push_id` or
  *     `nk_tree_push_hashed` instead.
@@ -2957,8 +2955,7 @@ NK_API nk_bool nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const 
 /**
  * # # nk_tree_image_push
  * Start a collapsible UI section with image and label header
- * !!! \warning
- *     To keep track of the runtime tree collapsible state this function uses
+ * \warning To keep track of the runtime tree collapsible state this function uses
  *     defines `__FILE__` and `__LINE__` to generate a unique ID. If you want
  *     to call this function in a loop please use `nk_tree_image_push_id` or
  *     `nk_tree_image_push_hashed` instead.
@@ -3130,7 +3127,7 @@ enum nk_widget_states {
     NK_WIDGET_STATE_ACTIVE      = NK_WIDGET_STATE_ACTIVED|NK_WIDGET_STATE_MODIFIED /**!< widget is currently activated */
 };
 NK_API enum nk_widget_layout_states nk_widget(struct nk_rect*, const struct nk_context*);
-NK_API enum nk_widget_layout_states nk_widget_fitting(struct nk_rect*, const struct nk_context*, struct nk_vec2);
+#define nk_widget_fitting(bounds, ctx, padding) nk_widget(bounds, ctx)
 NK_API struct nk_rect nk_widget_bounds(const struct nk_context*);
 NK_API struct nk_vec2 nk_widget_position(const struct nk_context*);
 NK_API struct nk_vec2 nk_widget_size(const struct nk_context*);
@@ -3372,8 +3369,7 @@ NK_API nk_bool nk_color_pick(struct nk_context*, struct nk_colorf*, enum nk_colo
 
  * # # nk_property_int
  * Integer property directly modifying a passed in value
- * !!! \warning
- *     To generate a unique property ID using the same label make sure to insert
+ * \warning To generate a unique property ID using the same label make sure to insert
  *     a `#` at the beginning. It will not be shown but guarantees correct behavior.
  *
  * ```c
@@ -3397,8 +3393,7 @@ NK_API nk_bool nk_property_int(struct nk_context*, const char *name, int min, in
 /**
  * # # nk_property_float
  * Float property directly modifying a passed in value
- * !!! \warning
- *     To generate a unique property ID using the same label make sure to insert
+ * \warning To generate a unique property ID using the same label make sure to insert
  *     a `#` at the beginning. It will not be shown but guarantees correct behavior.
  *
  * ```c
@@ -3422,8 +3417,7 @@ NK_API nk_bool nk_property_float(struct nk_context*, const char *name, float min
 /**
  * # # nk_property_double
  * Double property directly modifying a passed in value
- * !!! \warning
- *     To generate a unique property ID using the same label make sure to insert
+ * \warning To generate a unique property ID using the same label make sure to insert
  *     a `#` at the beginning. It will not be shown but guarantees correct behavior.
  *
  * ```c
@@ -3447,8 +3441,7 @@ NK_API nk_bool nk_property_double(struct nk_context*, const char *name, double m
 /**
  * # # nk_propertyi
  * Integer property modifying a passed in value and returning the new value
- * !!! \warning
- *     To generate a unique property ID using the same label make sure to insert
+ * \warning To generate a unique property ID using the same label make sure to insert
  *     a `#` at the beginning. It will not be shown but guarantees correct behavior.
  *
  * ```c
@@ -3470,8 +3463,7 @@ NK_API int nk_propertyi(struct nk_context*, const char *name, int min, int val, 
 /**
  * # # nk_propertyf
  * Float property modifying a passed in value and returning the new value
- * !!! \warning
- *     To generate a unique property ID using the same label make sure to insert
+ * \warning To generate a unique property ID using the same label make sure to insert
  *     a `#` at the beginning. It will not be shown but guarantees correct behavior.
  *
  * ```c
@@ -3493,8 +3485,7 @@ NK_API float nk_propertyf(struct nk_context*, const char *name, float min, float
 /**
  * # # nk_propertyd
  * Float property modifying a passed in value and returning the new value
- * !!! \warning
- *     To generate a unique property ID using the same label make sure to insert
+ * \warning To generate a unique property ID using the same label make sure to insert
  *     a `#` at the beginning. It will not be shown but guarantees correct behavior.
  *
  * ```c
@@ -3544,8 +3535,11 @@ enum nk_edit_events {
     NK_EDIT_INACTIVE    = NK_FLAG(1), /**!< edit widget is not active and is not being modified */
     NK_EDIT_ACTIVATED   = NK_FLAG(2), /**!< edit widget went from state inactive to state active */
     NK_EDIT_DEACTIVATED = NK_FLAG(3), /**!< edit widget went from state active to state inactive */
-    NK_EDIT_COMMITED    = NK_FLAG(4)  /**!< edit widget has received an enter and lost focus */
+    NK_EDIT_COMMITTED   = NK_FLAG(4)  /**!< edit widget has received an enter and lost focus */
 };
+
+#define NK_EDIT_COMMITED NK_EDIT_COMMITTED
+
 NK_API nk_flags nk_edit_string(struct nk_context*, nk_flags, char *buffer, int *len, int max, nk_plugin_filter);
 NK_API nk_flags nk_edit_string_zero_terminated(struct nk_context*, nk_flags, char *buffer, int max, nk_plugin_filter);
 NK_API nk_flags nk_edit_buffer(struct nk_context*, nk_flags, struct nk_text_edit*, nk_plugin_filter);
@@ -3631,6 +3625,9 @@ NK_API void nk_contextual_end(struct nk_context*);
  * ============================================================================= */
 NK_API void nk_tooltip(struct nk_context*, const char*);
 NK_API void nk_tooltip_offset(struct nk_context *ctx, const char *text, enum nk_tooltip_pos position, struct nk_vec2 offset);
+NK_API void nk_do_tooltip(struct nk_context*, const char*, struct nk_rect);
+NK_API void nk_do_tooltip_delay(struct nk_context*, const char*, struct nk_rect, float*);
+NK_API void nk_do_tooltip_delay_clicked(struct nk_context*, const char*, struct nk_rect, float* timer, nk_bool*);
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 NK_API void nk_tooltipf(struct nk_context*, NK_PRINTF_FORMAT_STRING const char*, ...) NK_PRINTF_VARARG_FUNC(2);
 NK_API void nk_tooltipfv(struct nk_context*, NK_PRINTF_FORMAT_STRING const char*, va_list) NK_PRINTF_VALIST_FUNC(2);
@@ -4756,6 +4753,10 @@ NK_API nk_bool nk_input_is_mouse_click_down_in_rect(const struct nk_input *i, en
 NK_API nk_bool nk_input_any_mouse_click_in_rect(const struct nk_input*, struct nk_rect);
 NK_API nk_bool nk_input_is_mouse_prev_hovering_rect(const struct nk_input*, struct nk_rect);
 NK_API nk_bool nk_input_is_mouse_hovering_rect(const struct nk_input*, struct nk_rect);
+NK_API nk_bool nk_input_is_mouse_hovering_still_rect(const struct nk_input*, struct nk_rect);
+NK_API nk_bool nk_input_is_mouse_hovering_delay_rect(const struct nk_context*, struct nk_rect, float*, float);
+NK_API nk_bool nk_input_is_mouse_hovering_still_delay_rect(const struct nk_context*, struct nk_rect, float*, float);
+NK_API nk_bool nk_input_is_mouse_hovering_still_delay_clicked_rect(const struct nk_context*, struct nk_rect, float*, float, nk_bool*);
 NK_API nk_bool nk_input_is_mouse_moved(const struct nk_input*);
 NK_API nk_bool nk_input_mouse_clicked(const struct nk_input*, enum nk_buttons, struct nk_rect);
 NK_API nk_bool nk_input_is_mouse_down(const struct nk_input*, enum nk_buttons);
@@ -4775,7 +4776,7 @@ NK_API nk_bool nk_input_is_key_down(const struct nk_input*, enum nk_keys);
  * \page "Draw List"
  * The optional vertex buffer draw list provides a 2D drawing context
  * with antialiasing functionality which takes basic filled or outlined shapes
- * or a path and outputs vertexes, elements and draw commands.
+ * or a path and outputs vertices, elements and draw commands.
  * The actual draw list API is not required to be used directly while using this
  * library since converting the default library draw command output is done by
  * just calling `nk_convert` but I decided to still make this library accessible
@@ -5069,7 +5070,7 @@ struct nk_style_slider {
     float bar_height;
     struct nk_vec2 padding;
     struct nk_vec2 spacing;
-    struct nk_vec2 cursor_size;
+    struct nk_vec2 cursor_size; /* NOTE y has no effect on vertex buffer backends */
     float color_factor;
     float disabled_factor;
 
@@ -5391,6 +5392,7 @@ struct nk_style_window {
 
     enum nk_tooltip_pos tooltip_origin;
     struct nk_vec2 tooltip_offset;
+    float tooltip_delay;
 };
 
 struct nk_style {
@@ -5628,6 +5630,7 @@ struct nk_window {
  * draw the button with a red color and then you just pop the old color
  * back from the stack:
  *
+ * ```c
  *     nk_style_push_style_item(ctx, &ctx->style.button.normal, nk_style_item_color(nk_rgb(255,0,0)));
  *     nk_style_push_style_item(ctx, &ctx->style.button.hover, nk_style_item_color(nk_rgb(255,0,0)));
  *     nk_style_push_style_item(ctx, &ctx->style.button.active, nk_style_item_color(nk_rgb(255,0,0)));
@@ -5639,6 +5642,7 @@ struct nk_window {
  *     nk_style_pop_style_item(ctx);
  *     nk_style_pop_style_item(ctx);
  *     nk_style_pop_vec2(ctx);
+ * ```
  *
  * Nuklear has a stack for style_items, float properties, vector properties,
  * flags, colors, fonts and for button_behavior. Each has it's own fixed size stack
@@ -5848,7 +5852,7 @@ struct nk_context {
 #define NK_ALIGN_PTR_BACK(x, mask)\
     (NK_UINT_TO_PTR((NK_PTR_TO_UINT((nk_byte*)(x)) & ~(mask-1))))
 
-#if ((defined(__GNUC__) && __GNUC__ >= 4) || defined(__clang__)) && !defined(EMSCRIPTEN)
+#if ((defined(__GNUC__) && __GNUC__ >= 4) || defined(__clang__)) && !defined(__EMSCRIPTEN__)
 #define NK_OFFSETOF(st,m) (__builtin_offsetof(st,m))
 #else
 #define NK_OFFSETOF(st,m) ((nk_ptr)&(((st*)0)->m))

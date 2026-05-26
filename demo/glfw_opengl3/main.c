@@ -107,12 +107,12 @@ int main(void)
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
-    win = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Demo", NULL, NULL);
+    win = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "glfw_opengl3", NULL, NULL);
     glfwMakeContextCurrent(win);
-    glfwGetWindowSize(win, &width, &height);
+    glfwGetFramebufferSize(win, &width, &height);
 
     /* OpenGL */
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    glViewport(0, 0, width, height);
     glewExperimental = 1;
     if (glewInit() != GLEW_OK) {
         fprintf(stderr, "Failed to setup GLEW\n");
@@ -139,6 +139,11 @@ int main(void)
     {
         /* Input */
         glfwPollEvents();
+        if (glfwGetKey(win, GLFW_KEY_Q) == GLFW_PRESS &&
+             (glfwGetKey(win, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ||
+              glfwGetKey(win, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS)) {
+            glfwSetWindowShouldClose(win, nk_true);
+        }
         nk_glfw3_new_frame(&glfw);
 
         /* GUI */
@@ -195,7 +200,7 @@ int main(void)
         /* ----------------------------------------- */
 
         /* Draw */
-        glfwGetWindowSize(win, &width, &height);
+        glfwGetFramebufferSize(win, &width, &height);
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(bg.r, bg.g, bg.b, bg.a);

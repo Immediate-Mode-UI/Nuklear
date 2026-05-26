@@ -35,11 +35,11 @@ nk_tooltip_begin_offset(struct nk_context *ctx, float width, enum nk_tooltip_pos
         return 0;
 
     w = nk_iceilf(width);
-    h = NK_MAX(win->layout->row.min_height, ctx->style.font->height+2*ctx->style.window.padding.y);
+    h = (int)NK_MAX(win->layout->row.min_height, ctx->style.font->height+2*ctx->style.window.padding.y);
 
     /* Default origin is top left, plus user offset */
-    x = nk_ifloorf(in->mouse.pos.x + 1) - (int)win->layout->clip.x + offset.x;
-    y = nk_ifloorf(in->mouse.pos.y + 1) - (int)win->layout->clip.y + offset.y;
+    x = nk_ifloorf(in->mouse.pos.x + 1) - (int)win->layout->clip.x + (int)offset.x;
+    y = nk_ifloorf(in->mouse.pos.y + 1) - (int)win->layout->clip.y + (int)offset.y;
 
     /* Adjust origin based on enum */
     switch (position) {
@@ -102,6 +102,45 @@ nk_tooltip_end(struct nk_context *ctx)
     ctx->current->seq--;
     nk_popup_close(ctx);
     nk_popup_end(ctx);
+}
+
+/**
+ * Display a default tooltip if the mouse is hovering over the rect `bounds`
+ */
+NK_API void
+nk_do_tooltip(struct nk_context* ctx, const char* text, struct nk_rect bounds)
+{
+    NK_ASSERT(ctx);
+    if (nk_input_is_mouse_hovering_rect(&ctx->input, bounds)) {
+        nk_tooltip_offset(ctx, text, ctx->style.window.tooltip_origin, ctx->style.window.tooltip_offset);
+    }
+}
+
+/**
+ * Display a default tooltip if the mouse hovers motionless for the default delay (ctx->style.window.tooltip_delay)
+ * `timer` is used to track the time across frames.
+ */
+NK_API void
+nk_do_tooltip_delay(struct nk_context* ctx, const char* text, struct nk_rect bounds, float* timer)
+{
+    NK_ASSERT(ctx);
+    if (nk_input_is_mouse_hovering_still_delay_rect(ctx, bounds, timer, ctx->style.window.tooltip_delay)) {
+        nk_tooltip_offset(ctx, text, ctx->style.window.tooltip_origin, ctx->style.window.tooltip_offset);
+    }
+}
+
+/**
+ * Display a default tooltip if the mouse hovers motionless for the default delay (ctx->style.window.tooltip_delay) unless
+ * `clicked` is true. `clicked` will be reset to false (and `timer` to 0) when the mouse moves.
+ * `timer` is used to track the time across frames.
+ */
+NK_API void
+nk_do_tooltip_delay_clicked(struct nk_context* ctx, const char* text, struct nk_rect bounds, float* timer, nk_bool* clicked)
+{
+    NK_ASSERT(ctx);
+    if (nk_input_is_mouse_hovering_still_delay_clicked_rect(ctx, bounds, timer, ctx->style.window.tooltip_delay, clicked)) {
+        nk_tooltip_offset(ctx, text, ctx->style.window.tooltip_origin, ctx->style.window.tooltip_offset);
+    }
 }
 
 NK_API void
