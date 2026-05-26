@@ -221,6 +221,10 @@ overview(struct nk_context *ctx)
                 nk_button_symbol(ctx, NK_SYMBOL_CHEVRON_DOWN);
                 nk_button_symbol(ctx, NK_SYMBOL_CHEVRON_LEFT);
                 nk_button_symbol(ctx, NK_SYMBOL_HAMBURGER);
+                nk_button_symbol(ctx, NK_SYMBOL_X);
+                nk_button_symbol(ctx, NK_SYMBOL_UNDERSCORE);
+                nk_button_symbol(ctx, NK_SYMBOL_PLUS);
+                nk_button_symbol(ctx, NK_SYMBOL_MINUS);
 
                 nk_layout_row_static(ctx, 30, 100, 2);
                 nk_button_symbol_label(ctx, NK_SYMBOL_TRIANGLE_LEFT, "prev", NK_TEXT_RIGHT);

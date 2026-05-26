@@ -11,20 +11,31 @@ nk_draw_symbol(struct nk_command_buffer *out, enum nk_symbol_type type,
     struct nk_rect content, struct nk_color background, struct nk_color foreground,
     float border_width, const struct nk_user_font *font)
 {
+    if (border_width <= 0.0f) {
+        border_width = 1.0f;
+    }
     switch (type) {
-    case NK_SYMBOL_X:
+    case NK_SYMBOL_X: {
+        float pad_x = content.w * 0.2f;
+        float pad_y = content.h * 0.2f;
+        float x0 = content.x + pad_x;
+        float y0 = content.y + pad_y;
+        float x1 = content.x + content.w - pad_x;
+        float y1 = content.y + content.h - pad_y;
+        nk_stroke_line(out, x0, y0, x1, y1, border_width, foreground);
+        nk_stroke_line(out, x1, y0, x0, y1, border_width, foreground);
+    } break;
     case NK_SYMBOL_UNDERSCORE:
     case NK_SYMBOL_PLUS:
     case NK_SYMBOL_MINUS: {
         /* single character text symbol */
-        const char *X = (type == NK_SYMBOL_X) ? "x":
-            (type == NK_SYMBOL_UNDERSCORE) ? "_":
+        const char *character = (type == NK_SYMBOL_UNDERSCORE) ? "_":
             (type == NK_SYMBOL_PLUS) ? "+": "-";
         struct nk_text text;
         text.padding = nk_vec2(0,0);
         text.background = background;
         text.text = foreground;
-        nk_widget_text(out, content, X, 1, &text, NK_TEXT_CENTERED, font);
+        nk_widget_text(out, content, character, 1, &text, NK_TEXT_CENTERED, font);
     } break;
     case NK_SYMBOL_CIRCLE_SOLID:
     case NK_SYMBOL_CIRCLE_OUTLINE:
@@ -38,7 +49,7 @@ nk_draw_symbol(struct nk_command_buffer *out, enum nk_symbol_type type,
         } else {
             nk_fill_circle(out, content, foreground);
             if (type == NK_SYMBOL_CIRCLE_OUTLINE)
-                nk_fill_circle(out, nk_shrink_rect(content, 1), background);
+                nk_fill_circle(out, nk_shrink_rect(content, border_width), background);
         }
     } break;
     case NK_SYMBOL_TRIANGLE_UP:
@@ -112,13 +123,12 @@ nk_draw_symbol(struct nk_command_buffer *out, enum nk_symbol_type type,
         nk_stroke_line(out, points[1].x, points[1].y, points[2].x, points[2].y, border_width, foreground);
     } break;
     case NK_SYMBOL_HAMBURGER: {
-        float line_thickness = border_width > 0.0f ? border_width : 1.0f;
         float y2 = content.y + content.h * 0.5f;
-        float y3 = content.y + content.h - line_thickness;
+        float y3 = content.y + content.h - border_width;
         float x1 = content.x + content.w;
-        nk_stroke_line(out, content.x, content.y, x1, content.y, line_thickness, foreground);
-        nk_stroke_line(out, content.x, y2, x1, y2, line_thickness, foreground);
-        nk_stroke_line(out, content.x, y3, x1, y3, line_thickness, foreground);
+        nk_stroke_line(out, content.x, content.y, x1, content.y, border_width, foreground);
+        nk_stroke_line(out, content.x, y2, x1, y2, border_width, foreground);
+        nk_stroke_line(out, content.x, y3, x1, y3, border_width, foreground);
     } break;
     default:
     case NK_SYMBOL_NONE:
