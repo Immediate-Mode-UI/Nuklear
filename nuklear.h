@@ -24536,6 +24536,7 @@ nk_draw_symbol(struct nk_command_buffer *out, enum nk_symbol_type type,
     struct nk_rect content, struct nk_color background, struct nk_color foreground,
     float border_width, const struct nk_user_font *font)
 {
+    /* Use the border_width as the line thickness. */
     if (border_width <= 0.0f) {
         border_width = 1.0f;
     }
