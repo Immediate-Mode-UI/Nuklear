@@ -24809,7 +24809,7 @@ nk_draw_button_symbol(struct nk_command_buffer *out,
     else sym = style->text_normal;
 
     sym = nk_rgb_factor(sym, style->color_factor_text);
-    nk_draw_symbol(out, type, *content, bg, sym, 1, font);
+    nk_draw_symbol(out, type, *content, bg, sym, style->border, font);
 }
 NK_LIB nk_bool
 nk_do_button_symbol(nk_flags *state,
@@ -24900,7 +24900,7 @@ nk_draw_button_text_symbol(struct nk_command_buffer *out,
     sym = nk_rgb_factor(sym, style->color_factor_text);
     text.text = nk_rgb_factor(text.text, style->color_factor_text);
     text.padding = nk_vec2(0,0);
-    nk_draw_symbol(out, type, *symbol, style->text_background, sym, 0, font);
+    nk_draw_symbol(out, type, *symbol, style->text_background, sym, style->border, font);
     nk_widget_text(out, *label, str, len, &text, NK_TEXT_CENTERED, font);
 }
 NK_LIB nk_bool
@@ -30322,7 +30322,7 @@ nk_combo_begin_symbol(struct nk_context *ctx, enum nk_symbol_type symbol, struct
         bounds.x = header.x + style->combo.content_padding.x;
         bounds.w = (button.x - style->combo.content_padding.y) - bounds.x;
         nk_draw_symbol(&win->buffer, symbol, bounds, sym_background, symbol_color,
-            1.0f, style->font);
+            style->combo.border, style->font);
 
         /* draw open/close button */
         nk_draw_button_symbol(&win->buffer, &bounds, &content, ctx->last_widget_state,
@@ -30425,7 +30425,7 @@ nk_combo_begin_symbol_text(struct nk_context *ctx, const char *selected, int len
         image.h = header.h - 2 * style->combo.content_padding.y;
         image.w = image.h;
         nk_draw_symbol(&win->buffer, symbol, image, text.background, symbol_color,
-            1.0f, style->font);
+            style->combo.border, style->font);
 
         /* draw label */
         text.padding = nk_vec2(0,0);

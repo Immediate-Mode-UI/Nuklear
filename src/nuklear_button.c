@@ -11,6 +11,7 @@ nk_draw_symbol(struct nk_command_buffer *out, enum nk_symbol_type type,
     struct nk_rect content, struct nk_color background, struct nk_color foreground,
     float border_width, const struct nk_user_font *font)
 {
+    /* Use the border_width as the line thickness. */
     if (border_width <= 0.0f) {
         border_width = 1.0f;
     }
@@ -284,7 +285,7 @@ nk_draw_button_symbol(struct nk_command_buffer *out,
     else sym = style->text_normal;
 
     sym = nk_rgb_factor(sym, style->color_factor_text);
-    nk_draw_symbol(out, type, *content, bg, sym, 1, font);
+    nk_draw_symbol(out, type, *content, bg, sym, style->border, font);
 }
 NK_LIB nk_bool
 nk_do_button_symbol(nk_flags *state,
@@ -375,7 +376,7 @@ nk_draw_button_text_symbol(struct nk_command_buffer *out,
     sym = nk_rgb_factor(sym, style->color_factor_text);
     text.text = nk_rgb_factor(text.text, style->color_factor_text);
     text.padding = nk_vec2(0,0);
-    nk_draw_symbol(out, type, *symbol, style->text_background, sym, 0, font);
+    nk_draw_symbol(out, type, *symbol, style->text_background, sym, style->border, font);
     nk_widget_text(out, *label, str, len, &text, NK_TEXT_CENTERED, font);
 }
 NK_LIB nk_bool
