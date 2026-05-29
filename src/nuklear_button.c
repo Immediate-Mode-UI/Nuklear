@@ -313,7 +313,7 @@ nk_draw_button_text_symbol(struct nk_command_buffer *out,
     text.text = nk_rgb_factor(text.text, style->color_factor_text);
     text.padding = nk_vec2(0,0);
     nk_draw_symbol(out, type, *symbol, style->text_background, sym, 0, font);
-    nk_widget_text(out, *label, str, len, &text, NK_TEXT_CENTERED, font);
+    nk_widget_text(out, *label, str, len, &text, style->text_alignment, font);
 }
 NK_LIB nk_bool
 nk_do_button_text_symbol(nk_flags *state,
@@ -325,6 +325,7 @@ nk_do_button_text_symbol(nk_flags *state,
     int ret;
     struct nk_rect tri = {0,0,0,0};
     struct nk_rect content;
+    float label_icon_spacing = 0.f;
 
     NK_ASSERT(style);
     NK_ASSERT(out);
@@ -338,7 +339,20 @@ nk_do_button_text_symbol(nk_flags *state,
     if (align & NK_TEXT_ALIGN_LEFT) {
         tri.x = (content.x + content.w) - (2 * style->padding.x + tri.w);
         tri.x = NK_MAX(tri.x, 0);
-    } else tri.x = content.x + 2 * style->padding.x;
+
+        label_icon_spacing = ((bounds.x + bounds.w) - (tri.x + tri.w)) * 0.5f;
+        /*label_icon_spacing = ((content.x + content.w) - (tri.x + tri.w)) * 1.f;*/
+        content.w = tri.x - content.x - label_icon_spacing;
+        content.w = NK_MAX(content.w, 0);
+    } else {
+        tri.x = content.x + 2 * style->padding.x;
+        
+        label_icon_spacing = (tri.x - bounds.x) * 0.5f;
+        /*label_icon_spacing = (tri.x - content.x) * 1.f;*/
+        content.x = tri.x + tri.w + label_icon_spacing;
+        content.w -= tri.w + label_icon_spacing;
+        content.w = NK_MAX(content.w, 0);
+    }
 
     /* draw button */
     if (style->draw_begin) style->draw_begin(out, style->userdata);
@@ -370,7 +384,7 @@ nk_draw_button_text_image(struct nk_command_buffer *out,
 
     text.text = nk_rgb_factor(text.text, style->color_factor_text);
     text.padding = nk_vec2(0, 0);
-    nk_widget_text(out, *label, str, len, &text, NK_TEXT_CENTERED, font);
+    nk_widget_text(out, *label, str, len, &text, style->text_alignment, font);
     nk_draw_image(out, *image, img, nk_rgb_factor(nk_white, style->color_factor_background));
 }
 NK_LIB nk_bool
@@ -383,6 +397,7 @@ nk_do_button_text_image(nk_flags *state,
     int ret;
     struct nk_rect icon;
     struct nk_rect content;
+    float label_icon_spacing = 0.f;
 
     NK_ASSERT(style);
     NK_ASSERT(state);
@@ -395,9 +410,20 @@ nk_do_button_text_image(nk_flags *state,
     icon.y = bounds.y + style->padding.y;
     icon.w = icon.h = bounds.h - 2 * style->padding.y;
     if (align & NK_TEXT_ALIGN_LEFT) {
-        icon.x = (bounds.x + bounds.w) - (2 * style->padding.x + icon.w);
+        icon.x = (content.x + content.w) - (2 * style->padding.x + icon.w);
         icon.x = NK_MAX(icon.x, 0);
-    } else icon.x = bounds.x + 2 * style->padding.x;
+
+        label_icon_spacing = ((bounds.x + bounds.w) - (icon.x + icon.w)) * 0.5f;
+        content.w = icon.x - content.x - label_icon_spacing;
+        content.w = NK_MAX(content.w, 0);
+    } else {
+        icon.x = content.x + 2 * style->padding.x;
+        
+        label_icon_spacing = (icon.x - bounds.x) * 0.5f;
+        content.x = icon.x + icon.w + label_icon_spacing;
+        content.w -= icon.w + label_icon_spacing;
+        content.w = NK_MAX(content.w, 0);
+    }
 
     icon.x += style->image_padding.x;
     icon.y += style->image_padding.y;
