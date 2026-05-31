@@ -71,8 +71,8 @@ nk_sdl_dtoa(char *str, double d)
 }
 #define NK_DTOA(str, d) nk_sdl_dtoa(str, d)
 
-/* SDL can also provide us with math functions, but beware that Nuklear's own
- * implementation can be slightly faster at the cost of some precision */
+/* SDL can supply math functions for Nuklear, but beware you may not always want it.
+ * Nuklear internally uses imprecise approximations, which can be slightly faster. */
 #define NK_INV_SQRT(f)            (1.0f / SDL_sqrtf(f))
 #define NK_SIN(f)                 SDL_sinf(f)
 #define NK_COS(f)                 SDL_cosf(f)
