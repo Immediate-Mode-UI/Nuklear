@@ -474,8 +474,7 @@ nk_xsurf_draw_text(XSurface *surf, short x, short y, const char *text, int len,
 #endif
 }
 
-
-#ifdef NK_XLIB_INCLUDE_STB_IMAGE
+/* rename nk_image_date_to_xsurf()? */
 NK_INTERN struct nk_image
 nk_stbi_image_to_xsurf(const void *filename_or_membuf, nk_uint zero_or_membufSize) {
     XSurface *surf = xlib.surf;
@@ -517,6 +516,8 @@ nk_stbi_image_to_xsurf(const void *filename_or_membuf, nk_uint zero_or_membufSiz
     isize = width*height*channels;
 
     /* rgba to bgra */
+    /*
+     * why is this here?
     if (channels >= 3){
         for (i=0; i < isize; i += channels) {
             unsigned char red  = data[i+2];
@@ -525,6 +526,7 @@ nk_stbi_image_to_xsurf(const void *filename_or_membuf, nk_uint zero_or_membufSiz
             data[i+2] = blue;
         }
     }
+    */
 
     if (channels == 4 && actual_channels == 4){
         const unsigned alpha_treshold = 127;
@@ -552,16 +554,15 @@ nk_stbi_image_to_xsurf(const void *filename_or_membuf, nk_uint zero_or_membufSiz
            ZPixmap, 0,
            (char*)data,
            width, height,
-           channels*8, channels*width);
-    img.h = height;
-    img.w = width;
-
+           bpl*8, bpl * width);
+    img = nk_image_type_ptr((void*)aimage, width, height, NK_IMAGE_STRETCH);
     return img;
 bail:
     nk_xsurf_image_free(&img);
     return nk_image_id(0);
 }
 
+#ifdef NK_XLIB_INCLUDE_STB_IMAGE
 NK_API struct nk_image
 nk_xsurf_load_image_from_memory(const void *membuf, nk_uint membufSize)
 {
