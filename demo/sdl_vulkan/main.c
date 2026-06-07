@@ -28,7 +28,7 @@
 
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
-
+#define MAX_IN_FLIGHT_FRAMES 2
 /* ===============================================================
  *
  *                          EXAMPLE
@@ -137,14 +137,15 @@ struct vulkan_demo {
     VkPipeline pipeline;
     VkCommandPool command_pool;
     VkCommandBuffer *command_buffers;
-    VkSemaphore image_available;
-    VkSemaphore render_finished;
+    VkSemaphore *image_available;
+    VkSemaphore *render_finished;
 
     VkImage demo_texture_image;
     VkImageView demo_texture_image_view;
     VkDeviceMemory demo_texture_memory;
 
-    VkFence render_fence;
+    VkFence *render_fence;
+    uint32_t current_in_flight_frame;
 };
 
 VKAPI_ATTR VkBool32 VKAPI_CALL
@@ -810,7 +811,17 @@ bool create_swap_chain(struct vulkan_demo *demo) {
     }
 
     create_info.preTransform = swap_chain_support.capabilities.currentTransform;
-    create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+
+    if(swap_chain_support.capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR) {
+    	create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    } else if(swap_chain_support.capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR) {
+    	create_info.compositeAlpha = VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
+    } else if(swap_chain_support.capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR) {
+    	create_info.compositeAlpha = VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
+    } else if(swap_chain_support.capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR) {
+    	create_info.compositeAlpha = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
+    }
+
     create_info.presentMode = present_mode;
     create_info.clipped = VK_TRUE;
 
@@ -1256,7 +1267,7 @@ bool create_graphics_pipeline(struct vulkan_demo *demo) {
     VkGraphicsPipelineCreateInfo pipeline_info;
     size_t read_result;
 
-    fp = fopen("shaders/demo.vert.spv", "r");
+    fp = fopen("shaders/demo.vert.spv", "rb");
     if (!fp) {
         fprintf(stderr, "Couldn't open shaders/demo.vert.spv\n");
         return false;
@@ -1277,7 +1288,7 @@ bool create_graphics_pipeline(struct vulkan_demo *demo) {
         goto cleanup;
     }
 
-    fp = fopen("shaders/demo.frag.spv", "r");
+    fp = fopen("shaders/demo.frag.spv", "rb");
     if (!fp) {
         fprintf(stderr, "Couldn't open shaders/demo.frag.spv\n");
         return false;
@@ -1464,13 +1475,13 @@ bool create_command_buffers(struct vulkan_demo *demo) {
     VkResult result;
 
     demo->command_buffers =
-        malloc(demo->swap_chain_images_len * sizeof(VkCommandBuffer));
+        malloc(MAX_IN_FLIGHT_FRAMES * sizeof(VkCommandBuffer));
 
     memset(&alloc_info, 0, sizeof(VkCommandBufferAllocateInfo));
     alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     alloc_info.commandPool = demo->command_pool;
     alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    alloc_info.commandBufferCount = demo->swap_chain_images_len;
+    alloc_info.commandBufferCount = MAX_IN_FLIGHT_FRAMES;
 
     result = vkAllocateCommandBuffers(demo->device, &alloc_info,
                                       demo->command_buffers);
@@ -1485,20 +1496,27 @@ bool create_command_buffers(struct vulkan_demo *demo) {
 bool create_semaphores(struct vulkan_demo *demo) {
     VkSemaphoreCreateInfo semaphore_info;
     VkResult result;
+    uint32_t i;
 
+    demo->image_available = (VkSemaphore*)malloc(MAX_IN_FLIGHT_FRAMES * sizeof(VkSemaphore));
+    demo->render_finished = (VkSemaphore*)malloc(demo->swap_chain_images_len * sizeof(VkSemaphore));
     memset(&semaphore_info, 0, sizeof(VkSemaphoreCreateInfo));
     semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    result = vkCreateSemaphore(demo->device, &semaphore_info, NULL,
-                               &demo->image_available);
-    if (result != VK_SUCCESS) {
-        fprintf(stderr, "vkCreateSemaphore failed: %d\n", result);
-        return false;
+    for(i = 0; i < MAX_IN_FLIGHT_FRAMES; i++) {
+        result = vkCreateSemaphore(demo->device, &semaphore_info, NULL,
+                               &demo->image_available[i]);
+        if (result != VK_SUCCESS) {
+            fprintf(stderr, "vkCreateSemaphore failed: %d\n", result);
+            return false;
+        }
     }
-    result = vkCreateSemaphore(demo->device, &semaphore_info, NULL,
-                               &demo->render_finished);
-    if (result != VK_SUCCESS) {
-        fprintf(stderr, "vkCreateSemaphore failed: %d\n", result);
-        return false;
+    for(i = 0; i < demo->swap_chain_images_len; i++) {
+        result = vkCreateSemaphore(demo->device, &semaphore_info, NULL,
+                               &demo->render_finished[i]);
+        if (result != VK_SUCCESS) {
+            fprintf(stderr, "vkCreateSemaphore failed: %d\n", result);
+            return false;
+        }
     }
     return true;
 }
@@ -1506,17 +1524,21 @@ bool create_semaphores(struct vulkan_demo *demo) {
 bool create_fence(struct vulkan_demo *demo) {
     VkResult result;
     VkFenceCreateInfo fence_create_info;
+    uint32_t i;
+
+    demo->render_fence = (VkFence*)malloc(MAX_IN_FLIGHT_FRAMES * sizeof(VkFence));
 
     memset(&fence_create_info, 0, sizeof(VkFenceCreateInfo));
     fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    result = vkCreateFence(demo->device, &fence_create_info, NULL,
-                           &demo->render_fence);
-
-    if (result != VK_SUCCESS) {
-        fprintf(stderr, "vkCreateFence failed: %d\n", result);
-        return false;
+    for(i = 0; i < MAX_IN_FLIGHT_FRAMES; i++) {
+        result = vkCreateFence(demo->device, &fence_create_info, NULL,
+                           &demo->render_fence[i]);
+        if (result != VK_SUCCESS) {
+            fprintf(stderr, "vkCreateFence failed: %d\n", result);
+            return false;
+        }
     }
     return true;
 }
@@ -1917,7 +1939,7 @@ bool render(struct vulkan_demo *demo, struct nk_colorf *bg,
     command_buffer_begin_info.sType =
         VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-    command_buffer = demo->command_buffers[image_index];
+    command_buffer = demo->command_buffers[demo->current_in_flight_frame];
     result = vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
 
     if (result != VK_SUCCESS) {
@@ -1959,12 +1981,12 @@ bool render(struct vulkan_demo *demo, struct nk_colorf *bg,
     submit_info.pWaitSemaphores = &wait_semaphore;
     submit_info.pWaitDstStageMask = &wait_stage;
     submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &demo->command_buffers[image_index];
+    submit_info.pCommandBuffers = &command_buffer;
     submit_info.signalSemaphoreCount = 1;
-    submit_info.pSignalSemaphores = &demo->render_finished;
+    submit_info.pSignalSemaphores = &demo->render_finished[image_index];
 
     result = vkQueueSubmit(demo->graphics_queue, 1, &submit_info,
-                           demo->render_fence);
+                           demo->render_fence[demo->current_in_flight_frame]);
 
     if (result != VK_SUCCESS) {
         fprintf(stderr, "vkQueueSubmit failed: %d\n", result);
@@ -1974,7 +1996,7 @@ bool render(struct vulkan_demo *demo, struct nk_colorf *bg,
     memset(&present_info, 0, sizeof(VkPresentInfoKHR));
     present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     present_info.waitSemaphoreCount = 1;
-    present_info.pWaitSemaphores = &demo->render_finished;
+    present_info.pWaitSemaphores = &demo->render_finished[image_index];
     present_info.swapchainCount = 1;
     present_info.pSwapchains = &demo->swap_chain;
     present_info.pImageIndices = &image_index;
@@ -2009,6 +2031,7 @@ destroy_debug_utils_messenger_ext(VkInstance instance,
 
 bool cleanup(struct vulkan_demo *demo) {
     VkResult result;
+    uint32_t i;
 
     printf("cleaning up\n");
     result = vkDeviceWaitIdle(demo->device);
@@ -2020,12 +2043,24 @@ bool cleanup(struct vulkan_demo *demo) {
     destroy_swap_chain_related_resources(demo);
 
     vkFreeCommandBuffers(demo->device, demo->command_pool,
-                         demo->swap_chain_images_len, demo->command_buffers);
+                         MAX_IN_FLIGHT_FRAMES, demo->command_buffers);
     vkDestroyCommandPool(demo->device, demo->command_pool, NULL);
     vkDestroySampler(demo->device, demo->sampler, NULL);
-    vkDestroySemaphore(demo->device, demo->render_finished, NULL);
-    vkDestroySemaphore(demo->device, demo->image_available, NULL);
-    vkDestroyFence(demo->device, demo->render_fence, NULL);
+
+    for(i = 0; i < demo->swap_chain_images_len; i++)
+     vkDestroySemaphore(demo->device, demo->render_finished[i], NULL);
+    if(demo->render_finished)
+     free(demo->render_finished);
+
+    for(i = 0; i < MAX_IN_FLIGHT_FRAMES; i++)
+     vkDestroySemaphore(demo->device, demo->image_available[i], NULL);
+    if(demo->image_available)
+     free(demo->image_available);
+
+    for(i = 0; i < MAX_IN_FLIGHT_FRAMES; i++)
+    vkDestroyFence(demo->device, demo->render_fence[i], NULL);
+    if(demo->render_fence)
+     free(demo->render_fence);
 
     vkDestroyImage(demo->device, demo->demo_texture_image, NULL);
     vkDestroyImageView(demo->device, demo->demo_texture_image_view, NULL);
@@ -2102,9 +2137,14 @@ int main(void) {
 
     memset(&demo, 0, sizeof(struct vulkan_demo));
     demo.win = SDL_CreateWindow(
-        "Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH,
+        "sdl_vulkan", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH,
         WINDOW_HEIGHT,
         SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+
+    if (!demo.win) {
+        SDL_Log("Error SDL_CreateWindow %s", SDL_GetError());
+        exit(1);
+    }
 
     if (!create_vulkan_demo(&demo)) {
         fprintf(stderr, "failed to create vulkan demo!\n");
@@ -2145,6 +2185,7 @@ int main(void) {
         while (SDL_PollEvent(&evt)) {
             if (evt.type == SDL_QUIT)
                 goto cleanup;
+            if (evt.type == SDL_KEYDOWN && evt.key.keysym.sym == SDLK_q && SDL_GetModState() & KMOD_CTRL) goto cleanup;
             if (evt.type == SDL_WINDOWEVENT &&
                 evt.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                 recreate_swap_chain(&demo);
@@ -2218,7 +2259,7 @@ int main(void) {
 #endif
         /* ----------------------------------------- */
 
-        result = vkWaitForFences(demo.device, 1, &demo.render_fence, VK_TRUE,
+        result = vkWaitForFences(demo.device, 1, &demo.render_fence[demo.current_in_flight_frame], VK_TRUE,
                                  UINT64_MAX);
 
         if (result != VK_SUCCESS) {
@@ -2226,7 +2267,7 @@ int main(void) {
             return false;
         }
 
-        result = vkResetFences(demo.device, 1, &demo.render_fence);
+        result = vkResetFences(demo.device, 1, &demo.render_fence[demo.current_in_flight_frame]);
         if (result != VK_SUCCESS) {
             fprintf(stderr, "vkResetFences failed: %d\n", result);
             return false;
@@ -2234,7 +2275,7 @@ int main(void) {
 
         result =
             vkAcquireNextImageKHR(demo.device, demo.swap_chain, UINT64_MAX,
-                                  demo.image_available, NULL, &image_index);
+                                  demo.image_available[demo.current_in_flight_frame], NULL, &image_index);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             recreate_swap_chain(&demo);
@@ -2250,11 +2291,12 @@ int main(void) {
 
         /* Draw */
         nk_semaphore = nk_sdl_render(demo.graphics_queue, image_index,
-                                     demo.image_available, NK_ANTI_ALIASING_ON);
+                                     demo.image_available[demo.current_in_flight_frame], NK_ANTI_ALIASING_ON);
         if (!render(&demo, &bg, nk_semaphore, image_index)) {
             fprintf(stderr, "render failed\n");
             return false;
         }
+        demo.current_in_flight_frame = (demo.current_in_flight_frame + 1) % MAX_IN_FLIGHT_FRAMES;
     }
 cleanup:
     nk_sdl_shutdown();

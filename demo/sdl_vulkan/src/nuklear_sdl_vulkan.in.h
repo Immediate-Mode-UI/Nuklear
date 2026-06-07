@@ -1038,6 +1038,10 @@ NK_API int nk_sdl_handle_event(SDL_Event *evt) {
         int down = evt->type == SDL_KEYDOWN;
         const Uint8 *state = SDL_GetKeyboardState(0);
         switch (evt->key.keysym.sym) {
+        case SDLK_LALT:
+        case SDLK_RALT:
+            nk_input_key(ctx, NK_KEY_ALT, down);
+            break;
         case SDLK_RSHIFT: /* RSHIFT & LSHIFT share same routine */
         case SDLK_LSHIFT:
             nk_input_key(ctx, NK_KEY_SHIFT, down);
@@ -1067,6 +1071,42 @@ NK_API int nk_sdl_handle_event(SDL_Event *evt) {
             break;
         case SDLK_PAGEUP:
             nk_input_key(ctx, NK_KEY_SCROLL_UP, down);
+            break;
+        case SDLK_F1:
+            nk_input_key(ctx, NK_KEY_F1, down);
+            break;
+        case SDLK_F2:
+            nk_input_key(ctx, NK_KEY_F2, down);
+            break;
+        case SDLK_F3:
+            nk_input_key(ctx, NK_KEY_F3, down);
+            break;
+        case SDLK_F4:
+            nk_input_key(ctx, NK_KEY_F4, down);
+            break;
+        case SDLK_F5:
+            nk_input_key(ctx, NK_KEY_F5, down);
+            break;
+        case SDLK_F6:
+            nk_input_key(ctx, NK_KEY_F6, down);
+            break;
+        case SDLK_F7:
+            nk_input_key(ctx, NK_KEY_F7, down);
+            break;
+        case SDLK_F8:
+            nk_input_key(ctx, NK_KEY_F8, down);
+            break;
+        case SDLK_F9:
+            nk_input_key(ctx, NK_KEY_F9, down);
+            break;
+        case SDLK_F10:
+            nk_input_key(ctx, NK_KEY_F10, down);
+            break;
+        case SDLK_F11:
+            nk_input_key(ctx, NK_KEY_F11, down);
+            break;
+        case SDLK_F12:
+            nk_input_key(ctx, NK_KEY_F12, down);
             break;
         case SDLK_z:
             nk_input_key(ctx, NK_KEY_TEXT_UNDO,
@@ -1154,7 +1194,7 @@ NK_API int nk_sdl_handle_event(SDL_Event *evt) {
     }
 
     case SDL_MOUSEWHEEL:
-        nk_input_scroll(ctx, nk_vec2((float)evt->wheel.x, (float)evt->wheel.y));
+        nk_input_scroll(ctx,nk_vec2(evt->wheel.preciseX, evt->wheel.preciseY));
         return 1;
     }
     return 0;
@@ -1374,9 +1414,10 @@ VkSemaphore nk_sdl_render(VkQueue graphics_queue, uint32_t buffer_index,
 NK_INTERN void nk_sdl_clipboard_paste(nk_handle usr,
                                       struct nk_text_edit *edit) {
     const char *text = SDL_GetClipboardText();
-    if (text)
+    if (text) {
         nk_textedit_paste(edit, text, nk_strlen(text));
-    SDL_free((void *)text);
+        SDL_free((void *)text);
+    }
     (void)usr;
 }
 

@@ -735,7 +735,7 @@ nk__lit(unsigned char *data, unsigned int length)
     NK_ASSERT (nk__dout + length <= nk__barrier);
     if (nk__dout + length > nk__barrier) { nk__dout += length; return; }
     if (data < nk__barrier2) { nk__dout = nk__barrier+1; return; }
-    NK_MEMCPY(nk__dout, data, length);
+    NK_MEMCPY(nk__dout, data, (nk_size)length);
     nk__dout += length;
 }
 NK_INTERN unsigned char*

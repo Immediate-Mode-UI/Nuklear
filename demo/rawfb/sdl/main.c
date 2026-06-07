@@ -89,6 +89,12 @@ static int sdl_button_to_nk(int button)
         case SDL_BUTTON_RIGHT:
             return NK_BUTTON_RIGHT;
             break;
+        case SDL_BUTTON_X1:
+            return NK_BUTTON_X1;
+            break;
+        case SDL_BUTTON_X2:
+            return NK_BUTTON_X2;
+            break;
 
     }
 }
@@ -164,7 +170,7 @@ int main(int argc, char **argv)
     printf("desktop display mode %d %d\n", dm.w, dm.h);
 
 
-    window = SDL_CreateWindow("Puzzle", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w-200,dm.h-200, SDL_WINDOW_OPENGL);
+    window = SDL_CreateWindow("rawfb sdl", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w-200,dm.h-200, SDL_WINDOW_OPENGL);
     if (!window)
     {
         printf("can't open window!\n");
@@ -201,6 +207,7 @@ int main(int argc, char **argv)
                     exit(0);
                 break;
                 case SDL_KEYDOWN:
+                    if (event.key.keysym.sym == SDLK_q && SDL_GetModState() & KMOD_CTRL) exit(0);
                     nk_input_key(&(context->ctx), translate_sdl_key(&event.key.keysym), 1);
                 break;
                 case SDL_KEYUP:
@@ -216,8 +223,8 @@ int main(int argc, char **argv)
                     nk_input_button(&(context->ctx), sdl_button_to_nk(event.button.button), event.button.x, event.button.y,0);
                 break;
                 case SDL_MOUSEWHEEL:
-                    vec.x = event.wheel.x;
-                    vec.y = event.wheel.y;
+                    vec.x = event.wheel.preciseX;
+                    vec.y = event.wheel.preciseY;
                     nk_input_scroll(&(context->ctx), vec );
 
                 break;

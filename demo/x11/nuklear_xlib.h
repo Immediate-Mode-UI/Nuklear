@@ -16,7 +16,11 @@
 #include <X11/Xlib.h>
 
 typedef struct XFont XFont;
+#ifdef NK_XLIB_USE_XFT
+NK_API struct nk_context*   nk_xlib_init(XFont*, Display*, int scrn, Window root, Visual *vis, Colormap cmap, unsigned w, unsigned h);
+#else
 NK_API struct nk_context*   nk_xlib_init(XFont*, Display*, int scrn, Window root, unsigned w, unsigned h);
+#endif
 NK_API int                  nk_xlib_handle_event(Display*, int scrn, Window, XEvent*);
 NK_API void                 nk_xlib_render(Drawable screen, struct nk_color clear);
 NK_API void                 nk_xlib_shutdown(void);
@@ -29,6 +33,7 @@ NK_API void                 nk_xlib_copy(nk_handle, const char*, int len);
 #ifdef NK_XLIB_INCLUDE_STB_IMAGE
 NK_API struct nk_image nk_xsurf_load_image_from_file(char const *filename);
 NK_API struct nk_image nk_xsurf_load_image_from_memory(const void *membuf, nk_uint membufSize);
+NK_API void            nk_xsurf_image_free(struct nk_image *image);
 #endif
 
 /* Font */
@@ -52,6 +57,10 @@ NK_API void                 nk_xfont_del(Display *dpy, XFont *font);
 #include <X11/Xresource.h>
 #include <X11/Xlocale.h>
 #include <X11/Xatom.h>
+
+#ifdef NK_XLIB_USE_XFT
+#include <X11/Xft/Xft.h>
+#endif
 
 #include <sys/time.h>
 #include <unistd.h>
@@ -80,8 +89,12 @@ struct XFont {
     int ascent;
     int descent;
     int height;
+#ifdef NK_XLIB_USE_XFT
+    XftFont * ft;
+#else
     XFontSet set;
     XFontStruct *xfont;
+#endif
     struct nk_user_font handle;
 };
 struct XSurface {
@@ -91,6 +104,9 @@ struct XSurface {
     Window root;
     Drawable drawable;
     unsigned int w, h;
+#ifdef NK_XLIB_USE_XFT
+    XftDraw * ftdraw;
+#endif
 };
 struct XImageWithAlpha {
     XImage* ximage;
@@ -112,6 +128,10 @@ static struct  {
     Cursor cursor;
     Display *dpy;
     Window root;
+#ifdef NK_XLIB_USE_XFT
+    Visual *vis;
+    Colormap cmap;
+#endif
     double last_button_click;
     double time_of_last_frame;
 } xlib;
@@ -147,6 +167,10 @@ nk_xsurf_create(int screen, unsigned int w, unsigned int h)
     XSetLineAttributes(xlib.dpy, surface->gc, 1, LineSolid, CapButt, JoinMiter);
     surface->drawable = XCreatePixmap(xlib.dpy, xlib.root, w, h,
         (unsigned int)DefaultDepth(xlib.dpy, screen));
+#ifdef NK_XLIB_USE_XFT
+    surface->ftdraw = XftDrawCreate(xlib.dpy, surface->drawable,
+                                xlib.vis, xlib.cmap);
+#endif
     return surface;
 }
 
@@ -159,6 +183,9 @@ nk_xsurf_resize(XSurface *surf, unsigned int w, unsigned int h)
     if(surf->drawable) XFreePixmap(surf->dpy, surf->drawable);
     surf->drawable = XCreatePixmap(surf->dpy, surf->root, w, h,
         (unsigned int)DefaultDepth(surf->dpy, surf->screen));
+#ifdef NK_XLIB_USE_XFT
+    XftDrawChange(surf->ftdraw, surf->drawable);
+#endif
 }
 
 NK_INTERN void
@@ -170,6 +197,10 @@ nk_xsurf_scissor(XSurface *surf, float x, float y, float w, float h)
     clip_rect.width = (unsigned short)(w+2);
     clip_rect.height = (unsigned short)(h+2);
     XSetClipRectangles(surf->dpy, surf->gc, 0, 0, &clip_rect, 1, Unsorted);
+
+#ifdef NK_XLIB_USE_XFT
+    XftDrawSetClipRectangles(surf->ftdraw, 0, 0, &clip_rect, 1);
+#endif
 }
 
 NK_INTERN void
@@ -416,42 +447,73 @@ nk_xsurf_draw_text(XSurface *surf, short x, short y, const char *text, int len,
     XFont *font, struct nk_color cfg)
 {
     int tx, ty;
+#ifdef NK_XLIB_USE_XFT
+    XRenderColor xrc;
+    XftColor color;
+#else
     unsigned long fg = nk_color_from_byte(&cfg.r);
+#endif
 
     if(!text || !font || !len) return;
 
     tx = (int)x;
     ty = (int)y + font->ascent;
+#ifdef NK_XLIB_USE_XFT
+    xrc.red = cfg.r * 257;
+    xrc.green = cfg.g * 257;
+    xrc.blue = cfg.b * 257;
+    xrc.alpha = cfg.a * 257;
+    XftColorAllocValue(surf->dpy, xlib.vis, xlib.cmap, &xrc, &color);
+    XftDrawStringUtf8(surf->ftdraw, &color, font->ft, tx, ty, (FcChar8*)text, len);
+    XftColorFree(surf->dpy, xlib.vis, xlib.cmap, &color);
+#else
     XSetForeground(surf->dpy, surf->gc, fg);
     if(font->set)
         XmbDrawString(surf->dpy,surf->drawable,font->set,surf->gc,tx,ty,(const char*)text,(int)len);
     else XDrawString(surf->dpy, surf->drawable, surf->gc, tx, ty, (const char*)text, (int)len);
+#endif
 }
 
 /* rename nk_image_date_to_xsurf()? */
 NK_INTERN struct nk_image
-nk_stbi_image_to_xsurf(unsigned char *data, int width, int height, int channels) {
+nk_stbi_image_to_xsurf(const void *filename_or_membuf, nk_uint zero_or_membufSize) {
     XSurface *surf = xlib.surf;
-    struct nk_image img;
-    int bpl = channels;
-    long i, isize = width*height*channels;
-    XImageWithAlpha *aimage = (XImageWithAlpha*)calloc( 1, sizeof(XImageWithAlpha) );
-    int depth = DefaultDepth(surf->dpy, surf->screen);
-    if (data == NULL) return nk_image_id(0);
-    if (aimage == NULL) return nk_image_id(0);
+    struct nk_image img = nk_image_id(0);
+    unsigned char *data;
+    int width, height, channels, actual_channels;
+    long i, isize;
+    XImageWithAlpha *aimage = NULL;
+    int depth;
+
+    if (filename_or_membuf == NULL) goto bail;
+
+    aimage = (XImageWithAlpha*)calloc( 1, sizeof(XImageWithAlpha) );
+    if (aimage == NULL) goto bail;
+    img = nk_image_ptr( (void*)aimage);
+
+    depth = DefaultDepth(surf->dpy, surf->screen);
 
     switch (depth){
         case 24:
-            bpl = 4;
+            channels = 4;
         break;
         case 16:
         case 15:
-            bpl = 2;
+            channels = 2;
         break;
         default:
-            bpl = 1;
+            channels = 1;
         break;
     }
+
+    if (zero_or_membufSize) {
+        data = stbi_load_from_memory((const stbi_uc *)filename_or_membuf, zero_or_membufSize, &width, &height, &actual_channels, channels);
+    } else {
+        data = stbi_load(filename_or_membuf, &width, &height, &actual_channels, channels);
+    }
+    if (data == NULL) goto bail;
+
+    isize = width*height*channels;
 
     /* rgba to bgra */
     /*
@@ -466,7 +528,7 @@ nk_stbi_image_to_xsurf(unsigned char *data, int width, int height, int channels)
     }
     */
 
-    if (channels == 4){
+    if (channels == 4 && actual_channels == 4){
         const unsigned alpha_treshold = 127;
         aimage->clipMask = XCreatePixmap(surf->dpy, surf->drawable, width, height, 1);
 
@@ -492,28 +554,31 @@ nk_stbi_image_to_xsurf(unsigned char *data, int width, int height, int channels)
            ZPixmap, 0,
            (char*)data,
            width, height,
-           bpl*8, bpl * width);
-    img = nk_image_type_ptr((void*)aimage, width, height, NK_IMAGE_STRETCH);
+           channels*8, channels*width);
+    img.h = height;
+    img.w = width;
+
     return img;
+bail:
+    nk_xsurf_image_free(&img);
+    return nk_image_id(0);
 }
 
 #ifdef NK_XLIB_INCLUDE_STB_IMAGE
 NK_API struct nk_image
 nk_xsurf_load_image_from_memory(const void *membuf, nk_uint membufSize)
 {
-    int x,y,n;
-    unsigned char *data;
-    data = stbi_load_from_memory(membuf, membufSize, &x, &y, &n, 0);
-    return nk_stbi_image_to_xsurf(data, x, y, n);
+    if (membufSize == 0) {
+        return nk_image_id(0);
+    } else {
+        return nk_stbi_image_to_xsurf(membuf, membufSize);
+    }
 }
 
 NK_API struct nk_image
 nk_xsurf_load_image_from_file(char const *filename)
 {
-    int x,y,n;
-    unsigned char *data;
-    data = stbi_load(filename, &x, &y, &n, 0);
-    return nk_stbi_image_to_xsurf(data, x, y, n);
+    return nk_stbi_image_to_xsurf((const void *)filename, 0);
 }
 #endif /* NK_XLIB_INCLUDE_STB_IMAGE */
 
@@ -535,15 +600,15 @@ nk_xsurf_draw_image(XSurface *surf, short x, short y, unsigned short w, unsigned
     }
 }
 
-void
+NK_API void
 nk_xsurf_image_free(struct nk_image* image)
 {
     XSurface *surf = xlib.surf;
     XImageWithAlpha *aimage = image->handle.ptr;
     if (!aimage) return;
-    XDestroyImage(aimage->ximage);
-    XFreePixmap(surf->dpy, aimage->clipMask);
-    XFreeGC(surf->dpy, aimage->clipMaskGC);
+    if (aimage->ximage)     XDestroyImage(aimage->ximage);
+    if (aimage->clipMask)   XFreePixmap(surf->dpy, aimage->clipMask);
+    if (aimage->clipMaskGC) XFreeGC(surf->dpy, aimage->clipMaskGC);
     free(aimage);
 }
 
@@ -564,6 +629,9 @@ nk_xsurf_blit(Drawable target, XSurface *surf, unsigned int w, unsigned int h)
 NK_INTERN void
 nk_xsurf_del(XSurface *surf)
 {
+#ifdef NK_XLIB_USE_XFT
+    XftDrawDestroy(surf->ftdraw);
+#endif
     XFreePixmap(surf->dpy, surf->drawable);
     XFreeGC(surf->dpy, surf->gc);
     free(surf);
@@ -572,6 +640,17 @@ nk_xsurf_del(XSurface *surf)
 NK_API XFont*
 nk_xfont_create(Display *dpy, const char *name)
 {
+#ifdef NK_XLIB_USE_XFT
+    XFont *font = (XFont*)calloc(1, sizeof(XFont));
+    font->ft = XftFontOpenName(dpy, XDefaultScreen(dpy), name);
+    if (!font->ft) {
+        fprintf(stderr, "missing font: %s\n", name);
+        return font;
+    }
+    font->ascent = font->ft->ascent;
+    font->descent = font->ft->descent;
+    font->height = font->ft->height;
+#else
     int n;
     char *def, **missing;
     XFont *font = (XFont*)calloc(1, sizeof(XFont));
@@ -601,6 +680,7 @@ nk_xfont_create(Display *dpy, const char *name)
         font->descent = font->xfont->descent;
     }
     font->height = font->ascent + font->descent;
+#endif
     return font;
 }
 
@@ -608,6 +688,18 @@ NK_INTERN float
 nk_xfont_get_text_width(nk_handle handle, float height, const char *text, int len)
 {
     XFont *font = (XFont*)handle.ptr;
+
+#ifdef NK_XLIB_USE_XFT
+    XGlyphInfo g;
+
+    NK_UNUSED(height);
+
+    if(!font || !text)
+        return 0;
+
+    XftTextExtentsUtf8(xlib.dpy, font->ft, (FcChar8*)text, len, &g);
+    return g.xOff;
+#else
     XRectangle r;
 
     NK_UNUSED(height);
@@ -622,21 +714,29 @@ nk_xfont_get_text_width(nk_handle handle, float height, const char *text, int le
         int w = XTextWidth(font->xfont, (const char*)text, len);
         return (float)w;
     }
+#endif
 }
 
 NK_API void
 nk_xfont_del(Display *dpy, XFont *font)
 {
     if(!font) return;
+#ifdef NK_XLIB_USE_XFT
+    XftFontClose(dpy, font->ft);
+#else
     if(font->set)
         XFreeFontSet(dpy, font->set);
     else
         XFreeFont(dpy, font->xfont);
+#endif
     free(font);
 }
 
 NK_API struct nk_context*
 nk_xlib_init(XFont *xfont, Display *dpy, int screen, Window root,
+#ifdef NK_XLIB_USE_XFT
+    Visual *vis, Colormap cmap,
+#endif
     unsigned int w, unsigned int h)
 {
     struct nk_user_font *font = &xfont->handle;
@@ -645,6 +745,10 @@ nk_xlib_init(XFont *xfont, Display *dpy, int screen, Window root,
     font->width = nk_xfont_get_text_width;
     xlib.dpy = dpy;
     xlib.root = root;
+#ifdef NK_XLIB_USE_XFT
+    xlib.vis = vis;
+    xlib.cmap = cmap;
+#endif
 
     if (!setlocale(LC_ALL,"")) return 0;
     if (!XSupportsLocale()) return 0;
@@ -718,6 +822,7 @@ NK_API int
 nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt)
 {
     struct nk_context *ctx = &xlib.ctx;
+    static int insert_toggle = 0;
 
     NK_UNUSED(screen);
 
@@ -740,7 +845,7 @@ nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt)
         if (*code == XK_Shift_L || *code == XK_Shift_R) nk_input_key(ctx, NK_KEY_SHIFT, down);
         else if (*code == XK_Control_L || *code == XK_Control_R) nk_input_key(ctx, NK_KEY_CTRL, down);
         else if (*code == XK_Delete)    nk_input_key(ctx, NK_KEY_DEL, down);
-        else if (*code == XK_Return)    nk_input_key(ctx, NK_KEY_ENTER, down);
+        else if (*code == XK_Return || *code == XK_KP_Enter)    nk_input_key(ctx, NK_KEY_ENTER, down);
         else if (*code == XK_Tab)       nk_input_key(ctx, NK_KEY_TAB, down);
         else if (*code == XK_Left)      nk_input_key(ctx, NK_KEY_LEFT, down);
         else if (*code == XK_Right)     nk_input_key(ctx, NK_KEY_RIGHT, down);
@@ -748,8 +853,21 @@ nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt)
         else if (*code == XK_Down)      nk_input_key(ctx, NK_KEY_DOWN, down);
         else if (*code == XK_BackSpace) nk_input_key(ctx, NK_KEY_BACKSPACE, down);
         else if (*code == XK_Escape)    nk_input_key(ctx, NK_KEY_TEXT_RESET_MODE, down);
+        else if (*code == XK_Alt_L || *code == XK_Alt_R) nk_input_key(ctx, NK_KEY_ALT, down);
         else if (*code == XK_Page_Up)   nk_input_key(ctx, NK_KEY_SCROLL_UP, down);
         else if (*code == XK_Page_Down) nk_input_key(ctx, NK_KEY_SCROLL_DOWN, down);
+        else if (*code == XK_F1)        nk_input_key(ctx, NK_KEY_F1, down);
+        else if (*code == XK_F2)        nk_input_key(ctx, NK_KEY_F2, down);
+        else if (*code == XK_F3)        nk_input_key(ctx, NK_KEY_F3, down);
+        else if (*code == XK_F4)        nk_input_key(ctx, NK_KEY_F4, down);
+        else if (*code == XK_F5)        nk_input_key(ctx, NK_KEY_F5, down);
+        else if (*code == XK_F6)        nk_input_key(ctx, NK_KEY_F6, down);
+        else if (*code == XK_F7)        nk_input_key(ctx, NK_KEY_F7, down);
+        else if (*code == XK_F8)        nk_input_key(ctx, NK_KEY_F8, down);
+        else if (*code == XK_F9)        nk_input_key(ctx, NK_KEY_F9, down);
+        else if (*code == XK_F10)       nk_input_key(ctx, NK_KEY_F10, down);
+        else if (*code == XK_F11)       nk_input_key(ctx, NK_KEY_F11, down);
+        else if (*code == XK_F12)       nk_input_key(ctx, NK_KEY_F12, down);
         else if (*code == XK_Home) {
             nk_input_key(ctx, NK_KEY_TEXT_START, down);
             nk_input_key(ctx, NK_KEY_SCROLL_START, down);
@@ -775,11 +893,16 @@ nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt)
                 nk_input_key(ctx, NK_KEY_TEXT_LINE_START, down);
             else if (*code == 'e' && (evt->xkey.state & ControlMask))
                 nk_input_key(ctx, NK_KEY_TEXT_LINE_END, down);
-            else {
-                if (*code == 'i')
+            else if (*code == 'a' && (evt->xkey.state & ControlMask))
+                nk_input_key(ctx,NK_KEY_TEXT_SELECT_ALL, down);
+            else if (*code == XK_Insert) {
+                if (down) insert_toggle = !insert_toggle;
+                if (insert_toggle) {
                     nk_input_key(ctx, NK_KEY_TEXT_INSERT_MODE, down);
-                else if (*code == 'r')
+                } else {
                     nk_input_key(ctx, NK_KEY_TEXT_REPLACE_MODE, down);
+                }
+            } else {
                 if (down) {
                     char buf[32];
                     KeySym keysym = 0;
@@ -810,6 +933,10 @@ nk_xlib_handle_event(Display *dpy, int screen, Window win, XEvent *evt)
             nk_input_scroll(ctx, nk_vec2(0, 1.0f));
         else if (evt->xbutton.button == Button5)
             nk_input_scroll(ctx, nk_vec2(0, -1.0f));
+        else if (evt->xbutton.button == 8)
+            nk_input_button(ctx, NK_BUTTON_X1, x, y, down);
+        else if (evt->xbutton.button == 9)
+            nk_input_button(ctx, NK_BUTTON_X2, x, y, down);
         else return 0;
         return 1;
     } else if (evt->type == MotionNotify) {

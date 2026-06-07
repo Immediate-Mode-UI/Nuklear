@@ -2,7 +2,7 @@
 BIN = demo
 
 # Flags
-CFLAGS += -std=c89 -Wall -Wextra -pedantic -DSDL_DISABLE_IMMINTRIN_H
+CFLAGS += -g -std=c89 -Wall -Wextra -pedantic -DSDL_DISABLE_IMMINTRIN_H
 
 SRC = main.c
 OBJ = $(SRC:.c=.o)

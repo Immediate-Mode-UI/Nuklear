@@ -124,7 +124,7 @@ nk_input_glyph(struct nk_context *ctx, const nk_glyph glyph)
 NK_API void
 nk_input_char(struct nk_context *ctx, char c)
 {
-    nk_glyph glyph;
+    nk_glyph glyph = {0};
     NK_ASSERT(ctx);
     if (!ctx) return;
     glyph[0] = c;
@@ -217,6 +217,139 @@ nk_input_is_mouse_hovering_rect(const struct nk_input *i, struct nk_rect rect)
     if (!i) return nk_false;
     return NK_INBOX(i->mouse.pos.x, i->mouse.pos.y, rect.x, rect.y, rect.w, rect.h);
 }
+
+/**
+ * # nk_input_is_mouse_hovering_still_rect
+ * Returns true if the mouse is hovering over rect and hasn't moved since the last
+ * frame, false otherwise.
+ */
+NK_API nk_bool
+nk_input_is_mouse_hovering_still_rect(const struct nk_input *i, struct nk_rect rect)
+{
+    if (!i) return nk_false;
+    return (NK_INBOX(i->mouse.pos.x, i->mouse.pos.y, rect.x, rect.y, rect.w, rect.h) &&
+            !nk_input_is_mouse_moved(i));
+}
+
+/**
+ * # nk_input_is_mouse_hovering_delay_rect
+ * Returns true if the mouse has been hovering over rect for `delay` seconds or more.
+ *
+ * Parameter   | Description
+ * ------------|---------------------------------------------------------------
+ * \param[in] ctx     | Must point to an either stack or heap allocated `nk_context` struct
+ * \param[in] rect    | The rect area you're checking against
+ * \param[in|out] timer | Must point to a float used to track the total seconds hovered across frames
+ * \param[in] delay     | The wait time in seconds
+ *
+ * \returns `true` if the the mouse has hovered long enough, `false otherwise`
+ */
+NK_API nk_bool
+nk_input_is_mouse_hovering_delay_rect(const struct nk_context *ctx, struct nk_rect rect, float* timer, float delay)
+{
+    NK_ASSERT(ctx);
+    if (!ctx) {
+        return nk_false;
+    } else {
+        const struct nk_input* i = &ctx->input;
+        if (NK_INBOX(i->mouse.pos.x, i->mouse.pos.y, rect.x, rect.y, rect.w, rect.h)) {
+            *timer += ctx->delta_time_seconds;
+            return *timer >= delay;
+        } else if (NK_INBOX(i->mouse.prev.x, i->mouse.prev.y, rect.x, rect.y, rect.w, rect.h)) {
+            *timer = 0;
+        }
+        return nk_false;
+    }
+
+}
+
+/**
+ * # nk_input_is_mouse_hovering_still_delay_rect
+ * Returns true if the mouse has been hovering motionless over rect for `delay` seconds or more. The timer
+ * does not reset once the delay is reached as long as you are still hovering over the rect.
+ *
+ * Parameter   | Description
+ * ------------|---------------------------------------------------------------
+ * \param[in] ctx     | Must point to an either stack or heap allocated `nk_context` struct
+ * \param[in] rect    | The rect area you're checking against
+ * \param[in|out] timer | Must point to a float used to track the total seconds hovered across frames
+ * \param[in] delay     | The wait time in seconds
+ *
+ * \returns `true` if the the mouse has hovered without moving long enough, `false otherwise`
+ */
+NK_API nk_bool
+nk_input_is_mouse_hovering_still_delay_rect(const struct nk_context *ctx, struct nk_rect rect, float* timer, float delay)
+{
+    NK_ASSERT(ctx);
+    if (!ctx) {
+        return nk_false;
+    } else {
+        const struct nk_input* i = &ctx->input;
+        if (NK_INBOX(i->mouse.pos.x, i->mouse.pos.y, rect.x, rect.y, rect.w, rect.h)) {
+            /* once it triggers, moving within the bounds should not make it disappear */
+            if (*timer >= delay) {
+                return nk_true;
+            }
+            if (!nk_input_is_mouse_moved(i)) {
+                *timer += ctx->delta_time_seconds;
+                return *timer >= delay;
+            }
+            *timer = 0;
+        } else if (NK_INBOX(i->mouse.prev.x, i->mouse.prev.y, rect.x, rect.y, rect.w, rect.h)) {
+            *timer = 0;
+        }
+        return nk_false;
+    }
+}
+
+/**
+ * # nk_input_is_mouse_hovering_still_delay_clicked_rect
+ * Works the same as `nk_input_is_mouse_hovering_still_delay_rect` unless clicked is set. If clicked is true,
+ * then it returns false regardless of the timer value as long as the mouse is motionless. It goes back to working
+ * as normal once the mouse has moved (clicked is set to false, timer to 0).
+ *
+ * Parameter   | Description
+ * ------------|---------------------------------------------------------------
+ * \param[in] ctx     | Must point to an either stack or heap allocated `nk_context` struct
+ * \param[in] rect    | The rect area you're checking against
+ * \param[in|out] timer | Must point to a float used to track the total seconds hovered across frames
+ * \param[in] delay     | The wait time in seconds
+ * \param[in|out] clicked | Must point to an nk_bool used to indicate whether the item in question has been clicked (reset to false internally on mouse motion)
+ *
+ * \returns `true` if the the mouse has hovered without moving long enough, `false otherwise`
+ */
+NK_API nk_bool
+nk_input_is_mouse_hovering_still_delay_clicked_rect(const struct nk_context *ctx, struct nk_rect rect, float* timer, float delay, nk_bool* clicked)
+{
+    NK_ASSERT(ctx);
+    if (!ctx) {
+        return nk_false;
+    } else {
+        const struct nk_input* i = &ctx->input;
+        if (*clicked) {
+            /* could also be based on maintaining hover rather than motionless once clicked */
+            if (!nk_input_is_mouse_moved(i)) {
+                return nk_false;
+            }
+            *clicked = nk_false;
+            *timer = 0;
+        }
+        if (NK_INBOX(i->mouse.pos.x, i->mouse.pos.y, rect.x, rect.y, rect.w, rect.h)) {
+            /* once it triggers, moving within the bounds should not make it disappear */
+            if (*timer >= delay) {
+                return nk_true;
+            }
+            if (!nk_input_is_mouse_moved(i)) {
+                *timer += ctx->delta_time_seconds;
+                return *timer >= delay;
+            }
+            *timer = 0;
+        } else if (NK_INBOX(i->mouse.prev.x, i->mouse.prev.y, rect.x, rect.y, rect.w, rect.h)) {
+            *timer = 0;
+        }
+        return nk_false;
+    }
+}
 NK_API nk_bool
 nk_input_is_mouse_prev_hovering_rect(const struct nk_input *i, struct nk_rect rect)
 {
@@ -251,6 +384,12 @@ nk_input_is_mouse_released(const struct nk_input *i, enum nk_buttons id)
 {
     if (!i) return nk_false;
     return (!i->mouse.buttons[id].down && i->mouse.buttons[id].clicked);
+}
+NK_API nk_bool
+nk_input_is_mouse_moved(const struct nk_input *i)
+{
+    if (!i) return nk_false;
+    return i->mouse.delta.x != 0 || i->mouse.delta.y != 0;
 }
 NK_API nk_bool
 nk_input_is_key_pressed(const struct nk_input *i, enum nk_keys key)

@@ -17,7 +17,10 @@ cbuffer buffer0 : register(b0)
 {
   float4x4 ProjectionMatrix;
 };
-static uint texture_index : register(b1);
+cbuffer buffer1 : register(b1)
+{
+  uint texture_index;
+};
 
 sampler sampler0 : register(s0);
 Texture2D<float4> textures[] : register(t0);

@@ -1,4 +1,17 @@
 /* nuklear - 1.32.0 - public domain */
+
+/*
+ *   === IMPORTATE NOTE FOR D3D12 ===
+ *
+ * Due to a bug in the Windows SDK that
+ * was fixed in version 10.0.22000.0 the
+ * D3D12 Backend requires this version as
+ * a minimum! Compiling with a lower version
+ * will result in compiler warnings and a
+ * crashing application!
+ *
+ */
+
 #define COBJMACROS
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -319,6 +332,8 @@ int main(void)
         while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
         {
             if (msg.message == WM_QUIT)
+                running = 0;
+            if (msg.message == WM_SYSKEYDOWN && msg.wParam == 'Q' && GetKeyState(VK_CONTROL) & (1 << 15))
                 running = 0;
             TranslateMessage(&msg);
             DispatchMessageW(&msg);

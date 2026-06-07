@@ -278,7 +278,7 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     slider->spacing         = nk_vec2(2,2);
     slider->userdata        = nk_handle_ptr(0);
     slider->show_buttons    = nk_false;
-    slider->bar_height      = 8;
+    slider->bar_height      = 4;
     slider->rounding        = 0;
     slider->color_factor    = 1.0f;
     slider->disabled_factor = NK_WIDGET_DISABLED_FACTOR;
@@ -720,6 +720,16 @@ nk_style_from_table(struct nk_context *ctx, const struct nk_color *table)
     win->contextual_padding = nk_vec2(4,4);
     win->menu_padding = nk_vec2(4,4);
     win->tooltip_padding = nk_vec2(4,4);
+
+    /* default tooltip just down and to the right of the cursor
+     * so it doesn't cover the text and a default delay of 0.5 seconds
+     *
+     * TODO might be worth consolidating tooltip styling
+     * into its own style structure, though it is a
+     * type of window...*/
+    win->tooltip_origin = NK_TOP_LEFT;
+    win->tooltip_offset = nk_vec2(12, 12);
+    win->tooltip_delay = 0.5f;
 }
 NK_API void
 nk_style_set_font(struct nk_context *ctx, const struct nk_user_font *font)

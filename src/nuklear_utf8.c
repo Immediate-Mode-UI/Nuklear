@@ -47,7 +47,7 @@ nk_utf_decode(const char *c, nk_rune *u, int clen)
     *u = NK_UTF_INVALID;
 
     udecoded = nk_utf_decode_byte(c[0], &len);
-    if (!NK_BETWEEN(len, 1, NK_UTF_SIZE))
+    if (!NK_BETWEEN(len, 1, NK_UTF_SIZE+1)) /* +1 because NK_BETWEEN uses strict upper bound ((a) <= (x) && (x) < (b)) */
         return 1;
 
     for (i = 1, j = 1; i < clen && j < len; ++i, ++j) {

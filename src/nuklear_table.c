@@ -12,7 +12,6 @@ nk_create_table(struct nk_context *ctx)
     struct nk_page_element *elem;
     elem = nk_create_page_element(ctx);
     if (!elem) return 0;
-    nk_zero_struct(*elem);
     return &elem->data.tbl;
 }
 NK_LIB void

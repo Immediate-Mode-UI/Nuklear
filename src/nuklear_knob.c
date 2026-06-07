@@ -50,17 +50,19 @@ nk_knob_behavior(nk_flags *state, struct nk_input *in,
 
     /* knob widget state */
     if (nk_input_is_mouse_hovering_rect(in, bounds)){
-        *state = NK_WIDGET_STATE_HOVERED;
-        if (in) {
-            /* handle scroll and arrow inputs */
-            if (in->mouse.scroll_delta.y > 0 ||
-               (in->keyboard.keys[NK_KEY_UP].down && in->keyboard.keys[NK_KEY_UP].clicked))
-                knob_value += knob_step;
-
-            if (in->mouse.scroll_delta.y < 0 ||
-               (in->keyboard.keys[NK_KEY_DOWN].down && in->keyboard.keys[NK_KEY_DOWN].clicked))
-                knob_value -= knob_step;
+        *state |= NK_WIDGET_STATE_HOVERED;
+        /* handle scroll and arrow inputs */
+        if (in->mouse.scroll_delta.y > 0 ||
+           (in->keyboard.keys[NK_KEY_UP].down && in->keyboard.keys[NK_KEY_UP].clicked)) {
+            knob_value += knob_step;
         }
+
+        if (in->mouse.scroll_delta.y < 0 ||
+           (in->keyboard.keys[NK_KEY_DOWN].down && in->keyboard.keys[NK_KEY_DOWN].clicked)) {
+            knob_value -= knob_step;
+        }
+        /* easiest way to disable scrolling of parent panels..knob eats scrolling */
+        in->mouse.scroll_delta.y = 0;
         knob_value = NK_CLAMP(knob_min, knob_value, knob_max);
     }
     if (*state & NK_WIDGET_STATE_HOVER &&
@@ -154,7 +156,7 @@ nk_draw_knob(struct nk_command_buffer *out, nk_flags state,
     cursor_start.y = (cursor_start.y + cursor_end.y) / 2;
 
     /* draw cursor */
-    nk_stroke_line(out, cursor_start.x, cursor_start.y, cursor_end.x, cursor_end.y, 2, nk_rgb_factor(cursor, style->color_factor));
+    nk_stroke_line(out, cursor_start.x, cursor_start.y, cursor_end.x, cursor_end.y, style->cursor_width, nk_rgb_factor(cursor, style->color_factor));
     }
 }
 NK_LIB float

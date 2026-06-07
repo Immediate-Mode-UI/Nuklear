@@ -209,6 +209,7 @@ nk_d3d11_resize(ID3D11DeviceContext *context, int width, int height)
 NK_API int
 nk_d3d11_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+    static int insert_toggle = 0;
     switch (msg)
     {
     case WM_KEYDOWN:
@@ -232,6 +233,7 @@ nk_d3d11_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
             return 1;
 
         case VK_RETURN:
+        case VK_SEPARATOR:
             nk_input_key(&d3d11.ctx, NK_KEY_ENTER, down);
             return 1;
 
@@ -282,6 +284,75 @@ nk_d3d11_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case VK_PRIOR:
             nk_input_key(&d3d11.ctx, NK_KEY_SCROLL_UP, down);
             return 1;
+
+        case VK_ESCAPE:
+            nk_input_key(&d3d11.ctx, NK_KEY_TEXT_RESET_MODE, down);
+            return 1;
+
+        case VK_MENU:
+            nk_input_key(&d3d11.ctx, NK_KEY_ALT, down);
+            return 1;
+
+        case VK_F1:
+            nk_input_key(&d3d11.ctx, NK_KEY_F1, down);
+            return 1;
+        case VK_F2:
+            nk_input_key(&d3d11.ctx, NK_KEY_F2, down);
+            return 1;
+        case VK_F3:
+            nk_input_key(&d3d11.ctx, NK_KEY_F3, down);
+            return 1;
+        case VK_F4:
+            nk_input_key(&d3d11.ctx, NK_KEY_F4, down);
+            return 1;
+        case VK_F5:
+            nk_input_key(&d3d11.ctx, NK_KEY_F5, down);
+            return 1;
+        case VK_F6:
+            nk_input_key(&d3d11.ctx, NK_KEY_F6, down);
+            return 1;
+        case VK_F7:
+            nk_input_key(&d3d11.ctx, NK_KEY_F7, down);
+            return 1;
+        case VK_F8:
+            nk_input_key(&d3d11.ctx, NK_KEY_F8, down);
+            return 1;
+        case VK_F9:
+            nk_input_key(&d3d11.ctx, NK_KEY_F9, down);
+            return 1;
+        case VK_F10:
+            nk_input_key(&d3d11.ctx, NK_KEY_F10, down);
+            return 1;
+        case VK_F11:
+            nk_input_key(&d3d11.ctx, NK_KEY_F11, down);
+            return 1;
+        case VK_F12:
+            nk_input_key(&d3d11.ctx, NK_KEY_F12, down);
+            return 1;
+
+        case VK_INSERT:
+        /* Only switch on release to avoid repeat issues
+         * kind of confusing since we have to negate it but we're already
+         * hacking it since Nuklear treats them as two separate keys rather
+         * than a single toggle state */
+            if (!down) {
+                insert_toggle = !insert_toggle;
+                if (insert_toggle) {
+                    nk_input_key(&d3d11.ctx, NK_KEY_TEXT_INSERT_MODE, !down);
+                    /* nk_input_key(&d3d11.ctx, NK_KEY_TEXT_REPLACE_MODE, down); */
+                } else {
+                    nk_input_key(&d3d11.ctx, NK_KEY_TEXT_REPLACE_MODE, !down);
+                    /* nk_input_key(&d3d11.ctx, NK_KEY_TEXT_INSERT_MODE, down); */
+                }
+            }
+            return 1;
+
+        case 'A':
+            if (ctrl) {
+                nk_input_key(&d3d11.ctx, NK_KEY_TEXT_SELECT_ALL, down);
+                return 1;
+            }
+            break;
 
         case 'B':
             if (ctrl) {
@@ -371,6 +442,30 @@ nk_d3d11_handle_event(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     case WM_MBUTTONUP:
         nk_input_button(&d3d11.ctx, NK_BUTTON_MIDDLE, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
+        ReleaseCapture();
+        return 1;
+
+    case WM_XBUTTONDOWN:
+        switch (GET_XBUTTON_WPARAM(wparam)) {
+        case XBUTTON1:
+            nk_input_button(&d3d11.ctx, NK_BUTTON_X1, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
+            break;
+        case XBUTTON2:
+            nk_input_button(&d3d11.ctx, NK_BUTTON_X2, (short)LOWORD(lparam), (short)HIWORD(lparam), 1);
+            break;
+        }
+        SetCapture(wnd);
+        return 1;
+
+    case WM_XBUTTONUP:
+        switch (GET_XBUTTON_WPARAM(wparam)) {
+        case XBUTTON1:
+            nk_input_button(&d3d11.ctx, NK_BUTTON_X1, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
+            break;
+        case XBUTTON2:
+            nk_input_button(&d3d11.ctx, NK_BUTTON_X2, (short)LOWORD(lparam), (short)HIWORD(lparam), 0);
+            break;
+        }
         ReleaseCapture();
         return 1;
 
