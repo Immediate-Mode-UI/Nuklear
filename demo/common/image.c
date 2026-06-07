@@ -131,11 +131,13 @@ image_demo(struct nk_context *ctx)
 		tile_center = tile_stretch; tile_center.type = NK_IMAGE_CENTER;
 		tile_tile = tile_stretch; tile_tile.type = NK_IMAGE_TILE;
 
+		{
 		nk_ushort region[4] = { 76, 144, 146, 189 };
 		bp_si_stretch = bp_stretch; memcpy(bp_si_stretch.region, region, sizeof(region));
 		bp_si_fill = bp_fill; memcpy(bp_si_fill.region, region, sizeof(region));
 		bp_si_fit = bp_fit; memcpy(bp_si_fit.region, region, sizeof(region));
 		bp_si_center = bp_center; memcpy(bp_si_center.region, region, sizeof(region));
+		}
 
 #ifdef NO_TILING
 		{

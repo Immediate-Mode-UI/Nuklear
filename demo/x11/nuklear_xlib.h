@@ -30,11 +30,8 @@ NK_API void                 nk_xlib_paste(nk_handle, struct nk_text_edit*);
 NK_API void                 nk_xlib_copy(nk_handle, const char*, int len);
 
 /* Image */
-#ifdef NK_XLIB_INCLUDE_STB_IMAGE
-NK_API struct nk_image nk_xsurf_load_image_from_file(char const *filename);
-NK_API struct nk_image nk_xsurf_load_image_from_memory(const void *membuf, nk_uint membufSize);
+NK_API struct nk_image nk_stbi_image_to_xsurf(const void *pixels, int width, int height, int channels);
 NK_API void            nk_xsurf_image_free(struct nk_image *image);
-#endif
 
 /* Font */
 NK_API XFont*               nk_xfont_create(Display *dpy, const char *name);
@@ -65,15 +62,6 @@ NK_API void                 nk_xfont_del(Display *dpy, XFont *font);
 #include <sys/time.h>
 #include <unistd.h>
 #include <time.h>
-
-
-#ifdef NK_XLIB_IMPLEMENT_STB_IMAGE
-#define STB_IMAGE_IMPLEMENTATION
-#endif
-
-#ifdef NK_XLIB_INCLUDE_STB_IMAGE
-#include "../../example/stb_image.h"
-#endif
 
 
 #ifndef NK_X11_DOUBLE_CLICK_LO
@@ -474,61 +462,42 @@ nk_xsurf_draw_text(XSurface *surf, short x, short y, const char *text, int len,
 #endif
 }
 
-/* rename nk_image_date_to_xsurf()? */
-NK_INTERN struct nk_image
-nk_stbi_image_to_xsurf(const void *filename_or_membuf, nk_uint zero_or_membufSize) {
+/**
+ * Convert pixel data (RGB or RGBA) to to an nk_image handled by an XSurface.
+ */
+NK_API struct nk_image
+nk_stbi_image_to_xsurf(const void *pixels, int width, int height, int channels) {
     XSurface *surf = xlib.surf;
     struct nk_image img = nk_image_id(0);
-    unsigned char *data;
-    int width, height, channels, actual_channels;
-    long i, isize;
+    const unsigned char *src = (const unsigned char*)pixels;
+    unsigned char *data = NULL;
+    long i, npixels;
     XImageWithAlpha *aimage = NULL;
     int depth;
 
-    if (filename_or_membuf == NULL) goto bail;
+    if (src == NULL || width <= 0 || height <= 0 || channels < 3) goto bail;
 
     aimage = (XImageWithAlpha*)calloc( 1, sizeof(XImageWithAlpha) );
     if (aimage == NULL) goto bail;
     img = nk_image_ptr( (void*)aimage);
 
     depth = DefaultDepth(surf->dpy, surf->screen);
+    npixels = (long)width * (long)height;
 
-    switch (depth){
-        case 24:
-            channels = 4;
-        break;
-        case 16:
-        case 15:
-            channels = 2;
-        break;
-        default:
-            channels = 1;
-        break;
-    }
-
-    if (zero_or_membufSize) {
-        data = stbi_load_from_memory((const stbi_uc *)filename_or_membuf, zero_or_membufSize, &width, &height, &actual_channels, channels);
-    } else {
-        data = stbi_load(filename_or_membuf, &width, &height, &actual_channels, channels);
-    }
+    data = (unsigned char*)malloc((size_t)(npixels * 4));
     if (data == NULL) goto bail;
 
-    isize = width*height*channels;
-
-    /* rgba to bgra */
-    /*
-     * why is this here?
-    if (channels >= 3){
-        for (i=0; i < isize; i += channels) {
-            unsigned char red  = data[i+2];
-            unsigned char blue = data[i];
-            data[i]   = red;
-            data[i+2] = blue;
-        }
+    /* rgb(a) to bgra */
+    for (i = 0; i < npixels; ++i) {
+        const unsigned char *p = src + i * channels;
+        data[i * 4 + 0] = p[2]; /* Blue */
+        data[i * 4 + 1] = p[1]; /* Green */
+        data[i * 4 + 2] = p[0]; /* Red */
+        data[i * 4 + 3] = (channels == 4) ? p[3] : 255; /* Alpha */
     }
-    */
 
-    if (channels == 4 && actual_channels == 4){
+    /* Build a 1-bit clip mask from the alpha channel for transparency. */
+    if (channels == 4){
         const unsigned alpha_treshold = 127;
         aimage->clipMask = XCreatePixmap(surf->dpy, surf->drawable, width, height, 1);
 
@@ -538,13 +507,10 @@ nk_stbi_image_to_xsurf(const void *filename_or_membuf, nk_uint zero_or_membufSiz
             XFillRectangle(surf->dpy, aimage->clipMask, aimage->clipMaskGC, 0, 0, width, height);
 
             XSetForeground(surf->dpy, aimage->clipMaskGC, WhitePixel(surf->dpy, surf->screen));
-            for (i=0; i < isize; i += channels){
-                unsigned char alpha = data[i+3];
-                int div = i / channels;
-                int x = div % width;
-                int y = div / width;
-                if( alpha > alpha_treshold )
-                    XDrawPoint(surf->dpy, aimage->clipMask, aimage->clipMaskGC, x, y);
+            for (i=0; i < npixels; ++i){
+                if( src[i*channels + 3] > alpha_treshold )
+                    XDrawPoint(surf->dpy, aimage->clipMask, aimage->clipMaskGC,
+                        (int)(i % width), (int)(i / width));
             }
         }
     }
@@ -554,33 +520,16 @@ nk_stbi_image_to_xsurf(const void *filename_or_membuf, nk_uint zero_or_membufSiz
            ZPixmap, 0,
            (char*)data,
            width, height,
-           channels*8, channels*width);
+           32, 4 * width);
     img.h = height;
     img.w = width;
 
     return img;
 bail:
+    if (data) free(data);
     nk_xsurf_image_free(&img);
     return nk_image_id(0);
 }
-
-#ifdef NK_XLIB_INCLUDE_STB_IMAGE
-NK_API struct nk_image
-nk_xsurf_load_image_from_memory(const void *membuf, nk_uint membufSize)
-{
-    if (membufSize == 0) {
-        return nk_image_id(0);
-    } else {
-        return nk_stbi_image_to_xsurf(membuf, membufSize);
-    }
-}
-
-NK_API struct nk_image
-nk_xsurf_load_image_from_file(char const *filename)
-{
-    return nk_stbi_image_to_xsurf((const void *)filename, 0);
-}
-#endif /* NK_XLIB_INCLUDE_STB_IMAGE */
 
 NK_INTERN void
 nk_xsurf_draw_image(XSurface *surf, short x, short y, unsigned short w, unsigned short h,
