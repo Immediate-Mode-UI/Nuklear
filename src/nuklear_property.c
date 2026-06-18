@@ -40,10 +40,13 @@ nk_drag_behavior(nk_flags *state, const struct nk_input *in,
         }
         *state = NK_WIDGET_STATE_ACTIVE;
     }
-    if (*state & NK_WIDGET_STATE_HOVER && !nk_input_is_mouse_prev_hovering_rect(in, drag))
-        *state |= NK_WIDGET_STATE_ENTERED;
-    else if (nk_input_is_mouse_prev_hovering_rect(in, drag))
-        *state |= NK_WIDGET_STATE_LEFT;
+    if (*state & NK_WIDGET_STATE_HOVER)  {
+        if (!nk_input_is_mouse_prev_hovering_rect(in, drag))
+            *state |= NK_WIDGET_STATE_ENTERED;
+    } else {
+        if (nk_input_is_mouse_prev_hovering_rect(in, drag))
+            *state |= NK_WIDGET_STATE_LEFT;
+    }
 }
 NK_LIB void
 nk_property_behavior(nk_flags *ws, const struct nk_input *in,
