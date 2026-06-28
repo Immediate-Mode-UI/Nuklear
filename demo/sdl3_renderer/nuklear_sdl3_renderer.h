@@ -223,9 +223,9 @@ nk_sdl_render(struct nk_context* ctx, enum nk_anti_aliasing AA)
     NK_ASSERT(sdl);
 
     { /* setup internal delta time that Nuklear needs for animations */
-        const Uint64 ticks = SDL_GetTicks();
-        ctx->delta_time_seconds = (float)(ticks - sdl->last_render) / 1000.0f;
-        sdl->last_render = ticks;
+        const Uint64 now = SDL_GetTicksNS();
+        ctx->delta_time_seconds = (float)(now - sdl->last_render) / (float)SDL_NS_PER_SECOND;
+        sdl->last_render = now;
     }
 
     {
@@ -393,6 +393,7 @@ nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer, struct nk_allocator allocat
     nk_buffer_init(&sdl->ogl.cmds, &sdl->allocator, NK_BUFFER_DEFAULT_INITIAL_SIZE);
     sdl->edit_was_active = false;
     sdl->insert_toggle = false;
+    sdl->last_render = SDL_GetTicksNS();
     return &sdl->ctx;
 }
 
