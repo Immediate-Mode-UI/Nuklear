@@ -1,0 +1,36 @@
+name: MSVC CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: windows-2025
+
+    steps:
+
+    - uses: actions/checkout@v4
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x86
+        toolset: 14.0
+
+    - name: build d3d11
+      working-directory: demo/d3d11
+      run: ./build.bat
+    - name: build d3d12
+      working-directory: demo/d3d12
+      run: ./build.bat
+    - name: build d3d9
+      working-directory: demo/d3d9
+      run: ./build.bat
+    - name: build gdi
+      working-directory: demo/gdi
+      run: ./build.bat
+    - name: build gdi_native_nuklear
+      working-directory: demo/gdi_native_nuklear
+      run: ./build.bat
+    - name: build gdip
+      working-directory: demo/gdip
+      run: ./build.bat
+
