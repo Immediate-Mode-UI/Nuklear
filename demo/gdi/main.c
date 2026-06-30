@@ -131,7 +131,7 @@ int main(void)
         if (needs_refresh == 0) {
             if (GetMessageW(&msg, NULL, 0, 0) <= 0) {
                 running = 0;
-            } else if (msg.message == WM_SYSKEYDOWN && msg.wParam == 'Q' && GetKeyState(VK_CONTROL) & (1 << 15))
+            } else if (msg.message == WM_SYSKEYDOWN && msg.wParam == 'Q' && GetKeyState(VK_CONTROL) & (1 << 15)) {
                 running = 0;
             } else {
                 TranslateMessage(&msg);
