@@ -865,7 +865,7 @@ nk_font_config(float pixel_height)
     cfg.ttf_size = 0;
     cfg.ttf_data_owned_by_atlas = 0;
     cfg.size = pixel_height;
-    cfg.oversample_h = 3;
+    cfg.oversample_h = 1;
     cfg.oversample_v = 1;
     cfg.pixel_snap = 0;
     cfg.coord_type = NK_COORD_UV;
@@ -1173,9 +1173,14 @@ nk_font_atlas_bake(struct nk_font_atlas *atlas, int *width, int *height,
 
 #ifdef NK_INCLUDE_DEFAULT_FONT
     /* no font added so just use default font */
-    if (!atlas->font_num)
-        atlas->default_font = nk_font_atlas_add_default(atlas, 13.0f, 0);
+    if (!atlas->font_num) {
+        struct nk_font_config config;
+        config = nk_font_config(0);
+        config.oversample_h = 3;
+        atlas->default_font = nk_font_atlas_add_default(atlas, 13.0f, &config);
+    }
 #endif
+
     NK_ASSERT(atlas->font_num);
     if (!atlas->font_num) return 0;
 
