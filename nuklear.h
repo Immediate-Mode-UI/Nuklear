@@ -21532,6 +21532,7 @@ nk_nonblock_begin(struct nk_context *ctx,
     win->popup.header = header;
 
     if (!is_active) {
+        win->popup.buf.active = nk_false;
         /* remove read only mode from all parent panels */
         struct nk_panel *root = win->layout;
         while (root) {
