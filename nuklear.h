@@ -21532,13 +21532,13 @@ nk_nonblock_begin(struct nk_context *ctx,
     win->popup.header = header;
 
     if (!is_active) {
-        win->popup.buf.active = nk_false;
         /* remove read only mode from all parent panels */
         struct nk_panel *root = win->layout;
         while (root) {
             root->flags |= NK_WINDOW_REMOVE_ROM;
             root = root->parent;
         }
+        win->popup.buf.active = 0;
         return is_active;
     }
     popup->bounds = body;
