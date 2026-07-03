@@ -904,7 +904,6 @@ overview(struct nk_context *ctx)
             /* editor for custom tooltip */
             {
                 static char text_buf[64] = {0};
-                static int text_len = 0;
                 static int text_initialized = 0;
                 static struct nk_vec2 offset = {0};
                 static const char* tooltip_positions[] =
@@ -921,13 +920,12 @@ overview(struct nk_context *ctx)
                     "BOTTOM_CENTER",
                     "BOTTOM_RIGHT"
                 };
-                int cur_pos = NK_TOP_LEFT;
+                static int cur_pos = NK_TOP_LEFT;
 
                 if (!text_initialized) {
                     const char text_default[] = "you can customize this!";
                     NK_ASSERT(sizeof(text_default) < sizeof(text_buf));
                     memcpy(text_buf, text_default, sizeof(text_default));
-                    text_len = sizeof(text_default) - 1;
                     text_initialized = 1;
                 }
                 bounds = nk_widget_bounds(ctx);
@@ -939,17 +937,16 @@ overview(struct nk_context *ctx)
                 nk_rule_horizontal(ctx, nk_white, nk_true);
                 nk_layout_row_dynamic(ctx, 30, 2);
                 nk_label(ctx, "custom tooltip text:", NK_TEXT_LEFT);
-                nk_edit_string(ctx, NK_EDIT_FIELD, text_buf, &text_len, sizeof(text_buf), nk_filter_default);
-                text_buf[text_len] = '\0';  /* TODO: why nk_edit_string is NOT setting this on its own? */
+                nk_edit_string_zero_terminated(ctx, NK_EDIT_SIMPLE, text_buf, sizeof(text_buf), nk_filter_default);
                 nk_layout_row_dynamic(ctx, 30, 1);
                 cur_pos = nk_combo(ctx, tooltip_positions, NK_LEN(tooltip_positions), cur_pos, 25, nk_vec2(200, 200));
 
 
                 nk_layout_row_dynamic(ctx, 30, 2);
                 nk_label(ctx, "custom tooltip offset", NK_TEXT_LEFT);
-                nk_property_float(ctx, "x", -100.0f, &offset.x, 100.0f, 5.0f, 0.5f);
+                nk_property_float(ctx, "#x", -100.0f, &offset.x, 100.0f, 5.0f, 0.5f);
                 nk_label(ctx, "custom tooltip offset", NK_TEXT_LEFT);
-                nk_property_float(ctx, "y", -100.0f, &offset.y, 100.0f, 5.0f, 0.5f);
+                nk_property_float(ctx, "#y", -100.0f, &offset.y, 100.0f, 5.0f, 0.5f);
             }
 
             nk_tree_pop(ctx);
