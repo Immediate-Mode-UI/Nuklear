@@ -18021,6 +18021,13 @@ nk_font_atlas_bake(struct nk_font_atlas *atlas, int *width, int *height,
 
 #ifdef NK_INCLUDE_DEFAULT_FONT
     /* no font added so just use default font */
+    /* FIXME(sleeptightAnsiC): This "fallback" exists for compatibility
+     * with code that creates empty atlas and immediately bakes it.
+     * Several demos do this, but it doesn't make sense for API to allow it.
+     * It was never documented anywhere and it's more of a hack than feature.
+     * App/backend should call nk_font_atlas_add_default() on it's own
+     * with whatever config it wants, and treat it like any other font.
+     * Worth to consider this for removal during next major release... */
     if (!atlas->font_num) {
         struct nk_font_config config;
         config = nk_font_config(0);
