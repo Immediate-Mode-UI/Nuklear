@@ -6474,35 +6474,34 @@ nk_stbtt_free(void *ptr, void *user_data) {
  *                              MATH
  *
  * ===============================================================*/
-/*/// ### Math
-///  Since nuklear is supposed to work on all systems providing floating point
-///  math without any dependencies I also had to implement my own math functions
-///  for sqrt, sin and cos. Since the actual highly accurate implementations for
-///  the standard library functions are quite complex and I do not need high
-///  precision for my use cases I use approximations.
-///
-///  Sqrt
-///  ----
-///  For square root nuklear uses the famous fast inverse square root:
-///  https://en.wikipedia.org/wiki/Fast_inverse_square_root with
-///  slightly tweaked magic constant. While on today's hardware it is
-///  probably not faster it is still fast and accurate enough for
-///  nuklear's use cases. IMPORTANT: this requires float format IEEE 754
-///
-///  Sine/Cosine
-///  -----------
-///  All constants inside both function are generated Remez's minimax
-///  approximations for value range 0...2*PI. The reason why I decided to
-///  approximate exactly that range is that nuklear only needs sine and
-///  cosine to generate circles which only requires that exact range.
-///  In addition I used Remez instead of Taylor for additional precision:
-///  https://web.archive.org/web/20220629122951/www.lolengine.net/blog/2011/12/21/better-function-approximations
-///
-///  The tool I used to generate constants for both sine and cosine
-///  (it can actually approximate a lot more functions) can be found here:
-///  https://github.com/samhocevar/lolremez
-///  https://web.archive.org/web/20160306205304/www.lolengine.net/wiki/oss/lolremez
-*/
+/**
+ * \page Math
+ * Since nuklear is supposed to work on all systems providing floating point
+ * math without any dependencies I also had to implement my own math functions
+ * for sqrt, sin and cos. Since the actual highly accurate implementations for
+ * the standard library functions are quite complex and I do not need high
+ * precision for my use cases I use approximations.
+ *
+ * # Sqrt
+ * For square root nuklear uses the famous fast inverse square root:
+ * https://en.wikipedia.org/wiki/Fast_inverse_square_root with
+ * slightly tweaked magic constant. While on today's hardware it is
+ * probably not faster it is still fast and accurate enough for
+ * nuklear's use cases. IMPORTANT: this requires float format IEEE 754
+ *
+ * # Sine/Cosine
+ * All constants inside both function are generated Remez's minimax
+ * approximations for value range 0...2*PI. The reason why I decided to
+ * approximate exactly that range is that nuklear only needs sine and
+ * cosine to generate circles which only requires that exact range.
+ * In addition I used Remez instead of Taylor for additional precision:
+ * https://web.archive.org/web/20220629122951/www.lolengine.net/blog/2011/12/21/better-function-approximations
+ *
+ * The tool I used to generate constants for both sine and cosine
+ * (it can actually approximate a lot more functions) can be found here:
+ * https://github.com/samhocevar/lolremez
+ * https://web.archive.org/web/20160306205304/www.lolengine.net/wiki/oss/lolremez
+ */
 #ifdef NK_INV_SQRT_NEEDED
 NK_LIB float
 nk_inv_sqrt(float n)
