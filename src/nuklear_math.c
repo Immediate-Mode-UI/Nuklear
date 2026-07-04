@@ -28,11 +28,12 @@
 ///  approximate exactly that range is that nuklear only needs sine and
 ///  cosine to generate circles which only requires that exact range.
 ///  In addition I used Remez instead of Taylor for additional precision:
-///  www.lolengine.net/blog/2011/12/21/better-function-approximations.
+///  https://web.archive.org/web/20220629122951/www.lolengine.net/blog/2011/12/21/better-function-approximations
 ///
 ///  The tool I used to generate constants for both sine and cosine
-///  (it can actually approximate a lot more functions) can be
-///  found here: www.lolengine.net/wiki/oss/lolremez
+///  (it can actually approximate a lot more functions) can be found here:
+///  https://github.com/samhocevar/lolremez
+///  https://web.archive.org/web/20160306205304/www.lolengine.net/wiki/oss/lolremez
 */
 #ifdef NK_INV_SQRT_NEEDED
 NK_LIB float

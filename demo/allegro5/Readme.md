@@ -1,6 +1,6 @@
 # Allegro v5 nuklear backend
 
-This backend provides support for [Allegro version 5](https://liballeg.github.io). It works on on all supported platforms with an OpenGL backend, including iOS and Android.
+This backend provides support for [Allegro version 5](https://liballeg.org/). It works on on all supported platforms with an OpenGL backend, including iOS and Android.
 
 Touch support is provided by handling the first touch (ignoring any extra simultaneous touches) and emitting nuklear mouse events. nuklear will handle only the first touch like a single left-mouse click. Dragging the touch screen emits mouse-move events.
 
@@ -13,7 +13,8 @@ Like every nuklear backend, handling many different resolutions and resolution d
 
 ## Soft Keyboard for Touch Screen Devices
 
-Information on how to implement soft keyboard callbacks for Android can be on the Allegro community wiki: https://wiki.allegro.cc/index.php?title=Running_Allegro_applications_on_Android#Displaying_the_Android_keyboard
+Information on how to implement soft keyboard callbacks for Android can be on the Allegro community wiki:
+https://web.archive.org/web/20160722031953/https://wiki.allegro.cc/index.php?title=Running_Allegro_applications_on_Android#Displaying_the_Android_keyboard
 
 To display a soft keyboard on iOS, you must create a `UIView` subclass that implements the `UIKeyInput` interface. See `KeyboardHandleriOS.h` and `KeyboardHandleriOS.m` Objective-C source code files for an example on how to do this. As the Allegro keyboard driver does not currently listen for iOS events, we use a custom event emitter to emit keyboard events, which is passed in after initialization with `(void)setCustomKeyboardEventSource:(ALLEGRO_EVENT_SOURCE *)ev_src`. This causes normal keyboard events to be emitted and properly caught by the nuklear backend. The provided `main.c` demo file does not implement this, but with the provided source code files it is not difficult to do. See this Allegro community forum thread for more information: https://www.allegro.cc/forums/thread/616672
 

@@ -6496,11 +6496,12 @@ nk_stbtt_free(void *ptr, void *user_data) {
 ///  approximate exactly that range is that nuklear only needs sine and
 ///  cosine to generate circles which only requires that exact range.
 ///  In addition I used Remez instead of Taylor for additional precision:
-///  www.lolengine.net/blog/2011/12/21/better-function-approximations.
+///  https://web.archive.org/web/20220629122951/www.lolengine.net/blog/2011/12/21/better-function-approximations
 ///
 ///  The tool I used to generate constants for both sine and cosine
-///  (it can actually approximate a lot more functions) can be
-///  found here: www.lolengine.net/wiki/oss/lolremez
+///  (it can actually approximate a lot more functions) can be found here:
+///  https://github.com/samhocevar/lolremez
+///  https://web.archive.org/web/20160306205304/www.lolengine.net/wiki/oss/lolremez
 */
 #ifdef NK_INV_SQRT_NEEDED
 NK_LIB float
@@ -7744,7 +7745,10 @@ nk_strfmt(char *buf, int buf_size, const char *fmt, va_list args)
 NK_API nk_hash
 nk_murmur_hash(const void * key, int len, nk_hash seed)
 {
-    /* 32-Bit MurmurHash3: https://code.google.com/p/smhasher/wiki/MurmurHash3*/
+    /* 32-Bit MurmurHash3: https://github.com/aappleby/smhasher
+     * https://github.com/aappleby/smhasher/blob/07bb4de10a63e8cc2e1724865454eba635742383/src/MurmurHash3.cpp#L94-L146
+     * https://web.archive.org/web/20150906085947/https://code.google.com/p/smhasher/wiki/MurmurHash3 */
+
     #define NK_ROTL(x,r) ((x) << (r) | ((x) >> (32 - r)))
 
     nk_uint h1 = seed;
