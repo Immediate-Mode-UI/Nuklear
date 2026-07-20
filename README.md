@@ -54,10 +54,6 @@ This is very important; not doing it either leads to compiler errors, or even wo
 
 ## Example
 
-The following is a complete, minimal example. It builds one frame of user
-interface and iterates over the resulting draw commands, without needing a
-rendering backend or window system:
-
 ```c
 /* example.c */
 #define NK_IMPLEMENTATION
