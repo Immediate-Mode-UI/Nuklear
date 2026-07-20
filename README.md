@@ -54,41 +54,98 @@ This is very important; not doing it either leads to compiler errors, or even wo
 
 ## Example
 
+The following is a complete, minimal example. It builds one frame of user
+interface and iterates over the resulting draw commands, without needing a
+rendering backend or window system:
+
 ```c
-/* init gui state */
-struct nk_context ctx;
-nk_init_fixed(&ctx, calloc(1, MAX_MEMORY), MAX_MEMORY, &font);
+/* example.c */
+#define NK_IMPLEMENTATION
+#include "nuklear.h"
 
-enum {EASY, HARD};
-static int op = EASY;
-static float value = 0.6f;
-static int i =  20;
+#include <stdio.h>
+#include <stdlib.h>
 
-if (nk_begin(&ctx, "Show", nk_rect(50, 50, 220, 220),
-    NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_CLOSABLE)) {
-    /* fixed widget pixel width */
-    nk_layout_row_static(&ctx, 30, 80, 1);
-    if (nk_button_label(&ctx, "button")) {
-        /* event handling */
-    }
+#define MAX_MEMORY (64 * 1024)
 
-    /* fixed widget window ratio width */
-    nk_layout_row_dynamic(&ctx, 30, 2);
-    if (nk_option_label(&ctx, "easy", op == EASY)) op = EASY;
-    if (nk_option_label(&ctx, "hard", op == HARD)) op = HARD;
-
-    /* custom widget pixel width */
-    nk_layout_row_begin(&ctx, NK_STATIC, 30, 2);
-    {
-        nk_layout_row_push(&ctx, 50);
-        nk_label(&ctx, "Volume:", NK_TEXT_LEFT);
-        nk_layout_row_push(&ctx, 110);
-        nk_slider_float(&ctx, 0, &value, 1.0f, 0.1f);
-    }
-    nk_layout_row_end(&ctx);
+/* A minimal font measuring function. In a real application the rendering
+ * backend provides one, e.g. via the font baker in nuklear.h. */
+static float
+your_text_width_calculation(nk_handle handle, float height, const char *text, int len)
+{
+    (void)handle; (void)text;
+    return (float)len * height / 2.0f;
 }
-nk_end(&ctx);
+
+int main(void)
+{
+    /* init gui state */
+    struct nk_user_font font;
+    struct nk_context ctx;
+    void *memory = calloc(1, MAX_MEMORY);
+
+    enum {EASY, HARD};
+    int op = EASY;
+    float value = 0.6f;
+
+    font.userdata = nk_handle_ptr(0);
+    font.height = 13.0f;
+    font.width = your_text_width_calculation;
+    nk_init_fixed(&ctx, memory, MAX_MEMORY, &font);
+
+    if (nk_begin(&ctx, "Show", nk_rect(50, 50, 220, 220),
+        NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_CLOSABLE)) {
+        /* fixed widget pixel width */
+        nk_layout_row_static(&ctx, 30, 80, 1);
+        if (nk_button_label(&ctx, "button")) {
+            /* event handling */
+        }
+
+        /* fixed widget window ratio width */
+        nk_layout_row_dynamic(&ctx, 30, 2);
+        if (nk_option_label(&ctx, "easy", op == EASY)) op = EASY;
+        if (nk_option_label(&ctx, "hard", op == HARD)) op = HARD;
+
+        /* custom widget pixel width */
+        nk_layout_row_begin(&ctx, NK_STATIC, 30, 2);
+        {
+            nk_layout_row_push(&ctx, 50);
+            nk_label(&ctx, "Volume:", NK_TEXT_LEFT);
+            nk_layout_row_push(&ctx, 110);
+            nk_slider_float(&ctx, 0, &value, 1.0f, 0.1f);
+        }
+        nk_layout_row_end(&ctx);
+    }
+    nk_end(&ctx);
+
+    /* A rendering backend draws the UI by iterating the draw commands;
+     * here we only count them to show that the frame produced output. */
+    {
+        const struct nk_command *cmd = 0;
+        int count = 0;
+        nk_foreach(cmd, &ctx)
+            count++;
+        printf("frame produced %d draw commands\n", count);
+    }
+
+    nk_clear(&ctx);
+    free(memory);
+    return 0;
+}
 ```
+
+Save the code as `example.c` next to `nuklear.h` and compile it with:
+
+```sh
+cc -std=c89 example.c -o example
+```
+
+To draw the interface on screen, pick one of the rendering backends in the
+[demo](demo/) folder (GLFW, SDL, X11, GDI, Direct3D, Vulkan and more; each
+comes with its own build instructions), or start from one of the complete
+programs in the [example](example/) folder. Rendered by one of these
+backends, the interface built above looks like this:
+
 ![example](https://cloud.githubusercontent.com/assets/8057201/10187981/584ecd68-675c-11e5-897c-822ef534a876.png)
 
 ## Bindings
