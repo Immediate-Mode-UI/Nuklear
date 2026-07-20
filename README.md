@@ -54,41 +54,92 @@ This is very important; not doing it either leads to compiler errors, or even wo
 
 ## Example
 
+The example below shows the general structure of a Nuklear application:
+one-time setup, then once per frame mirror the input, build the user
+interface and draw it. Nuklear does no rendering itself, so the parts
+marked `your_...` are provided by your rendering backend:
+
 ```c
-/* init gui state */
+/* init gui state (once at startup) */
+struct nk_user_font font;
 struct nk_context ctx;
+
+font.userdata = nk_handle_ptr(your_font_data);
+font.height = your_font_height;
+font.width = your_text_width_calculation;
 nk_init_fixed(&ctx, calloc(1, MAX_MEMORY), MAX_MEMORY, &font);
 
-enum {EASY, HARD};
-static int op = EASY;
-static float value = 0.6f;
-static int i =  20;
+while (running) {
+    /* mirror your window's input state into nuklear */
+    nk_input_begin(&ctx);
+    /* nk_input_motion(&ctx, ...), nk_input_button(&ctx, ...),
+     * nk_input_key(&ctx, ...), ... */
+    nk_input_end(&ctx);
 
-if (nk_begin(&ctx, "Show", nk_rect(50, 50, 220, 220),
-    NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_CLOSABLE)) {
-    /* fixed widget pixel width */
-    nk_layout_row_static(&ctx, 30, 80, 1);
-    if (nk_button_label(&ctx, "button")) {
-        /* event handling */
-    }
-
-    /* fixed widget window ratio width */
-    nk_layout_row_dynamic(&ctx, 30, 2);
-    if (nk_option_label(&ctx, "easy", op == EASY)) op = EASY;
-    if (nk_option_label(&ctx, "hard", op == HARD)) op = HARD;
-
-    /* custom widget pixel width */
-    nk_layout_row_begin(&ctx, NK_STATIC, 30, 2);
+    /* build the user interface */
     {
-        nk_layout_row_push(&ctx, 50);
-        nk_label(&ctx, "Volume:", NK_TEXT_LEFT);
-        nk_layout_row_push(&ctx, 110);
-        nk_slider_float(&ctx, 0, &value, 1.0f, 0.1f);
+        enum {EASY, HARD};
+        static int op = EASY;
+        static float value = 0.6f;
+
+        if (nk_begin(&ctx, "Show", nk_rect(50, 50, 220, 220),
+            NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_CLOSABLE)) {
+            /* fixed widget pixel width */
+            nk_layout_row_static(&ctx, 30, 80, 1);
+            if (nk_button_label(&ctx, "button")) {
+                /* event handling */
+            }
+
+            /* fixed widget window ratio width */
+            nk_layout_row_dynamic(&ctx, 30, 2);
+            if (nk_option_label(&ctx, "easy", op == EASY)) op = EASY;
+            if (nk_option_label(&ctx, "hard", op == HARD)) op = HARD;
+
+            /* custom widget pixel width */
+            nk_layout_row_begin(&ctx, NK_STATIC, 30, 2);
+            {
+                nk_layout_row_push(&ctx, 50);
+                nk_label(&ctx, "Volume:", NK_TEXT_LEFT);
+                nk_layout_row_push(&ctx, 110);
+                nk_slider_float(&ctx, 0, &value, 1.0f, 0.1f);
+            }
+            nk_layout_row_end(&ctx);
+        }
+        nk_end(&ctx);
     }
-    nk_layout_row_end(&ctx);
+
+    /* draw: hand this frame's draw commands to your renderer */
+    {
+        const struct nk_command *cmd;
+        nk_foreach(cmd, &ctx) {
+            switch (cmd->type) {
+            case NK_COMMAND_LINE:
+                your_draw_line_function((const struct nk_command_line*)cmd);
+                break;
+            case NK_COMMAND_RECT:
+                your_draw_rect_function((const struct nk_command_rect*)cmd);
+                break;
+            default:
+                /* [...] */
+                break;
+            }
+        }
+        nk_clear(&ctx);
+    }
 }
-nk_end(&ctx);
 ```
+
+Ready-to-use rendering backends for GLFW, SDL, X11, GDI, Direct3D, Vulkan
+and more are in the [demo](demo/) folder, each with its own build
+instructions, e.g.:
+
+```sh
+make -C demo/glfw_opengl3
+```
+
+More complete programs can be found in the [example](example/) folder.
+Rendered by one of the backends, the interface built above looks like this:
+
 ![example](https://cloud.githubusercontent.com/assets/8057201/10187981/584ecd68-675c-11e5-897c-822ef534a876.png)
 
 ## Bindings
