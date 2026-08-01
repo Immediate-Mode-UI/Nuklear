@@ -230,6 +230,7 @@ nk_sdl_render(struct nk_context* ctx, enum nk_anti_aliasing AA)
 
     {
         SDL_Rect saved_clip;
+        SDL_BlendMode saved_blend;
         bool clipping_enabled;
         int vs = sizeof(struct nk_sdl_vertex);
         size_t vp = NK_OFFSETOF(struct nk_sdl_vertex, position);
@@ -272,6 +273,11 @@ nk_sdl_render(struct nk_context* ctx, enum nk_anti_aliasing AA)
         clipping_enabled = SDL_RenderClipEnabled(sdl->renderer);
         SDL_GetRenderClipRect(sdl->renderer, &saved_clip);
 
+        /* Ensure alpha blending is enabled for geometry rendering. */
+        saved_blend = SDL_BLENDMODE_INVALID;
+        SDL_GetRenderDrawBlendMode(sdl->renderer, &saved_blend);
+        SDL_SetRenderDrawBlendMode(sdl->renderer, SDL_BLENDMODE_BLEND);
+
         nk_draw_foreach(cmd, &sdl->ctx, &sdl->ogl.cmds)
         {
             if (!cmd->elem_count) continue;
@@ -299,6 +305,11 @@ nk_sdl_render(struct nk_context* ctx, enum nk_anti_aliasing AA)
 
                 offset += cmd->elem_count;
             }
+        }
+
+        /* Restore the original blend mode. */
+        if (saved_blend != SDL_BLENDMODE_INVALID) {
+            SDL_SetRenderDrawBlendMode(sdl->renderer, saved_blend);
         }
 
         SDL_SetRenderClipRect(sdl->renderer, &saved_clip);
