@@ -586,6 +586,17 @@ nk_panel_end(struct nk_context *ctx)
     }
     window->flags = layout->flags;
 
+    /* persist actual popup height so the next frame can flip/slide without
+     * using the caller-supplied maximum (DYNAMIC shrinks from the top) */
+    if (((int)layout->type & (int)NK_PANEL_SET_POPUP) &&
+        (layout->flags & NK_WINDOW_DYNAMIC) &&
+        !(layout->flags & NK_WINDOW_MINIMIZED))
+    {
+        float bottom = layout->bounds.y + layout->bounds.h + layout->footer_height;
+        if (bottom > window->bounds.y)
+            window->bounds.h = bottom - window->bounds.y;
+    }
+
     /* property garbage collector */
     if (window->property.active && window->property.old != window->property.seq &&
         window->property.active == window->property.prev) {

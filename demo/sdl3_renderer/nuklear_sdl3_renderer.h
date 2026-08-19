@@ -397,6 +397,9 @@ nk_sdl_init(SDL_Window *win, SDL_Renderer *renderer, struct nk_allocator allocat
     sdl->win = win;
     sdl->renderer = renderer;
     nk_init(&sdl->ctx, &sdl->allocator, 0);
+    {int dw = 0, dh = 0;
+    if (SDL_GetWindowSize(win, &dw, &dh))
+        nk_set_display_size(&sdl->ctx, (float)dw, (float)dh);}
     sdl->ctx.userdata = nk_handle_ptr((void*)sdl);
     sdl->ctx.clip.copy = nk_sdl_clipboard_copy;
     sdl->ctx.clip.paste = nk_sdl_clipboard_paste;
@@ -574,6 +577,10 @@ nk_sdl_handle_event(struct nk_context* ctx, SDL_Event *evt)
 
         case SDL_EVENT_MOUSE_WHEEL:
             nk_input_scroll(ctx, nk_vec2(evt->wheel.x, evt->wheel.y));
+            return 1;
+
+        case SDL_EVENT_WINDOW_RESIZED:
+            nk_set_display_size(ctx, (float)evt->window.data1, (float)evt->window.data2);
             return 1;
     }
     return 0;

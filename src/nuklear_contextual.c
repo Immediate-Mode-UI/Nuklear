@@ -57,8 +57,15 @@ nk_contextual_begin(struct nk_context *ctx, nk_flags flags, struct nk_vec2 size,
         body.w = size.x;
         body.h = size.y;
 
+        {float known_h = (!is_clicked && popup) ? popup->bounds.h : 0;
+        float req_h = body.h;
+        body = nk_fit_popup_rect(ctx, body, body, NK_POPUP_FIT_SLIDE, known_h);
+        flags |= NK_WINDOW_NO_SCROLLBAR;
+        if (body.h + 0.5f < req_h)
+            flags &= ~(nk_flags)NK_WINDOW_NO_SCROLLBAR;}
+
         /* start nonblocking contextual popup */
-        ret = nk_nonblock_begin(ctx, flags | NK_WINDOW_NO_SCROLLBAR, body,
+        ret = nk_nonblock_begin(ctx, flags, body,
             null_rect, NK_PANEL_CONTEXTUAL);
         if (ret) win->popup.type = NK_PANEL_CONTEXTUAL;
         else {

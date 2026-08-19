@@ -6,6 +6,101 @@
  *                              POPUP
  *
  * ===============================================================*/
+NK_LIB struct nk_rect
+nk_fit_popup_rect(const struct nk_context *ctx, struct nk_rect body,
+    struct nk_rect anchor, enum nk_popup_fit fit, float known_h)
+{
+    struct nk_rect d;
+    float h;
+    float overlap;
+    float space_below;
+    float space_above;
+    float d_right;
+    float d_bottom;
+
+    if (!ctx) return body;
+    d = ctx->display_bounds;
+    if (d.w <= 0 || d.h <= 0) return body;
+
+    d_right = d.x + d.w;
+    d_bottom = d.y + d.h;
+    h = (known_h > 0.0f) ? known_h : body.h;
+    overlap = (anchor.y + anchor.h) - body.y;
+
+    /* horizontal: flip/align first, then slide, then shrink */
+    if (fit == NK_POPUP_FIT_FLIP) {
+        if (body.x + body.w > d_right)
+            body.x = anchor.x + anchor.w - body.w;
+    } else if (fit == NK_POPUP_FIT_TOOLTIP) {
+        if (body.x + body.w > d_right) {
+            float flipped = anchor.x - body.w;
+            if (flipped >= d.x)
+                body.x = flipped;
+        }
+    }
+    if (body.x + body.w > d_right)
+        body.x = d_right - body.w;
+    if (body.x < d.x)
+        body.x = d.x;
+    if (body.x + body.w > d_right) {
+        body.w = d_right - body.x;
+        if (body.w < 1.0f) body.w = 1.0f;
+    }
+
+    /* vertical: flip only when actual height is known so DYNAMIC
+     * shrink-from-top does not leave a gap above the trigger */
+    space_below = d_bottom - body.y;
+    space_above = anchor.y - d.y;
+
+    if (fit == NK_POPUP_FIT_FLIP) {
+        if (h > space_below) {
+            if (known_h > 0.0f && known_h <= space_above) {
+                body.y = anchor.y - known_h;
+                if (overlap > 0.0f)
+                    body.y += overlap;
+            } else if (known_h <= 0.0f) {
+                if (space_below > 0.0f)
+                    body.h = space_below;
+            } else if (space_above > space_below) {
+                body.y = d.y;
+                body.h = space_above;
+                if (body.h < 1.0f) body.h = 1.0f;
+            } else if (space_below > 0.0f) {
+                body.h = space_below;
+            }
+        }
+    } else if (fit == NK_POPUP_FIT_SLIDE) {
+        if (known_h > 0.0f) {
+            if (body.y + known_h > d_bottom)
+                body.y = d_bottom - known_h;
+            if (body.y < d.y)
+                body.y = d.y;
+            if (body.y + known_h > d_bottom) {
+                body.h = d_bottom - body.y;
+                if (body.h < 1.0f) body.h = 1.0f;
+            }
+        } else if (body.h > space_below && space_below > 0.0f) {
+            body.h = space_below;
+        }
+    } else {
+        if (known_h > 0.0f && body.y + known_h > d_bottom) {
+            float flipped = anchor.y - known_h;
+            if (flipped >= d.y)
+                body.y = flipped;
+        }
+        if (known_h > 0.0f) {
+            if (body.y + known_h > d_bottom)
+                body.y = d_bottom - known_h;
+            if (body.y < d.y)
+                body.y = d.y;
+            if (body.y + known_h > d_bottom) {
+                body.h = d_bottom - body.y;
+                if (body.h < 1.0f) body.h = 1.0f;
+            }
+        }
+    }
+    return body;
+}
 NK_API nk_bool
 nk_popup_begin(struct nk_context *ctx, enum nk_popup_type type,
     const char *title, nk_flags flags, struct nk_rect rect)

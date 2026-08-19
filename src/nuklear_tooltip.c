@@ -80,10 +80,32 @@ nk_tooltip_begin_offset(struct nk_context *ctx, float width, enum nk_tooltip_pos
         NK_ASSERT(0 && "Invalid tooltip position");
     }
 
-    bounds.x = (float)x;
-    bounds.y = (float)y;
-    bounds.w = (float)w;
-    bounds.h = (float)nk_iceilf(nk_null_rect.h);
+    {struct nk_rect screen;
+    struct nk_rect anchor;
+    float known_h = (float)h;
+    float clip_x = win->layout->clip.x;
+    float clip_y = win->layout->clip.y;
+
+    if (win->popup.win && win->popup.type == NK_PANEL_TOOLTIP &&
+        win->popup.win->bounds.h > known_h)
+        known_h = win->popup.win->bounds.h;
+
+    screen.x = (float)x + clip_x;
+    screen.y = (float)y + clip_y;
+    screen.w = (float)w;
+    screen.h = known_h;
+    anchor.x = in->mouse.pos.x;
+    anchor.y = in->mouse.pos.y;
+    anchor.w = 1;
+    anchor.h = 1;
+    screen = nk_fit_popup_rect(ctx, screen, anchor, NK_POPUP_FIT_TOOLTIP, known_h);
+
+    bounds.x = screen.x - clip_x;
+    bounds.y = screen.y - clip_y;
+    bounds.w = screen.w;
+    /* keep a large max so NK_POPUP_DYNAMIC can grow; the fitter only
+     * shrinks h when the tooltip cannot fit on the surface at all */
+    bounds.h = (screen.h + 0.5f < known_h) ? screen.h : (float)nk_iceilf(nk_null_rect.h);}
 
     ret = nk_popup_begin(ctx, NK_POPUP_DYNAMIC,
         "__##Tooltip##__", NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BORDER, bounds);
