@@ -11,12 +11,13 @@ nk_fit_popup_rect(const struct nk_context *ctx, struct nk_rect body,
     struct nk_rect anchor, enum nk_popup_fit fit, float known_h)
 {
     struct nk_rect d;
-    float h;
     float overlap;
     float space_below;
     float space_above;
     float d_right;
     float d_bottom;
+    float req_h;
+    float need_h;
 
     if (!ctx) return body;
     d = ctx->display_bounds;
@@ -24,10 +25,13 @@ nk_fit_popup_rect(const struct nk_context *ctx, struct nk_rect body,
 
     d_right = d.x + d.w;
     d_bottom = d.y + d.h;
-    h = (known_h > 0.0f) ? known_h : body.h;
+    req_h = body.h;
+    need_h = (known_h > 0.0f) ? known_h : req_h;
     overlap = (anchor.y + anchor.h) - body.y;
 
-    /* horizontal: flip/align first, then slide, then shrink */
+    /* horizontal: flip/align, then slide. Do not shrink width; dynamic
+     * rows (e.g. the overview color contextual) size to the panel and
+     * would smush. If the surface is narrower than the popup, clip. */
     if (fit == NK_POPUP_FIT_FLIP) {
         if (body.x + body.w > d_right)
             body.x = anchor.x + anchor.w - body.w;
@@ -42,62 +46,52 @@ nk_fit_popup_rect(const struct nk_context *ctx, struct nk_rect body,
         body.x = d_right - body.w;
     if (body.x < d.x)
         body.x = d.x;
-    if (body.x + body.w > d_right) {
-        body.w = d_right - body.x;
-        if (body.w < 1.0f) body.w = 1.0f;
-    }
 
-    /* vertical: flip only when actual height is known so DYNAMIC
-     * shrink-from-top does not leave a gap above the trigger */
     space_below = d_bottom - body.y;
     space_above = anchor.y - d.y;
+    if (space_below < 0.0f) space_below = 0.0f;
+    if (space_above < 0.0f) space_above = 0.0f;
 
     if (fit == NK_POPUP_FIT_FLIP) {
-        if (h > space_below) {
-            if (known_h > 0.0f && known_h <= space_above) {
-                body.y = anchor.y - known_h;
-                if (overlap > 0.0f)
-                    body.y += overlap;
-            } else if (known_h <= 0.0f) {
-                if (space_below > 0.0f)
-                    body.h = space_below;
-            } else if (space_above > space_below) {
-                body.y = d.y;
-                body.h = space_above;
-                if (body.h < 1.0f) body.h = 1.0f;
-            } else if (space_below > 0.0f) {
-                body.h = space_below;
-            }
+        int flip = 0;
+        if (req_h > space_below) {
+            /* flip only when the real content fits above. using the
+             * clamped window height here caused a flip/restore flicker. */
+            if (need_h <= space_above)
+                flip = 1;
+            else if (known_h > 0.0f && space_above > space_below)
+                flip = 1;
+        }
+        if (flip) {
+            float use_h = req_h;
+            if (use_h > space_above) use_h = space_above;
+            if (known_h > 0.0f && known_h < use_h) use_h = known_h;
+            if (use_h < 1.0f) use_h = 1.0f;
+            body.y = anchor.y - use_h;
+            if (overlap > 0.0f) body.y += overlap;
+            body.h = use_h;
+        } else if (req_h > space_below) {
+            body.h = (space_below > 1.0f) ? space_below : 1.0f;
         }
     } else if (fit == NK_POPUP_FIT_SLIDE) {
-        if (known_h > 0.0f) {
-            if (body.y + known_h > d_bottom)
-                body.y = d_bottom - known_h;
-            if (body.y < d.y)
-                body.y = d.y;
-            if (body.y + known_h > d_bottom) {
-                body.h = d_bottom - body.y;
-                if (body.h < 1.0f) body.h = 1.0f;
-            }
-        } else if (body.h > space_below && space_below > 0.0f) {
-            body.h = space_below;
-        }
+        if (body.y + need_h > d_bottom)
+            body.y = d_bottom - need_h;
+        if (body.y < d.y)
+            body.y = d.y;
+        if (body.y + body.h > d_bottom)
+            body.h = d_bottom - body.y;
+        if (body.h < 1.0f) body.h = 1.0f;
     } else {
-        if (known_h > 0.0f && body.y + known_h > d_bottom) {
-            float flipped = anchor.y - known_h;
+        /* tooltip: flip then slide; do not shrink (clipping is acceptable) */
+        if (body.y + need_h > d_bottom) {
+            float flipped = anchor.y - need_h;
             if (flipped >= d.y)
                 body.y = flipped;
         }
-        if (known_h > 0.0f) {
-            if (body.y + known_h > d_bottom)
-                body.y = d_bottom - known_h;
-            if (body.y < d.y)
-                body.y = d.y;
-            if (body.y + known_h > d_bottom) {
-                body.h = d_bottom - body.y;
-                if (body.h < 1.0f) body.h = 1.0f;
-            }
-        }
+        if (body.y + need_h > d_bottom)
+            body.y = d_bottom - need_h;
+        if (body.y < d.y)
+            body.y = d.y;
     }
     return body;
 }
@@ -249,6 +243,7 @@ nk_nonblock_begin(struct nk_context *ctx,
             root = root->parent;
         }
         win->popup.buf.active = 0;
+        win->popup.last_h = 0;
         return is_active;
     }
     popup->bounds = body;

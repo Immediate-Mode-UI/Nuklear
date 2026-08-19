@@ -5639,6 +5639,7 @@ struct nk_popup_state {
     unsigned con_count, con_old;
     unsigned active_con;
     struct nk_rect header;
+    float last_h; /**< last frame's content height; used to flip without a gap */
 };
 
 struct nk_edit_state {

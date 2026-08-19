@@ -586,15 +586,14 @@ nk_panel_end(struct nk_context *ctx)
     }
     window->flags = layout->flags;
 
-    /* persist actual popup height so the next frame can flip/slide without
-     * using the caller-supplied maximum (DYNAMIC shrinks from the top) */
-    if (((int)layout->type & (int)NK_PANEL_SET_POPUP) &&
-        (layout->flags & NK_WINDOW_DYNAMIC) &&
+    /* remember unclamped content height so next frame can flip using the
+     * real size, not the display-clamped window (that caused flicker). */
+    if (window->parent && ((int)layout->type & (int)NK_PANEL_SET_POPUP) &&
         !(layout->flags & NK_WINDOW_MINIMIZED))
     {
-        float bottom = layout->bounds.y + layout->bounds.h + layout->footer_height;
-        if (bottom > window->bounds.y)
-            window->bounds.h = bottom - window->bounds.y;
+        float content_h = (layout->at_y + layout->footer_height) - window->bounds.y;
+        if (content_h > 0)
+            window->parent->popup.last_h = content_h;
     }
 
     /* property garbage collector */

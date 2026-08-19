@@ -87,8 +87,8 @@ nk_tooltip_begin_offset(struct nk_context *ctx, float width, enum nk_tooltip_pos
     float clip_y = win->layout->clip.y;
 
     if (win->popup.win && win->popup.type == NK_PANEL_TOOLTIP &&
-        win->popup.win->bounds.h > known_h)
-        known_h = win->popup.win->bounds.h;
+        win->popup.last_h > known_h)
+        known_h = win->popup.last_h;
 
     screen.x = (float)x + clip_x;
     screen.y = (float)y + clip_y;

@@ -57,7 +57,7 @@ nk_contextual_begin(struct nk_context *ctx, nk_flags flags, struct nk_vec2 size,
         body.w = size.x;
         body.h = size.y;
 
-        {float known_h = (!is_clicked && popup) ? popup->bounds.h : 0;
+        {float known_h = (!is_clicked) ? win->popup.last_h : 0;
         float req_h = body.h;
         body = nk_fit_popup_rect(ctx, body, body, NK_POPUP_FIT_SLIDE, known_h);
         flags |= NK_WINDOW_NO_SCROLLBAR;

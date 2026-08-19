@@ -103,7 +103,7 @@ nk_menu_begin(struct nk_context *ctx, struct nk_window *win,
     if ((is_clicked && is_open && !is_active) || (is_open && !is_active) ||
         (!is_open && !is_active && !is_clicked)) return 0;
     {nk_flags flags = NK_WINDOW_NO_SCROLLBAR;
-    float known_h = (is_active && popup) ? popup->bounds.h : 0;
+    float known_h = (is_active) ? win->popup.last_h : 0;
     float req_h = body.h;
     body = nk_fit_popup_rect(ctx, body, header, NK_POPUP_FIT_FLIP, known_h);
     if (body.h + 0.5f < req_h)
