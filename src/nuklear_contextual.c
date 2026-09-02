@@ -44,36 +44,43 @@ nk_contextual_begin(struct nk_context *ctx, nk_flags flags, struct nk_vec2 size,
         if ((!is_open && !is_clicked))
             return 0;
 
-        /* calculate contextual position on click */
+        /* calculate contextual position on click; keep the click as the
+         * anchor every frame (combo/menu re-fit from the trigger). */
         win->popup.active_con = win->popup.con_count;
+        {struct nk_rect anchor;
         if (is_clicked) {
-            body.x = in->mouse.pos.x;
-            body.y = in->mouse.pos.y;
+            anchor.x = in->mouse.pos.x;
+            anchor.y = in->mouse.pos.y;
         } else {
-            body.x = popup->bounds.x;
-            body.y = popup->bounds.y;
+            anchor.x = win->popup.header.x;
+            anchor.y = win->popup.header.y;
         }
-
+        anchor.w = 1;
+        anchor.h = 1;
+        body.x = anchor.x;
+        body.y = anchor.y;
         body.w = size.x;
         body.h = size.y;
 
         {float known_h = (!is_clicked) ? win->popup.last_h : 0;
-        float req_h = body.h;
-        body = nk_fit_popup_rect(ctx, body, body, NK_POPUP_FIT_SLIDE, known_h, nk_false);
+        body = nk_fit_popup_rect(ctx, body, anchor, NK_POPUP_FIT_SLIDE, known_h, nk_false);
         flags |= NK_WINDOW_NO_SCROLLBAR;
-        if (body.h + 0.5f < req_h)
+        /* scrollbar only if actual content does not fit in the display */
+        if (known_h > 0.0f && body.h + 0.5f < known_h)
             flags &= ~(nk_flags)NK_WINDOW_NO_SCROLLBAR;}
 
         /* start nonblocking contextual popup */
         ret = nk_nonblock_begin(ctx, flags, body,
             null_rect, NK_PANEL_CONTEXTUAL);
-        if (ret) win->popup.type = NK_PANEL_CONTEXTUAL;
-        else {
+        if (ret) {
+            win->popup.type = NK_PANEL_CONTEXTUAL;
+            win->popup.header = anchor;
+        } else {
             win->popup.active_con = 0;
             win->popup.type = NK_PANEL_NONE;
             if (win->popup.win)
                 win->popup.win->flags = 0;
-        }
+        }}
     }
     return ret;
 }

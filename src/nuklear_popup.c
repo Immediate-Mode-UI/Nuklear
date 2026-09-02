@@ -80,13 +80,19 @@ nk_fit_popup_rect(const struct nk_context *ctx, struct nk_rect body,
             body.h = (space_below > 1.0f) ? space_below : 1.0f;
         }
     } else if (fit == NK_POPUP_FIT_SLIDE) {
-        if (body.y + need_h > d_bottom)
-            body.y = d_bottom - need_h;
-        if (body.y < d.y)
-            body.y = d.y;
-        if (body.y + body.h > d_bottom)
-            body.h = d_bottom - body.y;
-        if (body.h < 1.0f) body.h = 1.0f;
+        /* size.y is a maximum, not current content. First open (known_h == 0)
+         * stays on the click; later frames slide only if actual height
+         * does not fit below. Sliding with the max left the DYNAMIC-shrunk
+         * panel floating above the cursor. */
+        if (known_h > 0.0f && known_h > space_below) {
+            body.y = d_bottom - known_h;
+            if (body.y < d.y)
+                body.y = d.y;
+            if (body.y + known_h > d_bottom)
+                body.h = d_bottom - body.y;
+            else body.h = known_h;
+            if (body.h < 1.0f) body.h = 1.0f;
+        }
     } else {
         /* tooltip: flip then slide; do not shrink (clipping is acceptable) */
         if (body.y + need_h > d_bottom) {
