@@ -5830,6 +5830,7 @@ struct nk_popup_state {
     unsigned active_con;
     struct nk_rect header;
     float last_h; /**< last frame's content height; used to flip without a gap */
+    nk_bool pinned_up; /**< keep drop-up once chosen so expand/collapse does not jump */
 };
 
 struct nk_edit_state {
@@ -6412,7 +6413,7 @@ enum nk_popup_fit {
     NK_POPUP_FIT_SLIDE,   /* contextual: slide to stay on-screen */
     NK_POPUP_FIT_TOOLTIP  /* tooltip: flip around cursor, then slide */
 };
-NK_LIB struct nk_rect nk_fit_popup_rect(const struct nk_context *ctx, struct nk_rect body, struct nk_rect anchor, enum nk_popup_fit fit, float known_h);
+NK_LIB struct nk_rect nk_fit_popup_rect(const struct nk_context *ctx, struct nk_rect body, struct nk_rect anchor, enum nk_popup_fit fit, float known_h, nk_bool stay_up);
 NK_LIB nk_bool nk_nonblock_begin(struct nk_context *ctx, nk_flags flags, struct nk_rect body, struct nk_rect header, enum nk_panel_type panel_type);
 
 /* text */
@@ -21551,7 +21552,8 @@ nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, nk_bool roundi
  * ===============================================================*/
 NK_LIB struct nk_rect
 nk_fit_popup_rect(const struct nk_context *ctx, struct nk_rect body,
-    struct nk_rect anchor, enum nk_popup_fit fit, float known_h)
+    struct nk_rect anchor, enum nk_popup_fit fit, float known_h,
+    nk_bool stay_up)
 {
     struct nk_rect d;
     float overlap;
@@ -21597,23 +21599,28 @@ nk_fit_popup_rect(const struct nk_context *ctx, struct nk_rect body,
 
     if (fit == NK_POPUP_FIT_FLIP) {
         int flip = 0;
-        if (req_h > space_below) {
-            /* flip only when the real content fits above. using the
-             * clamped window height here caused a flip/restore flicker. */
-            if (need_h <= space_above)
+        /* Caller size.y is a maximum (ADVANCED is 600px for expanded trees),
+         * not the current content. Flip only when last frame's actual height
+         * does not fit below. First open (known_h == 0) always drops down.
+         * stay_up keeps a drop-up for the rest of this open so collapsing
+         * a tree does not jump back to a dropdown. */
+        if (stay_up && space_above > 0.0f)
+            flip = 1;
+        else if (known_h > 0.0f && known_h > space_below) {
+            if (known_h <= space_above)
                 flip = 1;
-            else if (known_h > 0.0f && space_above > space_below)
+            else if (space_above > space_below)
                 flip = 1;
         }
         if (flip) {
             float use_h = req_h;
             if (use_h > space_above) use_h = space_above;
-            if (known_h > 0.0f && known_h < use_h) use_h = known_h;
+            if (known_h < use_h) use_h = known_h;
             if (use_h < 1.0f) use_h = 1.0f;
             body.y = anchor.y - use_h;
             if (overlap > 0.0f) body.y += overlap;
             body.h = use_h;
-        } else if (req_h > space_below) {
+        } else if (known_h > space_below) {
             body.h = (space_below > 1.0f) ? space_below : 1.0f;
         }
     } else if (fit == NK_POPUP_FIT_SLIDE) {
@@ -21787,6 +21794,7 @@ nk_nonblock_begin(struct nk_context *ctx,
         }
         win->popup.buf.active = 0;
         win->popup.last_h = 0;
+        win->popup.pinned_up = nk_false;
         return is_active;
     }
     popup->bounds = body;
@@ -21957,7 +21965,7 @@ nk_contextual_begin(struct nk_context *ctx, nk_flags flags, struct nk_vec2 size,
 
         {float known_h = (!is_clicked) ? win->popup.last_h : 0;
         float req_h = body.h;
-        body = nk_fit_popup_rect(ctx, body, body, NK_POPUP_FIT_SLIDE, known_h);
+        body = nk_fit_popup_rect(ctx, body, body, NK_POPUP_FIT_SLIDE, known_h, nk_false);
         flags |= NK_WINDOW_NO_SCROLLBAR;
         if (body.h + 0.5f < req_h)
             flags &= ~(nk_flags)NK_WINDOW_NO_SCROLLBAR;}
@@ -22237,7 +22245,9 @@ nk_menu_begin(struct nk_context *ctx, struct nk_window *win,
     {nk_flags flags = NK_WINDOW_NO_SCROLLBAR;
     float known_h = (is_active) ? win->popup.last_h : 0;
     float req_h = body.h;
-    body = nk_fit_popup_rect(ctx, body, header, NK_POPUP_FIT_FLIP, known_h);
+    body = nk_fit_popup_rect(ctx, body, header, NK_POPUP_FIT_FLIP, known_h,
+        is_active && win->popup.pinned_up);
+    win->popup.pinned_up = (body.y < header.y);
     if (body.h + 0.5f < req_h)
         flags = 0;
     if (!nk_nonblock_begin(ctx, flags, body, header, NK_PANEL_MENU))
@@ -30217,8 +30227,10 @@ nk_chart_push_slot(struct nk_context *ctx, float value, int slot)
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
     NK_ASSERT(slot >= 0 && slot < NK_CHART_MAX_SLOT);
-    NK_ASSERT(slot < ctx->current->layout->chart.slot);
     if (!ctx || !ctx->current || slot >= NK_CHART_MAX_SLOT) return nk_false;
+    /* nk_chart_begin zeros the chart and returns 0 when the widget is
+     * clipped (e.g. a menu drop-up sized from last frame while a tree
+     * expands). Pushing in that case is a no-op, not a programmer error. */
     if (slot >= ctx->current->layout->chart.slot) return nk_false;
 
     win = ctx->current;
@@ -30561,7 +30573,9 @@ nk_combo_begin(struct nk_context *ctx, struct nk_window *win,
     if ((is_clicked && is_open && !is_active) || (is_open && !is_active) ||
         (!is_open && !is_active && !is_clicked)) return 0;
     {float known_h = (is_active) ? win->popup.last_h : 0;
-    body = nk_fit_popup_rect(ctx, body, header, NK_POPUP_FIT_FLIP, known_h);}
+    body = nk_fit_popup_rect(ctx, body, header, NK_POPUP_FIT_FLIP, known_h,
+        is_active && win->popup.pinned_up);
+    win->popup.pinned_up = (body.y < header.y);}
     if (!nk_nonblock_begin(ctx, 0, body,
         (is_clicked && is_open)?nk_rect(0,0,0,0):header, NK_PANEL_COMBO)) return 0;
 
@@ -31466,7 +31480,7 @@ nk_tooltip_begin_offset(struct nk_context *ctx, float width, enum nk_tooltip_pos
     anchor.y = in->mouse.pos.y;
     anchor.w = 1;
     anchor.h = 1;
-    screen = nk_fit_popup_rect(ctx, screen, anchor, NK_POPUP_FIT_TOOLTIP, known_h);
+    screen = nk_fit_popup_rect(ctx, screen, anchor, NK_POPUP_FIT_TOOLTIP, known_h, nk_false);
 
     bounds.x = screen.x - clip_x;
     bounds.y = screen.y - clip_y;

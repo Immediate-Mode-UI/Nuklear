@@ -105,7 +105,9 @@ nk_menu_begin(struct nk_context *ctx, struct nk_window *win,
     {nk_flags flags = NK_WINDOW_NO_SCROLLBAR;
     float known_h = (is_active) ? win->popup.last_h : 0;
     float req_h = body.h;
-    body = nk_fit_popup_rect(ctx, body, header, NK_POPUP_FIT_FLIP, known_h);
+    body = nk_fit_popup_rect(ctx, body, header, NK_POPUP_FIT_FLIP, known_h,
+        is_active && win->popup.pinned_up);
+    win->popup.pinned_up = (body.y < header.y);
     if (body.h + 0.5f < req_h)
         flags = 0;
     if (!nk_nonblock_begin(ctx, flags, body, header, NK_PANEL_MENU))

@@ -98,7 +98,7 @@ nk_tooltip_begin_offset(struct nk_context *ctx, float width, enum nk_tooltip_pos
     anchor.y = in->mouse.pos.y;
     anchor.w = 1;
     anchor.h = 1;
-    screen = nk_fit_popup_rect(ctx, screen, anchor, NK_POPUP_FIT_TOOLTIP, known_h);
+    screen = nk_fit_popup_rect(ctx, screen, anchor, NK_POPUP_FIT_TOOLTIP, known_h, nk_false);
 
     bounds.x = screen.x - clip_x;
     bounds.y = screen.y - clip_y;

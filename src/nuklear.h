@@ -5640,6 +5640,7 @@ struct nk_popup_state {
     unsigned active_con;
     struct nk_rect header;
     float last_h; /**< last frame's content height; used to flip without a gap */
+    nk_bool pinned_up; /**< keep drop-up once chosen so expand/collapse does not jump */
 };
 
 struct nk_edit_state {

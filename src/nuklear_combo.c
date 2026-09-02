@@ -50,7 +50,9 @@ nk_combo_begin(struct nk_context *ctx, struct nk_window *win,
     if ((is_clicked && is_open && !is_active) || (is_open && !is_active) ||
         (!is_open && !is_active && !is_clicked)) return 0;
     {float known_h = (is_active) ? win->popup.last_h : 0;
-    body = nk_fit_popup_rect(ctx, body, header, NK_POPUP_FIT_FLIP, known_h);}
+    body = nk_fit_popup_rect(ctx, body, header, NK_POPUP_FIT_FLIP, known_h,
+        is_active && win->popup.pinned_up);
+    win->popup.pinned_up = (body.y < header.y);}
     if (!nk_nonblock_begin(ctx, 0, body,
         (is_clicked && is_open)?nk_rect(0,0,0,0):header, NK_PANEL_COMBO)) return 0;
 

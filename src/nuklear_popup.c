@@ -8,7 +8,8 @@
  * ===============================================================*/
 NK_LIB struct nk_rect
 nk_fit_popup_rect(const struct nk_context *ctx, struct nk_rect body,
-    struct nk_rect anchor, enum nk_popup_fit fit, float known_h)
+    struct nk_rect anchor, enum nk_popup_fit fit, float known_h,
+    nk_bool stay_up)
 {
     struct nk_rect d;
     float overlap;
@@ -54,23 +55,28 @@ nk_fit_popup_rect(const struct nk_context *ctx, struct nk_rect body,
 
     if (fit == NK_POPUP_FIT_FLIP) {
         int flip = 0;
-        if (req_h > space_below) {
-            /* flip only when the real content fits above. using the
-             * clamped window height here caused a flip/restore flicker. */
-            if (need_h <= space_above)
+        /* Caller size.y is a maximum (ADVANCED is 600px for expanded trees),
+         * not the current content. Flip only when last frame's actual height
+         * does not fit below. First open (known_h == 0) always drops down.
+         * stay_up keeps a drop-up for the rest of this open so collapsing
+         * a tree does not jump back to a dropdown. */
+        if (stay_up && space_above > 0.0f)
+            flip = 1;
+        else if (known_h > 0.0f && known_h > space_below) {
+            if (known_h <= space_above)
                 flip = 1;
-            else if (known_h > 0.0f && space_above > space_below)
+            else if (space_above > space_below)
                 flip = 1;
         }
         if (flip) {
             float use_h = req_h;
             if (use_h > space_above) use_h = space_above;
-            if (known_h > 0.0f && known_h < use_h) use_h = known_h;
+            if (known_h < use_h) use_h = known_h;
             if (use_h < 1.0f) use_h = 1.0f;
             body.y = anchor.y - use_h;
             if (overlap > 0.0f) body.y += overlap;
             body.h = use_h;
-        } else if (req_h > space_below) {
+        } else if (known_h > space_below) {
             body.h = (space_below > 1.0f) ? space_below : 1.0f;
         }
     } else if (fit == NK_POPUP_FIT_SLIDE) {
@@ -244,6 +250,7 @@ nk_nonblock_begin(struct nk_context *ctx,
         }
         win->popup.buf.active = 0;
         win->popup.last_h = 0;
+        win->popup.pinned_up = nk_false;
         return is_active;
     }
     popup->bounds = body;

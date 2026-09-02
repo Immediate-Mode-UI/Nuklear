@@ -251,7 +251,7 @@ enum nk_popup_fit {
     NK_POPUP_FIT_SLIDE,   /* contextual: slide to stay on-screen */
     NK_POPUP_FIT_TOOLTIP  /* tooltip: flip around cursor, then slide */
 };
-NK_LIB struct nk_rect nk_fit_popup_rect(const struct nk_context *ctx, struct nk_rect body, struct nk_rect anchor, enum nk_popup_fit fit, float known_h);
+NK_LIB struct nk_rect nk_fit_popup_rect(const struct nk_context *ctx, struct nk_rect body, struct nk_rect anchor, enum nk_popup_fit fit, float known_h, nk_bool stay_up);
 NK_LIB nk_bool nk_nonblock_begin(struct nk_context *ctx, nk_flags flags, struct nk_rect body, struct nk_rect header, enum nk_panel_type panel_type);
 
 /* text */
