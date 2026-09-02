@@ -6,6 +6,22 @@
  *                          COMBO
  *
  * ===============================================================*/
+/* Outer popup height that fits `count` rows: each row is item_height plus
+ * trailing spacing, plus combo top padding and the border nk_panel_begin
+ * subtracts. Combos always get NK_WINDOW_BORDER from nk_nonblock_begin. */
+NK_INTERN float
+nk_combo_calc_max_height(const struct nk_context *ctx, int count, int item_height)
+{
+    struct nk_vec2 spacing;
+    struct nk_vec2 padding;
+
+    spacing = ctx->style.window.spacing;
+    padding = nk_panel_get_padding(&ctx->style, NK_PANEL_COMBO);
+    return (float)count * (float)item_height
+        + (float)count * spacing.y
+        + padding.y
+        + 2.0f * ctx->style.window.combo_border;
+}
 NK_INTERN nk_bool
 nk_combo_begin(struct nk_context *ctx, struct nk_window *win,
     struct nk_vec2 size, nk_bool is_clicked, struct nk_rect header)
@@ -706,9 +722,7 @@ nk_combo(struct nk_context *ctx, const char *const *items, int count,
     int selected, int item_height, struct nk_vec2 size)
 {
     int i = 0;
-    int max_height;
-    struct nk_vec2 item_spacing;
-    struct nk_vec2 window_padding;
+    float max_height;
 
     NK_ASSERT(ctx);
     NK_ASSERT(items);
@@ -716,11 +730,8 @@ nk_combo(struct nk_context *ctx, const char *const *items, int count,
     if (!ctx || !items ||!count)
         return selected;
 
-    item_spacing = ctx->style.window.spacing;
-    window_padding = nk_panel_get_padding(&ctx->style, ctx->current->layout->type);
-    max_height = count * item_height + count * (int)item_spacing.y;
-    max_height += (int)item_spacing.y * 2 + (int)window_padding.y * 2;
-    size.y = NK_MIN(size.y, (float)max_height);
+    max_height = nk_combo_calc_max_height(ctx, count, item_height);
+    size.y = NK_MIN(size.y, max_height);
     if (nk_combo_begin_label(ctx, items[selected], size)) {
         nk_layout_row_dynamic(ctx, (float)item_height, 1);
         for (i = 0; i < count; ++i) {
@@ -736,9 +747,7 @@ nk_combo_separator(struct nk_context *ctx, const char *items_separated_by_separa
     int separator, int selected, int count, int item_height, struct nk_vec2 size)
 {
     int i;
-    int max_height;
-    struct nk_vec2 item_spacing;
-    struct nk_vec2 window_padding;
+    float max_height;
     const char *current_item;
     const char *iter;
     int length = 0;
@@ -748,12 +757,8 @@ nk_combo_separator(struct nk_context *ctx, const char *items_separated_by_separa
     if (!ctx || !items_separated_by_separator)
         return selected;
 
-    /* calculate popup window */
-    item_spacing = ctx->style.window.spacing;
-    window_padding = nk_panel_get_padding(&ctx->style, ctx->current->layout->type);
-    max_height = count * item_height + count * (int)item_spacing.y;
-    max_height += (int)item_spacing.y * 2 + (int)window_padding.y * 2;
-    size.y = NK_MIN(size.y, (float)max_height);
+    max_height = nk_combo_calc_max_height(ctx, count, item_height);
+    size.y = NK_MIN(size.y, max_height);
 
     /* find selected item */
     current_item = items_separated_by_separator;
@@ -791,9 +796,7 @@ nk_combo_callback(struct nk_context *ctx, void(*item_getter)(void*, int, const c
     void *userdata, int selected, int count, int item_height, struct nk_vec2 size)
 {
     int i;
-    int max_height;
-    struct nk_vec2 item_spacing;
-    struct nk_vec2 window_padding;
+    float max_height;
     const char *item;
 
     NK_ASSERT(ctx);
@@ -801,12 +804,8 @@ nk_combo_callback(struct nk_context *ctx, void(*item_getter)(void*, int, const c
     if (!ctx || !item_getter)
         return selected;
 
-    /* calculate popup window */
-    item_spacing = ctx->style.window.spacing;
-    window_padding = nk_panel_get_padding(&ctx->style, ctx->current->layout->type);
-    max_height = count * item_height + count * (int)item_spacing.y;
-    max_height += (int)item_spacing.y * 2 + (int)window_padding.y * 2;
-    size.y = NK_MIN(size.y, (float)max_height);
+    max_height = nk_combo_calc_max_height(ctx, count, item_height);
+    size.y = NK_MIN(size.y, max_height);
 
     item_getter(userdata, selected, &item);
     if (nk_combo_begin_label(ctx, item, size)) {

@@ -323,6 +323,113 @@ SDL_AppEvent(void *appstate, SDL_Event* event)
     return SDL_APP_CONTINUE;
 }
 
+/* Visual checks for the tree-element hit box and nk_combo height cap.
+ * Styles are exaggerated so a regression is obvious. */
+static void
+layout_sizing_bugs(struct nk_context *ctx)
+{
+    static const char *items[] = {
+        "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"
+    };
+    static int combo_small = 0;
+    static int combo_large = 0;
+    static nk_bool tree_selected = nk_true;
+
+    const int count = (int)NK_LEN(items);
+    const int item_h = 25;
+    const float demo_sel_pad = 14.0f;
+    const float demo_combo_pad = 48.0f;
+    const float demo_parent_pad = 48.0f;
+
+    struct nk_vec2 sel_pad_save;
+    struct nk_vec2 combo_pad_save;
+    struct nk_vec2 win_pad_save;
+    float spacing_y, combo_border;
+    float accurate, current_h;
+
+    if (!nk_begin(ctx, "Sizing bugs", nk_rect(430, 40, 400, 620),
+        NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
+        NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
+    {
+        nk_end(ctx);
+        return;
+    }
+
+    spacing_y = ctx->style.window.spacing.y;
+    combo_border = ctx->style.window.combo_border;
+
+    /* ---- tree element: selectable is text + 2 * padding ---- */
+    nk_layout_row_dynamic(ctx, 18, 1);
+    nk_label(ctx, "Tree element: selectable hugs the text", NK_TEXT_LEFT);
+    nk_layout_row_dynamic(ctx, 54, 1);
+    nk_label_wrap(ctx, "nk_tree_element_* sizes the title to text width + 2 * selectable.padding.x so nk_do_selectable can inset both sides. Highlight should have equal pad left and right of 'Hi'.");
+
+    sel_pad_save = ctx->style.selectable.padding;
+    ctx->style.selectable.padding.x = demo_sel_pad;
+
+    if (nk_tree_element_push(ctx, NK_TREE_NODE, "Hi", NK_MAXIMIZED, &tree_selected)) {
+        nk_label(ctx, "Child row (collapse uses the triangle only).", NK_TEXT_LEFT);
+        nk_tree_element_pop(ctx);
+    }
+    ctx->style.selectable.padding = sel_pad_save;
+
+    nk_layout_row_dynamic(ctx, 18, 1);
+    nk_labelf(ctx, NK_TEXT_LEFT, "selected=%s  pad.x=%.0f (box = text + 2*%.0f)",
+        tree_selected ? "true" : "false", demo_sel_pad, demo_sel_pad);
+    nk_layout_row_dynamic(ctx, 32, 1);
+    nk_label_wrap(ctx, "Click in the right pad (still toggles), then further right on the same row (does not).");
+
+    nk_layout_row_dynamic(ctx, 8, 1);
+    nk_spacing(ctx, 1);
+
+    /* ---- combo with large combo_padding: cap must include it ---- */
+    nk_layout_row_dynamic(ctx, 18, 1);
+    nk_label(ctx, "Combo + large combo_padding.y", NK_TEXT_LEFT);
+    nk_layout_row_dynamic(ctx, 54, 1);
+    nk_label_wrap(ctx, "Height cap includes combo_padding and border. The top band is padding; all items should fit with no scrollbar.");
+
+    accurate = (float)count * (float)item_h + (float)count * spacing_y
+        + demo_combo_pad + 2.0f * combo_border;
+    current_h = (float)count * (float)item_h + (float)count * spacing_y
+        + 2.0f * spacing_y + 2.0f * ctx->style.window.padding.y;
+
+    nk_layout_row_dynamic(ctx, 18, 1);
+    nk_labelf(ctx, NK_TEXT_LEFT, "nk_combo cap=%.0f  old formula=%.0f", accurate, current_h);
+
+    combo_pad_save = ctx->style.window.combo_padding;
+    ctx->style.window.combo_padding.y = demo_combo_pad;
+    nk_layout_row_dynamic(ctx, (float)item_h, 1);
+    combo_small = nk_combo(ctx, items, count, combo_small, item_h,
+        nk_vec2(nk_widget_width(ctx), 400));
+    ctx->style.window.combo_padding = combo_pad_save;
+
+    nk_layout_row_dynamic(ctx, 8, 1);
+    nk_spacing(ctx, 1);
+
+    /* ---- combo with large parent padding: cap must ignore it ---- */
+    nk_layout_row_dynamic(ctx, 18, 1);
+    nk_label(ctx, "Combo + large window.padding.y", NK_TEXT_LEFT);
+    nk_layout_row_dynamic(ctx, 54, 1);
+    nk_label_wrap(ctx, "Height cap uses combo padding, not parent window.padding. Allocated height should match the list; a click just below the last item should close the combo.");
+
+    accurate = (float)count * (float)item_h + (float)count * spacing_y
+        + ctx->style.window.combo_padding.y + 2.0f * combo_border;
+    current_h = (float)count * (float)item_h + (float)count * spacing_y
+        + 2.0f * spacing_y + 2.0f * demo_parent_pad;
+
+    nk_layout_row_dynamic(ctx, 18, 1);
+    nk_labelf(ctx, NK_TEXT_LEFT, "nk_combo cap=%.0f  old formula=%.0f", accurate, current_h);
+
+    win_pad_save = ctx->style.window.padding;
+    ctx->style.window.padding.y = demo_parent_pad;
+    nk_layout_row_dynamic(ctx, (float)item_h, 1);
+    combo_large = nk_combo(ctx, items, count, combo_large, item_h,
+        nk_vec2(nk_widget_width(ctx), 400));
+    ctx->style.window.padding = win_pad_save;
+
+    nk_end(ctx);
+}
+
 SDL_AppResult
 SDL_AppIterate(void *appstate)
 {
@@ -370,6 +477,8 @@ SDL_AppIterate(void *appstate)
         }
     }
     nk_end(ctx);
+
+    layout_sizing_bugs(ctx);
 
     /* -------------- EXAMPLES ---------------- */
     #ifdef INCLUDE_CALCULATOR
