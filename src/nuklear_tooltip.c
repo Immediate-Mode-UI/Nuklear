@@ -168,7 +168,9 @@ nk_tooltip_offset(struct nk_context *ctx, const char *text, enum nk_tooltip_pos 
     text_len = nk_strlen(text);
     text_width = style->font->width(style->font->userdata,
                     style->font->height, text, text_len);
-    text_width += (4 * padding.x);
+    /* outer bounds: nk_panel_begin subtracts popup padding and border */
+    text_width += 2 * style->window.popup_padding.x;
+    text_width += 2 * style->window.popup_border;
     text_height = (style->font->height + 2 * padding.y);
 
     /* execute tooltip and fill with text */
