@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    win = SDL_CreateWindow("sdl_opengl3",
+    win = SDL_CreateWindow("sdl3_opengl3",
         WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL);
     glContext = SDL_GL_CreateContext(win);
     SDL_GetWindowSize(win, &win_width, &win_height);
