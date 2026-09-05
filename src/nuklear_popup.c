@@ -27,6 +27,12 @@ nk_fit_popup_rect(const struct nk_context *ctx, struct nk_rect body,
     d_right = d.x + d.w;
     d_bottom = d.y + d.h;
     req_h = body.h;
+    /* last_h is unclamped layout height (every row, including those that
+     * would scroll). Combos pass a smaller panel (e.g. 200 with 370px of
+     * items); menus pass a larger max (e.g. 600 with 80px of trees).
+     * Judge the visible panel: min(content, caller max). */
+    if (known_h > req_h)
+        known_h = req_h;
     need_h = (known_h > 0.0f) ? known_h : req_h;
     overlap = (anchor.y + anchor.h) - body.y;
 
