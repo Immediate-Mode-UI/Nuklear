@@ -244,8 +244,10 @@ nk_chart_push_slot(struct nk_context *ctx, float value, int slot)
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
     NK_ASSERT(slot >= 0 && slot < NK_CHART_MAX_SLOT);
-    NK_ASSERT(slot < ctx->current->layout->chart.slot);
     if (!ctx || !ctx->current || slot >= NK_CHART_MAX_SLOT) return nk_false;
+    /* nk_chart_begin zeros the chart and returns 0 when the widget is
+     * clipped (e.g. a menu drop-up sized from last frame while a tree
+     * expands). Pushing in that case is a no-op, not a programmer error. */
     if (slot >= ctx->current->layout->chart.slot) return nk_false;
 
     win = ctx->current;

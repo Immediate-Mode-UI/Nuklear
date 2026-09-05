@@ -102,8 +102,16 @@ nk_menu_begin(struct nk_context *ctx, struct nk_window *win,
     is_active = (popup && (win->popup.name == hash) && win->popup.type == NK_PANEL_MENU);
     if ((is_clicked && is_open && !is_active) || (is_open && !is_active) ||
         (!is_open && !is_active && !is_clicked)) return 0;
-    if (!nk_nonblock_begin(ctx, NK_WINDOW_NO_SCROLLBAR, body, header, NK_PANEL_MENU))
-        return 0;
+    {nk_flags flags = NK_WINDOW_NO_SCROLLBAR;
+    float known_h = (is_active) ? win->popup.last_h : 0;
+    body = nk_fit_popup_rect(ctx, body, header, NK_POPUP_FIT_FLIP, known_h,
+        is_active && win->popup.pinned_up);
+    win->popup.pinned_up = (body.y < header.y);
+    /* scrollbar only if actual content does not fit in the display */
+    if (known_h > 0.0f && body.h + 0.5f < known_h)
+        flags = 0;
+    if (!nk_nonblock_begin(ctx, flags, body, header, NK_PANEL_MENU))
+        return 0;}
 
     win->popup.type = NK_PANEL_MENU;
     win->popup.name = hash;

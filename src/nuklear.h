@@ -387,6 +387,8 @@ enum nk_symbol_type {
  * \ref nk_clear        | Called at the end of the frame to reset and prepare the context for the next frame
  * \ref nk_free         | Shutdown and free all memory allocated inside the context
  * \ref nk_set_user_data| Utility function to pass user data to draw command
+ * \ref nk_set_display_size | Sets the backend surface size used to keep popups on-screen
+ * \ref nk_set_display_bounds | Sets a display rectangle (non-zero origin) used to keep popups on-screen
  */
 
 #ifdef NK_INCLUDE_DEFAULT_ALLOCATOR
@@ -515,6 +517,48 @@ NK_API void nk_free(struct nk_context*);
  */
 NK_API void nk_set_user_data(struct nk_context*, nk_handle handle);
 #endif
+
+/**
+ * \brief Sets the size of the surface nuklear is drawn into.
+ *
+ * \details
+ * Comboboxes, menus, contextuals and tooltips use this to stay fully visible
+ * instead of being clipped by the OS window / framebuffer. Explicit
+ * `nk_popup_begin` rects are not moved.
+ *
+ * Coordinates must match widget and mouse space (logical window pixels, not
+ * framebuffer pixels on HiDPI). A width or height of 0 disables fitting and is
+ * the default until this is called.
+ *
+ * The value is retained. Call once after `nk_init*` and again whenever the
+ * surface size changes. It does not need to be set every frame.
+ *
+ * ```c
+ * void nk_set_display_size(struct nk_context *ctx, float width, float height);
+ * ```
+ *
+ * \param[in] ctx    Must point to a previously initialized `nk_context` struct
+ * \param[in] width  Surface width in the same space as `nk_input_motion`
+ * \param[in] height Surface height in the same space as `nk_input_motion`
+ */
+NK_API void nk_set_display_size(struct nk_context *ctx, float width, float height);
+
+/**
+ * \brief Sets the rectangle of the surface nuklear is drawn into.
+ *
+ * \details
+ * Same as `nk_set_display_size` but allows a non-zero origin, for example when
+ * the UI is drawn into a sub-rectangle of a window. An empty rectangle
+ * (`w == 0` or `h == 0`) disables fitting.
+ *
+ * ```c
+ * void nk_set_display_bounds(struct nk_context *ctx, struct nk_rect bounds);
+ * ```
+ *
+ * \param[in] ctx     Must point to a previously initialized `nk_context` struct
+ * \param[in] bounds  Surface rectangle in the same space as `nk_input_motion`
+ */
+NK_API void nk_set_display_bounds(struct nk_context *ctx, struct nk_rect bounds);
 /* =============================================================================
  *
  *                                  INPUT
@@ -5595,6 +5639,8 @@ struct nk_popup_state {
     unsigned con_count, con_old;
     unsigned active_con;
     struct nk_rect header;
+    float last_h; /**< last frame's content height; used to flip without a gap */
+    nk_bool pinned_up; /**< keep drop-up once chosen so expand/collapse does not jump */
 };
 
 struct nk_edit_state {
@@ -5804,6 +5850,9 @@ struct nk_context {
     enum nk_button_behavior button_behavior;
     struct nk_configuration_stacks stacks;
     float delta_time_seconds;
+    /** surface nuklear is drawn into, in widget/mouse space.
+     *  `w == 0` or `h == 0` means unset (popup fitting disabled). */
+    struct nk_rect display_bounds;
 
 /* private:
     should only be accessed if you

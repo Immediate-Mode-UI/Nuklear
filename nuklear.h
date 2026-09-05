@@ -3,7 +3,7 @@
  * Single-header ANSI C immediate mode cross-platform GUI library.
  *
  * VERSION:
- *     v4.13.3
+ *     v4.13.4
  *
  * HOMEPAGE:
  *     https://github.com/Immediate-Mode-UI/Nuklear/
@@ -577,6 +577,8 @@ enum nk_symbol_type {
  * \ref nk_clear        | Called at the end of the frame to reset and prepare the context for the next frame
  * \ref nk_free         | Shutdown and free all memory allocated inside the context
  * \ref nk_set_user_data| Utility function to pass user data to draw command
+ * \ref nk_set_display_size | Sets the backend surface size used to keep popups on-screen
+ * \ref nk_set_display_bounds | Sets a display rectangle (non-zero origin) used to keep popups on-screen
  */
 
 #ifdef NK_INCLUDE_DEFAULT_ALLOCATOR
@@ -705,6 +707,48 @@ NK_API void nk_free(struct nk_context*);
  */
 NK_API void nk_set_user_data(struct nk_context*, nk_handle handle);
 #endif
+
+/**
+ * \brief Sets the size of the surface nuklear is drawn into.
+ *
+ * \details
+ * Comboboxes, menus, contextuals and tooltips use this to stay fully visible
+ * instead of being clipped by the OS window / framebuffer. Explicit
+ * `nk_popup_begin` rects are not moved.
+ *
+ * Coordinates must match widget and mouse space (logical window pixels, not
+ * framebuffer pixels on HiDPI). A width or height of 0 disables fitting and is
+ * the default until this is called.
+ *
+ * The value is retained. Call once after `nk_init*` and again whenever the
+ * surface size changes. It does not need to be set every frame.
+ *
+ * ```c
+ * void nk_set_display_size(struct nk_context *ctx, float width, float height);
+ * ```
+ *
+ * \param[in] ctx    Must point to a previously initialized `nk_context` struct
+ * \param[in] width  Surface width in the same space as `nk_input_motion`
+ * \param[in] height Surface height in the same space as `nk_input_motion`
+ */
+NK_API void nk_set_display_size(struct nk_context *ctx, float width, float height);
+
+/**
+ * \brief Sets the rectangle of the surface nuklear is drawn into.
+ *
+ * \details
+ * Same as `nk_set_display_size` but allows a non-zero origin, for example when
+ * the UI is drawn into a sub-rectangle of a window. An empty rectangle
+ * (`w == 0` or `h == 0`) disables fitting.
+ *
+ * ```c
+ * void nk_set_display_bounds(struct nk_context *ctx, struct nk_rect bounds);
+ * ```
+ *
+ * \param[in] ctx     Must point to a previously initialized `nk_context` struct
+ * \param[in] bounds  Surface rectangle in the same space as `nk_input_motion`
+ */
+NK_API void nk_set_display_bounds(struct nk_context *ctx, struct nk_rect bounds);
 /* =============================================================================
  *
  *                                  INPUT
@@ -5785,6 +5829,8 @@ struct nk_popup_state {
     unsigned con_count, con_old;
     unsigned active_con;
     struct nk_rect header;
+    float last_h; /**< last frame's content height; used to flip without a gap */
+    nk_bool pinned_up; /**< keep drop-up once chosen so expand/collapse does not jump */
 };
 
 struct nk_edit_state {
@@ -5994,6 +6040,9 @@ struct nk_context {
     enum nk_button_behavior button_behavior;
     struct nk_configuration_stacks stacks;
     float delta_time_seconds;
+    /** surface nuklear is drawn into, in widget/mouse space.
+     *  `w == 0` or `h == 0` means unset (popup fitting disabled). */
+    struct nk_rect display_bounds;
 
 /* private:
     should only be accessed if you
@@ -6359,6 +6408,12 @@ NK_LIB void nk_panel_alloc_space(struct nk_rect *bounds, const struct nk_context
 NK_LIB void nk_layout_peek(struct nk_rect *bounds, const struct nk_context *ctx);
 
 /* popup */
+enum nk_popup_fit {
+    NK_POPUP_FIT_FLIP,    /* combo, menu: flip around the trigger */
+    NK_POPUP_FIT_SLIDE,   /* contextual: slide to stay on-screen */
+    NK_POPUP_FIT_TOOLTIP  /* tooltip: flip around cursor, then slide */
+};
+NK_LIB struct nk_rect nk_fit_popup_rect(const struct nk_context *ctx, struct nk_rect body, struct nk_rect anchor, enum nk_popup_fit fit, float known_h, nk_bool stay_up);
 NK_LIB nk_bool nk_nonblock_begin(struct nk_context *ctx, nk_flags flags, struct nk_rect body, struct nk_rect header, enum nk_panel_type panel_type);
 
 /* text */
@@ -19676,6 +19731,27 @@ nk_set_user_data(struct nk_context *ctx, nk_handle handle)
 }
 #endif
 NK_API void
+nk_set_display_size(struct nk_context *ctx, float width, float height)
+{
+    NK_ASSERT(ctx);
+    if (!ctx) return;
+    if (width < 0) width = 0;
+    if (height < 0) height = 0;
+    ctx->display_bounds.x = 0;
+    ctx->display_bounds.y = 0;
+    ctx->display_bounds.w = width;
+    ctx->display_bounds.h = height;
+}
+NK_API void
+nk_set_display_bounds(struct nk_context *ctx, struct nk_rect bounds)
+{
+    NK_ASSERT(ctx);
+    if (!ctx) return;
+    if (bounds.w < 0) bounds.w = 0;
+    if (bounds.h < 0) bounds.h = 0;
+    ctx->display_bounds = bounds;
+}
+NK_API void
 nk_free(struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
@@ -20741,6 +20817,16 @@ nk_panel_end(struct nk_context *ctx)
     }
     window->flags = layout->flags;
 
+    /* remember unclamped content height so next frame can flip using the
+     * real size, not the display-clamped window (that caused flicker). */
+    if (window->parent && ((int)layout->type & (int)NK_PANEL_SET_POPUP) &&
+        !(layout->flags & NK_WINDOW_MINIMIZED))
+    {
+        float content_h = (layout->at_y + layout->footer_height) - window->bounds.y;
+        if (content_h > 0)
+            window->parent->popup.last_h = content_h;
+    }
+
     /* property garbage collector */
     if (window->property.active && window->property.old != window->property.seq &&
         window->property.active == window->property.prev) {
@@ -21463,6 +21549,113 @@ nk_rule_horizontal(struct nk_context *ctx, struct nk_color color, nk_bool roundi
  *                              POPUP
  *
  * ===============================================================*/
+NK_LIB struct nk_rect
+nk_fit_popup_rect(const struct nk_context *ctx, struct nk_rect body,
+    struct nk_rect anchor, enum nk_popup_fit fit, float known_h,
+    nk_bool stay_up)
+{
+    struct nk_rect d;
+    float overlap;
+    float space_below;
+    float space_above;
+    float d_right;
+    float d_bottom;
+    float req_h;
+    float need_h;
+
+    if (!ctx) return body;
+    d = ctx->display_bounds;
+    if (d.w <= 0 || d.h <= 0) return body;
+
+    d_right = d.x + d.w;
+    d_bottom = d.y + d.h;
+    req_h = body.h;
+    /* last_h is unclamped layout height (every row, including those that
+     * would scroll). Combos pass a smaller panel (e.g. 200 with 370px of
+     * items); menus pass a larger max (e.g. 600 with 80px of trees).
+     * Judge the visible panel: min(content, caller max). */
+    if (known_h > req_h)
+        known_h = req_h;
+    need_h = (known_h > 0.0f) ? known_h : req_h;
+    overlap = (anchor.y + anchor.h) - body.y;
+
+    /* horizontal: flip/align, then slide. Do not shrink width; dynamic
+     * rows (e.g. the overview color contextual) size to the panel and
+     * would smush. If the surface is narrower than the popup, clip. */
+    if (fit == NK_POPUP_FIT_FLIP) {
+        if (body.x + body.w > d_right)
+            body.x = anchor.x + anchor.w - body.w;
+    } else if (fit == NK_POPUP_FIT_TOOLTIP) {
+        if (body.x + body.w > d_right) {
+            float flipped = anchor.x - body.w;
+            if (flipped >= d.x)
+                body.x = flipped;
+        }
+    }
+    if (body.x + body.w > d_right)
+        body.x = d_right - body.w;
+    if (body.x < d.x)
+        body.x = d.x;
+
+    space_below = d_bottom - body.y;
+    space_above = anchor.y - d.y;
+    if (space_below < 0.0f) space_below = 0.0f;
+    if (space_above < 0.0f) space_above = 0.0f;
+
+    if (fit == NK_POPUP_FIT_FLIP) {
+        int flip = 0;
+        /* Caller size.y is a maximum (ADVANCED is 600px for expanded trees),
+         * not the current content. Flip only when last frame's actual height
+         * does not fit below. First open (known_h == 0) always drops down.
+         * stay_up keeps a drop-up for the rest of this open so collapsing
+         * a tree does not jump back to a dropdown. */
+        if (stay_up && space_above > 0.0f)
+            flip = 1;
+        else if (known_h > 0.0f && known_h > space_below) {
+            if (known_h <= space_above)
+                flip = 1;
+            else if (space_above > space_below)
+                flip = 1;
+        }
+        if (flip) {
+            float use_h = req_h;
+            if (use_h > space_above) use_h = space_above;
+            if (known_h < use_h) use_h = known_h;
+            if (use_h < 1.0f) use_h = 1.0f;
+            body.y = anchor.y - use_h;
+            if (overlap > 0.0f) body.y += overlap;
+            body.h = use_h;
+        } else if (known_h > space_below) {
+            body.h = (space_below > 1.0f) ? space_below : 1.0f;
+        }
+    } else if (fit == NK_POPUP_FIT_SLIDE) {
+        /* size.y is a maximum, not current content. First open (known_h == 0)
+         * stays on the click; later frames slide only if actual height
+         * does not fit below. Sliding with the max left the DYNAMIC-shrunk
+         * panel floating above the cursor. */
+        if (known_h > 0.0f && known_h > space_below) {
+            body.y = d_bottom - known_h;
+            if (body.y < d.y)
+                body.y = d.y;
+            if (body.y + known_h > d_bottom)
+                body.h = d_bottom - body.y;
+            else body.h = known_h;
+            if (body.h < 1.0f) body.h = 1.0f;
+        }
+    } else {
+        /* tooltip: flip then slide; do not shrink (clipping is acceptable) */
+        if (body.y + need_h > d_bottom) {
+            float flipped = anchor.y - need_h;
+            if (flipped >= d.y)
+                body.y = flipped;
+        }
+        if (body.y + need_h > d_bottom)
+            body.y = d_bottom - need_h;
+        if (body.y < d.y)
+            body.y = d.y;
+    }
+    return body;
+}
 NK_API nk_bool
 nk_popup_begin(struct nk_context *ctx, enum nk_popup_type type,
     const char *title, nk_flags flags, struct nk_rect rect)
@@ -21611,6 +21804,8 @@ nk_nonblock_begin(struct nk_context *ctx,
             root = root->parent;
         }
         win->popup.buf.active = 0;
+        win->popup.last_h = 0;
+        win->popup.pinned_up = nk_false;
         return is_active;
     }
     popup->bounds = body;
@@ -21766,29 +21961,43 @@ nk_contextual_begin(struct nk_context *ctx, nk_flags flags, struct nk_vec2 size,
         if ((!is_open && !is_clicked))
             return 0;
 
-        /* calculate contextual position on click */
+        /* calculate contextual position on click; keep the click as the
+         * anchor every frame (combo/menu re-fit from the trigger). */
         win->popup.active_con = win->popup.con_count;
+        {struct nk_rect anchor;
         if (is_clicked) {
-            body.x = in->mouse.pos.x;
-            body.y = in->mouse.pos.y;
+            anchor.x = in->mouse.pos.x;
+            anchor.y = in->mouse.pos.y;
         } else {
-            body.x = popup->bounds.x;
-            body.y = popup->bounds.y;
+            anchor.x = win->popup.header.x;
+            anchor.y = win->popup.header.y;
         }
-
+        anchor.w = 1;
+        anchor.h = 1;
+        body.x = anchor.x;
+        body.y = anchor.y;
         body.w = size.x;
         body.h = size.y;
 
+        {float known_h = (!is_clicked) ? win->popup.last_h : 0;
+        body = nk_fit_popup_rect(ctx, body, anchor, NK_POPUP_FIT_SLIDE, known_h, nk_false);
+        flags |= NK_WINDOW_NO_SCROLLBAR;
+        /* scrollbar only if actual content does not fit in the display */
+        if (known_h > 0.0f && body.h + 0.5f < known_h)
+            flags &= ~(nk_flags)NK_WINDOW_NO_SCROLLBAR;}
+
         /* start nonblocking contextual popup */
-        ret = nk_nonblock_begin(ctx, flags | NK_WINDOW_NO_SCROLLBAR, body,
+        ret = nk_nonblock_begin(ctx, flags, body,
             null_rect, NK_PANEL_CONTEXTUAL);
-        if (ret) win->popup.type = NK_PANEL_CONTEXTUAL;
-        else {
+        if (ret) {
+            win->popup.type = NK_PANEL_CONTEXTUAL;
+            win->popup.header = anchor;
+        } else {
             win->popup.active_con = 0;
             win->popup.type = NK_PANEL_NONE;
             if (win->popup.win)
                 win->popup.win->flags = 0;
-        }
+        }}
     }
     return ret;
 }
@@ -22051,8 +22260,16 @@ nk_menu_begin(struct nk_context *ctx, struct nk_window *win,
     is_active = (popup && (win->popup.name == hash) && win->popup.type == NK_PANEL_MENU);
     if ((is_clicked && is_open && !is_active) || (is_open && !is_active) ||
         (!is_open && !is_active && !is_clicked)) return 0;
-    if (!nk_nonblock_begin(ctx, NK_WINDOW_NO_SCROLLBAR, body, header, NK_PANEL_MENU))
-        return 0;
+    {nk_flags flags = NK_WINDOW_NO_SCROLLBAR;
+    float known_h = (is_active) ? win->popup.last_h : 0;
+    body = nk_fit_popup_rect(ctx, body, header, NK_POPUP_FIT_FLIP, known_h,
+        is_active && win->popup.pinned_up);
+    win->popup.pinned_up = (body.y < header.y);
+    /* scrollbar only if actual content does not fit in the display */
+    if (known_h > 0.0f && body.h + 0.5f < known_h)
+        flags = 0;
+    if (!nk_nonblock_begin(ctx, flags, body, header, NK_PANEL_MENU))
+        return 0;}
 
     win->popup.type = NK_PANEL_MENU;
     win->popup.name = hash;
@@ -30026,8 +30243,10 @@ nk_chart_push_slot(struct nk_context *ctx, float value, int slot)
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
     NK_ASSERT(slot >= 0 && slot < NK_CHART_MAX_SLOT);
-    NK_ASSERT(slot < ctx->current->layout->chart.slot);
     if (!ctx || !ctx->current || slot >= NK_CHART_MAX_SLOT) return nk_false;
+    /* nk_chart_begin zeros the chart and returns 0 when the widget is
+     * clipped (e.g. a menu drop-up sized from last frame while a tree
+     * expands). Pushing in that case is a no-op, not a programmer error. */
     if (slot >= ctx->current->layout->chart.slot) return nk_false;
 
     win = ctx->current;
@@ -30353,8 +30572,17 @@ nk_combo_begin(struct nk_context *ctx, struct nk_window *win,
     is_active = (popup && (win->popup.name == hash) && win->popup.type == NK_PANEL_COMBO);
     if ((is_clicked && is_open && !is_active) || (is_open && !is_active) ||
         (!is_open && !is_active && !is_clicked)) return 0;
-    if (!nk_nonblock_begin(ctx, 0, body,
-        (is_clicked && is_open)?nk_rect(0,0,0,0):header, NK_PANEL_COMBO)) return 0;
+    {nk_flags flags = NK_WINDOW_NO_SCROLLBAR;
+    float known_h = (is_active) ? win->popup.last_h : 0;
+    body = nk_fit_popup_rect(ctx, body, header, NK_POPUP_FIT_FLIP, known_h,
+        is_active && win->popup.pinned_up);
+    win->popup.pinned_up = (body.y < header.y);
+    /* scrollbar only if actual content does not fit in the fitted panel
+     * (caller size.y is a max; flipping to last_h must not force a bar) */
+    if (known_h > 0.0f && body.h + 0.5f < known_h)
+        flags = 0;
+    if (!nk_nonblock_begin(ctx, flags, body,
+        (is_clicked && is_open)?nk_rect(0,0,0,0):header, NK_PANEL_COMBO)) return 0;}
 
     win->popup.type = NK_PANEL_COMBO;
     win->popup.name = hash;
@@ -31256,10 +31484,32 @@ nk_tooltip_begin_offset(struct nk_context *ctx, float width, enum nk_tooltip_pos
         NK_ASSERT(0 && "Invalid tooltip position");
     }
 
-    bounds.x = (float)x;
-    bounds.y = (float)y;
-    bounds.w = (float)w;
-    bounds.h = (float)nk_iceilf(nk_null_rect.h);
+    {struct nk_rect screen;
+    struct nk_rect anchor;
+    float known_h = (float)h;
+    float clip_x = win->layout->clip.x;
+    float clip_y = win->layout->clip.y;
+
+    if (win->popup.win && win->popup.type == NK_PANEL_TOOLTIP &&
+        win->popup.last_h > known_h)
+        known_h = win->popup.last_h;
+
+    screen.x = (float)x + clip_x;
+    screen.y = (float)y + clip_y;
+    screen.w = (float)w;
+    screen.h = known_h;
+    anchor.x = in->mouse.pos.x;
+    anchor.y = in->mouse.pos.y;
+    anchor.w = 1;
+    anchor.h = 1;
+    screen = nk_fit_popup_rect(ctx, screen, anchor, NK_POPUP_FIT_TOOLTIP, known_h, nk_false);
+
+    bounds.x = screen.x - clip_x;
+    bounds.y = screen.y - clip_y;
+    bounds.w = screen.w;
+    /* keep a large max so NK_POPUP_DYNAMIC can grow; the fitter only
+     * shrinks h when the tooltip cannot fit on the surface at all */
+    bounds.h = (screen.h + 0.5f < known_h) ? screen.h : (float)nk_iceilf(nk_null_rect.h);}
 
     ret = nk_popup_begin(ctx, NK_POPUP_DYNAMIC,
         "__##Tooltip##__", NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BORDER, bounds);

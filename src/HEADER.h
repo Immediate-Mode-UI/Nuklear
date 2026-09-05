@@ -3,7 +3,7 @@
  * Single-header ANSI C immediate mode cross-platform GUI library.
  *
  * VERSION:
- *     v4.13.3
+ *     v4.13.4
  *
  * HOMEPAGE:
  *     https://github.com/Immediate-Mode-UI/Nuklear/
