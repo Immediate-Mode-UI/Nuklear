@@ -3,7 +3,7 @@
  * Single-header ANSI C immediate mode cross-platform GUI library.
  *
  * VERSION:
- *     v4.13.3
+ *     v5.0.0-dev
  *
  * HOMEPAGE:
  *     https://github.com/Immediate-Mode-UI/Nuklear/
@@ -21,7 +21,7 @@
  * HIGHLIGHTS:
  *     - Graphical user interface toolkit
  *     - Single header library
- *     - Written in C89 (a.k.a. ANSI C or ISO C90)
+ *     - Written in C99 (a.k.a. ISO C99)
  *     - Small codebase (~18kLOC)
  *     - Focus on portability, efficiency and simplicity
  *     - No dependencies (not even the standard library if not wanted)

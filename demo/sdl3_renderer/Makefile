@@ -23,7 +23,7 @@ BINEXT := ${binext_${OSNAME}}
 TEMPDIR := ./bin
 BIN := ${TEMPDIR}/demo${BINEXT}
 
-cflags += -std=c89 -Wall -Wextra -pedantic
+cflags += -std=c99 -Wall -Wextra -pedantic
 #cflags += -O2
 cflags += -O0 -g
 #cflags += -fsanitize=address
