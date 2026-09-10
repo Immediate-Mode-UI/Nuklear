@@ -1,0 +1,40 @@
+digraph "nk_panel"
+{
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
+  node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
+  Node1 [id="Node000001",label="nk_panel",height=0.2,width=0.4,color="gray40", fillcolor="grey60", style="filled", fontcolor="black",tooltip=" "];
+  Node2 -> Node1 [id="edge1_Node000001_Node000002",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" bounds\nclip",fontcolor="grey" ];
+  Node2 [id="Node000002",label="nk_rect",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__rect.html",tooltip=" "];
+  Node3 -> Node1 [id="edge2_Node000001_Node000003",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" menu",fontcolor="grey" ];
+  Node3 [id="Node000003",label="nk_menu_state",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__menu__state.html",tooltip=" "];
+  Node4 -> Node3 [id="edge3_Node000003_Node000004",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" offset",fontcolor="grey" ];
+  Node4 [id="Node000004",label="nk_scroll",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__scroll.html",tooltip=" "];
+  Node5 -> Node1 [id="edge4_Node000001_Node000005",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" row",fontcolor="grey" ];
+  Node5 [id="Node000005",label="nk_row_layout",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__row__layout.html",tooltip=" "];
+  Node2 -> Node5 [id="edge5_Node000005_Node000002",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" item",fontcolor="grey" ];
+  Node6 -> Node1 [id="edge6_Node000001_Node000006",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" chart",fontcolor="grey" ];
+  Node6 [id="Node000006",label="nk_chart",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__chart.html",tooltip=" "];
+  Node7 -> Node6 [id="edge7_Node000006_Node000007",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" slots",fontcolor="grey" ];
+  Node7 [id="Node000007",label="nk_chart_slot",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__chart__slot.html",tooltip=" "];
+  Node8 -> Node7 [id="edge8_Node000007_Node000008",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" color\nhighlight",fontcolor="grey" ];
+  Node8 [id="Node000008",label="nk_color",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__color.html",tooltip=" "];
+  Node9 -> Node7 [id="edge9_Node000007_Node000009",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" last",fontcolor="grey" ];
+  Node9 [id="Node000009",label="nk_vec2",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__vec2.html",tooltip=" "];
+  Node10 -> Node1 [id="edge10_Node000001_Node000010",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" buffer",fontcolor="grey" ];
+  Node10 [id="Node000010",label="nk_command_buffer",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__command__buffer.html",tooltip=" "];
+  Node11 -> Node10 [id="edge11_Node000010_Node000011",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" base",fontcolor="grey" ];
+  Node11 [id="Node000011",label="nk_buffer",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__buffer.html",tooltip=" "];
+  Node12 -> Node11 [id="edge12_Node000011_Node000012",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" marker",fontcolor="grey" ];
+  Node12 [id="Node000012",label="nk_buffer_marker",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__buffer__marker.html",tooltip=" "];
+  Node13 -> Node11 [id="edge13_Node000011_Node000013",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" pool",fontcolor="grey" ];
+  Node13 [id="Node000013",label="nk_allocator",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__allocator.html",tooltip=" "];
+  Node14 -> Node13 [id="edge14_Node000013_Node000014",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" alloc\nfree\nuserdata",fontcolor="grey" ];
+  Node14 [id="Node000014",label="nk_handle",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$unionnk__handle.html",tooltip=" "];
+  Node15 -> Node11 [id="edge15_Node000011_Node000015",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" memory",fontcolor="grey" ];
+  Node15 [id="Node000015",label="nk_memory",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",URL="$structnk__memory.html",tooltip=" "];
+  Node2 -> Node10 [id="edge16_Node000010_Node000002",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" clip",fontcolor="grey" ];
+  Node14 -> Node10 [id="edge17_Node000010_Node000014",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" userdata",fontcolor="grey" ];
+  Node1 -> Node1 [id="edge18_Node000001_Node000001",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" parent",fontcolor="grey" ];
+}
