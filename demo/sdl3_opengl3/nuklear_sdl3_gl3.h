@@ -487,7 +487,15 @@ nk_sdl_handle_event(SDL_Event *evt)
             return 1;
 
         case SDL_EVENT_MOUSE_WHEEL:
-            nk_input_scroll(ctx,nk_vec2(evt->wheel.mouse_x, evt->wheel.mouse_y));
+            {
+                float x = evt->wheel.x;
+                float y = evt->wheel.y;
+                if (evt->wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
+                    x *= -1.0f;
+                    y *= -1.0f;
+                }
+                nk_input_scroll(ctx,nk_vec2(x, y));
+            }
             return 1;
     }
     return 0;
