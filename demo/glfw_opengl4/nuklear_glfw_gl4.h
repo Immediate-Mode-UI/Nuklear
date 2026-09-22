@@ -556,6 +556,8 @@ nk_glfw3_init(GLFWwindow *win, enum nk_glfw_init_state init_state,
     glfw.ctx.clip.copy = nk_glfw3_clipboard_copy;
     glfw.ctx.clip.paste = nk_glfw3_clipboard_paste;
     glfw.ctx.clip.userdata = nk_handle_ptr(0);
+    glfwGetWindowSize(win, &glfw.width, &glfw.height);
+    nk_set_display_size(&glfw.ctx, (float)glfw.width, (float)glfw.height);
     glfw.last_button_click = 0;
 
     {struct nk_glfw_device *dev = &glfw.ogl;
@@ -608,6 +610,8 @@ nk_glfw3_new_frame(void)
     glfwGetFramebufferSize(win, &glfw.display_width, &glfw.display_height);
     glfw.fb_scale.x = (float)glfw.display_width/(float)glfw.width;
     glfw.fb_scale.y = (float)glfw.display_height/(float)glfw.height;
+    /* logical window size, not framebuffer size */
+    nk_set_display_size(ctx, (float)glfw.width, (float)glfw.height);
 
     nk_input_begin(ctx);
     for (i = 0; i < glfw.text_len; ++i)
