@@ -1,7 +1,9 @@
 /*
- * Nuklear - 1.32.0 - public domain
+ * Nuklear - 1.40.8 - public domain
  * no warrenty implied; use at your own risk.
- * authored from 2015-2016 by Micha Mettke
+ * authored from 2015-2017 by Micha Mettke
+ * emscripten from 2016 by Chris Willcocks
+ * OpenGL ES 2.0 from 2017 by Dmitry Hrabrov a.k.a. DeXPeriX
  */
 /*
  * ==============================================================
@@ -37,6 +39,10 @@ struct nk_glfw_device {
     GLint uniform_tex;
     GLint uniform_proj;
     GLuint font_tex;
+    GLsizei vs;
+    size_t vp, vt, vc;
+    GLuint have_vao;
+    GLuint have_mapbuffer;
 };
 
 struct nk_glfw {
@@ -93,8 +99,8 @@ NK_API void                 nk_glfw3_mouse_button_callback(GLFWwindow *win, int 
 #endif
 
 struct nk_glfw_vertex {
-    float position[2];
-    float uv[2];
+    GLfloat position[2];
+    GLfloat uv[2];
     nk_byte col[4];
 };
 
@@ -151,40 +157,47 @@ nk_glfw3_device_create(struct nk_glfw* glfw)
     glGetProgramiv(dev->prog, GL_LINK_STATUS, &status);
     assert(status == GL_TRUE);
 
+    /* TODO: Detect at runtime */
+    dev->have_vao = GL_TRUE; /* OpenGL 3.0 or later, or GL_ARB_vertex_array_object, or GL_OES_vertex_array_object */
+    dev->have_mapbuffer = GL_TRUE; /* OpenGL 2.0 or later, or GL_OES_mapbuffer */
+
     dev->uniform_tex = glGetUniformLocation(dev->prog, "Texture");
     dev->uniform_proj = glGetUniformLocation(dev->prog, "ProjMtx");
     dev->attrib_pos = glGetAttribLocation(dev->prog, "Position");
     dev->attrib_uv = glGetAttribLocation(dev->prog, "TexCoord");
     dev->attrib_col = glGetAttribLocation(dev->prog, "Color");
-
     {
         /* buffer setup */
-        GLsizei vs = sizeof(struct nk_glfw_vertex);
-        size_t vp = offsetof(struct nk_glfw_vertex, position);
-        size_t vt = offsetof(struct nk_glfw_vertex, uv);
-        size_t vc = offsetof(struct nk_glfw_vertex, col);
+        dev->vs = sizeof(struct nk_glfw_vertex);
+        dev->vp = offsetof(struct nk_glfw_vertex, position);
+        dev->vt = offsetof(struct nk_glfw_vertex, uv);
+        dev->vc = offsetof(struct nk_glfw_vertex, col);
 
+        /* Allocate buffers */
         glGenBuffers(1, &dev->vbo);
         glGenBuffers(1, &dev->ebo);
-        glGenVertexArrays(1, &dev->vao);
 
-        glBindVertexArray(dev->vao);
-        glBindBuffer(GL_ARRAY_BUFFER, dev->vbo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dev->ebo);
+        if (dev->have_vao) {
+            glGenVertexArrays(1, &dev->vao);
 
-        glEnableVertexAttribArray((GLuint)dev->attrib_pos);
-        glEnableVertexAttribArray((GLuint)dev->attrib_uv);
-        glEnableVertexAttribArray((GLuint)dev->attrib_col);
+            glBindVertexArray(dev->vao);
+            glBindBuffer(GL_ARRAY_BUFFER, dev->vbo);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dev->ebo);
 
-        glVertexAttribPointer((GLuint)dev->attrib_pos, 2, GL_FLOAT, GL_FALSE, vs, (void*)vp);
-        glVertexAttribPointer((GLuint)dev->attrib_uv, 2, GL_FLOAT, GL_FALSE, vs, (void*)vt);
-        glVertexAttribPointer((GLuint)dev->attrib_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, vs, (void*)vc);
+            glEnableVertexAttribArray((GLuint)dev->attrib_pos);
+            glEnableVertexAttribArray((GLuint)dev->attrib_uv);
+            glEnableVertexAttribArray((GLuint)dev->attrib_col);
+
+            glVertexAttribPointer((GLuint)dev->attrib_pos, 2, GL_FLOAT, GL_FALSE, dev->vs, (void*)dev->vp);
+            glVertexAttribPointer((GLuint)dev->attrib_uv, 2, GL_FLOAT, GL_FALSE, dev->vs, (void*)dev->vt);
+            glVertexAttribPointer((GLuint)dev->attrib_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, dev->vs, (void*)dev->vc);
+        }
     }
-
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    if (dev->have_vao)
+        glBindVertexArray(0);
 }
 
 NK_INTERN void
@@ -218,17 +231,17 @@ NK_API void
 nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_buffer)
 {
     struct nk_glfw_device *dev = &glfw->ogl;
-    struct nk_buffer vbuf, ebuf;
     GLfloat ortho[4][4] = {
-        {2.0f, 0.0f, 0.0f, 0.0f},
-        {0.0f,-2.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f,-1.0f, 0.0f},
-        {-1.0f,1.0f, 0.0f, 1.0f},
+        {  2.0f,  0.0f,  0.0f, 0.0f },
+        {  0.0f, -2.0f,  0.0f, 0.0f },
+        {  0.0f,  0.0f, -1.0f, 0.0f },
+        { -1.0f,  1.0f,  0.0f, 1.0f },
     };
     ortho[0][0] /= (GLfloat)glfw->width;
     ortho[1][1] /= (GLfloat)glfw->height;
 
     /* setup global state */
+    glViewport(0,0,(GLsizei)glfw->display_width,(GLsizei)glfw->display_height);
     glEnable(GL_BLEND);
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -241,24 +254,42 @@ nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int max_vertex_b
     glUseProgram(dev->prog);
     glUniform1i(dev->uniform_tex, 0);
     glUniformMatrix4fv(dev->uniform_proj, 1, GL_FALSE, &ortho[0][0]);
-    glViewport(0,0,(GLsizei)glfw->display_width,(GLsizei)glfw->display_height);
     {
         /* convert from command queue into draw list and draw to screen */
         const struct nk_draw_command *cmd;
         void *vertices, *elements;
-        nk_size offset = 0;
+        const nk_draw_index *offset = NULL;
+        struct nk_buffer vbuf, ebuf;
 
-        /* allocate vertex and element buffer */
-        glBindVertexArray(dev->vao);
+        /* Bind buffers */
+        if (dev->have_vao)
+            glBindVertexArray(dev->vao);
         glBindBuffer(GL_ARRAY_BUFFER, dev->vbo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dev->ebo);
+
+        if (!dev->have_vao) {
+            /* buffer setup */
+            glEnableVertexAttribArray((GLuint)dev->attrib_pos);
+            glEnableVertexAttribArray((GLuint)dev->attrib_uv);
+            glEnableVertexAttribArray((GLuint)dev->attrib_col);
+
+            glVertexAttribPointer((GLuint)dev->attrib_pos, 2, GL_FLOAT, GL_FALSE, dev->vs, (void*)dev->vp);
+            glVertexAttribPointer((GLuint)dev->attrib_uv, 2, GL_FLOAT, GL_FALSE, dev->vs, (void*)dev->vt);
+            glVertexAttribPointer((GLuint)dev->attrib_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, dev->vs, (void*)dev->vc);
+        }
 
         glBufferData(GL_ARRAY_BUFFER, max_vertex_buffer, NULL, GL_STREAM_DRAW);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, max_element_buffer, NULL, GL_STREAM_DRAW);
 
-        /* load draw vertices & elements directly into vertex + element buffer */
-        vertices = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-        elements = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+        /* load vertices/elements directly into vertex/element buffer */
+        if (dev->have_mapbuffer) {
+            vertices = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+            elements = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+        } else {
+            vertices = malloc((size_t)max_vertex_buffer);
+            elements = malloc((size_t)max_element_buffer);
+        }
+
         {
             /* fill convert configuration */
             struct nk_convert_config config;
@@ -281,12 +312,20 @@ nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int max_vertex_b
             config.line_AA = AA;
 
             /* setup buffers to load vertices and elements */
-            nk_buffer_init_fixed(&vbuf, vertices, (size_t)max_vertex_buffer);
-            nk_buffer_init_fixed(&ebuf, elements, (size_t)max_element_buffer);
+            nk_buffer_init_fixed(&vbuf, vertices, (nk_size)max_vertex_buffer);
+            nk_buffer_init_fixed(&ebuf, elements, (nk_size)max_element_buffer);
             nk_convert(&glfw->ctx, &dev->cmds, &vbuf, &ebuf, &config);
         }
-        glUnmapBuffer(GL_ARRAY_BUFFER);
-        glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+
+        if (dev->have_mapbuffer) {
+            glUnmapBuffer(GL_ARRAY_BUFFER);
+            glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+        } else {
+            glBufferSubData(GL_ARRAY_BUFFER, 0, (size_t)max_vertex_buffer, vertices);
+            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, (size_t)max_element_buffer, elements);
+            free(vertices);
+            free(elements);
+        }
 
         /* iterate over and execute each draw command */
         nk_draw_foreach(cmd, &glfw->ctx, &dev->cmds)
@@ -298,8 +337,8 @@ nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int max_vertex_b
                 (GLint)((glfw->height - (GLint)(cmd->clip_rect.y + cmd->clip_rect.h)) * glfw->fb_scale.y),
                 (GLint)(cmd->clip_rect.w * glfw->fb_scale.x),
                 (GLint)(cmd->clip_rect.h * glfw->fb_scale.y));
-            glDrawElements(GL_TRIANGLES, (GLsizei)cmd->elem_count, GL_UNSIGNED_SHORT, (const void*) offset);
-            offset += cmd->elem_count * sizeof(nk_draw_index);
+            glDrawElements(GL_TRIANGLES, (GLsizei)cmd->elem_count, GL_UNSIGNED_SHORT, offset);
+            offset += cmd->elem_count;
         }
         nk_clear(&glfw->ctx);
         nk_buffer_clear(&dev->cmds);
@@ -309,7 +348,8 @@ nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int max_vertex_b
     glUseProgram(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    if (dev->have_vao)
+        glBindVertexArray(0);
     glDisable(GL_BLEND);
     glDisable(GL_SCISSOR_TEST);
 }
