@@ -9,6 +9,7 @@
 #include <limits.h>
 #include <time.h>
 
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #define NK_INCLUDE_FIXED_TYPES
@@ -24,7 +25,7 @@
 #include "nuklear_glfw_gl2.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "../../demo/common/filebrowser/stb_image.h"
+#include "../../demo/common/libs/stb_image_c89.h"
 
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 800

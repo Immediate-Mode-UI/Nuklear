@@ -22,7 +22,7 @@
 #include "../nuklear.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "../demo/common/libs/stb_image_c89.h"
 
 /* macros */
 #define WINDOW_WIDTH 1200
