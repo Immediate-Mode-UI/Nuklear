@@ -37,7 +37,7 @@ render backends it only focuses on the actual UI.
 ## Highlights
 - Graphical user interface toolkit
 - Single header library
-- Written in C89 (a.k.a. ANSI C or ISO C90)
+- Written in C99 (a.k.a. ISO C99)
 - Small codebase (~18kLOC)
 - Focus on portability, efficiency and simplicity
 - No dependencies (not even the standard library if not wanted)

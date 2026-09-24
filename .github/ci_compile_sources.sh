@@ -17,7 +17,7 @@ CC=cc
 SRCDIR=./src
 
 set -- ""
-set -- "$@" -std=c89
+set -- "$@" -std=c99
 set -- "$@" -Wall
 set -- "$@" -Wextra
 set -- "$@" -pedantic

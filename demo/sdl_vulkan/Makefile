@@ -2,7 +2,7 @@
 BIN = demo
 
 # Flags
-CFLAGS += -std=c89 -Wall -Wextra -pedantic
+CFLAGS += -std=c99 -Wall -Wextra -pedantic
 #CFLAGS += -fsanitize=address -O2
 CFLAGS += -DSDL_DISABLE_IMMINTRIN_H
 

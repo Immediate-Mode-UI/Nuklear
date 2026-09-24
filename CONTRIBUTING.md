@@ -7,7 +7,7 @@ in mind.
 
 Reviewing changes to `src/*` and `nuklear.h`:
 
-* Ensure C89 compatibility.
+* Ensure C99 compatibility.
 * The code should work for several backends to an acceptable degree.
 * Check no other parts of `nuklear.h` are related to the PR and thus nothing is missing.
 * Recommend simple optimizations.
