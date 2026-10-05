@@ -14,6 +14,7 @@ nk_command_buffer_init(struct nk_command_buffer *cb,
     NK_ASSERT(b);
     if (!cb || !b) return;
     cb->base = b;
+    cb->clip = nk_null_rect;
     cb->use_clipping = (int)clip;
     cb->begin = b->allocated;
     cb->end = b->allocated;
