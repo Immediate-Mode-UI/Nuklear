@@ -180,9 +180,9 @@ nk_sdl_update_TextInput(struct nk_context* ctx)
     if (!ctx->active)
         active = false;
     else if (ctx->active->popup.win)
-        active = ctx->active->popup.win->edit.active;
+        active = ctx->active->popup.win->edit.active || ctx->active->popup.win->property.active;
     else
-        active = ctx->active->edit.active;
+        active = ctx->active->edit.active || ctx->active->property.active;
 
     /* decide, if TextInputActive should be unchanged/stoped/started
      * and change its state accordingly for owned SDL Window */
