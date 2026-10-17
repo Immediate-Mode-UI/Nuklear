@@ -23154,6 +23154,8 @@ nk_tree_base(struct nk_context *ctx, enum nk_tree_type type,
     state = nk_find_value(win, tree_hash);
     if (!state) {
         state = nk_add_value(ctx, win, tree_hash, 0);
+        NK_ASSERT(state);
+        if (!state) return nk_false;
         *state = initial_state;
     }
     return nk_tree_state_base(ctx, type, img, title, (enum nk_collapse_states*)state);
@@ -23342,6 +23344,8 @@ nk_tree_element_base(struct nk_context *ctx, enum nk_tree_type type,
     state = nk_find_value(win, tree_hash);
     if (!state) {
         state = nk_add_value(ctx, win, tree_hash, 0);
+        NK_ASSERT(state);
+        if (!state) return nk_false;
         *state = initial_state;
     } return nk_tree_element_image_push_hashed_base(ctx, type, img, title,
         nk_strlen(title), (enum nk_collapse_states*)state, selected);
