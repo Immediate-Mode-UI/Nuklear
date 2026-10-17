@@ -70,11 +70,11 @@ nk_str_append_str_utf8(struct nk_str *str, const char *text)
     nk_rune unicode;
     if (!str || !text) return 0;
 
-    glyph_len = byte_len = nk_utf_decode(text+byte_len, &unicode, 4);
+    glyph_len = nk_utf_decode(text, &unicode, 4);
     while (unicode != '\0' && glyph_len) {
-        glyph_len = nk_utf_decode(text+byte_len, &unicode, 4);
         byte_len += glyph_len;
         num_runes++;
+        glyph_len = nk_utf_decode(text+byte_len, &unicode, 4);
     }
     nk_str_append_text_char(str, text, byte_len);
     return num_runes;
@@ -198,11 +198,11 @@ nk_str_insert_str_utf8(struct nk_str *str, int pos, const char *text)
     nk_rune unicode;
     if (!str || !text) return 0;
 
-    glyph_len = byte_len = nk_utf_decode(text+byte_len, &unicode, 4);
+    glyph_len = nk_utf_decode(text, &unicode, 4);
     while (unicode != '\0' && glyph_len) {
-        glyph_len = nk_utf_decode(text+byte_len, &unicode, 4);
         byte_len += glyph_len;
         num_runes++;
+        glyph_len = nk_utf_decode(text+byte_len, &unicode, 4);
     }
     nk_str_insert_at_rune(str, pos, text, byte_len);
     return num_runes;
@@ -260,14 +260,14 @@ nk_str_remove_runes(struct nk_str *str, int len)
     NK_ASSERT(len >= 0);
     if (!str || len < 0) return;
     if (len >= str->len) {
-        str->len = 0;
+        nk_str_clear(str);
         return;
     }
 
     index = str->len - len;
     begin = nk_str_at_rune(str, index, &unicode, &len);
     end = (const char*)str->buffer.memory.ptr + str->buffer.allocated;
-    nk_str_remove_chars(str, (int)(end-begin)+1);
+    nk_str_remove_chars(str, (int)(end-begin));
 }
 NK_API void
 nk_str_delete_chars(struct nk_str *s, int pos, int len)
