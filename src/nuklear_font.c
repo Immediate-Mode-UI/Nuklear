@@ -131,7 +131,7 @@ nk_font_baker_memory(nk_size *temp, int *glyph_count,
     *glyph_count = 0;
     for (iter = config_list; iter; iter = iter->next) {
         i = iter;
-        do {if (!i->range) iter->range = nk_font_default_glyph_ranges();
+        do {if (!i->range) i->range = nk_font_default_glyph_ranges();
             range_count = nk_range_count(i->range);
             total_range_count += range_count;
             *glyph_count += nk_range_glyph_count(i->range, range_count);
@@ -551,6 +551,8 @@ nk_font_init(struct nk_font *font, float pixel_height,
     font->texture = atlas;
     font->fallback_codepoint = fallback_codepoint;
     font->fallback = nk_font_find_glyph(font, fallback_codepoint);
+    if (!font->fallback)
+        font->fallback = font->glyphs;
 
     font->handle.height = font->info.height * font->scale;
     font->handle.width = nk_font_text_width;
