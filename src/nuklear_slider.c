@@ -41,11 +41,13 @@ nk_slider_behavior(nk_flags *state, struct nk_rect *logical_cursor,
     /* slider widget state */
     if (nk_input_is_mouse_hovering_rect(in, bounds))
         *state = NK_WIDGET_STATE_HOVERED;
-    if (*state & NK_WIDGET_STATE_HOVER &&
-        !nk_input_is_mouse_prev_hovering_rect(in, bounds))
-        *state |= NK_WIDGET_STATE_ENTERED;
-    else if (nk_input_is_mouse_prev_hovering_rect(in, bounds))
-        *state |= NK_WIDGET_STATE_LEFT;
+    if (*state & NK_WIDGET_STATE_HOVER) {
+        if (!nk_input_is_mouse_prev_hovering_rect(in, bounds))
+            *state |= NK_WIDGET_STATE_ENTERED;
+    } else {
+        if (nk_input_is_mouse_prev_hovering_rect(in, bounds))
+            *state |= NK_WIDGET_STATE_LEFT;
+    }
     return slider_value;
 }
 NK_LIB void
