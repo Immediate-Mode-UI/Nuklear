@@ -198,4 +198,22 @@ nk_color_picker(struct nk_context *ctx, struct nk_colorf color,
     nk_color_pick(ctx, &color, fmt);
     return color;
 }
+NK_API struct nk_color
+nk_col_picker(struct nk_context *ctx, struct nk_color color,
+    enum nk_color_format fmt)
+{
+    struct nk_colorf cf = nk_color_cf(color);
+    cf = nk_color_picker(ctx, cf, fmt);
+    return nk_rgba_cf(cf);
+}
+NK_API nk_bool
+nk_col_pick(struct nk_context *ctx, struct nk_color *color,
+    enum nk_color_format fmt)
+{
+    nk_bool ret;
+    struct nk_colorf cf = nk_color_cf(*color);
+    ret = nk_color_pick(ctx, &cf, fmt);
+    *color = nk_rgba_cf(cf);
+    return ret;
+}
 
