@@ -9,6 +9,17 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#ifdef NK_INCLUDE_CONFIG
+  #ifndef NK_CONFIG_FILE
+    #define NK_CONFIG_FILE "nuklear_config.h"
+  #endif
+  #ifndef NK_NUKLEAR_CONFIG_H_
+    #include NK_CONFIG_FILE
+    #define NK_NUKLEAR_CONFIG_H_
+  #endif
+#endif
+
 /*
  * ==============================================================
  *

@@ -13,6 +13,26 @@
 
 set -e
 
+tmpdir="$(mktemp -d)"
+trap 'rm -rf "${tmpdir}"' EXIT INT QUIT TERM
+
+cat <<'EOF' >"${tmpdir}/nuklear_config.h"
+    /*
+     * Intentionally without header guards to test Nuklear handling this case.
+     * The foo/bar below proves you can put arbitrary symbols into the config.
+     */
+    static int foo = 0;
+    static int bar(void) { return 0; }
+    #define NK_INCLUDE_FIXED_TYPES
+    #define NK_INCLUDE_DEFAULT_ALLOCATOR
+    #define NK_INCLUDE_STANDARD_IO
+    #define NK_INCLUDE_STANDARD_VARARGS
+    #define NK_INCLUDE_STANDARD_BOOL
+    #define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+    #define NK_INCLUDE_DEFAULT_FONT
+    #define NK_INCLUDE_COMMAND_USERDATA
+EOF
+
 CC=cc
 SRCDIR=./src
 
@@ -21,17 +41,12 @@ set -- "$@" -std=c89
 set -- "$@" -Wall
 set -- "$@" -Wextra
 set -- "$@" -pedantic
+set -- "$@" -Wno-unused  # only to silence warnings about static foo/bar
 CFLAGS=$*
 
 set -- ""
-set -- "$@" -DNK_INCLUDE_FIXED_TYPES
-set -- "$@" -DNK_INCLUDE_DEFAULT_ALLOCATOR
-set -- "$@" -DNK_INCLUDE_STANDARD_IO
-set -- "$@" -DNK_INCLUDE_STANDARD_VARARGS
-set -- "$@" -DNK_INCLUDE_STANDARD_BOOL
-set -- "$@" -DNK_INCLUDE_VERTEX_BUFFER_OUTPUT
-set -- "$@" -DNK_INCLUDE_DEFAULT_FONT
-set -- "$@" -DNK_INCLUDE_COMMAND_USERDATA
+set -- "$@" -I"${tmpdir}"
+set -- "$@" -DNK_INCLUDE_CONFIG
 CPPFLAGS=$*
 
 retcode=0
