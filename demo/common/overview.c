@@ -1303,9 +1303,8 @@ overview(struct nk_context *ctx)
             if (nk_tree_push(ctx, NK_TREE_NODE, "Splitter", NK_MINIMIZED))
             {
                 const struct nk_input *in = &ctx->input;
-                nk_layout_row_static(ctx, 20, 320, 1);
-                nk_label(ctx, "Use slider and spinner to change tile size", NK_TEXT_LEFT);
-                nk_label(ctx, "Drag the space between tiles to change tile ratio", NK_TEXT_LEFT);
+                nk_layout_row_dynamic(ctx, 30, 1);
+                nk_label_wrap(ctx, "Adjust the tile sizes with the sliders or by dragging the space between tiles");
 
                 if (nk_tree_push(ctx, NK_TREE_NODE, "Vertical", NK_MINIMIZED))
                 {
