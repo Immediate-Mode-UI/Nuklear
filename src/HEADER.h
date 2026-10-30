@@ -12,7 +12,7 @@
  *     This is a minimal state immediate mode graphical user interface toolkit
  *     written in ANSI C and licensed under public domain. It was designed as a simple
  *     embeddable user interface for application and does not have any dependencies,
- *     a default renderbackend or OS window and input handling but instead provides a very modular
+ *     a default render backend or OS window and input handling but instead provides a very modular
  *     library approach by using simple input state for input and draw
  *     commands describing primitive shapes as output. So instead of providing a
  *     layered library that tries to abstract over a number of platform and
@@ -129,7 +129,7 @@
  * NK_COS       | You can define this to 'cosf' or your own cosine implementation replacement. If not nuklear will use its own approximation implementation.
  * NK_STRTOD    | You can define this to `strtod` or your own string to double conversion implementation replacement. If not defined nuklear will use its own imprecise and possibly unsafe version (does not handle nan or infinity!).
  * NK_DTOA      | You can define this to `dtoa` or your own double to string conversion implementation replacement. If not defined nuklear will use its own imprecise and possibly unsafe version (does not handle nan or infinity!).
- * NK_VSNPRINTF | If you define `NK_INCLUDE_STANDARD_VARARGS` as well as `NK_INCLUDE_STANDARD_IO` and want to be safe define this to `vsnprintf` on compilers supporting later versions of C or C++. By default nuklear will check for your stdlib version in C as well as compiler version in C++. if `vsnprintf` is available it will define it to `vsnprintf` directly. If not defined and if you have older versions of C or C++ it will be defined to `vsprintf` which is unsafe.
+ * NK_VSNPRINTF | If you define `NK_INCLUDE_STANDARD_VARARGS` as well as `NK_INCLUDE_STANDARD_IO` and want to be safe define this to `vsnprintf` on compilers supporting later versions of C or C++. By default nuklear will check for your stdlib version in C as well as compiler version in C++. If `vsnprintf` is available it will define it to `vsnprintf` directly. If not defined and if you have older versions of C or C++ it will be defined to `vsprintf` which is unsafe.
  *
  * @warning The following dependencies will pull in the standard C library if not redefined:
  * - NK_ASSERT
