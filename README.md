@@ -15,7 +15,7 @@ render backends, it focuses only on the actual UI.
 
 - Immediate-mode graphical user interface toolkit
 - Single-header library
-- Written in C89 (ANSI C)
+- Written in C99 (ANSI C)
 - Small codebase (~18kLOC)
 - Focus on portability, efficiency and simplicity
 - No dependencies (not even the standard library if not wanted)
