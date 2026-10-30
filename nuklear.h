@@ -12,7 +12,7 @@
  *     This is a minimal state immediate mode graphical user interface toolkit
  *     written in ANSI C and licensed under public domain. It was designed as a simple
  *     embeddable user interface for application and does not have any dependencies,
- *     a default renderbackend or OS window and input handling but instead provides a very modular
+ *     a default render backend or OS window and input handling but instead provides a very modular
  *     library approach by using simple input state for input and draw
  *     commands describing primitive shapes as output. So instead of providing a
  *     layered library that tries to abstract over a number of platform and
@@ -129,7 +129,7 @@
  * NK_COS       | You can define this to 'cosf' or your own cosine implementation replacement. If not nuklear will use its own approximation implementation.
  * NK_STRTOD    | You can define this to `strtod` or your own string to double conversion implementation replacement. If not defined nuklear will use its own imprecise and possibly unsafe version (does not handle nan or infinity!).
  * NK_DTOA      | You can define this to `dtoa` or your own double to string conversion implementation replacement. If not defined nuklear will use its own imprecise and possibly unsafe version (does not handle nan or infinity!).
- * NK_VSNPRINTF | If you define `NK_INCLUDE_STANDARD_VARARGS` as well as `NK_INCLUDE_STANDARD_IO` and want to be safe define this to `vsnprintf` on compilers supporting later versions of C or C++. By default nuklear will check for your stdlib version in C as well as compiler version in C++. if `vsnprintf` is available it will define it to `vsnprintf` directly. If not defined and if you have older versions of C or C++ it will be defined to `vsprintf` which is unsafe.
+ * NK_VSNPRINTF | If you define `NK_INCLUDE_STANDARD_VARARGS` as well as `NK_INCLUDE_STANDARD_IO` and want to be safe define this to `vsnprintf` on compilers supporting later versions of C or C++. By default nuklear will check for your stdlib version in C as well as compiler version in C++. If `vsnprintf` is available it will define it to `vsnprintf` directly. If not defined and if you have older versions of C or C++ it will be defined to `vsprintf` which is unsafe.
  *
  * @warning The following dependencies will pull in the standard C library if not redefined:
  * - NK_ASSERT
@@ -2806,7 +2806,7 @@ NK_API void nk_spacer(struct nk_context *ctx);
  * Groups are basically windows inside windows. They allow to subdivide space
  * in a window to layout widgets as a group. Almost all more complex widget
  * layouting requirements can be solved using groups and basic layouting
- * fuctionality. Groups just like windows are identified by an unique name and
+ * functionality. Groups just like windows are identified by an unique name and
  * internally keep track of scrollbar offsets by default. However additional
  * versions are provided to directly manage the scrollbar.
  *
@@ -2932,7 +2932,7 @@ NK_API void nk_group_end(struct nk_context*);
 
 /**
  * # # nk_group_scrolled_offset_begin
- * starts a new widget group. requires a previous layouting function to specify
+ * starts a new widget group. Requires a previous layouting function to specify
  * a size. Does not keep track of scrollbar.
  * ```c
  * nk_bool nk_group_scrolled_offset_begin(struct nk_context*, nk_uint *x_offset, nk_uint *y_offset, const char *title, nk_flags flags);
@@ -3075,7 +3075,7 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
  * nk_tree_pop                 | Ends a collapsible UI section
  * nk_tree_state_push          | Start a collapsible UI section with external state management
  * nk_tree_state_image_push    | Start a collapsible UI section with image and label header and external state management
- * nk_tree_state_pop           | Ends a collapsabale UI section
+ * nk_tree_state_pop           | Ends a collapsible UI section
  *
  * # nk_tree_type
  * Flag            | Description
@@ -3099,7 +3099,7 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
  * Parameter   | Description
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct
- * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+ * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapsible UI section or tree node
  * \param[in] title   | Label printed in the tree header
  * \param[in] state   | Initial tree state value out of nk_collapse_states
  *
@@ -3117,7 +3117,7 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
  * Parameter   | Description
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct
- * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+ * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapsible UI section or tree node
  * \param[in] title   | Label printed in the tree header
  * \param[in] state   | Initial tree state value out of nk_collapse_states
  * \param[in] id      | Loop counter index if this function is called in a loop
@@ -3137,7 +3137,7 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
  * Parameter   | Description
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct
- * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+ * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapsible UI section or tree node
  * \param[in] title   | Label printed in the tree header
  * \param[in] state   | Initial tree state value out of nk_collapse_states
  * \param[in] hash    | Memory block or string to generate the ID from
@@ -3162,7 +3162,7 @@ NK_API nk_bool nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const 
  * Parameter   | Description
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct
- * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+ * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapsible UI section or tree node
  * \param[in] img     | Image to display inside the header on the left of the label
  * \param[in] title   | Label printed in the tree header
  * \param[in] state   | Initial tree state value out of nk_collapse_states
@@ -3183,7 +3183,7 @@ NK_API nk_bool nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const 
  * Parameter   | Description
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct
- * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+ * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapsible UI section or tree node
  * \param[in] img     | Image to display inside the header on the left of the label
  * \param[in] title   | Label printed in the tree header
  * \param[in] state   | Initial tree state value out of nk_collapse_states
@@ -3204,7 +3204,7 @@ NK_API nk_bool nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const 
  * Parameter   | Description
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct
- * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+ * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapsible UI section or tree node
  * \param[in] img     | Image to display inside the header on the left of the label
  * \param[in] title   | Label printed in the tree header
  * \param[in] state   | Initial tree state value out of nk_collapse_states
@@ -3218,7 +3218,7 @@ NK_API nk_bool nk_tree_image_push_hashed(struct nk_context*, enum nk_tree_type, 
 
 /**
  * # # nk_tree_pop
- * Ends a collapsabale UI section
+ * Ends a collapsible UI section
  * ```c
  * void nk_tree_pop(struct nk_context*);
  * ```
@@ -3239,7 +3239,7 @@ NK_API void nk_tree_pop(struct nk_context*);
  * Parameter   | Description
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct after calling `nk_tree_xxx_push_xxx`
- * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+ * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapsible UI section or tree node
  * \param[in] title   | Label printed in the tree header
  * \param[in] state   | Persistent state to update
  *
@@ -3258,7 +3258,7 @@ NK_API nk_bool nk_tree_state_push(struct nk_context*, enum nk_tree_type, const c
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct after calling `nk_tree_xxx_push_xxx`
  * \param[in] img     | Image to display inside the header on the left of the label
- * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+ * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapsible UI section or tree node
  * \param[in] title   | Label printed in the tree header
  * \param[in] state   | Persistent state to update
  *
@@ -18522,7 +18522,7 @@ nk_input_is_mouse_hovering_still_rect(const struct nk_input *i, struct nk_rect r
  * \param[in|out] timer | Must point to a float used to track the total seconds hovered across frames
  * \param[in] delay     | The wait time in seconds
  *
- * \returns `true` if the the mouse has hovered long enough, `false otherwise`
+ * \returns `true` if the mouse has hovered long enough, `false otherwise`
  */
 NK_API nk_bool
 nk_input_is_mouse_hovering_delay_rect(const struct nk_context *ctx, struct nk_rect rect, float* timer, float delay)
@@ -18555,7 +18555,7 @@ nk_input_is_mouse_hovering_delay_rect(const struct nk_context *ctx, struct nk_re
  * \param[in|out] timer | Must point to a float used to track the total seconds hovered across frames
  * \param[in] delay     | The wait time in seconds
  *
- * \returns `true` if the the mouse has hovered without moving long enough, `false otherwise`
+ * \returns `true` if the mouse has hovered without moving long enough, `false otherwise`
  */
 NK_API nk_bool
 nk_input_is_mouse_hovering_still_delay_rect(const struct nk_context *ctx, struct nk_rect rect, float* timer, float delay)
@@ -18596,7 +18596,7 @@ nk_input_is_mouse_hovering_still_delay_rect(const struct nk_context *ctx, struct
  * \param[in] delay     | The wait time in seconds
  * \param[in|out] clicked | Must point to an nk_bool used to indicate whether the item in question has been clicked (reset to false internally on mouse motion)
  *
- * \returns `true` if the the mouse has hovered without moving long enough, `false otherwise`
+ * \returns `true` if the mouse has hovered without moving long enough, `false otherwise`
  */
 NK_API nk_bool
 nk_input_is_mouse_hovering_still_delay_clicked_rect(const struct nk_context *ctx, struct nk_rect rect, float* timer, float delay, nk_bool* clicked)
