@@ -2616,7 +2616,7 @@ NK_API void nk_spacer(struct nk_context *ctx);
  * Groups are basically windows inside windows. They allow to subdivide space
  * in a window to layout widgets as a group. Almost all more complex widget
  * layouting requirements can be solved using groups and basic layouting
- * fuctionality. Groups just like windows are identified by an unique name and
+ * functionality. Groups just like windows are identified by an unique name and
  * internally keep track of scrollbar offsets by default. However additional
  * versions are provided to directly manage the scrollbar.
  *
@@ -2742,7 +2742,7 @@ NK_API void nk_group_end(struct nk_context*);
 
 /**
  * # # nk_group_scrolled_offset_begin
- * starts a new widget group. requires a previous layouting function to specify
+ * starts a new widget group. Requires a previous layouting function to specify
  * a size. Does not keep track of scrollbar.
  * ```c
  * nk_bool nk_group_scrolled_offset_begin(struct nk_context*, nk_uint *x_offset, nk_uint *y_offset, const char *title, nk_flags flags);
@@ -2885,7 +2885,7 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
  * nk_tree_pop                 | Ends a collapsible UI section
  * nk_tree_state_push          | Start a collapsible UI section with external state management
  * nk_tree_state_image_push    | Start a collapsible UI section with image and label header and external state management
- * nk_tree_state_pop           | Ends a collapsabale UI section
+ * nk_tree_state_pop           | Ends a collapsible UI section
  *
  * # nk_tree_type
  * Flag            | Description
@@ -2909,7 +2909,7 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
  * Parameter   | Description
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct
- * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+ * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapsible UI section or tree node
  * \param[in] title   | Label printed in the tree header
  * \param[in] state   | Initial tree state value out of nk_collapse_states
  *
@@ -2927,7 +2927,7 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
  * Parameter   | Description
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct
- * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+ * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapsible UI section or tree node
  * \param[in] title   | Label printed in the tree header
  * \param[in] state   | Initial tree state value out of nk_collapse_states
  * \param[in] id      | Loop counter index if this function is called in a loop
@@ -2947,7 +2947,7 @@ NK_API void nk_group_set_scroll(struct nk_context*, const char *id, nk_uint x_of
  * Parameter   | Description
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct
- * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+ * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapsible UI section or tree node
  * \param[in] title   | Label printed in the tree header
  * \param[in] state   | Initial tree state value out of nk_collapse_states
  * \param[in] hash    | Memory block or string to generate the ID from
@@ -2972,7 +2972,7 @@ NK_API nk_bool nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const 
  * Parameter   | Description
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct
- * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+ * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapsible UI section or tree node
  * \param[in] img     | Image to display inside the header on the left of the label
  * \param[in] title   | Label printed in the tree header
  * \param[in] state   | Initial tree state value out of nk_collapse_states
@@ -2993,7 +2993,7 @@ NK_API nk_bool nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const 
  * Parameter   | Description
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct
- * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+ * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapsible UI section or tree node
  * \param[in] img     | Image to display inside the header on the left of the label
  * \param[in] title   | Label printed in the tree header
  * \param[in] state   | Initial tree state value out of nk_collapse_states
@@ -3014,7 +3014,7 @@ NK_API nk_bool nk_tree_push_hashed(struct nk_context*, enum nk_tree_type, const 
  * Parameter   | Description
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct
- * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+ * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapsible UI section or tree node
  * \param[in] img     | Image to display inside the header on the left of the label
  * \param[in] title   | Label printed in the tree header
  * \param[in] state   | Initial tree state value out of nk_collapse_states
@@ -3028,7 +3028,7 @@ NK_API nk_bool nk_tree_image_push_hashed(struct nk_context*, enum nk_tree_type, 
 
 /**
  * # # nk_tree_pop
- * Ends a collapsabale UI section
+ * Ends a collapsible UI section
  * ```c
  * void nk_tree_pop(struct nk_context*);
  * ```
@@ -3049,7 +3049,7 @@ NK_API void nk_tree_pop(struct nk_context*);
  * Parameter   | Description
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct after calling `nk_tree_xxx_push_xxx`
- * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+ * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapsible UI section or tree node
  * \param[in] title   | Label printed in the tree header
  * \param[in] state   | Persistent state to update
  *
@@ -3068,7 +3068,7 @@ NK_API nk_bool nk_tree_state_push(struct nk_context*, enum nk_tree_type, const c
  * ------------|-----------------------------------------------------------
  * \param[in] ctx     | Must point to an previously initialized `nk_context` struct after calling `nk_tree_xxx_push_xxx`
  * \param[in] img     | Image to display inside the header on the left of the label
- * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapseable UI section or tree node
+ * \param[in] type    | Value from the nk_tree_type section to visually mark a tree node header as either a collapsible UI section or tree node
  * \param[in] title   | Label printed in the tree header
  * \param[in] state   | Persistent state to update
  *

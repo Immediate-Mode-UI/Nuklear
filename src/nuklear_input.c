@@ -242,7 +242,7 @@ nk_input_is_mouse_hovering_still_rect(const struct nk_input *i, struct nk_rect r
  * \param[in|out] timer | Must point to a float used to track the total seconds hovered across frames
  * \param[in] delay     | The wait time in seconds
  *
- * \returns `true` if the the mouse has hovered long enough, `false otherwise`
+ * \returns `true` if the mouse has hovered long enough, `false otherwise`
  */
 NK_API nk_bool
 nk_input_is_mouse_hovering_delay_rect(const struct nk_context *ctx, struct nk_rect rect, float* timer, float delay)
@@ -275,7 +275,7 @@ nk_input_is_mouse_hovering_delay_rect(const struct nk_context *ctx, struct nk_re
  * \param[in|out] timer | Must point to a float used to track the total seconds hovered across frames
  * \param[in] delay     | The wait time in seconds
  *
- * \returns `true` if the the mouse has hovered without moving long enough, `false otherwise`
+ * \returns `true` if the mouse has hovered without moving long enough, `false otherwise`
  */
 NK_API nk_bool
 nk_input_is_mouse_hovering_still_delay_rect(const struct nk_context *ctx, struct nk_rect rect, float* timer, float delay)
@@ -316,7 +316,7 @@ nk_input_is_mouse_hovering_still_delay_rect(const struct nk_context *ctx, struct
  * \param[in] delay     | The wait time in seconds
  * \param[in|out] clicked | Must point to an nk_bool used to indicate whether the item in question has been clicked (reset to false internally on mouse motion)
  *
- * \returns `true` if the the mouse has hovered without moving long enough, `false otherwise`
+ * \returns `true` if the mouse has hovered without moving long enough, `false otherwise`
  */
 NK_API nk_bool
 nk_input_is_mouse_hovering_still_delay_clicked_rect(const struct nk_context *ctx, struct nk_rect rect, float* timer, float delay, nk_bool* clicked)
