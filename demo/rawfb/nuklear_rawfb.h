@@ -844,6 +844,7 @@ nk_rawfb_init(void *fb, void *tex_mem, const unsigned int w, const unsigned int 
         free(rawfb);
         return NULL;
     }
+    nk_set_display_size(&rawfb->ctx, (float)w, (float)h);
 
     nk_font_atlas_init_default(&rawfb->atlas);
     nk_font_atlas_begin(&rawfb->atlas);
@@ -1025,6 +1026,7 @@ nk_rawfb_resize_fb(struct rawfb_context *rawfb,
     rawfb->fb.pixels = fb;
     rawfb->fb.pitch = pitch;
     rawfb->fb.pl = pl;
+    nk_set_display_size(&rawfb->ctx, (float)w, (float)h);
 }
 
 NK_API void
