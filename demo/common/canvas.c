@@ -50,7 +50,7 @@ canvas(struct nk_context *ctx)
 {
         struct nk_canvas canvas;
         if (canvas_begin(ctx, &canvas, NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
-            NK_WINDOW_CLOSABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE, 10, 10, 500, 550, nk_rgb(250,250,250)))
+            NK_WINDOW_CLOSABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE, 10, 10, 500, 560, nk_rgb(250,250,250)))
         {
             float x = canvas.painter->clip.x, y = canvas.painter->clip.y;
 
@@ -99,6 +99,7 @@ canvas(struct nk_context *ctx)
             nk_stroke_circle(canvas.painter, nk_rect(x + 20, y + 370, 100, 100), 5, nk_rgb(0,255,120));
             nk_stroke_triangle(canvas.painter, x + 370, y + 250, x + 470, y + 250, x + 420, y + 350, 6, nk_rgb(255,0,143));
             nk_stroke_arc(canvas.painter, x + 420, y + 420, 50, 0, 3.141592654f * 3.0f / 4.0f, 5, nk_rgb(0,255,255));
+            nk_draw_text(canvas.painter, nk_rect(x, y + 480, 500, 30), "This text should be yellow on red", 33, ctx->style.font, nk_rgba(255, 0, 0, 128), nk_rgb(255, 255, 0));
         }
         canvas_end(ctx, &canvas);
 }
