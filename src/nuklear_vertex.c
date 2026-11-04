@@ -1299,6 +1299,13 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
         } break;
         case NK_COMMAND_TEXT: {
             const struct nk_command_text *t = (const struct nk_command_text*)cmd;
+            /* FIXME: this branch should be a part of nk_draw_list_add_text()
+             * because right now it ends up running font->width() callback twice
+             * was easier to hack it here untill we decide we like current background behavior */
+            if (t->background.a) {
+                const float width = t->font->width(t->font->userdata, t->font->height, t->string, t->length);
+                nk_draw_list_fill_rect(&ctx->draw_list, nk_rect(t->x, t->y, width, t->font->height), t->background, 0.0f);
+            }
             nk_draw_list_add_text(&ctx->draw_list, t->font, nk_rect(t->x, t->y, t->w, t->h),
                 t->string, t->length, t->height, t->foreground);
         } break;
