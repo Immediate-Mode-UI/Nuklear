@@ -443,8 +443,8 @@ nk_xsurf_stroke_curve(XSurface *surf, struct nk_vec2i p1,
 }
 
 NK_INTERN void
-nk_xsurf_draw_text(XSurface *surf, short x, short y, const char *text, int len,
-    XFont *font, struct nk_color cfg)
+nk_xsurf_draw_text(XSurface *surf, short x, short y, unsigned short w, unsigned short h,
+    const char *text, int len, XFont *font, struct nk_color cbg, struct nk_color cfg)
 {
     int tx, ty;
 #ifdef NK_XLIB_USE_XFT
@@ -453,8 +453,12 @@ nk_xsurf_draw_text(XSurface *surf, short x, short y, const char *text, int len,
 #else
     unsigned long fg = nk_color_from_byte(&cfg.r);
 #endif
+    unsigned long bg = nk_color_from_byte(&cbg.r);
 
     if(!text || !font || !len) return;
+
+    XSetForeground(surf->dpy, surf->gc, bg);
+    XFillRectangle(surf->dpy, surf->drawable, surf->gc, (int)x, (int)y, (unsigned)w, (unsigned)h);
 
     tx = (int)x;
     ty = (int)y + font->ascent;
@@ -1101,8 +1105,10 @@ nk_xlib_render(Drawable screen, struct nk_color clear)
         } break;
         case NK_COMMAND_TEXT: {
             const struct nk_command_text *t = (const struct nk_command_text*)cmd;
-            nk_xsurf_draw_text(surf, t->x, t->y, (const char*)t->string, t->length,
-                (XFont*)t->font->userdata.ptr, t->foreground);
+            nk_xsurf_draw_text(surf, t->x, t->y, t->w, t->h,
+                (const char*)t->string, t->length,
+                (XFont*)t->font->userdata.ptr,
+                t->background, t->foreground);
         } break;
         case NK_COMMAND_CURVE: {
             const struct nk_command_curve *q = (const struct nk_command_curve *)cmd;
