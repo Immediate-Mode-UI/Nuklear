@@ -23069,12 +23069,15 @@ nk_tree_state_base(struct nk_context *ctx, enum nk_tree_type type,
 
         switch(background->type) {
             case NK_STYLE_ITEM_IMAGE:
+                text.background = nk_rgba(0,0,0,0);
                 nk_draw_image(out, header, &background->data.image, nk_rgb_factor(nk_white, style->tab.color_factor));
                 break;
             case NK_STYLE_ITEM_NINE_SLICE:
+                text.background = nk_rgba(0,0,0,0);
                 nk_draw_nine_slice(out, header, &background->data.slice, nk_rgb_factor(nk_white, style->tab.color_factor));
                 break;
             case NK_STYLE_ITEM_COLOR:
+                text.background = background->data.color;
                 nk_fill_rect(out, header, 0, nk_rgb_factor(style->tab.border_color, style->tab.color_factor));
                 nk_fill_rect(out, nk_shrink_rect(header, style->tab.border),
                     style->tab.rounding, nk_rgb_factor(background->data.color, style->tab.color_factor));
