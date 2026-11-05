@@ -11150,6 +11150,10 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
         } break;
         case NK_COMMAND_TEXT: {
             const struct nk_command_text *t = (const struct nk_command_text*)cmd;
+            /* FIXME: altering between fill_rect and add_text can mess batching and cause low performance
+             * this is only a problem when t->background.a!=0.0f which almost never happens in practice
+             * still... it would be great if add_text was the one handling t->background here... */
+            nk_draw_list_fill_rect(&ctx->draw_list, nk_rect(t->x, t->y, t->w, t->h), t->background, 0.0f);
             nk_draw_list_add_text(&ctx->draw_list, t->font, nk_rect(t->x, t->y, t->w, t->h),
                 t->string, t->length, t->height, t->foreground);
         } break;
@@ -23069,12 +23073,15 @@ nk_tree_state_base(struct nk_context *ctx, enum nk_tree_type type,
 
         switch(background->type) {
             case NK_STYLE_ITEM_IMAGE:
+                text.background = nk_rgba(0,0,0,0);
                 nk_draw_image(out, header, &background->data.image, nk_rgb_factor(nk_white, style->tab.color_factor));
                 break;
             case NK_STYLE_ITEM_NINE_SLICE:
+                text.background = nk_rgba(0,0,0,0);
                 nk_draw_nine_slice(out, header, &background->data.slice, nk_rgb_factor(nk_white, style->tab.color_factor));
                 break;
             case NK_STYLE_ITEM_COLOR:
+                text.background = background->data.color;
                 nk_fill_rect(out, header, 0, nk_rgb_factor(style->tab.border_color, style->tab.color_factor));
                 nk_fill_rect(out, nk_shrink_rect(header, style->tab.border),
                     style->tab.rounding, nk_rgb_factor(background->data.color, style->tab.color_factor));
