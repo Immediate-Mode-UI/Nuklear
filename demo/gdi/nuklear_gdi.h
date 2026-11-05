@@ -221,7 +221,7 @@ nk_gdi_set_vertexColor(PTRIVERTEX tri, struct nk_color col)
     tri->Red   = col.r << 8;
     tri->Green = col.g << 8;
     tri->Blue  = col.b << 8;
-    tri->Alpha = 0xff << 8;
+    tri->Alpha = col.a << 8;
 }
 
 static void
@@ -235,26 +235,26 @@ nk_gdi_rect_multi_color(HDC dc, short x, short y, unsigned short w,
     TRIVERTEX vt[4];
     alphaFunction.BlendOp = AC_SRC_OVER;
     alphaFunction.BlendFlags = 0;
-    alphaFunction.SourceConstantAlpha = 0;
+    alphaFunction.SourceConstantAlpha = 255;
     alphaFunction.AlphaFormat = AC_SRC_ALPHA;
 
     /* TODO: This Case Needs Repair.*/
     /* Top Left Corner */
-    vt[0].x     = x;
-    vt[0].y     = y;
+    vt[0].x     = 0;
+    vt[0].y     = 0;
     nk_gdi_set_vertexColor(&vt[0], left);
     /* Top Right Corner */
-    vt[1].x     = x+w;
-    vt[1].y     = y;
+    vt[1].x     = 0+w;
+    vt[1].y     = 0;
     nk_gdi_set_vertexColor(&vt[1], top);
     /* Bottom Left Corner */
-    vt[2].x     = x;
-    vt[2].y     = y+h;
+    vt[2].x     = 0;
+    vt[2].y     = 0+h;
     nk_gdi_set_vertexColor(&vt[2], right);
 
     /* Bottom Right Corner */
-    vt[3].x     = x+w;
-    vt[3].y     = y+h;
+    vt[3].x     = 0+w;
+    vt[3].y     = 0+h;
     nk_gdi_set_vertexColor(&vt[3], bottom);
 
     gTri[0].Vertex1 = 0;
@@ -263,9 +263,17 @@ nk_gdi_rect_multi_color(HDC dc, short x, short y, unsigned short w,
     gTri[1].Vertex1 = 2;
     gTri[1].Vertex2 = 1;
     gTri[1].Vertex3 = 3;
-    GdiGradientFill(dc, vt, 4, gTri, 2 , GRADIENT_FILL_TRIANGLE);
-    AlphaBlend(gdi.window_dc,  x, y, x+w, y+h,gdi.memory_dc, x, y, x+w, y+h,alphaFunction);
 
+    HDC memdc = CreateCompatibleDC(dc);
+    HBITMAP bitmap = CreateCompatibleBitmap(dc, w, h);
+    HGDIOBJ old = SelectObject(memdc, bitmap);
+
+    GdiGradientFill(memdc, vt, 4, gTri, 2 , GRADIENT_FILL_TRIANGLE);
+
+    GdiAlphaBlend(dc, x, y, w, h, memdc, 0, 0, w, h, alphaFunction);
+
+    DeleteDC(memdc);
+    DeleteObject(bitmap);
 }
 
 static BOOL
