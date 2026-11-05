@@ -53,6 +53,7 @@ nk_chart_begin_colored(struct nk_context *ctx, enum nk_chart_type type,
     slot->min = NK_MIN(min_value, max_value);
     slot->max = NK_MAX(min_value, max_value);
     slot->range = slot->max - slot->min;
+    if (slot->range <= 0) slot->range = 1.0f; /* avoid division by zero */
     slot->show_markers = style->show_markers;}
 
     /* draw chart background */
@@ -106,6 +107,7 @@ nk_chart_add_slot_colored(struct nk_context *ctx, const enum nk_chart_type type,
     slot->min = NK_MIN(min_value, max_value);
     slot->max = NK_MAX(min_value, max_value);
     slot->range = slot->max - slot->min;
+    if (slot->range <= 0) slot->range = 1.0f; /* avoid division by zero */
     slot->show_markers = style->show_markers;}
 }
 NK_API void
@@ -128,13 +130,11 @@ nk_chart_push_line(struct nk_context *ctx, struct nk_window *win,
     struct nk_rect bounds;
     struct nk_color color;
     float step;
-    float range;
     float ratio;
 
     NK_ASSERT(slot >= 0 && slot < NK_CHART_MAX_SLOT);
     step = g->w / (float)g->slots[slot].count;
-    range = g->slots[slot].max - g->slots[slot].min;
-    ratio = (value - g->slots[slot].min) / range;
+    ratio = (value - g->slots[slot].min) / g->slots[slot].range;
 
     if (g->slots[slot].index == 0) {
         /* first data point does not have a connection */
@@ -292,7 +292,7 @@ nk_plot(struct nk_context *ctx, enum nk_chart_type type, const float *values,
 
     NK_ASSERT(ctx);
     NK_ASSERT(values);
-    if (!ctx || !values || !count) return;
+    if (!ctx || !values || count <= 0) return;
 
     min_value = values[offset];
     max_value = values[offset];
@@ -317,7 +317,7 @@ nk_plot_function(struct nk_context *ctx, enum nk_chart_type type, void *userdata
 
     NK_ASSERT(ctx);
     NK_ASSERT(value_getter);
-    if (!ctx || !value_getter || !count) return;
+    if (!ctx || !value_getter || count <= 0) return;
 
     max_value = min_value = value_getter(userdata, offset);
     for (i = 0; i < count; ++i) {
