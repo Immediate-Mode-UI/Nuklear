@@ -85,6 +85,27 @@ nk_set_user_data(struct nk_context *ctx, nk_handle handle)
 }
 #endif
 NK_API void
+nk_set_display_size(struct nk_context *ctx, float width, float height)
+{
+    NK_ASSERT(ctx);
+    if (!ctx) return;
+    if (width < 0) width = 0;
+    if (height < 0) height = 0;
+    ctx->display_bounds.x = 0;
+    ctx->display_bounds.y = 0;
+    ctx->display_bounds.w = width;
+    ctx->display_bounds.h = height;
+}
+NK_API void
+nk_set_display_bounds(struct nk_context *ctx, struct nk_rect bounds)
+{
+    NK_ASSERT(ctx);
+    if (!ctx) return;
+    if (bounds.w < 0) bounds.w = 0;
+    if (bounds.h < 0) bounds.h = 0;
+    ctx->display_bounds = bounds;
+}
+NK_API void
 nk_free(struct nk_context *ctx)
 {
     NK_ASSERT(ctx);

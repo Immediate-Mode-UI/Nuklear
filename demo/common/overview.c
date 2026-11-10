@@ -102,10 +102,11 @@ overview(struct nk_context *ctx)
                     const float values[]={26.0f,13.0f,30.0f,15.0f,25.0f,10.0f,20.0f,40.0f,12.0f,8.0f,22.0f,28.0f};
                     menu_state = MENU_CHART;
                     nk_layout_row_dynamic(ctx, 150, 1);
-                    nk_chart_begin(ctx, NK_CHART_COLUMN, NK_LEN(values), 0, 50);
-                    for (i = 0; i < NK_LEN(values); ++i)
-                        nk_chart_push(ctx, values[i]);
-                    nk_chart_end(ctx);
+                    if (nk_chart_begin(ctx, NK_CHART_COLUMN, NK_LEN(values), 0, 50)) {
+                        for (i = 0; i < NK_LEN(values); ++i)
+                            nk_chart_push(ctx, values[i]);
+                        nk_chart_end(ctx);
+                    }
                     nk_tree_pop(ctx);
                 } else menu_state = (menu_state == MENU_CHART) ? MENU_NONE: menu_state;
                 nk_menu_end(ctx);
@@ -513,15 +514,16 @@ overview(struct nk_context *ctx)
                     size_t i = 0;
                     static const float values[]={26.0f,13.0f,30.0f,15.0f,25.0f,10.0f,20.0f,40.0f, 12.0f, 8.0f, 22.0f, 28.0f, 5.0f};
                     nk_layout_row_dynamic(ctx, 150, 1);
-                    nk_chart_begin(ctx, NK_CHART_COLUMN, NK_LEN(values), 0, 50);
-                    for (i = 0; i < NK_LEN(values); ++i) {
-                        nk_flags res = nk_chart_push(ctx, values[i]);
-                        if (res & NK_CHART_CLICKED) {
-                            chart_selection = values[i];
-                            nk_combo_close(ctx);
+                    if (nk_chart_begin(ctx, NK_CHART_COLUMN, NK_LEN(values), 0, 50)) {
+                        for (i = 0; i < NK_LEN(values); ++i) {
+                            nk_flags res = nk_chart_push(ctx, values[i]);
+                            if (res & NK_CHART_CLICKED) {
+                                chart_selection = values[i];
+                                nk_combo_close(ctx);
+                            }
                         }
+                        nk_chart_end(ctx);
                     }
-                    nk_chart_end(ctx);
                     nk_combo_end(ctx);
                 }
 
