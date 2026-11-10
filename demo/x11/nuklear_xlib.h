@@ -443,8 +443,8 @@ nk_xsurf_stroke_curve(XSurface *surf, struct nk_vec2i p1,
 }
 
 NK_INTERN void
-nk_xsurf_draw_text(XSurface *surf, short x, short y, const char *text, int len,
-    XFont *font, struct nk_color cfg)
+nk_xsurf_draw_text(XSurface *surf, short x, short y,
+    const char *text, int len, XFont *font, struct nk_color cbg, struct nk_color cfg)
 {
     int tx, ty;
 #ifdef NK_XLIB_USE_XFT
@@ -452,6 +452,7 @@ nk_xsurf_draw_text(XSurface *surf, short x, short y, const char *text, int len,
     XftColor color;
 #else
     unsigned long fg = nk_color_from_byte(&cfg.r);
+    unsigned long bg = nk_color_from_byte(&cbg.r);
 #endif
 
     if(!text || !font || !len) return;
@@ -464,13 +465,15 @@ nk_xsurf_draw_text(XSurface *surf, short x, short y, const char *text, int len,
     xrc.blue = cfg.b * 257;
     xrc.alpha = cfg.a * 257;
     XftColorAllocValue(surf->dpy, xlib.vis, xlib.cmap, &xrc, &color);
+    (void)cbg; /* FIXME: Xft does not have DrawImageString so 'cbg' needs to be handled in a different way */
     XftDrawStringUtf8(surf->ftdraw, &color, font->ft, tx, ty, (FcChar8*)text, len);
     XftColorFree(surf->dpy, xlib.vis, xlib.cmap, &color);
 #else
+    XSetBackground(surf->dpy, surf->gc, bg);
     XSetForeground(surf->dpy, surf->gc, fg);
     if(font->set)
-        XmbDrawString(surf->dpy,surf->drawable,font->set,surf->gc,tx,ty,(const char*)text,(int)len);
-    else XDrawString(surf->dpy, surf->drawable, surf->gc, tx, ty, (const char*)text, (int)len);
+        XmbDrawImageString(surf->dpy,surf->drawable,font->set,surf->gc,tx,ty,(const char*)text,(int)len);
+    else XDrawImageString(surf->dpy, surf->drawable, surf->gc, tx, ty, (const char*)text, (int)len);
 #endif
 }
 
@@ -1101,8 +1104,10 @@ nk_xlib_render(Drawable screen, struct nk_color clear)
         } break;
         case NK_COMMAND_TEXT: {
             const struct nk_command_text *t = (const struct nk_command_text*)cmd;
-            nk_xsurf_draw_text(surf, t->x, t->y, (const char*)t->string, t->length,
-                (XFont*)t->font->userdata.ptr, t->foreground);
+            nk_xsurf_draw_text(surf, t->x, t->y,
+                (const char*)t->string, t->length,
+                (XFont*)t->font->userdata.ptr,
+                t->background, t->foreground);
         } break;
         case NK_COMMAND_CURVE: {
             const struct nk_command_curve *q = (const struct nk_command_curve *)cmd;
