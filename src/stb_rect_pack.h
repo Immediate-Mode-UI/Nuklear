@@ -1,4 +1,4 @@
-// stb_rect_pack.h - v1.01 - public domain - rectangle packing
+// stb_rect_pack.h - v1.02 - public domain - rectangle packing
 // Sean Barrett 2014
 //
 // Useful for e.g. packing rectangular textures into an atlas.
@@ -38,6 +38,7 @@
 //  Bugfixes / warning fixes
 //    Jeremy Jaussaud
 //    Fabian Giesen
+//    Joshua Simmons
 //
 // Version history:
 //
@@ -466,7 +467,7 @@ static stbrp__findresult stbrp__skyline_pack_rectangle(stbrp_context *context, i
 
    // insert the new node into the right starting point, and
    // let 'cur' point to the remaining nodes needing to be
-   // stitched back in
+   // stiched back in
 
    cur = *res.prev_link;
    if (cur->x < res.x) {
@@ -529,7 +530,11 @@ static int STBRP__CDECL rect_height_compare(const void *a, const void *b)
       return -1;
    if (p->h < q->h)
       return  1;
-   return (p->w > q->w) ? -1 : (p->w < q->w);
+   if (p->w > q->w)
+      return -1;
+   if (p->w < q->w)
+      return  1;
+   return (p->was_packed < q->was_packed) ? -1 : (p->was_packed > q->was_packed);
 }
 
 static int STBRP__CDECL rect_original_order(const void *a, const void *b)
