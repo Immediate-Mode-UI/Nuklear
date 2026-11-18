@@ -100,6 +100,31 @@ nk_menu_begin(struct nk_context *ctx, struct nk_window *win,
     popup = win->popup.win;
     is_open = popup ? nk_true : nk_false;
     is_active = (popup && (win->popup.name == hash) && win->popup.type == NK_PANEL_MENU);
+    /* Another menu is already open and the pointer is on this title.
+       Take that popup over instead of waiting for a second click. */
+    if (is_open && !is_active &&
+        nk_input_is_mouse_hovering_rect(&ctx->input, header)) {
+        unsigned int clicks = ctx->input.mouse.buttons[NK_BUTTON_LEFT].clicked;
+        ctx->input.mouse.buttons[NK_BUTTON_LEFT].clicked = 0;
+        /* Drop the menu that was drawn earlier this frame so only this one shows. */
+        if (win->popup.buf.active) {
+            void *memory = ctx->memory.memory.ptr;
+            struct nk_command *parent_cmd = nk_ptr_add(struct nk_command, memory, win->popup.buf.parent);
+            struct nk_command *last_cmd = nk_ptr_add(struct nk_command, memory, win->popup.buf.last);
+            if (parent_cmd && last_cmd)
+                parent_cmd->next = last_cmd->next;
+            win->popup.buf.active = nk_false;
+        }
+        is_clicked = nk_true;
+        if (!nk_nonblock_begin(ctx, NK_WINDOW_NO_SCROLLBAR, body, header, NK_PANEL_MENU)) {
+            ctx->input.mouse.buttons[NK_BUTTON_LEFT].clicked = clicks;
+            return 0;
+        }
+        ctx->input.mouse.buttons[NK_BUTTON_LEFT].clicked = clicks;
+        win->popup.type = NK_PANEL_MENU;
+        win->popup.name = hash;
+        return 1;
+    }
     if ((is_clicked && is_open && !is_active) || (is_open && !is_active) ||
         (!is_open && !is_active && !is_clicked)) return 0;
     if (!nk_nonblock_begin(ctx, NK_WINDOW_NO_SCROLLBAR, body, header, NK_PANEL_MENU))
@@ -108,6 +133,26 @@ nk_menu_begin(struct nk_context *ctx, struct nk_window *win,
     win->popup.type = NK_PANEL_MENU;
     win->popup.name = hash;
     return 1;
+}
+/* An open menu marks the bar read-only. Clear that while the pointer is on
+   this title so it highlights and nk_menu_begin can take the popup over.
+   Call before nk_widget, which is what consumes the title's rectangle. */
+NK_LIB void
+nk_menu_title_hot(struct nk_context *ctx, struct nk_window *win)
+{
+    struct nk_rect peek;
+    struct nk_panel *root;
+    if (!win->popup.win || win->popup.type != NK_PANEL_MENU)
+        return;
+    peek = nk_widget_bounds(ctx);
+    if (!nk_input_is_mouse_hovering_rect(&ctx->input, peek))
+        return;
+    win->flags &= ~(nk_flags)NK_WINDOW_ROM;
+    root = win->layout;
+    while (root) {
+        root->flags &= ~(nk_flags)NK_WINDOW_ROM;
+        root = root->parent;
+    }
 }
 NK_API nk_bool
 nk_menu_begin_text(struct nk_context *ctx, const char *title, int len,
@@ -126,6 +171,7 @@ nk_menu_begin_text(struct nk_context *ctx, const char *title, int len,
         return 0;
 
     win = ctx->current;
+    nk_menu_title_hot(ctx, win);
     state = nk_widget(&header, ctx);
     if (!state) return 0;
     in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || win->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
@@ -156,6 +202,7 @@ nk_menu_begin_image(struct nk_context *ctx, const char *id, struct nk_image img,
         return 0;
 
     win = ctx->current;
+    nk_menu_title_hot(ctx, win);
     state = nk_widget(&header, ctx);
     if (!state) return 0;
     in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || win->layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
@@ -181,6 +228,7 @@ nk_menu_begin_symbol(struct nk_context *ctx, const char *id,
         return 0;
 
     win = ctx->current;
+    nk_menu_title_hot(ctx, win);
     state = nk_widget(&header, ctx);
     if (!state) return 0;
     in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || win->layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
@@ -206,6 +254,7 @@ nk_menu_begin_image_text(struct nk_context *ctx, const char *title, int len,
         return 0;
 
     win = ctx->current;
+    nk_menu_title_hot(ctx, win);
     state = nk_widget(&header, ctx);
     if (!state) return 0;
     in = (state == NK_WIDGET_ROM || state == NK_WIDGET_DISABLED || win->layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
@@ -238,6 +287,7 @@ nk_menu_begin_symbol_text(struct nk_context *ctx, const char *title, int len,
         return 0;
 
     win = ctx->current;
+    nk_menu_title_hot(ctx, win);
     state = nk_widget(&header, ctx);
     if (!state) return 0;
 
