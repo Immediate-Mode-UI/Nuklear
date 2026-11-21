@@ -112,16 +112,7 @@ NK_INTERN void *
 nk_sdl_alloc(nk_handle user, void *old, nk_size size)
 {
     NK_UNUSED(user);
-    /* FIXME: nk_sdl_alloc should use SDL_realloc here, not SDL_malloc
-     * but this could cause a double-free due to bug within Nuklear, see:
-     * https://github.com/Immediate-Mode-UI/Nuklear/issues/768
-     * */
-#if 0
     return SDL_realloc(old, size);
-#else
-    NK_UNUSED(old);
-    return SDL_malloc(size);
-#endif
 }
 
 NK_INTERN void
