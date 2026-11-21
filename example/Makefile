@@ -1,9 +1,9 @@
 # Flags
-CFLAGS += -std=c99 -Wall -Wextra -pedantic -Wno-misleading-indentation -Wno-shift-negative-value
+CFLAGS += -std=c89 -Wall -Wextra -pedantic -Wno-misleading-indentation -Wno-shift-negative-value
 LIBS :=
 
 ifeq ($(OS),Windows_NT)
-	DEL_BIN = IF EXIST bin DEL /F /Q bin\*
+	DEL_BIN = rm -rf bin
 	BIN := $(BIN).exe
 	LIBS := -lglfw3 -lopengl32 -lm -lGLU32 -lGLEW32
 else
