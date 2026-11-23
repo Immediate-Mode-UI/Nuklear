@@ -10,3 +10,4 @@ example/bin/*
 *.exe
 *.dSYM
 /private/
+*/app/build
