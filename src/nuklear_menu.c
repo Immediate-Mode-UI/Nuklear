@@ -76,12 +76,22 @@ nk_menubar_end(struct nk_context *ctx)
     layout->clip.h = layout->bounds.h;
     nk_push_scissor(out, layout->clip);
 }
+NK_INTERN int nk_menu_should_hover_open(struct nk_context *ctx, struct nk_window *win, struct nk_rect menu_header)
+{
+    int hover_open = nk_false;
+    if (win->popup.win && win->popup.type == NK_PANEL_MENU && nk_input_is_mouse_hovering_rect(&ctx->input, menu_header)) {
+        hover_open = nk_true;
+    }
+    return hover_open;
+}
+
 NK_INTERN int
 nk_menu_begin(struct nk_context *ctx, struct nk_window *win,
     const char *id, int is_clicked, struct nk_rect header, struct nk_vec2 size)
 {
     int is_open = 0;
     int is_active = 0;
+    int should_hover_open = 0;
     struct nk_rect body;
     struct nk_window *popup;
     nk_hash hash = nk_murmur_hash(id, (int)nk_strlen(id), NK_PANEL_MENU);
@@ -100,8 +110,11 @@ nk_menu_begin(struct nk_context *ctx, struct nk_window *win,
     popup = win->popup.win;
     is_open = popup ? nk_true : nk_false;
     is_active = (popup && (win->popup.name == hash) && win->popup.type == NK_PANEL_MENU);
-    if ((is_clicked && is_open && !is_active) || (is_open && !is_active) ||
-        (!is_open && !is_active && !is_clicked)) return 0;
+
+    should_hover_open = nk_menu_should_hover_open(ctx, win, header);
+    
+    if (!should_hover_open && ((is_clicked && is_open && !is_active) || (is_open && !is_active) ||
+        (!is_open && !is_active && !is_clicked))) return 0;
     if (!nk_nonblock_begin(ctx, NK_WINDOW_NO_SCROLLBAR, body, header, NK_PANEL_MENU))
         return 0;
 
@@ -132,6 +145,7 @@ nk_menu_begin_text(struct nk_context *ctx, const char *title, int len,
     if (nk_do_button_text(&ctx->last_widget_state, &win->buffer, header,
         title, len, align, NK_BUTTON_DEFAULT, &ctx->style.menu_button, in, ctx->style.font))
         is_clicked = nk_true;
+
     return nk_menu_begin(ctx, win, title, is_clicked, header, size);
 }
 NK_API nk_bool nk_menu_begin_label(struct nk_context *ctx,
