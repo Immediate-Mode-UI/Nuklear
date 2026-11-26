@@ -27595,7 +27595,7 @@ nk_do_scrollbarh(nk_flags *state,
  *                          TEXT EDITOR
  *
  * ===============================================================*/
-/* stb_textedit.h - v1.8  - public domain - Sean Barrett */
+/* stb_textedit.h - v1.12  - public domain - Sean Barrett */
 struct nk_text_find {
    float x,y;    /* position of n'th character */
    float height; /* height of line */
@@ -27689,10 +27689,9 @@ nk_textedit_locate_coord(struct nk_text_edit *edit, float x, float y,
     /* check if it's before the end of the line */
     if (x < r.x1) {
         /* search characters in row for one that straddles 'x' */
-        k = i;
         prev_x = r.x0;
-        for (i=0; i < r.num_chars; ++i) {
-            float w = nk_textedit_get_width(edit, k, i, font);
+        for (k=0; k < r.num_chars; ++k) {
+            float w = nk_textedit_get_width(edit, i, k, font);
             if (x < prev_x+w) {
                 if (x < prev_x+w/2)
                     return k+i;
