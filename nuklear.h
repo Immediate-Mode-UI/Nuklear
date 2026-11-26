@@ -17221,6 +17221,7 @@ nk_font_bake_pack(struct nk_font_baker *baker,
         NK_ASSERT(rect_n == total_glyph_count);
         NK_ASSERT(char_n == total_glyph_count);
         NK_ASSERT(range_n == total_range_count);
+        NK_UNUSED(total_range_count);
     }
     *height = (int)nk_round_up_pow2((nk_uint)*height);
     *image_memory = (nk_size)(*width) * (nk_size)(*height);
