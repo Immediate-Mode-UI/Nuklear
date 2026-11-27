@@ -53,7 +53,7 @@ nk_chart_begin_colored(struct nk_context *ctx, enum nk_chart_type type,
     slot->min = NK_MIN(min_value, max_value);
     slot->max = NK_MAX(min_value, max_value);
     slot->range = slot->max - slot->min;
-    if (slot->range <= 0) slot->range = 1.0f; /* avoid division by zero */
+    NK_ASSERT(slot->range > 0); /* min and max must differ */
     slot->show_markers = style->show_markers;}
 
     /* draw chart background */
@@ -107,7 +107,7 @@ nk_chart_add_slot_colored(struct nk_context *ctx, const enum nk_chart_type type,
     slot->min = NK_MIN(min_value, max_value);
     slot->max = NK_MAX(min_value, max_value);
     slot->range = slot->max - slot->min;
-    if (slot->range <= 0) slot->range = 1.0f; /* avoid division by zero */
+    NK_ASSERT(slot->range > 0); /* min and max must differ */
     slot->show_markers = style->show_markers;}
 }
 NK_API void
